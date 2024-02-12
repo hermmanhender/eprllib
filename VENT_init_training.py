@@ -38,7 +38,7 @@ from ray.tune.search.bayesopt import BayesOptSearch
 # Search algorithm to tune the hyperparameters
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
-from env.natural_ventilation.VENT_ep_gym_env import EnergyPlusEnv_v0
+from env.VENT_ep_gym_env import EnergyPlusEnv_v0
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.
@@ -69,10 +69,9 @@ restore = False
 restore_path = ''
 # Path to the folder where the experiment is located.
 env_config={ 
-    'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_Wheater_Configuration/GEF',
+    'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epw/GEF',
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
-    'idf_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_IDF_Configuration',
-    'climatic_stads': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_Wheater_Configuration',
+    'idf_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epjson',
     'idf_output_folder': 'C:/Users/grhen/Documents/models',
     # Configure the directories for the experiment.
     'ep_terminal_output': False,
