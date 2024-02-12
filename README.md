@@ -6,55 +6,73 @@ Buildings have proven to be one of the energy sinks in recent decades. Both the 
 
 ## Repository organization
 
+The repository is ordned to be easy to read and to develope.
+
+In the **`env`** folder there are alocated two files, the RLlib implementation for EnergyPlus and the
+EnergyPlus Runner implementation of EnergyPlus Python API. This two scripts are executed in two threads 
+to allow the simulation of the NREL software in a reinforcement learning way.
 ```
--> EP_IDF_Configuration # Folder where the building models are allocated.
+-> env
+    ->nv_rllib_env.py
+    ->nv_ep_runner.py
+```
+The **`epjson`** folder is where the building models are allocated.
+```
+-> epjson
     -> file_to_simulate.epJSON
--> EP_Wheather_Configuration # Folder where the weather file and the statistical of the respective wheather are allocated. You will find in the preprocess folder a notebook to calculate the statisticals pkl file from the epw.
+```
+The **`epw`** folder is where the weather file and the statistical of the respective wheather are allocated. You will find in the preprocess folder a notebook to calculate the statisticals pkl file from the epw.
+```
+-> epw
     -> wheather_file.epw
     -> wheather_stats.pkl
--> postprocess
-    -> postprocess_file.ipynb
--> preprocess
-    ->clima_stads.ipynb
--> env
-    -> natural_ventilation
-        ->nv_rllib_env.py
-        ->nv_ep_runner.py
+```
+The **`evaluation`** folder...
+```
 -> evaluation
     -> init_conventional.py
     -> init_evaluation.py
--> init_training.py
 ```
+The **`postprocess`** folder...
+```
+-> postprocess
+    -> postprocess_file.ipynb
+```
+The **`preprocess`** folder...
+```
+-> preprocess
+    ->clima_stads.ipynb
+```
+The **`tools`** folder...
+```
+-> tools
+    -> tools.py
+```
+Finally we have a **`init_training.py`** script in the main repository that is used to configurate the 
+experiment to be running.
 
-El repositorio tiene tres archivos principales que configuran el funcionamiento del experimento.
+### Conventional controls
 
-Los archivos se pueden identificar con DQN, QMIX y EVAL. Cada uno de estos corresponde al algoritmo para el cuál está configurado o si es para la evaluación de estos.
+Control mechanisms for different elements are established:
 
-A su vez se puede identificar **init_simulation**, **ep_gym_env** y **ep_runner**. El primero configura el algoritmo, para el cual se utiliza la librería de **RLlib**, en donde se pueden ajustar los hiperparámetros con la herramienta de Tune o bien entrenar las políticas para una configuración específica de estos. El segundo contiene la configuración estándar de un entorno de OpenAI Gym (ahora gymnasium), donde se define la función de recompensa y los métodos `step` y `reset`. Este se relaciona directamente con el tercero, el cual ejecuta la simulación en EnergyPlus del entorno simulado. Para una ejecución sincronizada de ambos hilos se utiliza un mecanimos de comunicación con la librería `Queue`, que permite la configuración de EnergyPlus como entorno de Gym.
+* Blnds or shades
+* Windows
+* On-Off of heating and cooling systems
+* Thermostats dual comfort temperature
 
-![Implementación del entorno de EnergyPlus en RLlib.](image.png)
+These are established according to intuitive conventional rules that are currently used in residential buildings.
 
-### Controles convencionales
+### Clima stadistics
 
-Se establecen los mecanísmos de control de diferentes elementos:
+### Aditional tools
 
-* Cortinas
-* Ventanas
-* Encendido y apagado de refrigeración y calefacción
-* Temperatura del termostato dual
+## How to use and how to work
 
-Estos se establecen según reglas convencionales intuitivas que son las que se utilizan actualmente en
-edificios residenciales.
+![Implementación del entorno de EnergyPlus en RLlib.](execution_flow.png)
 
-### Estadísticas de clima
+## Contribution
 
-### Herramientas adicionales
-
-## Modo de uso
-
-## Contribución
-
-## Licencia
+## Licency
 
 MIT License
 
