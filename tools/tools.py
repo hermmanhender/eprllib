@@ -653,9 +653,7 @@ def weather_file(env_config: dict, weather_choice:int = np.random.randint(0,24))
     Returns:
         _type_: _description_
     """
-    folder_path = env_config['sys_path']+'/GitHub/EP_RLlib/EP_Wheater_Configuration/GEF'
-    # TODO: replace folder_path for: folder_path = env_config['weather_folder']. 
-    # See VENT_init_training.py
+    folder_path = env_config['weather_folder']
     # clima aleatorio
     if not env_config['is_test']:
         weather_path = [
