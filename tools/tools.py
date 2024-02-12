@@ -17,7 +17,8 @@ def episode_epJSON(env_config: dict):
     Return:
         dict: The method returns the env_config with modifications.
     """
-    env_config['idf'] = env_config['idf_folderpath']+'/prot_1.epJSON'
+    if env_config.get('idf', False) == False:
+        env_config = epJSON_path(env_config)
     with open(env_config['idf']) as file:
         epJSON_object: dict = json.load(file)
     
@@ -178,6 +179,19 @@ def episode_epJSON(env_config: dict):
         with open(CLIMATIC_STADS_PATH, 'rb') as fp:
             env_config['climatic_stads'] = pickle.load(fp)
 """
+    return env_config
+
+def epJSON_path(env_config: dict):
+    """This method define the path to the epJSON file to be simulated.
+    
+    Args:
+        env_config (dict): Environment configuration.
+        
+    Return:
+        dict: The method returns the env_config with modifications.
+    """
+    env_config['idf'] = env_config['idf_folderpath']+'/prot_1.epJSON'
+    
     return env_config
 
 def model_library(env_config: dict):
