@@ -76,6 +76,9 @@ class EnergyPlusRunner:
         self.initialized = False
         self.init_handles = False
         self.simulation_complete = False
+
+        # se establece el path al modelo a simular
+        self.env_config = tools.epJSON_path(self.env_config)
         
         # below is declaration of variables, meters and actuators
         # this simulation will interact with
