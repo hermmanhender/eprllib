@@ -1,0 +1,75 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF Lujan de cuyo
+Latitud [°] = -32.985, Longitud [°] = -68.930, Altitud [m] = 1043
+Zona climática = IV, 5
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario B1, year 2100
+Temperatura: scenario B1, year 2100
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	296	279	108	32446	13998	3
+Feb	278	265	99	30534	12958	3
+Mar	209	210	82	23004	10562	3
+Abr	175	210	61	19195	8165	3
+Mayo	135	197	43	14654	5730	3
+Jun	107	161	40	11574	5265	3
+Jul	126	199	39	13514	5117	3
+Ago	156	195	56	16695	7210	3
+Sept	211	251	65	22591	8267	3
+Oct	257	261	86	27764	10955	3
+Nov	306	317	93	33106	11986	2
+Dic.	317	308	104	34676	13384	3
+
+Año	214	237	73	23313	9466	3
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	25.9	14.0	48	903	179	4.6
+Feb	24.8	14.1	51	903	180	4.1
+Mar	21.7	12.9	57	902	179	3.7
+Abr	17.5	9.7	60	900	180	3.5
+Mayo	13.2	5.3	59	899	180	3.7
+Jun	9.6	1.7	58	897	223	3.6
+Jul	9.1	0.9	56	897	180	3.8
+Ago	11.8	0.8	47	898	180	4.6
+Sept	14.6	2.7	45	899	180	4.6
+Oct	19.1	6.7	44	901	180	4.9
+Nov	22.4	9.3	43	902	180	5.3
+Dic.	24.9	12.7	47	903	180	4.9
+
+Año	17.9	7.6	51	900	183	4.3
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+SD: Solamente 4 Estacion/es para interpolar
+3 estaciónes más proxima: Gh: Mendoza Airp. (1961-1990, 22 km), Santiago (178 km), Valparaiso (USM), C (238 km) (Parte de los datos de satelite: 12%)
+3 estaciónes más proxima: Ta: Mendoza Obs. (14 km), Mendoza Airp. (22 km), San Rafael Airp. (185 km)
+Incertidumbre de valores anuales: Gh = 6%, Bn = 11 %, Ta = 0.5 °C
+Tendencia de gh / década = -2.7%
+Variabilidad de gh / año = 3.5%
+P90 and P10 of yearly Gh, referenced to average = 96.4%, 103.5%

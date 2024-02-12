@@ -1,0 +1,76 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF Ushuaia
+Latitud [°] = -54.800, Longitud [°] = -68.317, Altitud [m] = 95
+Zona climática = III, 1
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario A2, year 2030
+Temperatura: scenario A2, year 2030
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	203	171	106	22312	13104	6
+Feb	156	118	95	17242	11541	6
+Mar	104	103	59	11529	7418	6
+Abr	60	80	34	6606	4243	6
+Mayo	28	48	17	3038	2231	6
+Jun	16	32	11	1728	1380	6
+Jul	21	36	15	2264	1783	6
+Ago	48	66	29	4983	3413	6
+Sept	99	124	49	10448	5930	5
+Oct	153	144	82	16386	9697	5
+Nov	197	189	92	21341	11141	5
+Dic.	217	192	107	23777	13096	5
+
+Año	108	109	58	11804	7081	6
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	9.5	5.3	75	1002	270	17.5
+Feb	9.8	5.2	73	1002	270	16.8
+Mar	8.7	4.3	73	1002	270	14.6
+Abr	6.5	2.3	74	1002	270	13.0
+Mayo	4.4	0.5	76	1002	270	10.4
+Jun	3.2	-1.1	74	1002	270	11.3
+Jul	2.8	-1.6	73	1002	270	11.1
+Ago	3.5	-0.8	73	1002	270	12.7
+Sept	4.7	0.5	74	1002	270	14.9
+Oct	6.4	1.8	72	1002	270	18.0
+Nov	7.4	2.5	71	1002	270	19.4
+Dic.	8.7	4.5	75	1002	270	18.3
+
+Año	6.3	2.0	74	1002	270	14.8
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+Gh: Solamente 4 Estacion/es para interpolar
+SD: Solamente 4 Estacion/es para interpolar
+3 estaciónes más proxima: Gh: Ushuaia Airp. (1994-2005, 0 km), Puerto Williams (46 km), Punta Arenas (260 km) (Parte de los datos de satelite: 0%)
+3 estaciónes más proxima: Ta: Ushuaia Airp. (0 km), Puerto Williams (46 km), Rio Grande Airp. (117 km)
+Incertidumbre de valores anuales: Gh = 2%, Bn = 5 %, Ta = 0.3 °C
+Tendencia de gh / década = -6.5%
+Variabilidad de gh / año = 5.1%
+P90 and P10 of yearly Gh, referenced to average = 94.9%, 108.0%

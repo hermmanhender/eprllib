@@ -1,0 +1,77 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF San Miguel de Tucuman
+Latitud [°] = -26.839, Longitud [°] = -65.209, Altitud [m] = 435
+Zona climática = IV, 3
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario A2, year 2050
+Temperatura: scenario A2, year 2050
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	290	259	113	32562	15345	3
+Feb	257	206	112	28745	14997	4
+Mar	194	135	106	21832	13405	5
+Abr	160	136	84	17923	10783	5
+Mayo	142	157	61	15639	7921	4
+Jun	112	113	58	12296	7278	5
+Jul	147	192	49	15811	6350	3
+Ago	178	208	61	19177	8033	3
+Sept	216	216	79	23483	10253	4
+Oct	230	184	108	25292	13671	4
+Nov	257	198	119	28622	15566	4
+Dic.	259	205	121	28945	15911	4
+
+Año	203	184	89	22527	11626	4
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	28.6	23.0	72	966	0	4.8
+Feb	27.4	22.1	73	966	0	4.2
+Mar	26.2	21.8	77	966	225	3.8
+Abr	22.9	18.4	76	965	0	3.6
+Mayo	19.9	14.6	72	965	0	3.7
+Jun	16.5	10.8	69	965	0	3.7
+Jul	16.4	9.9	65	964	0	4.2
+Ago	18.8	10.4	58	965	0	5.0
+Sept	20.7	12.6	60	965	0	5.9
+Oct	24.6	16.5	60	966	225	6.4
+Nov	26.4	19.5	66	966	225	6.2
+Dic.	28.0	21.9	69	966	225	5.2
+
+Año	23.0	16.8	68	965	322	4.7
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+Gh: Solamente 4 Estacion/es para interpolar
+Ta: Solamente 4 Estacion/es para interpolar
+SD: Solamente 4 Estacion/es para interpolar
+3 estaciónes más proxima: Gh: Tucuman (1967-1973, 4 km), Copiapo-Chamonate (519 km), Vallenar Airp. (582 km) (Parte de los datos de satelite: 0%)
+3 estaciónes más proxima: Ta: Tucuman (4 km), Santiago Del Estero (137 km), La Rioja Airp. (324 km)
+Incertidumbre de valores anuales: Gh = 7%, Bn = 14 %, Ta = 0.5 °C
+Tendencia de gh / década = 2.5%
+Variabilidad de gh / año = 12.0%
+P90 and P10 of yearly Gh, referenced to average = 78.4%, 111.3%

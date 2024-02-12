@@ -1,0 +1,75 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF Zapalla
+Latitud [°] = -38.871, Longitud [°] = -70.112, Altitud [m] = 1051
+Zona climática = III, 2
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario A1B, year 2100
+Temperatura: scenario A1B, year 2100
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	325	354	96	35250	12457	2
+Feb	297	353	69	32138	9031	2
+Mar	222	275	68	24195	8733	3
+Abr	151	206	51	16479	6779	3
+Mayo	96	155	34	10398	4578	4
+Jun	80	131	34	8666	4371	4
+Jul	85	131	35	9151	4531	4
+Ago	118	151	51	12688	6394	4
+Sept	172	202	67	18500	8349	4
+Oct	239	250	88	25650	11062	3
+Nov	303	326	91	32546	11535	3
+Dic.	345	376	91	37267	12057	2
+
+Año	203	242	65	21911	8323	3
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	22.8	8.4	40	901	249	8.4
+Feb	22.4	9.2	43	901	249	7.3
+Mar	18.8	7.8	49	900	249	6.0
+Abr	13.7	4.9	56	898	240	5.6
+Mayo	9.7	2.6	61	896	261	5.0
+Jun	6.7	0.5	64	895	261	5.0
+Jul	6.1	-0.1	64	895	261	4.9
+Ago	7.8	0.0	57	896	227	6.5
+Sept	10.3	0.4	50	897	240	7.2
+Oct	14.1	2.5	46	898	238	7.9
+Nov	18.2	4.8	41	900	249	8.9
+Dic.	21.3	7.1	40	901	249	8.8
+
+Año	14.3	4.0	51	898	247	6.8
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+SD: Solamente 4 Estacion/es para interpolar
+Gh: Use of precalculated radiation map based on satellite and ground information due to low density of network. (Parte de los datos de satelite: 100%)
+3 estaciónes más proxima: Ta: Bariloche (269 km), Neuquen (172 km), Maquinchao (290 km)
+Incertidumbre de valores anuales: Gh = 8%, Bn = 17 %, Ta = 2.3 °C
+Tendencia de gh / década = -3.4%
+Variabilidad de gh / año = 5.8%
+P90 and P10 of yearly Gh, referenced to average = 95.1%, 113.5%

@@ -1,0 +1,75 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF Rawson
+Latitud [°] = -43.300, Longitud [°] = -65.075, Altitud [m] = 6
+Zona climática = III, 12
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario A2, year 2050
+Temperatura: scenario A2, year 2050
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	266	218	125	28918	15319	4
+Feb	241	238	98	26100	12272	3
+Mar	177	186	75	19274	9517	4
+Abr	122	154	52	13174	6777	4
+Mayo	75	121	32	8136	4259	4
+Jun	59	96	29	6287	3752	4
+Jul	62	93	31	6612	3820	5
+Ago	100	132	46	10617	5765	4
+Sept	150	178	59	15948	7297	4
+Oct	201	199	84	21470	10547	4
+Nov	260	233	115	27964	14268	4
+Dic.	279	233	128	30227	15629	4
+
+Año	166	173	73	17894	9102	4
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	22.3	5.7	34	1012	250	14.8
+Feb	21.7	7.0	38	1012	250	12.3
+Mar	19.2	6.3	43	1012	250	11.0
+Abr	15.4	3.7	45	1012	216	9.9
+Mayo	11.6	2.3	53	1012	236	9.4
+Jun	8.5	0.7	58	1012	236	9.4
+Jul	8.5	0.3	56	1012	236	9.2
+Ago	9.9	-0.4	49	1012	215	11.0
+Sept	11.9	-0.2	43	1012	216	11.8
+Oct	14.7	1.7	41	1012	216	13.3
+Nov	18.1	3.3	37	1012	250	15.0
+Dic.	20.6	4.8	35	1012	250	14.8
+
+Año	15.2	2.9	44	1012	236	11.8
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+SD: Solamente 4 Estacion/es para interpolar
+Gh: Use of precalculated radiation map based on satellite and ground information due to low density of network. (Parte de los datos de satelite: 100%)
+3 estaciónes más proxima: Ta: Trelew Airp. (19 km), San Antonio Oeste Airp. (286 km), Paso de Indios (312 km)
+Incertidumbre de valores anuales: Gh = 7%, Bn = 14 %, Ta = 0.5 °C
+Tendencia de gh / década = -6.0%
+Variabilidad de gh / año = 7.1%
+P90 and P10 of yearly Gh, referenced to average = 91.2%, 110.5%

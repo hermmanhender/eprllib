@@ -1,0 +1,76 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF San Nicolas de los Arroyos
+Latitud [°] = -33.362, Longitud [°] = -60.245, Altitud [m] = 29
+Zona climática = IV, 6
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario B1, year 2030
+Temperatura: scenario B1, year 2030
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	270	214	126	29907	16593	4
+Feb	235	183	112	26115	14366	4
+Mar	213	203	87	23565	11371	4
+Abr	149	139	73	16445	9444	5
+Mayo	110	133	50	12069	6532	4
+Jun	84	91	45	9126	5650	5
+Jul	90	107	43	9754	5418	5
+Ago	134	138	65	14386	8139	4
+Sept	167	144	80	18104	9813	5
+Oct	239	217	96	25905	12488	3
+Nov	267	241	105	29157	13341	3
+Dic.	276	217	127	30409	16242	4
+
+Año	186	169	84	20412	10783	4
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	25.9	18.0	62	1010	48	5.7
+Feb	24.8	18.0	66	1010	48	5.2
+Mar	22.2	16.6	71	1010	48	4.7
+Abr	18.4	13.5	73	1010	48	4.2
+Mayo	15.2	10.4	73	1010	49	4.6
+Jun	11.7	7.2	74	1010	144	5.2
+Jul	11.7	7.2	74	1010	49	6.0
+Ago	13.0	7.4	69	1010	48	6.2
+Sept	15.3	9.0	66	1010	48	7.1
+Oct	18.5	12.4	68	1010	48	6.6
+Nov	21.6	14.5	64	1010	48	6.2
+Dic.	24.6	16.5	61	1010	48	5.8
+
+Año	18.6	12.6	68	1010	53	5.6
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+Ta: Solamente 4 Estacion/es para interpolar
+SD: Solamente 4 Estacion/es para interpolar
+3 estaciónes más proxima: Gh: Oliveros (1971-1980, 116 km), Buenos Aires (212 km), Buenos Aires (Eze.) (226 km) (Parte de los datos de satelite: 58%)
+3 estaciónes más proxima: Ta: Rosario Airp. (70 km), Pergamino Intl. Airp (70 km), Gualeguaychu Airp. (157 km)
+Incertidumbre de valores anuales: Gh = 6%, Bn = 11 %, Ta = 1.1 °C
+Tendencia de gh / década = - %
+Variabilidad de gh / año = 4.5%
+P90 and P10 of yearly Gh, referenced to average = 93.3%, 106.1%

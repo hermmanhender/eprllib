@@ -1,0 +1,76 @@
+ 
+Cálculo
+ 
+Nombre del lugar = GEF Salta
+Latitud [°] = -24.770, Longitud [°] = -65.470, Altitud [m] = 1268
+Zona climática = V, 3
+
+Random Seed = 7
+Modelo irradiancia = Standard (hora); Modelo temperatura = Standard (hora)
+Modelo de la radiación difusa = Standard (hora) (Perez)
+Radiación: scenario A1B, year 2100
+Temperatura: scenario A1B, year 2100
+
+ 
+Mes	G_Gh	G_Bn	G_Dh	Lg	Ld	N
+ 
+Ene	261	238	98	29256	13375	4
+Feb	233	190	101	26126	13226	4
+Mar	194	156	94	21871	12069	5
+Abr	177	162	82	19744	10562	5
+Mayo	166	198	60	18295	8110	4
+Jun	144	183	51	15701	6636	4
+Jul	165	221	49	17878	6464	3
+Ago	198	258	52	21431	7184	2
+Sept	237	262	74	25742	9571	3
+Oct	254	249	87	27817	11313	3
+Nov	275	261	93	30419	12081	3
+Dic.	266	224	114	29724	14848	4
+
+Año	214	217	79	23667	10453	4
+
+-------------------------------------------------------------------------------
+
+Mes	Ta	Td	RH	p	DD	FF
+
+Ene	25.9	20.5	72	881	45	5.4
+Feb	24.7	20.1	76	880	45	5.0
+Mar	23.5	19.3	77	880	45	4.2
+Abr	20.8	16.6	77	878	45	3.8
+Mayo	18.2	13.1	72	877	0	3.2
+Jun	15.3	9.0	66	876	0	3.3
+Jul	15.2	7.2	59	876	0	4.1
+Ago	17.6	7.9	53	877	45	5.1
+Sept	20.0	9.8	52	878	45	5.6
+Oct	23.6	13.5	53	880	45	6.3
+Nov	25.1	16.7	60	880	45	6.2
+Dic.	26.0	19.4	67	881	45	5.9
+
+Año	21.3	14.4	65	879	37	4.8
+
+================================================================================
+
+Leyenda:
+Gh:        Irradiancia media de la radiacion global horizontal
+Bn:        Irradiancia de la radiacion directa normal
+Dh:        Irradiancia media de la radiacion difusa horizontal
+N:         Grado de nubosidad
+Lg:        Luminancia global           Ld:     
+
+Ta:        Temperatura del aire        RH:     Humedad relativa
+Td:        Temperatura del punto de rocío
+                                       DD:     Direccion del viento
+FF:        Velocidad del viento        p:      Presion atmosferica
+
+Radiación en  [W/m²]
+Temperatura en  [°C]
+Presión en  [hPa]
+Velocidad del viento en  [m/s]
+Ta: Solamente 2 Estacion/es para interpolar
+SD: Solamente 4 Estacion/es para interpolar
+Gh: Use of precalculated radiation map based on satellite and ground information due to low density of network. (Parte de los datos de satelite: 100%)
+3 estaciónes más proxima: Ta: Salta Airp./Cerillos (9 km), Jujuy Airp. (58 km)
+Incertidumbre de valores anuales: Gh = 7%, Bn = 14 %, Ta = 0.5 °C
+Tendencia de gh / década = 2.6%
+Variabilidad de gh / año = 12.5%
+P90 and P10 of yearly Gh, referenced to average = 77.5%, 111.6%
