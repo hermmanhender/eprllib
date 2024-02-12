@@ -38,9 +38,10 @@ from ray.tune.search.bayesopt import BayesOptSearch
 # Search algorithm to tune the hyperparameters
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
-from VENT_ep_gym_env import EnergyPlusEnv_v0
+from env.natural_ventilation.VENT_ep_gym_env import EnergyPlusEnv_v0
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
+# TODO: Make a singular configuration for all the cases that I would to analise.
 import logging
 # Library to improve the logging of the Ray Cluster process
 
@@ -63,34 +64,31 @@ algorithm = 'DQN'
 # Define the algorithm to use to train the policy. Options are: PPO, SAC, DQN.
 tune_runner  = True
 # Define if the experiment tuning the variables or execute a unique configuration.
-beta = 0.5
-# This parameter is used to balance between energy and comfort of the inhabitatns. A
-# value equal to 0 give a no importance to comfort and a value equal to 1 give no importance 
-# to energy consume. Mathematically is the reward: 
-# r = - beta*normaliced_energy - (1-beta)*normalized_comfort
-# The range of this value goes from 0.0 to 1.0.
-is_test = False
-# For evaluation process 'is_test=True' and for trainig False.
-ep_terminal_output = False
-# For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
 restore = False
 # To define if is necesary to restore or not a previous experiment. Is necesary to stablish a 'restore_path'.
 restore_path = ''
 # Path to the folder where the experiment is located.
-env_config={ # Configure the directories for the experiment.
-    'sys_path': 'C:/Users/grhen/Documents',
-    # TODO: delete this and replace for: 
-    # 'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_Wheater_Configuration/GEF. 
-    # See tools.py
+env_config={ 
+    'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_Wheater_Configuration/GEF',
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
     'idf_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_IDF_Configuration',
     'climatic_stads': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/EP_Wheater_Configuration',
     'idf_output_folder': 'C:/Users/grhen/Documents/models',
-    
-    # Running config (defined previously)
-    'ep_terminal_output': ep_terminal_output,
-    'beta': beta,
-    'is_test': is_test,
+    # Configure the directories for the experiment.
+    'ep_terminal_output': False,
+    # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
+    'beta': 0.5,
+    # This parameter is used to balance between energy and comfort of the inhabitatns. A
+    # value equal to 0 give a no importance to comfort and a value equal to 1 give no importance 
+    # to energy consume. Mathematically is the reward: 
+    # r = - beta*normaliced_energy - (1-beta)*normalized_comfort
+    # The range of this value goes from 0.0 to 1.0.,
+    'is_test': False,
+    # For evaluation process 'is_test=True' and for trainig False.
+    'action_space': gym.spaces.Discrete(4),
+    # action space for simple agent case
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (49,)),
+    # observation space for simple agent case
 }
 """## INIT RAY AND REGISTER THE ENVIRONMENT
 """
