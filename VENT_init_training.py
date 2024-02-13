@@ -71,8 +71,8 @@ restore_path = ''
 env_config={ 
     'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epw/GEF',
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
-    'idf_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epjson',
-    'idf_output_folder': 'C:/Users/grhen/Documents/models',
+    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epjson',
+    'epjson_output_folder': 'C:/Users/grhen/Documents/models',
     # Configure the directories for the experiment.
     'ep_terminal_output': False,
     # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.

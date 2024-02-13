@@ -17,9 +17,10 @@ def episode_epJSON(env_config: dict):
     Return:
         dict: The method returns the env_config with modifications.
     """
-    if env_config.get('idf', False) == False:
+    if env_config.get('epjson', False) == False:
+        # If the path to epjson
         env_config = epJSON_path(env_config)
-    with open(env_config['idf']) as file:
+    with open(env_config['epjson']) as file:
         epJSON_object: dict = json.load(file)
     
     # determinación del volumen
@@ -59,9 +60,9 @@ def episode_epJSON(env_config: dict):
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = env_config['E_max']
     
     # Se escribe el nuevo epJSON modificado
-    env_config["idf"] = f"{env_config['idf_output_folder']}/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
+    env_config["epjson"] = f"{env_config['idf_output_folder']}/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
     
-    with open(env_config["idf"], 'w') as fp:
+    with open(env_config["epjson"], 'w') as fp:
         json.dump(epJSON_object, fp, sort_keys=False, indent=4)
     
     env_config['epw'], CLIMATIC_STADS_PATH,env_config['latitud'], env_config['longitud'], env_config['altitud'] = weather_file(
@@ -81,14 +82,14 @@ def epJSON_path(env_config: dict):
     Return:
         dict: The method returns the env_config with modifications.
     """
-    env_config['idf'] = env_config['idf_folderpath']+'/prot_1.epJSON'
+    env_config['epjson'] = env_config['epjson_folderpath']+'/prot_1.epJSON'
     
     return env_config
 
 def model_library(env_config: dict):
     """The method chose a random GEF building and modify the env_config dictionary to assign the following
     parameters for the simulation:
-        'idf'
+        'epjson'
         'volumen'
         'window_area_relation_north'
         'window_area_relation_west'
@@ -187,7 +188,7 @@ def model_library(env_config: dict):
         models_keys = [key for key in models_info.keys()]
         model_key = models_keys[model]
         
-        env_config['idf'] = env_config['idf_folderpath'] + model_key + '.epJSON'
+        env_config['epjson'] = env_config['epjson_folderpath'] + model_key + '.epJSON'
         env_config['volumen'] = models_info[model_key]['volumen']
         env_config['window_area_relation_north'] = models_info[model_key]['window_area_relation_north']
         env_config['window_area_relation_west'] = models_info[model_key]['window_area_relation_west']
@@ -195,7 +196,7 @@ def model_library(env_config: dict):
         env_config['window_area_relation_east'] = models_info[model_key]['window_area_relation_east']
         
     else: # Apply GEF_MDZ_PROT_1 for evaluation
-        env_config['idf'] = env_config['idf_folderpath'] + models_info['GEF_MDZ_PROT_1']['name'] + '.epJSON'
+        env_config['epjson'] = env_config['epjson_folderpath'] + models_info['GEF_MDZ_PROT_1']['name'] + '.epJSON'
         env_config['volumen'] = models_info['GEF_MDZ_PROT_1']['volumen']
         env_config['window_area_relation_north'] = models_info['GEF_MDZ_PROT_1']['window_area_relation_north']
         env_config['window_area_relation_west'] = models_info['GEF_MDZ_PROT_1']['window_area_relation_west']

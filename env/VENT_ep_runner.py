@@ -423,7 +423,7 @@ class EnergyPlusRunner:
             self.env_config["epw"],
             "-d",
             f"{self.env_config['output']}/episode-{self.episode:08}-{os.getpid():05}",
-            self.env_config["idf"]
+            self.env_config["epjson"]
         ]
         return eplus_args
     
