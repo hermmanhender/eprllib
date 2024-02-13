@@ -6,7 +6,7 @@ This script contain the EnergyPlus Runner that execute EnergyPlus from its Pytho
 
 import os
 import sys
-from tools import tools
+from tools import tools, weather_stats
 import threading
 import numpy as np
 from queue import Queue
@@ -60,6 +60,7 @@ class EnergyPlusRunner:
         """
         self.episode = episode
         self.env_config = env_config
+        self.env_config['episode'] = self.episode
         self.obs_queue = obs_queue
         self.act_queue = act_queue
         self.cooling_queue = cooling_queue
@@ -87,11 +88,12 @@ class EnergyPlusRunner:
         self.init_handles = False
         self.simulation_complete = False
         self.first_observation = True
+        self.last_simulation_day = 1
+        self.episode_flag_termination = False
         # Variables to be used in this thread.
 
         self.env_config = tools.epJSON_path(self.env_config)
         # The path for the epjson file is defined.
-        
         
         self.variables = {
             "To": ("Site Outdoor Air Drybulb Temperature", "Environment"), #0
@@ -138,6 +140,10 @@ class EnergyPlusRunner:
         """
         self.env_config = tools.episode_epJSON(self.env_config)
         # Configurate the episode.
+        
+        self.weather_stats = weather_stats.Probabilities(self.env_config)
+        # Specify the weather statisitical file.
+        
         self.energyplus_state = api.state_manager.new_state()
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         
@@ -196,11 +202,7 @@ class EnergyPlusRunner:
         
         time_step = api.exchange.zone_time_step_number(state_argument)
         hour = api.exchange.hour(state_argument)
-        day = api.exchange.day_of_month(state_argument)
         simulation_day = api.exchange.day_of_year(state_argument)
-        month = api.exchange.month(state_argument)
-        day_p1, month_p1 = tools.plus_day(day, month, 1)
-        day_p2, month_p2 = tools.plus_day(day, month, 2)
         # Timestep variables.
         obs = {
             **{
@@ -220,60 +222,23 @@ class EnergyPlusRunner:
             }
         }
         # Variables, meters and actuatos conditions as observation.
-        if hour < 23:
-            To_p1h = api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour+1, time_step)
-        else:
-            To_p1h = api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour-23, time_step)
-        if hour < 22:
-            To_p2h = api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour+2, time_step)
-        else:
-            To_p2h = api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour-22, time_step)
-        if hour < 21:
-            To_p3h = api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour+3, time_step)
-        else:
-            To_p3h = api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour-21, time_step)
-        # Statistical variables calculation.
         obs.update(
             {
-            "To_p1h": To_p1h, #10
-            "To_p2h": To_p2h, #11
-            "To_p3h": To_p3h, #12
-            "T_max_0": self.env_config['climatic_stads'][str(month)][str(day)]['T_max_0'],#13
-            "T_min_0": self.env_config['climatic_stads'][str(month)][str(day)]['T_min_0'],#14
-            "RH_0": self.env_config['climatic_stads'][str(month)][str(day)]['RH_0'],#15
-            "raining_total_0": self.env_config['climatic_stads'][str(month)][str(day)]['raining_total_0'],#16
-            "wind_avg_0": self.env_config['climatic_stads'][str(month)][str(day)]['wind_avg_0'],#17
-            "wind_max_0": self.env_config['climatic_stads'][str(month)][str(day)]['wind_max_0'],#18
-            "total_sky_cover_0": self.env_config['climatic_stads'][str(month)][str(day)]['total_sky_cover_0'],#19
-            "T_max_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['T_max_0'],#20
-            "T_min_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['T_min_0'],#21
-            "RH_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['RH_0'],#22
-            "raining_total_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['raining_total_0'],#23
-            "wind_avg_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['wind_avg_0'],#24
-            "wind_max_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['wind_max_0'],#25
-            "total_sky_cover_1": self.env_config['climatic_stads'][str(month_p1)][str(day_p1)]['total_sky_cover_0'],#26
-            "T_max_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['T_max_0'],#27
-            "T_min_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['T_min_0'],#28
-            "RH_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['RH_0'],#29
-            "raining_total_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['raining_total_0'],#30
-            "wind_avg_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['wind_avg_0'],#31
-            "wind_max_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['wind_max_0'],#32
-            "total_sky_cover_2": self.env_config['climatic_stads'][str(month_p2)][str(day_p2)]['total_sky_cover_0'],#33
-            'hora': hour,#34
-            'simulation_day': simulation_day,#35
-            'volumen': self.env_config['volumen'],#36
-            'window_area_relation_north': self.env_config['window_area_relation_north'],#37
-            'window_area_relation_west': self.env_config['window_area_relation_west'],#38
-            'window_area_relation_south': self.env_config['window_area_relation_south'],#39
-            'window_area_relation_east': self.env_config['window_area_relation_east'],#40
-            'construction_u_factor': self.env_config['construction_u_factor'], #41
-            'inercial_mass': self.env_config['inercial_mass'], #42
-            'latitud': self.env_config['latitud'], #43
-            'longitud':self.env_config['longitud'], #44
-            'altitud': self.env_config['altitud'], #45
-            'beta': self.env_config['beta'], #46
-            'E_max': self.env_config['E_max'], #47
-            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #48
+            'hora': hour,#10
+            'simulation_day': simulation_day,#11
+            'volumen': self.env_config['volumen'],#12
+            'window_area_relation_north': self.env_config['window_area_relation_north'],#13
+            'window_area_relation_west': self.env_config['window_area_relation_west'],#14
+            'window_area_relation_south': self.env_config['window_area_relation_south'],#15
+            'window_area_relation_east': self.env_config['window_area_relation_east'],#16
+            'construction_u_factor': self.env_config['construction_u_factor'], #17
+            'inercial_mass': self.env_config['inercial_mass'], #18
+            'latitud': self.env_config['latitud'], #19
+            'longitud':self.env_config['longitud'], #20
+            'altitud': self.env_config['altitud'], #21
+            'beta': self.env_config['beta'], #22
+            'E_max': self.env_config['E_max'], #23
+            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #24
             }
         )
         # Upgrade of the timestep observation.
@@ -297,12 +262,20 @@ class EnergyPlusRunner:
         del obs["Fanger_PPD"]
         # Variables are deleted from the observation because are difficult to mesure.
         
-        self.next_obs = np.array(list(obs.values()))
+        next_obs = np.array(list(obs.values()))
         # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+        weather_prob = self.weather_stats.ten_days_predictions(simulation_day)
+        # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
+        self.next_obs = np.concatenate([next_obs, weather_prob])
         
         self.obs_queue.put(self.next_obs)
         self.obs_event.set()
         # Set the observation to communicate with queue.
+        
+        if simulation_day != self.last_simulation_day:
+            self.episode_flag_termination = True
+        else:
+            self.last_simulation_day = simulation_day
 
     def _collect_first_obs(self, state_argument):
         """This method is used to collect only the first observation of the environment when the episode beggins.

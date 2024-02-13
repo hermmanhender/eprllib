@@ -69,9 +69,9 @@ restore = False
 restore_path = ''
 # Path to the folder where the experiment is located.
 env_config={ 
-    'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epw/GEF',
+    'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
-    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epjson',
+    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
     'epjson_output_folder': 'C:/Users/grhen/Documents/models',
     # Configure the directories for the experiment.
     'ep_terminal_output': False,
@@ -87,20 +87,20 @@ env_config={
     'test_init_day': 1,
     'action_space': gym.spaces.Discrete(4),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (49,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (1465,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
-    'building_name': '/prot_1.epJSON',
+    'building_name': '/prot_1',
     'volumen': 131.6565,
     'window_area_relation_north': 0,
     'window_area_relation_west': 0,
     'window_area_relation_south': 0.0115243076,
     'window_area_relation_east': 0.0276970753,
-    'episode_len': 7,
+    'episode_len': 365,
     'rotation': 0,
-    
 }
+
 """## INIT RAY AND REGISTER THE ENVIRONMENT
 """
 ray.init()
@@ -222,9 +222,9 @@ elif algorithm == 'DQN': # DQN Configuration
                 # === Built-in options ===
                 # FullyConnectedNetwork (tf and torch): rllib.models.tf|torch.fcnet.py
                 # These are used if no custom model is specified and the input space is 1D.
-                "fcnet_hiddens": [128],
+                "fcnet_hiddens": [1024,512,512],
                 # Number of hidden layers to be used.
-                "fcnet_activation": "linear" if not tune_runner else tune.choice(['tanh', 'relu', 'swish']),
+                "fcnet_activation": "linear" if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
                 # Activation function descriptor.
                 # Supported values are: "tanh", "relu", "swish" (or "silu", which is the same), "linear" (or None).
                 },
@@ -258,7 +258,7 @@ elif algorithm == 'DQN': # DQN Configuration
             # Whether to use dueling DQN.
             hiddens = [128], #int
             # Dense-layer setup for each the advantage branch and the value branch in a dueling configuration
-            double_q = False, #bool
+            double_q = True, #bool
             # Whether to use double DQN.
             n_step = 10, # if not tune_runner else tune.randint(1, 11), #int | rainbow setup [between 1 and 10]
             # N-step for Q-learning.
@@ -275,7 +275,7 @@ elif algorithm == 'DQN': # DQN Configuration
             replay_buffer_config = {
                 '_enable_replay_buffer_api': True,
                 'type': 'MultiAgentPrioritizedReplayBuffer',
-                'capacity': 50000,
+                'capacity': 100000,
                 'prioritized_replay_alpha': 0.6,
                 'prioritized_replay_beta': 0.4,
                 'prioritized_replay_eps': 1e-6,
@@ -301,8 +301,6 @@ elif algorithm == 'DQN': # DQN Configuration
             # Note that this mostly affects evaluation since TD error uses argmax for return calculation.
         ).environment(
             env="EPEnv",
-            observation_space=gym.spaces.Box(float("-inf"), float("inf"), (49,)),
-            action_space=gym.spaces.Discrete(4),
             env_config=env_config,
         ).framework(
             framework = 'torch',
@@ -318,7 +316,7 @@ elif algorithm == 'DQN': # DQN Configuration
         ).experimental(
             _enable_new_api_stack = False,
         ).reporting( # multi_agent config va aquí
-            min_sample_timesteps_per_iteration = 1007,
+            min_sample_timesteps_per_iteration = 1000,
         ).checkpointing(
             export_native_model_files = True,
         ).debugging(
@@ -327,7 +325,14 @@ elif algorithm == 'DQN': # DQN Configuration
         ).resources(
             num_gpus = 0,
         )
-
+    algo.exploration(
+        exploration_config={
+                "type": "EpsilonGreedy",
+                "initial_epsilon": 1.0,
+                "final_epsilon": 0.01,
+                "epsilon_timesteps": 6*24*365*15,
+            }
+        )
 elif algorithm == 'SAC': # SAC Configuration
     algo = SACConfig().training(
             # General Algo Configs
@@ -485,7 +490,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "asha_1x128_dueF_douF_{}_{}_".format(trial.trainable_name, trial.trial_id)
+    return "asha_1024p2x512_dueF_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
@@ -497,19 +502,19 @@ if not restore:
             # This is necesary to iterative execute the search_alg to improve the hyperparameters
             reuse_actors=False,
             trial_name_creator=trial_str_creator,
-            trial_dirname_creator= trial_str_creator,
+            trial_dirname_creator=trial_str_creator,
             
             #search_alg = Repeater(BayesOptSearch(),repeat=10),
             #search_alg = BayesOptSearch(),
             # Search algorithm
             
-            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=100*1007, grace_period=25*1007),
+            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*40, grace_period=6*24*365*15),
             # Scheduler algorithm
             
         ),
         run_config=air.RunConfig(
-            name='VN_P1_Year_7days_allWeathers_'+str(env_config['beta'])+'_'+str(algorithm),
-            stop={"episodes_total": 100},
+            name='VN_P1_Year_allWeathers_'+str(env_config['beta'])+'_'+str(algorithm),
+            stop={"episodes_total": 365*40},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(

@@ -29,7 +29,7 @@ def episode_epJSON(env_config: dict):
         epJSON_object = run_period(
             epJSON_object = epJSON_object,
             ObjectName = next(iter(epJSON_object['RunPeriod'])),
-            day = np.random.randint(1,355),
+            day = 1 if env_config['episode_len']==365 else np.random.randint(1,366-env_config['episode_len']),
             longitud_episodio = env_config['episode_len']
         )
     else:
@@ -58,16 +58,14 @@ def episode_epJSON(env_config: dict):
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = env_config['E_max']
     
     # Se escribe el nuevo epJSON modificado
-    env_config["epjson"] = f"{env_config['idf_output_folder']}/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
+    env_config["epjson"] = f"{env_config['epjson_output_folder']}/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
     
     with open(env_config["epjson"], 'w') as fp:
         json.dump(epJSON_object, fp, sort_keys=False, indent=4)
     
-    env_config['epw'], CLIMATIC_STADS_PATH,env_config['latitud'], env_config['longitud'], env_config['altitud'] = weather_file(
+    env_config['epw'],env_config['latitud'], env_config['longitud'], env_config['altitud'] = weather_file(
         env_config
     )
-    with open(CLIMATIC_STADS_PATH, 'rb') as fp:
-        env_config['climatic_stads'] = pickle.load(fp)
 
     return env_config
 
@@ -174,10 +172,10 @@ def weather_file(env_config: dict, weather_choice:int = np.random.randint(0,24))
         latitud = weather_path[weather_choice][1]
         longitud = weather_path[weather_choice][2]
         altitud = weather_path[weather_choice][3]
-        return folder_path+'/'+weather_path[weather_choice][0]+'.epw', folder_path+'/'+weather_path[weather_choice][0]+'.pkl', latitud, longitud, altitud
+        return folder_path+'/'+weather_path[weather_choice][0]+'.epw', latitud, longitud, altitud
     
     else:
-        return folder_path+'/GEF_Lujan_de_cuyo-hour-H4.epw', folder_path+'/GEF_Lujan_de_cuyo-hour-H4.pkl', -32.985,-68.93,1043
+        return folder_path+'/GEF_Lujan_de_cuyo-hour-H4.epw', -32.985,-68.93,1043
 
 def run_period(epJSON_object, ObjectName: str, day: int, longitud_episodio: int):
     """Función que modifica el periodo de ejecución del objeto epJSON.

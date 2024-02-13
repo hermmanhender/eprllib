@@ -1,5 +1,7 @@
 
 import pandas as pd
+from pandas.core.frame import DataFrame
+import numpy as np
 from tools.tools import plus_day
 
 class weather_function():
@@ -183,3 +185,69 @@ class weather_function():
                 array.append(epw_file[22][_])
         total_sky_cover = sum(array)/len(array)
         return total_sky_cover
+    
+class Probabilities():
+    def __init__(
+        self,
+        env_config:dict
+    ):
+        self.env_config = env_config
+        
+        with open(self.env_config["epw"]) as file:
+            self.weather_file: DataFrame = pd.read_csv(
+                file,
+                header = None,
+                skiprows = 8
+            )
+        self.ten_rows_added = False
+        self.agregar_primeras_10_filas()
+        
+    def agregar_primeras_10_filas(self):
+        # Obtener las primeras 10 filas del DataFrame
+        primeras_10_filas = self.weather_file.head(10)
+        # Agregar las primeras 10 filas al DataFrame original
+        self.weather_file = pd.concat([self.weather_file, primeras_10_filas], ignore_index=True)
+        self.ten_rows_added = True
+
+
+    # Paso 1: Filtrar los datos para el día juliano dado y los próximos 9 días
+    def filtrar_por_dia_juliano(self, dia_juliano):
+        
+        # Calcular el día juliano para cada fila del DataFrame
+        if self.ten_rows_added:
+            dias_julianos = ((self.weather_file.index % 9000) // 24 + 1)
+        else:
+            dias_julianos = (self.weather_file.index % 8760) // 24 + 1
+        # Verificar si el día juliano está dentro del rango deseado
+        return dias_julianos.isin(range(dia_juliano, dia_juliano + 10))
+
+    def ten_days_predictions(self, julian_day:int):
+        interest_variables = [6, 8, 20, 21, 22, 33]
+        # 0'Year', 1'Month', 2'Day', 3'Hour', 4'Minutes', 5'Data Source and Uncertainty Flags', 
+        # 6'Dry Bulb Temperature', 7'Dew Point Temperature', 8'Relative Humidity', 
+        # 9'Atmospheric Station Pressure', 10'Extraterrestrial Horizontal Radiation', 
+        # 11'Extraterrestrial Direct Normal Radiation', 12'Horizontal Infrared Radiation Intensity', 
+        # 13'Global Horizontal Radiation', 14'Direct Normal Radiation', 15'Diffuse Horizontal Radiation', 
+        # 16'Global Horizontal Illuminance', 17'Direct Normal Illuminance', 18'Diffuse Horizontal Illuminance', 
+        # 19'Zenith Luminance', 20'Wind Direction', 21'Wind Speed', 22'Total Sky Cover', 23'Opaque Sky Cover', 
+        # 24'Visibility', 25'Ceiling Height', 26'Present Weather Observation', 27'Present Weather Codes', 
+        # 28'Precipitable Water', 29'Aerosol Optical Depth', 30'Snow Depth', 31'Days Since Last Snowfall', 
+        # 32'Albedo', 33'Liquid Precipitation Depth', 34'Liquid Precipitation Quantity',
+        datos_filtrados: DataFrame = self.weather_file[self.filtrar_por_dia_juliano(julian_day)][interest_variables]
+        lista_de_datos: list = datos_filtrados.values.tolist()
+        lista_final = []
+        for e in range(len(lista_de_datos)):
+            for v in lista_de_datos[e]:
+                lista_final.append(v)
+        
+        desviacion = [1, 10, 20, 0.5, 10, 0.2]
+        prob_index = 0
+        for e in range(len(lista_final)):
+            lista_final[e] = np.random.normal(lista_final[e], desviacion[prob_index])
+            if prob_index == (len(desviacion)-1):
+                prob_index = 0 
+            else:
+                prob_index += 1
+        
+        array_final = np.array(lista_final)
+        return array_final
