@@ -266,8 +266,8 @@ class EnergyPlusRunner:
             'window_area_relation_west': self.env_config['window_area_relation_west'],#38
             'window_area_relation_south': self.env_config['window_area_relation_south'],#39
             'window_area_relation_east': self.env_config['window_area_relation_east'],#40
-            'construction_config': self.env_config['construction_config'], #41
-            'internal_mass': self.env_config['internal_mass'], #42
+            'construction_u_factor': self.env_config['construction_u_factor'], #41
+            'inercial_mass': self.env_config['inercial_mass'], #42
             'latitud': self.env_config['latitud'], #43
             'longitud':self.env_config['longitud'], #44
             'altitud': self.env_config['altitud'], #45

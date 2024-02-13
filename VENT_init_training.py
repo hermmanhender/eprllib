@@ -84,10 +84,22 @@ env_config={
     # The range of this value goes from 0.0 to 1.0.,
     'is_test': False,
     # For evaluation process 'is_test=True' and for trainig False.
+    'test_init_day': 1,
     'action_space': gym.spaces.Discrete(4),
     # action space for simple agent case
     'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (49,)),
     # observation space for simple agent case
+    
+    # BUILDING CONFIGURATION
+    'building_name': '/prot_1.epJSON',
+    'volumen': 131.6565,
+    'window_area_relation_north': 0,
+    'window_area_relation_west': 0,
+    'window_area_relation_south': 0.0115243076,
+    'window_area_relation_east': 0.0276970753,
+    'episode_len': 7,
+    'rotation': 0,
+    
 }
 """## INIT RAY AND REGISTER THE ENVIRONMENT
 """

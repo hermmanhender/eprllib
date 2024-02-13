@@ -2,29 +2,26 @@
 
 This script execute the conventional controls in the evaluation scenario.
 """
-
+import gymnasium as gym
 import numpy as np
 import csv
 from ray.rllib.policy.policy import Policy
 from ray.rllib.utils.framework import try_import_tf
-
+from env.VENT_ep_gym_env import EnergyPlusEnv_v0
 from tempfile import TemporaryDirectory
-from VENT_ep_gym_env import EnergyPlusEnv_v0
 
 tf1, tf, _ = try_import_tf()
 tf1.enable_eager_execution()
 
 # Se debe especificar el path según la PC utilizada
-#path = "/home/german/Documentos"
-#path = 'E:/Usuario/Cliope/Documents'
 path = 'C:/Users/grhen/Documents'
 
 # Controles de la simulación
 tune_runner = True
 restore = False
-algorithm = 'PPO'
+algorithm = 'DQN'
 centralized_action_space = np.loadtxt(
-        path+'/GitHub/EP_RLlib/centralized_action_space.csv',
+        'evaluation/centralized_action_space.csv',
         delimiter=',',
         skiprows=1,
         dtype=int
@@ -32,27 +29,38 @@ centralized_action_space = np.loadtxt(
 ep_terminal_output = True # Esta variable indica si se imprimen o no las salidas de la simulación de EnergyPlus
 name = 'PPO_test_4'
 
-env_config = {
-    'sys_path': path,
-    'ep_terminal_output': ep_terminal_output,
-    'csv': False,
-    'output': TemporaryDirectory("output","DQN_",path+'/Resultados_RLforEP',"E:/tmp").name,
-    'epw': path+'/GitHub/EP_RLlib/EP_Wheater_Configuration/GEF/GEF_Lujan_de_cuyo-hour-H1.epw',
-    'idf': path+'/GitHub/EP_RLlib/EP_IDF_Configuration/Prototipo_1.epJSON',
-    'idf_folderpath': path+"/GitHub/EP_RLlib/EP_IDF_Configuration",
-    'idf_output_folder': path+"/models",
-    'climatic_stads': path+'/GitHub/EP_RLlib/EP_Wheater_Configuration',
-    'beta': 0.5, # Parámetro para ajustar las preferencias del usuario (valor entre 0 y 1)
-    'E_max': 2.5/6, # in epJSON file: maximum_total_cooling_capacity/1000 / number_of_timesteps_per_hour
-    'latitud':0,
-    'longitud':0,
-    'altitud':0,
-    'separate_state_space': True,
-    'one_hot_state_encoding': True,
-    'episode': -1,
+env_config={ 
+    'wheather_folder': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epw/GEF',
+    'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
+    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/EP_RLlib/epjson',
+    'epjson_output_folder': 'C:/Users/grhen/Documents/models',
+    # Configure the directories for the experiment.
+    'ep_terminal_output': False,
+    # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
+    'beta': 0.5,
+    # This parameter is used to balance between energy and comfort of the inhabitatns. A
+    # value equal to 0 give a no importance to comfort and a value equal to 1 give no importance 
+    # to energy consume. Mathematically is the reward: 
+    # r = - beta*normaliced_energy - (1-beta)*normalized_comfort
+    # The range of this value goes from 0.0 to 1.0.,
     'is_test': True,
-    'centralized_action_space':centralized_action_space,
-    'longitud_episodio': 31,
+    # For evaluation process 'is_test=True' and for trainig False.
+    'test_init_day': 1,
+    'action_space': gym.spaces.Discrete(4),
+    # action space for simple agent case
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (49,)),
+    # observation space for simple agent case
+    
+    # BUILDING CONFIGURATION
+    'building_name': '/prot_1.epJSON',
+    'volumen': 131.6565,
+    'window_area_relation_north': 0,
+    'window_area_relation_west': 0,
+    'window_area_relation_south': 0.0115243076,
+    'window_area_relation_east': 0.0276970753,
+    'episode_len': 7,
+    'rotation': 0,
+    
 }
 # se importan las políticas convencionales para la configuracion especificada
 checkpoint_path = "C:/Users/grhen/ray_results/VN_P1_S_0.5/PPO_4ee8f_00174_ASHA/checkpoint_000003"
@@ -60,8 +68,6 @@ checkpoint_path = "C:/Users/grhen/ray_results/VN_P1_S_0.5/PPO_4ee8f_00174_ASHA/c
 policy = Policy.from_checkpoint(checkpoint_path)
 # se inicia el entorno con la configuración especificada
 env = EnergyPlusEnv_v0(env_config)
-
-
 
 # open the file in the write mode
 data = open(path+'/ray_results/proposed_test/'+name+'.csv', 'w')
@@ -95,7 +101,6 @@ while not terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
         row.append(info_list[_])
     
     writer.writerow(row)
-    #pd.DataFrame([obs, reward, terminated, truncated, infos]).to_csv(path+'/ray_results/'+name+'.csv', mode="a", index=False, header=False)
     episode_reward += reward
 # close the file
 data.close()
