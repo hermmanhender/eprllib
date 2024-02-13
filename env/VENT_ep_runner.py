@@ -86,6 +86,7 @@ class EnergyPlusRunner:
         self.initialized = False
         self.init_handles = False
         self.simulation_complete = False
+        self.first_observation = True
         # Variables to be used in this thread.
 
         self.env_config = tools.epJSON_path(self.env_config)
@@ -139,23 +140,34 @@ class EnergyPlusRunner:
         # Configurate the episode.
         self.energyplus_state = api.state_manager.new_state()
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
+        
+        api.runtime.callback_begin_system_timestep_before_predictor(self.energyplus_state, self._collect_first_obs)
+        # Collect the first observation. This is execute only once at the begginig of the episode.
+        # The calling point called “BeginTimestepBeforePredictor” occurs near the beginning of each timestep
+        # but before the predictor executes. “Predictor” refers to the step in EnergyPlus modeling when the
+        # zone loads are calculated. This calling point is useful for controlling components that affect the
+        # thermal loads the HVAC systems will then attempt to meet. Programs called from this point
+        # might actuate internal gains based on current weather or on the results from the previous timestep.
+        # Demand management routines might use this calling point to reduce lighting or process loads,
+        # change thermostat settings, etc.
+        
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
+        # Execute the actions in the environment.
+        # The calling point called “BeginZoneTimestepAfterInitHeatBalance” occurs at the beginning of each
+        # timestep after “InitHeatBalance” executes and before “ManageSurfaceHeatBalance”. “InitHeatBalance” refers to the step in EnergyPlus modeling when the solar shading and daylighting coefficients
+        # are calculated. This calling point is useful for controlling components that affect the building envelope including surface constructions and window shades. Programs called from this point might
+        # actuate the building envelope or internal gains based on current weather or on the results from the
+        # previous timestep. Demand management routines might use this calling point to operate window
+        # shades, change active window constructions, etc. This calling point would be an appropriate place
+        # to modify weather data values.
+        
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
-        # Register callback used to collect the observations.
+        # Collect the observations after the action executions and use them to provide new actions.
         # The calling point called “EndOfZoneTimestepAfterZoneReporting” occurs at the end of a zone
         # timestep after output variable reporting is finalized. It is useful for preparing calculations that
         # will go into effect the next timestep. Its capabilities are similar to BeginTimestepBeforePredictor,
         # except that input data for current time, date, and weather data align with different timesteps.
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
-        # Register callback used to send actions.
-        # The calling point called “BeginZoneTimestepBeforeInitHeatBalance” occurs at the beginning of each
-        # timestep before “InitHeatBalance” executes but after the weather manager and exterior energy use
-        # manager. “InitHeatBalance” refers to the step in EnergyPlus modeling when the solar shading and
-        # daylighting coefficients are calculated. This calling point is useful for controlling components that
-        # affect the building envelope including surface constructions, window shades, and shading surfaces.
-        # Programs called from this point might actuate the building envelope or internal gains based on
-        # current weather or on the results from the previous timestep. Demand management routines might
-        # use this calling point to operate window shades, change active window constructions, activate
-        # exterior shades, etc.
+        
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
         # Control of the console printing process.
         def _run_energyplus():
@@ -292,6 +304,18 @@ class EnergyPlusRunner:
         self.obs_event.set()
         # Set the observation to communicate with queue.
 
+    def _collect_first_obs(self, state_argument):
+        """This method is used to collect only the first observation of the environment when the episode beggins.
+
+        Args:
+            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+        """
+        if self.first_observation:
+            self._collect_obs(state_argument)
+            self.first_observation = False
+        else:
+            return
+
     def _send_actions(self, state_argument):
         """EnergyPlus callback that sets actuator value from last decided action
         """
@@ -301,9 +325,7 @@ class EnergyPlusRunner:
             return
         
         self.act_event.wait(2)
-        # Wait for an action. In the first timestep there is no action because a first 
-        # observation is needed.
-        # TODO: Avoid this empty timestep creating an observation method for the first timestep.
+        # Wait for an action.
         if self.act_queue.empty():
             # Return in the first timestep.
             return
@@ -380,6 +402,7 @@ class EnergyPlusRunner:
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None
+        self.first_observation = True
         api.runtime.clear_callbacks()
         api.state_manager.delete_state(self.energyplus_state)  
 
