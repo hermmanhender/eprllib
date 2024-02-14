@@ -202,7 +202,7 @@ elif algorithm == 'DQN': # DQN Configuration
             # Float specifying the discount factor of the Markov Decision process.
             lr = 0.1 if not tune_runner else tune.uniform(0.001, 0.1),
             # The learning rate (float) or learning rate schedule
-            #grad_clip = 0.5 if not tune_runner else tune.uniform(0.5, 1.0), #float
+            grad_clip = 0.5 if not tune_runner else tune.uniform(0.5, 40.0), #float
             # If None, no gradient clipping will be applied. Otherwise, depending on the setting of grad_clip_by, the (float) 
             # value of grad_clip will have the following effect: If grad_clip_by=value: Will clip all computed gradients 
             # individually inside the interval [-grad_clip, +`grad_clip`]. If grad_clip_by=norm, will compute the L2-norm of 
@@ -214,7 +214,7 @@ elif algorithm == 'DQN': # DQN Configuration
             # gradients such that this global L2-norm does not exceed the given value. The global L2-norm over a list of tensors 
             # (e.g. W and V) is computed via: sqrt[SUM(w0^2, w1^2, ..., wn^2) + SUM(v0^2, v1^2, ..., vm^2)], where w[i] and v[j] 
             # are the elements of the tensors W and V (no matter what the shapes of these tensors are).
-            #grad_clip_by = 'global_norm', #str
+            grad_clip_by = 'global_norm', #str
             # See grad_clip for the effect of this setting on gradient clipping. Allowed values are value, norm, and global_norm.
             train_batch_size = 4 if not tune_runner else tune.choice([4, 8, 128, 256]),
             #  Training batch size, if applicable.
@@ -244,7 +244,7 @@ elif algorithm == 'DQN': # DQN Configuration
             # The Learner class to use for (distributed) updating of the RLModule. Only used when _enable_new_api_stack=True.
             
             # DQN Configs
-            num_atoms = 20, #if not tune_runner else tune.randint(1, 11), #int | rainbow setup [more than 1]
+            num_atoms = 40, #if not tune_runner else tune.randint(1, 11), #int | rainbow setup [more than 1]
             # Number of atoms for representing the distribution of return. When this is greater than 1, distributional Q-learning is used.
             v_min = -1, # if not tune_runner else tune.randint(-10, 0), #float | rainbow setup -10.0 (set v_min and v_max according to your expected range of returns)
             # Minimum value estimation
@@ -254,9 +254,9 @@ elif algorithm == 'DQN': # DQN Configuration
             # Whether to use noisy network to aid exploration. This adds parametric noise to the model weights.
             sigma0 = 0.669865090780873 if not tune_runner else tune.uniform(0, 1), #float
             #  Control the initial parameter noise for noisy nets.
-            dueling = False, #bool
+            dueling = True, #bool
             # Whether to use dueling DQN.
-            hiddens = [128], #int
+            hiddens = [512], #int
             # Dense-layer setup for each the advantage branch and the value branch in a dueling configuration
             double_q = True, #bool
             # Whether to use double DQN.
@@ -333,6 +333,7 @@ elif algorithm == 'DQN': # DQN Configuration
                 "epsilon_timesteps": 6*24*365*15,
             }
         )
+
 elif algorithm == 'SAC': # SAC Configuration
     algo = SACConfig().training(
             # General Algo Configs
@@ -490,7 +491,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "asha_1024p2x512_dueF_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
+    return "asha_1024p2x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
@@ -514,7 +515,7 @@ if not restore:
         ),
         run_config=air.RunConfig(
             name='VN_P1_Year_allWeathers_'+str(env_config['beta'])+'_'+str(algorithm),
-            stop={"episodes_total": 6*24*365*40},
+            #stop={"episodes_total": 6*24*365*40},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(

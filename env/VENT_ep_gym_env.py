@@ -58,6 +58,8 @@ class EnergyPlusEnv_v0(gym.Env):
         # queue for beta value communication between threads. Used in reward function.
         self.emax_queue: Optional[Queue] = None
         # queue for E_max value communication between threads. Used in reward function.
+        
+        self.truncate_flag = False
 
     def reset(
         self, *,
@@ -66,91 +68,99 @@ class EnergyPlusEnv_v0(gym.Env):
     ):
         self.episode += 1
         # Increment the counting of episodes in 1.
+        self.timestep = 0
         
-        if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
-            # Condition implemented to restart a new epsiode when simulation is completed and EnergyPlus Runner is already inicialized.
-            self.energyplus_runner.stop()
+        if not self.truncate_flag:
         
-        # If the EnergyPlus Runner is not inicialized is a new simulation run.
-        self.obs_queue = Queue(maxsize=1)
-        self.act_queue = Queue(maxsize=1)
-        self.cooling_queue = Queue(maxsize=1)
-        self.heating_queue = Queue(maxsize=1)
-        self.pmv_queue = Queue(maxsize=1)
-        self.ppd_queue = Queue(maxsize=1)
-        self.beta_queue = Queue(maxsize=1)
-        self.emax_queue = Queue(maxsize=1)
-        # Define the queues for flow control between threads in a max size of 1 because EnergyPlus 
-        # time step will be processed at a time.
+            if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
+                # Condition implemented to restart a new epsiode when simulation is completed and EnergyPlus Runner is already inicialized.
+                self.energyplus_runner.stop()
+            
+            # If the EnergyPlus Runner is not inicialized is a new simulation run.
+            self.obs_queue = Queue(maxsize=1)
+            self.act_queue = Queue(maxsize=1)
+            self.cooling_queue = Queue(maxsize=1)
+            self.heating_queue = Queue(maxsize=1)
+            self.pmv_queue = Queue(maxsize=1)
+            self.ppd_queue = Queue(maxsize=1)
+            self.beta_queue = Queue(maxsize=1)
+            self.emax_queue = Queue(maxsize=1)
+            # Define the queues for flow control between threads in a max size of 1 because EnergyPlus 
+            # time step will be processed at a time.
 
+            
+            self.energyplus_runner = EnergyPlusRunner(
+                # Start EnergyPlusRunner whith the following configuration.
+                episode=self.episode,
+                env_config=self.env_config,
+                obs_queue=self.obs_queue,
+                act_queue=self.act_queue,
+                cooling_queue=self.cooling_queue,
+                heating_queue=self.heating_queue,
+                pmv_queue = self.pmv_queue,
+                ppd_queue = self.ppd_queue,
+                beta_queue = self.beta_queue,
+                emax_queue = self.emax_queue
+            )
+            
+            self.energyplus_runner.start()
+            # Divide the thread in two in this point.
+            self.energyplus_runner.obs_event.wait()
+            # Wait untill an observation is made.
+            obs = self.obs_queue.get()
+            # Get the observation.
+            self.energyplus_runner.cooling_event.wait()
+            # Wait untill an cooling metric read is made.
+            ec = self.cooling_queue.get()
+            # Get the cooling metric read. It is not used here, but yes in the step method and it is necesary
+            # to liberate the space in teh queue.
+            self.energyplus_runner.heating_event.wait()
+            # Wait untill an heating metric read is made.
+            eh = self.heating_queue.get()
+            # Get the heating metric read. It is not used here, but yes in the step method and it is necesary
+            # to liberate the space in teh queue.
+            self.energyplus_runner.pmv_event.wait()
+            # Wait untill an PMV metric read is made.
+            pmv = self.pmv_queue.get()
+            # Get the PMV metric read. It is not used here, but yes in the step method and it is necesary
+            # to liberate the space in teh queue.
+            self.energyplus_runner.PPD_event.wait()
+            # Wait untill an PPD metric read is made.
+            ppd = self.ppd_queue.get()
+            # Get the PPD metric read. It is not used here, but yes in the step method and it is necesary
+            # to liberate the space in teh queue.
+            
+            self.energyplus_runner.beta_event.wait()
+            # Wait untill an beta value read is made.
+            beta = self.beta_queue.get()
+            # Get the beta value read. It is not used here, but yes in the step method and it is necesary
+            # to liberate the space in teh queue.
+            self.energyplus_runner.emax_event.wait()
+            # Wait untill an E_max value read is made.
+            emax = self.emax_queue.get()
+            # Get the E_max value read. It is not used here, but yes in the step method and it is necesary
+            # to liberate the space in teh queue.
+            
+            self.last_obs = obs
+            # Save the observation as a last observation.
+            self.last_beta = beta
+            # Save the beta as a last beta.
+            self.last_emax = emax
+            # Save the E_max as a last E_max.
         
-        self.energyplus_runner = EnergyPlusRunner(
-            # Start EnergyPlusRunner whith the following configuration.
-            episode=self.episode,
-            env_config=self.env_config,
-            obs_queue=self.obs_queue,
-            act_queue=self.act_queue,
-            cooling_queue=self.cooling_queue,
-            heating_queue=self.heating_queue,
-            pmv_queue = self.pmv_queue,
-            ppd_queue = self.ppd_queue,
-            beta_queue = self.beta_queue,
-            emax_queue = self.emax_queue
-        )
-        
-        self.energyplus_runner.start()
-        # Divide the thread in two in this point.
-        self.energyplus_runner.obs_event.wait()
-        # Wait untill an observation is made.
-        obs = self.obs_queue.get()
-        # Get the observation.
-        self.energyplus_runner.cooling_event.wait()
-        # Wait untill an cooling metric read is made.
-        ec = self.cooling_queue.get()
-        # Get the cooling metric read. It is not used here, but yes in the step method and it is necesary
-        # to liberate the space in teh queue.
-        self.energyplus_runner.heating_event.wait()
-        # Wait untill an heating metric read is made.
-        eh = self.heating_queue.get()
-        # Get the heating metric read. It is not used here, but yes in the step method and it is necesary
-        # to liberate the space in teh queue.
-        self.energyplus_runner.pmv_event.wait()
-        # Wait untill an PMV metric read is made.
-        pmv = self.pmv_queue.get()
-        # Get the PMV metric read. It is not used here, but yes in the step method and it is necesary
-        # to liberate the space in teh queue.
-        self.energyplus_runner.PPD_event.wait()
-        # Wait untill an PPD metric read is made.
-        ppd = self.ppd_queue.get()
-        # Get the PPD metric read. It is not used here, but yes in the step method and it is necesary
-        # to liberate the space in teh queue.
-        
-        self.energyplus_runner.beta_event.wait()
-        # Wait untill an beta value read is made.
-        beta = self.beta_queue.get()
-        # Get the beta value read. It is not used here, but yes in the step method and it is necesary
-        # to liberate the space in teh queue.
-        self.energyplus_runner.emax_event.wait()
-        # Wait untill an E_max value read is made.
-        emax = self.emax_queue.get()
-        # Get the E_max value read. It is not used here, but yes in the step method and it is necesary
-        # to liberate the space in teh queue.
-        
-        self.last_obs = obs
-        # Save the observation as a last observation.
-        self.last_beta = beta
-        # Save the beta as a last beta.
-        self.last_emax = emax
-        # Save the E_max as a last E_max.
-        
+        else:
+            obs = self.last_obs
+            self.truncate_flag = False
+            
         return obs, {}
 
     def step(self, action):
+        self.timestep += 1
         terminated = False
         truncated = False
         # terminated variable is used to determine the end of a episode. Is stablished as False until the
         # environment present a terminal state.
-        timeout = 4
+        timeout = 40
         # timeout is set to 4s to handle end of simulation cases, which happens async
         # and materializes by worker thread waiting on this queue (EnergyPlus callback
         # not consuming yet/anymore).timeout value can be increased if E+ timestep takes longer.
@@ -209,7 +219,9 @@ class EnergyPlusEnv_v0(gym.Env):
             'ppd': ppd,
         }
         # Save energy, comfort (pmv) and ppd in the info dictionary, used after for analisys
-
+        
+        truncated = self.timestep_cut(6*24*5, terminated)
+        
         return obs, reward, terminated, truncated, infos
 
     def close(self):
@@ -219,6 +231,14 @@ class EnergyPlusEnv_v0(gym.Env):
     def render(self, mode="human"):
         pass
 
+    def timestep_cut(self, num_timestep: int, terminated: bool):
+        if self.timestep >= num_timestep and not terminated:
+            self.truncate_flag = True
+            return True
+        else:
+            self.truncate_flag = False
+            return False
+    
     def _compute_reward(self, beta: float, E_max: float) -> float:
         """Method for compute reward but also to calculate the energy consume and the comfort variables
         in a Fanger Model: PMV and PPD

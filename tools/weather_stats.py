@@ -204,7 +204,7 @@ class Probabilities():
         
     def agregar_primeras_10_filas(self):
         # Obtener las primeras 10 filas del DataFrame
-        primeras_10_filas = self.weather_file.head(10)
+        primeras_10_filas = self.weather_file.head(240)
         # Agregar las primeras 10 filas al DataFrame original
         self.weather_file = pd.concat([self.weather_file, primeras_10_filas], ignore_index=True)
         self.ten_rows_added = True
@@ -215,7 +215,7 @@ class Probabilities():
         
         # Calcular el día juliano para cada fila del DataFrame
         if self.ten_rows_added:
-            dias_julianos = ((self.weather_file.index % 9000) // 24 + 1)
+            dias_julianos = ((self.weather_file.index % 9240) // 24 + 1)
         else:
             dias_julianos = (self.weather_file.index % 8760) // 24 + 1
         # Verificar si el día juliano está dentro del rango deseado

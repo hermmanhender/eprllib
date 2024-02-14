@@ -291,7 +291,7 @@ class EnergyPlusRunner:
             # warming period are not complete.
             return
         
-        self.act_event.wait(2)
+        self.act_event.wait(20)
         # Wait for an action.
         if self.act_queue.empty():
             # Return in the first timestep.
