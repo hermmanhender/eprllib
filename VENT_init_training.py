@@ -514,7 +514,7 @@ if not restore:
         ),
         run_config=air.RunConfig(
             name='VN_P1_Year_allWeathers_'+str(env_config['beta'])+'_'+str(algorithm),
-            stop={"episodes_total": 365*40},
+            stop={"episodes_total": 6*24*365*40},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(

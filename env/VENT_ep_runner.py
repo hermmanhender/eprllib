@@ -88,8 +88,6 @@ class EnergyPlusRunner:
         self.init_handles = False
         self.simulation_complete = False
         self.first_observation = True
-        self.last_simulation_day = 1
-        self.episode_flag_termination = False
         # Variables to be used in this thread.
 
         self.env_config = tools.epJSON_path(self.env_config)
@@ -176,6 +174,7 @@ class EnergyPlusRunner:
         
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
         # Control of the console printing process.
+        
         def _run_energyplus():
             """Run EnergyPlus in a non-blocking way with Threads.
             """
@@ -271,11 +270,6 @@ class EnergyPlusRunner:
         self.obs_queue.put(self.next_obs)
         self.obs_event.set()
         # Set the observation to communicate with queue.
-        
-        if simulation_day != self.last_simulation_day:
-            self.episode_flag_termination = True
-        else:
-            self.last_simulation_day = simulation_day
 
     def _collect_first_obs(self, state_argument):
         """This method is used to collect only the first observation of the environment when the episode beggins.
