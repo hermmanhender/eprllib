@@ -199,55 +199,82 @@ class Probabilities():
                 header = None,
                 skiprows = 8
             )
+            # Reading the weather epw file.
         self.ten_rows_added = False
-        self.agregar_primeras_10_filas()
+        # Flag to be sure about the run of the next line.
+        self.complement_10_days()
         
-    def agregar_primeras_10_filas(self):
-        # Obtener las primeras 10 filas del DataFrame
+    def complement_10_days(self):
+        """This method add rows to complement the predictions of the entire year of then days after the December 31th using the first 
+        ten days of the year. For that, 240 rows are added because each day has 24 hours.
+        """
         primeras_10_filas = self.weather_file.head(240)
-        # Agregar las primeras 10 filas al DataFrame original
+        # Obtain the first 240 rows of the weather file.
         self.weather_file = pd.concat([self.weather_file, primeras_10_filas], ignore_index=True)
+        # Add the rows to the same weather file.
         self.ten_rows_added = True
+        # Put this flag in True mode.
 
 
     # Paso 1: Filtrar los datos para el día juliano dado y los próximos 9 días
-    def filtrar_por_dia_juliano(self, dia_juliano):
-        
-        # Calcular el día juliano para cada fila del DataFrame
+    def julian_day_filter(self, dia_juliano: int):
+        """This method implement a filter of the weather data based on the julian day `n` and create a NDarray with booleans with
+        True values in the data filtered from `[n, n+10]` bouth inclusive.
+
+        Args:
+            dia_juliano (int): First julian day of the range filtered.
+
+        Returns:
+            np_ndarray_bool
+        """
         if self.ten_rows_added:
+            # The julian day of each row is calculated for a extended list with 10 days more.
             dias_julianos = ((self.weather_file.index % 9240) // 24 + 1)
         else:
+            # The julian day of each row is calculated for a not extended.
             dias_julianos = (self.weather_file.index % 8760) // 24 + 1
-        # Verificar si el día juliano está dentro del rango deseado
+        # Check if the Julian day is within the desired range and return
         return dias_julianos.isin(range(dia_juliano, dia_juliano + 10))
 
-    def ten_days_predictions(self, julian_day:int):
-        interest_variables = [6, 8, 20, 21, 22, 33]
-        # 0'Year', 1'Month', 2'Day', 3'Hour', 4'Minutes', 5'Data Source and Uncertainty Flags', 
-        # 6'Dry Bulb Temperature', 7'Dew Point Temperature', 8'Relative Humidity', 
-        # 9'Atmospheric Station Pressure', 10'Extraterrestrial Horizontal Radiation', 
-        # 11'Extraterrestrial Direct Normal Radiation', 12'Horizontal Infrared Radiation Intensity', 
-        # 13'Global Horizontal Radiation', 14'Direct Normal Radiation', 15'Diffuse Horizontal Radiation', 
-        # 16'Global Horizontal Illuminance', 17'Direct Normal Illuminance', 18'Diffuse Horizontal Illuminance', 
-        # 19'Zenith Luminance', 20'Wind Direction', 21'Wind Speed', 22'Total Sky Cover', 23'Opaque Sky Cover', 
-        # 24'Visibility', 25'Ceiling Height', 26'Present Weather Observation', 27'Present Weather Codes', 
-        # 28'Precipitable Water', 29'Aerosol Optical Depth', 30'Snow Depth', 31'Days Since Last Snowfall', 
-        # 32'Albedo', 33'Liquid Precipitation Depth', 34'Liquid Precipitation Quantity',
-        datos_filtrados: DataFrame = self.weather_file[self.filtrar_por_dia_juliano(julian_day)][interest_variables]
-        lista_de_datos: list = datos_filtrados.values.tolist()
-        lista_final = []
-        for e in range(len(lista_de_datos)):
-            for v in lista_de_datos[e]:
-                lista_final.append(v)
+    def ten_days_predictions(self, julian_day: int):
+        """This method calculate the probabilies of six variables list bellow with a normal probability based on the desviation 
+        of the variable.
         
-        desviacion = [1, 10, 20, 0.5, 10, 0.2]
+            Dry Bulb Temperature in °C with desviation of 1 °C, 
+            Relative Humidity in % with desviation of 10%, 
+            Wind Direction in degree with desviation of 20°, 
+            Wind Speed in m/s with desviation of 0.5 m/s, 
+            Total Sky in % Cover with desviation of 10%, 
+            Liquid Precipitation Depth in mm with desviation of 0.2 mm.
+
+        Args:
+            julian_day (int): First julian day of the range of ten days predictions.
+
+        Returns:
+            NDArray: Array with the ten days predictions. The size of the array is a sigle shape with 1440 values.
+        """
+        interest_variables = [6, 8, 20, 21, 22, 33]
+        # This corresponds with the epw file order.
+        filtered_data: DataFrame = self.weather_file[self.julian_day_filter(julian_day)][interest_variables]
+        # Filter the data whith the julian day of interes and ten days ahead.
+        data_list: list = filtered_data.values.tolist()
+        # Transform the DataFrame into a list. This list contain a list for each hour, but as an observation of a single shape in
+        # the RLlib configuration, the list is transform into a new one with only a shape.
+        single_shape_list = []
+        for e in range(len(data_list)):
+            for v in data_list[e]:
+                single_shape_list.append(v)
+                # append each value of each day and hour in a consecutive way in the empty list.
+        desviation = [1, 10, 20, 0.5, 10, 0.2]
+        # Assignation of the desviation for each variable, in order with the epw variables consulted.
         prob_index = 0
-        for e in range(len(lista_final)):
-            lista_final[e] = np.random.normal(lista_final[e], desviacion[prob_index])
-            if prob_index == (len(desviacion)-1):
+        for e in range(len(single_shape_list)):
+            single_shape_list[e] = np.random.normal(single_shape_list[e], desviation[prob_index])
+            if prob_index == (len(desviation)-1):
                 prob_index = 0 
             else:
                 prob_index += 1
         
-        array_final = np.array(lista_final)
-        return array_final
+        predictions = np.array(single_shape_list)
+        # The prediction list is transformed in a Numpy Array to concatenate after with the rest of the observation variables.
+        return predictions

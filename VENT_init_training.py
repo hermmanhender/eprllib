@@ -66,7 +66,7 @@ tune_runner  = True
 # Define if the experiment tuning the variables or execute a unique configuration.
 restore = False
 # To define if is necesary to restore or not a previous experiment. Is necesary to stablish a 'restore_path'.
-restore_path = ''
+restore_path = 'C:/Users/grhen/ray_results/VN_P1_Year_allWeathers_0.5_DQN'
 # Path to the folder where the experiment is located.
 env_config={ 
     'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
@@ -330,7 +330,7 @@ elif algorithm == 'DQN': # DQN Configuration
                 "type": "EpsilonGreedy",
                 "initial_epsilon": 1.0,
                 "final_epsilon": 0.01,
-                "epsilon_timesteps": 6*24*365*15,
+                "epsilon_timesteps": 6*24*365*5,
             }
         )
 
@@ -509,18 +509,18 @@ if not restore:
             #search_alg = BayesOptSearch(),
             # Search algorithm
             
-            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*40, grace_period=6*24*365*15),
+            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*10, grace_period=6*24*365*6),
             # Scheduler algorithm
             
         ),
         run_config=air.RunConfig(
-            name='VN_P1_Year_allWeathers_'+str(env_config['beta'])+'_'+str(algorithm),
-            #stop={"episodes_total": 6*24*365*40},
+            name='VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
+            #stop={"episodes_total": 6*24*365*10},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_at_end = True,
-                checkpoint_frequency = 20,
+                checkpoint_frequency = 40,
                 #num_to_keep = 20
             ),
             failure_config=air.FailureConfig(
