@@ -6,7 +6,7 @@ This script contain the EnergyPlus Runner that execute EnergyPlus from its Pytho
 
 import os
 import sys
-from tools import tools, weather_stats
+from tools import ep_episode_config, devices_space_action as dsa, weather_utils
 import threading
 import numpy as np
 from queue import Queue
@@ -76,7 +76,7 @@ class EnergyPlusRunner:
         self.cooling_event = threading.Event()
         self.heating_event = threading.Event()
         self.pmv_event = threading.Event()
-        self.PPD_event = threading.Event()
+        self.ppd_event = threading.Event()
         self.beta_event = threading.Event()
         self.emax_event = threading.Event()
         # The queue events are generated.
@@ -90,7 +90,7 @@ class EnergyPlusRunner:
         self.first_observation = True
         # Variables to be used in this thread.
 
-        self.env_config = tools.epJSON_path(self.env_config)
+        self.env_config = ep_episode_config.epJSON_path(self.env_config)
         # The path for the epjson file is defined.
         
         self.variables = {
@@ -136,10 +136,10 @@ class EnergyPlusRunner:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
         established and the thread is generated here.
         """
-        self.env_config = tools.episode_epJSON(self.env_config)
+        self.env_config = ep_episode_config.episode_epJSON(self.env_config)
         # Configurate the episode.
         
-        self.weather_stats = weather_stats.Probabilities(self.env_config)
+        self.weather_stats = weather_utils.Probabilities(self.env_config)
         # Specify the weather statisitical file.
         
         self.energyplus_state = api.state_manager.new_state()
@@ -253,7 +253,7 @@ class EnergyPlusRunner:
         self.pmv_queue.put(obs["Fanger_PMV"])
         self.pmv_event.set()
         self.ppd_queue.put(obs["Fanger_PPD"])
-        self.PPD_event.set()
+        self.ppd_event.set()
         # Set the variables to communicate with queue before to delete the following.
         
         del obs["T_rad"]
@@ -302,7 +302,7 @@ class EnergyPlusRunner:
         # In the case of simple agent a int value and for multiagents a dictionary.
         # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
         # ventilation, shadow control or a integrate control.
-        next_action = tools.natural_ventilation_action(next_central_action)
+        next_action = dsa.natural_ventilation_action(next_central_action)
         # Transform the centraliced action into a list of descentraliced actions.
         
         api.exchange.set_actuator_value(

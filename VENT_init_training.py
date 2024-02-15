@@ -91,7 +91,7 @@ env_config={
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
-    'building_name': '/prot_1',
+    'building_name': 'prot_1',
     'volumen': 131.6565,
     'window_area_relation_north': 0,
     'window_area_relation_west': 0,
@@ -198,80 +198,26 @@ if algorithm == 'PPO': # PPO Configuration
 elif algorithm == 'DQN': # DQN Configuration
     algo = DQNConfig().training(
             # General Algo Configs
-            gamma = 0.7437701584682349 if not tune_runner else tune.uniform(0.7, 0.99),
-            # Float specifying the discount factor of the Markov Decision process.
+            gamma = 0.7 if not tune_runner else tune.uniform(0.7, 0.99),
             lr = 0.1 if not tune_runner else tune.uniform(0.001, 0.1),
-            # The learning rate (float) or learning rate schedule
-            grad_clip = 0.5 if not tune_runner else tune.uniform(0.5, 40.0), #float
-            # If None, no gradient clipping will be applied. Otherwise, depending on the setting of grad_clip_by, the (float) 
-            # value of grad_clip will have the following effect: If grad_clip_by=value: Will clip all computed gradients 
-            # individually inside the interval [-grad_clip, +`grad_clip`]. If grad_clip_by=norm, will compute the L2-norm of 
-            # each weight/bias gradient tensor individually and then clip all gradients such that these L2-norms do not exceed 
-            # grad_clip. The L2-norm of a tensor is computed via: sqrt(SUM(w0^2, w1^2, ..., wn^2)) where w[i] are the elements 
-            # of the tensor (no matter what the shape of this tensor is). If grad_clip_by=global_norm, will compute the square 
-            # of the L2-norm of each weight/bias gradient tensor individually, sum up all these squared L2-norms across all 
-            # given gradient tensors (e.g. the entire module to be updated), square root that overall sum, and then clip all 
-            # gradients such that this global L2-norm does not exceed the given value. The global L2-norm over a list of tensors 
-            # (e.g. W and V) is computed via: sqrt[SUM(w0^2, w1^2, ..., wn^2) + SUM(v0^2, v1^2, ..., vm^2)], where w[i] and v[j] 
-            # are the elements of the tensors W and V (no matter what the shapes of these tensors are).
-            grad_clip_by = 'global_norm', #str
-            # See grad_clip for the effect of this setting on gradient clipping. Allowed values are value, norm, and global_norm.
+            grad_clip = 0.5 if not tune_runner else tune.uniform(0.5, 40.0),
+            grad_clip_by = 'global_norm',
             train_batch_size = 4 if not tune_runner else tune.choice([4, 8, 128, 256]),
-            #  Training batch size, if applicable.
             model = {
-                # === Built-in options ===
-                # FullyConnectedNetwork (tf and torch): rllib.models.tf|torch.fcnet.py
-                # These are used if no custom model is specified and the input space is 1D.
-                "fcnet_hiddens": [1024,512,512],
-                # Number of hidden layers to be used.
-                "fcnet_activation": "linear" if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
-                # Activation function descriptor.
-                # Supported values are: "tanh", "relu", "swish" (or "silu", which is the same), "linear" (or None).
+                "fcnet_hiddens": [1024,512,512,512],
+                "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
                 },
-            # Arguments passed into the policy model. See models/catalog.py for a full list of the 
-            # available model options.
-            optimizer = {}, #dict
-            # Arguments to pass to the policy optimizer. This setting is not used when _enable_new_api_stack=True.
-            #max_requests_in_flight_per_sampler_worker = None, #int
-            # Max number of inflight requests to each sampling worker. See the FaultTolerantActorManager class for more details. 
-            # Tuning these values is important when running experimens with large sample batches, where there is the risk that 
-            # the object store may fill up, causing spilling of objects to disk. This can cause any asynchronous requests to 
-            # become very slow, making your experiment run slow as well. You can inspect the object store during your experiment 
-            # via a call to ray memory on your headnode, and by using the ray dashboard. If you’re seeing that the object store 
-            # is filling up, turn down the number of remote requests in flight, or enable compression in your experiment of 
-            # timesteps.
-            #learner_class = None,
-            # The Learner class to use for (distributed) updating of the RLModule. Only used when _enable_new_api_stack=True.
-            
+            optimizer = {},
             # DQN Configs
-            num_atoms = 40, #if not tune_runner else tune.randint(1, 11), #int | rainbow setup [more than 1]
-            # Number of atoms for representing the distribution of return. When this is greater than 1, distributional Q-learning is used.
-            v_min = -1, # if not tune_runner else tune.randint(-10, 0), #float | rainbow setup -10.0 (set v_min and v_max according to your expected range of returns)
-            # Minimum value estimation
-            v_max = 0, # if not tune_runner else tune.randint(1, 11), #float | rainbow setup 10.0 (set v_min and v_max according to your expected range of returns)
-            # Maximum value estimation
-            noisy = True, #bool | rainbow setup True
-            # Whether to use noisy network to aid exploration. This adds parametric noise to the model weights.
-            sigma0 = 0.669865090780873 if not tune_runner else tune.uniform(0, 1), #float
-            #  Control the initial parameter noise for noisy nets.
-            dueling = True, #bool
-            # Whether to use dueling DQN.
-            hiddens = [512], #int
-            # Dense-layer setup for each the advantage branch and the value branch in a dueling configuration
-            double_q = True, #bool
-            # Whether to use double DQN.
-            n_step = 10, # if not tune_runner else tune.randint(1, 11), #int | rainbow setup [between 1 and 10]
-            # N-step for Q-learning.
-            #before_learn_on_batch = ,
-            # Callback to run before learning on a multi-agent batch of experiences.
-            #training_intensity = None, #float
-            # The intensity with which to update the model (vs collecting samples from the env). If None, uses “natural” values 
-            # of: train_batch_size / (rollout_fragment_length x num_workers x num_envs_per_worker). If not None, will make sure 
-            # that the ratio between timesteps inserted into and sampled from the buffer matches the given values. Example: 
-            # training_intensity=1000.0 train_batch_size=250 rollout_fragment_length=1 num_workers=1 (or 0) 
-            # num_envs_per_worker=1 -> natural value = 250 / 1 = 250.0 -> will make sure that replay+train op will be executed 
-            # 4x asoften as rollout+insert op (4 * 250 = 1000). See: rllib/algorithms/dqn/dqn.py::calculate_rr_weights for 
-            # further details.
+            num_atoms = 40,
+            v_min = -1,
+            v_max = 0,
+            noisy = True,
+            sigma0 = 0.66 if not tune_runner else tune.uniform(0, 1),
+            dueling = True,
+            hiddens = [512],
+            double_q = True,
+            n_step = 24,
             replay_buffer_config = {
                 '_enable_replay_buffer_api': True,
                 'type': 'MultiAgentPrioritizedReplayBuffer',
@@ -281,24 +227,7 @@ elif algorithm == 'DQN': # DQN Configuration
                 'prioritized_replay_eps': 1e-6,
                 'replay_sequence_length': 1,
                 },
-            # Replay buffer config. Examples: { “_enable_replay_buffer_api”: True, “type”: “MultiAgentReplayBuffer”, 
-            # “capacity”: 50000, “replay_sequence_length”: 1, } - OR - { “_enable_replay_buffer_api”: True, “type”: 
-            # “MultiAgentPrioritizedReplayBuffer”, “capacity”: 50000, “prioritized_replay_alpha”: 0.6, 
-            # “prioritized_replay_beta”: 0.4, “prioritized_replay_eps”: 1e-6, “replay_sequence_length”: 1, } - Where - 
-            # prioritized_replay_alpha: Alpha parameter controls the degree of prioritization in the buffer. In other words, 
-            # when a buffer sample has a higher temporal-difference error, with how much more probability should it drawn to 
-            # use to update the parametrized Q-network. 0.0 corresponds to uniform probability. Setting much above 1.0 may 
-            # quickly result as the sampling distribution could become heavily “pointy” with low entropy. 
-            # prioritized_replay_beta: Beta parameter controls the degree of importance sampling which suppresses the influence of 
-            # gradient updates from samples that have higher probability of being sampled via alpha parameter and the 
-            # temporal-difference error. prioritized_replay_eps: Epsilon parameter sets the baseline probability for sampling 
-            # so that when the temporal-difference error of a sample is zero, there is still a chance of drawing the sample.
-            #td_error_loss_fn = None, #str
-            # “huber” or “mse”. loss function for calculating TD error when num_atoms is 1. Note that if num_atoms is > 1, this 
-            # parameter is simply ignored, and softmax cross entropy loss will be used.
-            categorical_distribution_temperature = 0.5 if not tune_runner else tune.uniform(0, 1), #float
-            # Set the temperature parameter used by Categorical action distribution. A valid temperature is in the range of [0, 1]. 
-            # Note that this mostly affects evaluation since TD error uses argmax for return calculation.
+            categorical_distribution_temperature = 0.5 if not tune_runner else tune.uniform(0, 1),
         ).environment(
             env="EPEnv",
             env_config=env_config,
@@ -328,9 +257,9 @@ elif algorithm == 'DQN': # DQN Configuration
     algo.exploration(
         exploration_config={
                 "type": "EpsilonGreedy",
-                "initial_epsilon": 1.0,
-                "final_epsilon": 0.01,
-                "epsilon_timesteps": 6*24*365*5,
+                "initial_epsilon": 1.,
+                "final_epsilon": 0.,
+                "epsilon_timesteps": 6*24*365*2,
             }
         )
 
@@ -509,7 +438,7 @@ if not restore:
             #search_alg = BayesOptSearch(),
             # Search algorithm
             
-            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*10, grace_period=6*24*365*6),
+            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*3, grace_period=6*24*365),
             # Scheduler algorithm
             
         ),

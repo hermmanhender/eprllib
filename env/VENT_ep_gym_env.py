@@ -124,7 +124,7 @@ class EnergyPlusEnv_v0(gym.Env):
             pmv = self.pmv_queue.get()
             # Get the PMV metric read. It is not used here, but yes in the step method and it is necesary
             # to liberate the space in teh queue.
-            self.energyplus_runner.PPD_event.wait()
+            self.energyplus_runner.ppd_event.wait()
             # Wait untill an PPD metric read is made.
             ppd = self.ppd_queue.get()
             # Get the PPD metric read. It is not used here, but yes in the step method and it is necesary
@@ -272,7 +272,7 @@ class EnergyPlusEnv_v0(gym.Env):
             raise Exception("Faulty episode")
         pmv = self.pmv_queue.get()
         # Wait for the pmv factor in the timestep
-        self.energyplus_runner.PPD_event.wait(10)
+        self.energyplus_runner.ppd_event.wait(10)
         if self.energyplus_runner.failed():
             raise Exception("Faulty episode")
         ppd = self.ppd_queue.get()
