@@ -3,7 +3,7 @@ import pandas as pd
 from pandas.core.frame import DataFrame
 import numpy as np
 
-def weather_file(env_config: dict, weather_choice:int = np.random.randint(0,24)):
+def weather_file(env_config: dict, weather_choice:int = np.random.randint(0,3)):
     """_summary_
 
     Args:
@@ -17,32 +17,9 @@ def weather_file(env_config: dict, weather_choice:int = np.random.randint(0,24))
     # clima aleatorio
     if not env_config['is_test']:
         weather_path = [
-            ['GEF_Formosa-hour-H1',-26.0,-58.2,64],
             ['GEF_Lujan_de_cuyo-hour-H1',-32.985,-68.93,1043],
-            ['GEF_Rawson-hour-H1',-43.300,-65.075,6],
-            ['GEF_Salta-hour-H1',-24.770,-65.470,1280],
-            ['GEF_San_Miguel_de_Tucuman-hour-H1',-26.839,-65.209,435],
-            ['GEF_San_Nicolas_de_los_Arroyos-hour-H1',-33.362,-60.245,29],
-            ['GEF_Ushuaia-hour-H1',-54.800,-68.317,14],
-            ['GEF_Zapalla-hour-H1',-38.871,-70.112,1051],
-            
-            ['GEF_Formosa-hour-H2',-26.0,-58.2,64],
             ['GEF_Lujan_de_cuyo-hour-H2',-32.985,-68.93,1043],
-            ['GEF_Rawson-hour-H2',-43.300,-65.075,6],
-            ['GEF_Salta-hour-H2',-24.770,-65.470,1280],
-            ['GEF_San_Miguel_de_Tucuman-hour-H2',-26.839,-65.209,435],
-            ['GEF_San_Nicolas_de_los_Arroyos-hour-H2',-33.362,-60.245,29],
-            ['GEF_Ushuaia-hour-H2',-54.800,-68.317,14],
-            ['GEF_Zapalla-hour-H2',-38.871,-70.112,1051],
-            
-            ['GEF_Formosa-hour-H3',-26.0,-58.2,64],
             ['GEF_Lujan_de_cuyo-hour-H3',-32.985,-68.93,1043],
-            ['GEF_Rawson-hour-H3',-43.300,-65.075,6],
-            ['GEF_Salta-hour-H3',-24.770,-65.470,1280],
-            ['GEF_San_Miguel_de_Tucuman-hour-H3',-26.839,-65.209,435],
-            ['GEF_San_Nicolas_de_los_Arroyos-hour-H3',-33.362,-60.245,29],
-            ['GEF_Ushuaia-hour-H3',-54.800,-68.317,14],
-            ['GEF_Zapalla-hour-H3',-38.871,-70.112,1051],
         ]
         
         latitud = weather_path[weather_choice][1]

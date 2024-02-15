@@ -8,6 +8,13 @@ Buildings have proven to be one of the energy sinks in recent decades. Both the 
 
 The repository is ordned to be easy to read and to develope.
 
+The **`agents`** folder is where the building models are allocated.
+```
+-> agents
+    -> conventional.py
+    -> user.py
+```
+
 In the **`env`** folder there are alocated two files, the RLlib implementation for EnergyPlus and the
 EnergyPlus Runner implementation of EnergyPlus Python API. This two scripts are executed in two threads 
 to allow the simulation of the NREL software in a reinforcement learning way.
@@ -27,29 +34,25 @@ The **`epw`** folder is where the weather file and the statistical of the respec
     -> wheather_file.epw
     -> wheather_stats.pkl
 ```
-The **`evaluation`** folder...
-```
--> evaluation
-    -> init_conventional.py
-    -> init_evaluation.py
-```
 The **`postprocess`** folder...
 ```
 -> postprocess
     -> postprocess_file.ipynb
 ```
-The **`preprocess`** folder...
-```
--> preprocess
-    ->clima_stads.ipynb
-```
 The **`tools`** folder...
 ```
 -> tools
-    -> tools.py
+    -> devices_space_action.py
+    -> ep_episode_config.py
+    -> weather_utils.py
 ```
-Finally we have a **`init_training.py`** script in the main repository that is used to configurate the 
-experiment to be running.
+Finally we have three scripts in the main repository that are used to configurate the 
+experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
+
+-> init_training.py
+-> init_conventional.py
+-> init_evaluation.py
+-> centralized_action_space.csv
 
 ### Conventional controls
 
