@@ -1,4 +1,4 @@
-"""# TOOLS FOR THE PROJECT
+"""Utilities and methods to configurate the execution of the episode in EnergyPlus with RLlib.
 """
 import numpy as np
 import os
@@ -38,7 +38,7 @@ def episode_epJSON(env_config: dict):
         epJSON_object["InternalMass"][key]["surface_area"] = np.random.randint(10,40) if not env_config['is_test'] else 15
         # The internal thermal mass is modified.
     
-    env_config['inercial_mass'] = masa_inercial(epJSON_object)
+    env_config['inercial_mass'] = inertial_mass(epJSON_object)
     # The total inertial thermal mass is calculated.
     
     env_config['E_max'] = (0.5+(0.5 - 0.08)*np.random.random_sample()) if not env_config['is_test'] else 2.5/6
@@ -71,7 +71,7 @@ def epJSON_path(env_config: dict):
     env_config['epjson'] = env_config['epjson_folderpath']+'/'+env_config['building_name']+'.epjson'
     return env_config
 
-def masa_inercial(epJSON_object: dict[str,dict]):
+def inertial_mass(epJSON_object: dict[str,dict]):
     """_summary_
 
     Args:
@@ -103,7 +103,7 @@ def masa_inercial(epJSON_object: dict[str,dict]):
     # lazo para consultar cada superficie de la envolvente
     for surface in building_surfaces:
         # se calcula el área de la superficie
-        area = calculo_area_material(epJSON_object,surface)
+        area = material_area(epJSON_object,surface)
         # se identifica la consutrucción
         s_construction = epJSON_object['BuildingSurface:Detailed'][surface]['construction_name']
         
@@ -205,7 +205,7 @@ def u_factor(epJSON_object: dict[str,dict]):
     # lazo para consultar cada superficie de la envolvente
     for surface in building_surfaces:
         # se calcula el área de la superficie
-        areas.append(calculo_area_material(epJSON_object,surface))
+        areas.append(material_area(epJSON_object,surface))
         # se identifica la consutrucción
         s_construction = epJSON_object['BuildingSurface:Detailed'][surface]['construction_name']
         # se establece un lazo para calcular la resistencia de cada capa
@@ -249,7 +249,7 @@ def u_factor(epJSON_object: dict[str,dict]):
     # lazo para consultar cada superfice de fenestración
     for fenestration in fenestration_surfaces:
         # se calcula el área de la superficie
-        areas.append(calculo_area_fenestracion(epJSON_object, fenestration))
+        areas.append(fenestration_area(epJSON_object, fenestration))
         # se identifica la consutrucción
         s_construction = epJSON_object['FenestrationSurface:Detailed'][fenestration]['construction_name']
         # se establece un lazo para calcular la resistencia de cada capa
@@ -297,7 +297,7 @@ def u_factor(epJSON_object: dict[str,dict]):
     
     return u_factor
 
-def calculo_area_material(epJSON_object, nombre_superficie):
+def material_area(epJSON_object, nombre_superficie):
     """_summary_
 
     Args:
@@ -330,7 +330,7 @@ def calculo_area_material(epJSON_object, nombre_superficie):
     area = 0.5 * (abs(producto_vectorial[0]) + abs(producto_vectorial[1]) + abs(producto_vectorial[2]))
     return area
 
-def calculo_area_fenestracion(epJSON_object, fenestration):
+def fenestration_area(epJSON_object, fenestration):
     """_summary_
 
     Args:

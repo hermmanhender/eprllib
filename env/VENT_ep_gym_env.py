@@ -220,7 +220,7 @@ class EnergyPlusEnv_v0(gym.Env):
         }
         # Save energy, comfort (pmv) and ppd in the info dictionary, used after for analisys
         
-        truncated = self.timestep_cut(6*24*5, terminated)
+        #truncated = self.timestep_cut(6*24*5, terminated)
         
         return obs, reward, terminated, truncated, infos
 

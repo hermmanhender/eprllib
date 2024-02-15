@@ -199,10 +199,10 @@ elif algorithm == 'DQN': # DQN Configuration
     algo = DQNConfig().training(
             # General Algo Configs
             gamma = 0.7 if not tune_runner else tune.uniform(0.7, 0.99),
-            lr = 0.1 if not tune_runner else tune.uniform(0.001, 0.1),
+            lr = 0.1 if not tune_runner else tune.uniform(0.001, 0.3),
             grad_clip = 0.5 if not tune_runner else tune.uniform(0.5, 40.0),
             grad_clip_by = 'global_norm',
-            train_batch_size = 4 if not tune_runner else tune.choice([4, 8, 128, 256]),
+            train_batch_size = 8,# if not tune_runner else tune.choice([4, 8, 128, 256]),
             model = {
                 "fcnet_hiddens": [1024,512,512,512],
                 "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
@@ -237,7 +237,7 @@ elif algorithm == 'DQN': # DQN Configuration
             recreate_failed_workers = True,
             restart_failed_sub_environments=False,
         ).rollouts(
-            num_rollout_workers = 0,
+            num_rollout_workers = 1,
             create_env_on_local_worker=True,
             rollout_fragment_length = 'auto',
             enable_connectors = True,
@@ -259,7 +259,7 @@ elif algorithm == 'DQN': # DQN Configuration
                 "type": "EpsilonGreedy",
                 "initial_epsilon": 1.,
                 "final_epsilon": 0.,
-                "epsilon_timesteps": 6*24*365*2,
+                "epsilon_timesteps": 6*24*365*4,
             }
         )
 
@@ -435,16 +435,16 @@ if not restore:
             trial_dirname_creator=trial_str_creator,
             
             #search_alg = Repeater(BayesOptSearch(),repeat=10),
-            #search_alg = BayesOptSearch(),
+            search_alg = BayesOptSearch(),
             # Search algorithm
             
-            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*3, grace_period=6*24*365),
+            #scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*3, grace_period=6*24*365),
             # Scheduler algorithm
             
         ),
         run_config=air.RunConfig(
-            name='VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
-            #stop={"episodes_total": 6*24*365*10},
+            name='BOS_VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
+            stop={"episodes_total": 6*24*365*7},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(

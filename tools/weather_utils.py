@@ -1,40 +1,57 @@
-
+"""Utilities that involve the weather.
+"""
 import pandas as pd
 from pandas.core.frame import DataFrame
 import numpy as np
 
 def weather_file(env_config: dict, weather_choice:int = np.random.randint(0,3)):
-    """_summary_
+    """This method select a random or specific weather file path and the respectives latitude, longitude, and altitude for
+    the weather path training options or the path to be use for evaluation.
 
     Args:
-        env_config (dict): _description_
-        weather_choice (int, optional): _description_. Defaults to np.random.randint(0,24).
+        env_config (dict): Environment configuration with the 'weather_folder' path and the specification of 'is_test' condition.
+        weather_choice (int, optional): This option provide to select only one weather file for training. Defaults to np.random.randint(0,3).
 
     Returns:
-        _type_: _description_
+        tuple[str, float, float, int]: Return a tuple with the epw path and the respective values for latitude, longitude, and altitude.
     """
     folder_path = env_config['weather_folder']
-    # clima aleatorio
     if not env_config['is_test']:
         weather_path = [
             ['GEF_Lujan_de_cuyo-hour-H1',-32.985,-68.93,1043],
             ['GEF_Lujan_de_cuyo-hour-H2',-32.985,-68.93,1043],
             ['GEF_Lujan_de_cuyo-hour-H3',-32.985,-68.93,1043],
         ]
-        
         latitud = weather_path[weather_choice][1]
         longitud = weather_path[weather_choice][2]
         altitud = weather_path[weather_choice][3]
         return folder_path+'/'+weather_path[weather_choice][0]+'.epw', latitud, longitud, altitud
-    
     else:
         return folder_path+'/GEF_Lujan_de_cuyo-hour-H4.epw', -32.985,-68.93,1043
 
-class Probabilities():
+class Probabilities:
     def __init__(
         self,
         env_config:dict
     ):
+        """This class provide methods to calculate the weather probabilities during training based on the weather file 'epw'.
+
+        Args:
+            env_config (dict): Environment configuration with the 'epw' path element.
+            
+        Example:
+        ```
+        >>> from tools.weather_utils import Probabilities, weather_file
+        >>> env_config={ 
+                'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
+                'is_test': False,
+            }
+        >>> env_config['epw'], _, _, _ = weather_file(env_config)
+        >>> prob = Probabilities(env_config)
+        >>> julian_day = 215
+        >>> predictions = prob.ten_days_predictions(julian_day)
+        ```
+        """
         self.env_config = env_config
         
         with open(self.env_config["epw"]) as file:

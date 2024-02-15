@@ -20,12 +20,7 @@ path = 'C:/Users/grhen/Documents'
 tune_runner = True
 restore = False
 algorithm = 'DQN'
-centralized_action_space = np.loadtxt(
-        'centralized_action_space.csv',
-        delimiter=',',
-        skiprows=1,
-        dtype=int
-        )
+
 ep_terminal_output = True # Esta variable indica si se imprimen o no las salidas de la simulación de EnergyPlus
 name = 'VN_P1_0.5_DQN'
 
@@ -63,7 +58,8 @@ env_config={
 }
 
 # se importan las políticas convencionales para la configuracion especificada
-checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/asha_1024p2x512_dueT1x512_douT_DQN_100f9_00023/checkpoint_000001'
+checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/asha_1024p2x512_dueT1x512_douT_DQN_2cecf_00006/checkpoint_000003'
+
 # Use the `from_checkpoint` utility of the Policy class:
 policy = Policy.from_checkpoint(checkpoint_path)
 # se inicia el entorno con la configuración especificada
