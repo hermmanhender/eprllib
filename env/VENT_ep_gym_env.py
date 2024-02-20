@@ -71,7 +71,7 @@ class EnergyPlusEnv_v0(gym.Env):
         self.timestep = 0
         
         if not self.truncate_flag:
-        
+            # This flag is implemented in cases when the episode would be truncated.
             if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
                 # Condition implemented to restart a new epsiode when simulation is completed and EnergyPlus Runner is already inicialized.
                 self.energyplus_runner.stop()
@@ -211,11 +211,41 @@ class EnergyPlusEnv_v0(gym.Env):
             truncated = True
             raise Exception("Faulty episode")
         
-        reward, energy, comfort, ppd = self._compute_reward(beta, emax)
-        # Compute reward, energy, comfort and ppd.
+        self.energyplus_runner.cooling_event.wait(10)
+        if self.energyplus_runner.failed():
+            raise Exception("Faulty episode")
+        ec = self.cooling_queue.get()
+        # Wait for the cooling energy consume in the timestep
+        
+        self.energyplus_runner.heating_event.wait(10)
+        if self.energyplus_runner.failed():
+            raise Exception("Faulty episode")
+        eh = self.heating_queue.get()
+        # Wait for the heating energy consume in the timestep
+        
+        self.energyplus_runner.pmv_event.wait(10)
+        if self.energyplus_runner.failed():
+            raise Exception("Faulty episode")
+        pmv = self.pmv_queue.get()
+        # Wait for the pmv factor in the timestep
+        
+        self.energyplus_runner.ppd_event.wait(10)
+        if self.energyplus_runner.failed():
+            raise Exception("Faulty episode")
+        ppd = self.ppd_queue.get()
+        # Wait for the ppd factor in the timestep
+        
+        e_C = (abs(ec))/(3600000)
+        e_H = (abs(eh))/(3600000)
+        energy = e_C + e_H
+        # Transform energy variables in Joule to kWh
+        
+        reward = (-beta*(energy)/(emax) - (1-beta)*(ppd/100))
+        # Calculate the reward in the timestep
+        
         infos = {
             'energy': energy,
-            'comfort': comfort,
+            'comfort': pmv,
             'ppd': ppd,
         }
         # Save energy, comfort (pmv) and ppd in the info dictionary, used after for analisys
@@ -238,51 +268,3 @@ class EnergyPlusEnv_v0(gym.Env):
         else:
             self.truncate_flag = False
             return False
-    
-    def _compute_reward(self, beta: float, E_max: float) -> float:
-        """Method for compute reward but also to calculate the energy consume and the comfort variables
-        in a Fanger Model: PMV and PPD
-
-        Args:
-            beta (float): Ponderation for balancing the energy-comfort for different users.
-            E_max (float): Maximal energy that the active equipment in the house can consume in a timestep.
-
-        Raises:
-            Exception: Faulty episode
-
-        Returns:
-            Tuple[float, float, float, float]: Return a tuple with:
-                reward,
-                cooling energy plus heating energy,
-                pmv factor,
-                ppd factor
-        """
-        self.energyplus_runner.cooling_event.wait(10)
-        if self.energyplus_runner.failed():
-            raise Exception("Faulty episode")
-        ec = self.cooling_queue.get()
-        # Wait for the cooling energy consume in the timestep
-        self.energyplus_runner.heating_event.wait(10)
-        if self.energyplus_runner.failed():
-            raise Exception("Faulty episode")
-        eh = self.heating_queue.get()
-        # Wait for the heating energy consume in the timestep
-        self.energyplus_runner.pmv_event.wait(10)
-        if self.energyplus_runner.failed():
-            raise Exception("Faulty episode")
-        pmv = self.pmv_queue.get()
-        # Wait for the pmv factor in the timestep
-        self.energyplus_runner.ppd_event.wait(10)
-        if self.energyplus_runner.failed():
-            raise Exception("Faulty episode")
-        ppd = self.ppd_queue.get()
-        # Wait for the ppd factor in the timestep
-        
-        e_C = (abs(ec))/(3600000)
-        e_H = (abs(eh))/(3600000)
-        # Transform energy variables in Joule to kWh
-        
-        reward = (-beta*(e_H + e_C)/(E_max) - (1-beta)*(ppd/100))
-        # Calculate the reward in the timestep
-        
-        return reward, e_C+e_H, pmv, ppd
