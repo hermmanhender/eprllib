@@ -69,9 +69,9 @@ restore = False
 restore_path = 'C:/Users/grhen/ray_results/VN_P1_Year_allWeathers_0.5_DQN'
 # Path to the folder where the experiment is located.
 env_config={ 
-    'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
+    'weather_folder': '/epw/GEF',
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
-    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
+    'epjson_folderpath': '/epjson',
     'epjson_output_folder': 'C:/Users/grhen/Documents/models',
     # Configure the directories for the experiment.
     'ep_terminal_output': False,
@@ -197,71 +197,71 @@ if algorithm == 'PPO': # PPO Configuration
 
 elif algorithm == 'DQN': # DQN Configuration
     algo = DQNConfig().training(
-            # General Algo Configs
-            gamma = 0.7 if not tune_runner else tune.choice([0.7, 0.9, 0.99]),
-            lr = 0.1 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
-            grad_clip = 40,
-            grad_clip_by = 'global_norm',
-            train_batch_size = 8 if not tune_runner else tune.choice([8, 64, 128, 256]),
-            model = {
-                "fcnet_hiddens": [1024,512,512,512],
-                "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
-                },
-            optimizer = {},
-            # DQN Configs
-            num_atoms = 100,
-            v_min = -1,
-            v_max = 0,
-            noisy = True,
-            sigma0 = 0.66 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
-            dueling = True,
-            hiddens = [512],
-            double_q = True,
-            n_step = 24,
-            replay_buffer_config = {
-                '_enable_replay_buffer_api': True,
-                'type': 'MultiAgentPrioritizedReplayBuffer',
-                'capacity': 1000000,
-                'prioritized_replay_alpha': 0.6,
-                'prioritized_replay_beta': 0.4,
-                'prioritized_replay_eps': 1e-6,
-                'replay_sequence_length': 1,
-                },
-            categorical_distribution_temperature = 0.5 if not tune_runner else tune.choice([0.2, 0.5, 0.7, 1.]),
-        ).environment(
-            env="EPEnv",
-            env_config=env_config,
-        ).framework(
-            framework = 'torch',
-        ).fault_tolerance(
-            recreate_failed_workers = True,
-            restart_failed_sub_environments=False,
-        ).rollouts(
-            num_rollout_workers = 1,
-            create_env_on_local_worker=True,
-            rollout_fragment_length = 'auto',
-            enable_connectors = True,
-            num_envs_per_worker=1,
-        ).experimental(
-            _enable_new_api_stack = False,
-        ).reporting( # multi_agent config va aquí
-            min_sample_timesteps_per_iteration = 1000,
-        ).checkpointing(
-            export_native_model_files = True,
-        ).debugging(
-            log_level = "ERROR",
-            #seed=7,
-        ).resources(
-            num_gpus = 0,
-        )
+        # General Algo Configs
+        gamma = 0.7 if not tune_runner else tune.choice([0.7, 0.9, 0.99]),
+        lr = 0.1 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
+        grad_clip = 40,
+        grad_clip_by = 'global_norm',
+        train_batch_size = 8 if not tune_runner else tune.choice([8, 64, 128, 256]),
+        model = {
+            "fcnet_hiddens": [1024,512,512,512],
+            "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
+            },
+        optimizer = {},
+        # DQN Configs
+        num_atoms = 100,
+        v_min = -1,
+        v_max = 0,
+        noisy = True,
+        sigma0 = 0.66 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
+        dueling = True,
+        hiddens = [512],
+        double_q = True,
+        n_step = 24,
+        replay_buffer_config = {
+            '_enable_replay_buffer_api': True,
+            'type': 'MultiAgentPrioritizedReplayBuffer',
+            'capacity': 1000000,
+            'prioritized_replay_alpha': 0.6,
+            'prioritized_replay_beta': 0.4,
+            'prioritized_replay_eps': 1e-6,
+            'replay_sequence_length': 1,
+            },
+        categorical_distribution_temperature = 0.5 if not tune_runner else tune.choice([0.2, 0.5, 0.7, 1.]),
+    ).environment(
+        env="EPEnv",
+        env_config=env_config,
+    ).framework(
+        framework = 'torch',
+    ).fault_tolerance(
+        recreate_failed_workers = True,
+        restart_failed_sub_environments=False,
+    ).rollouts(
+        num_rollout_workers = 1,
+        create_env_on_local_worker=True,
+        rollout_fragment_length = 'auto',
+        enable_connectors = True,
+        num_envs_per_worker=1,
+    ).experimental(
+        _enable_new_api_stack = False,
+    ).reporting( # multi_agent config va aquí
+        min_sample_timesteps_per_iteration = 1000,
+    ).checkpointing(
+        export_native_model_files = True,
+    ).debugging(
+        log_level = "ERROR",
+        #seed=7,
+    ).resources(
+        num_gpus = 0,
+    )
     algo.exploration(
         exploration_config={
-                "type": "EpsilonGreedy",
-                "initial_epsilon": 1.,
-                "final_epsilon": 0.,
-                "epsilon_timesteps": 6*24*365*20,
-            }
-        )
+            "type": "EpsilonGreedy",
+            "initial_epsilon": 1.,
+            "final_epsilon": 0.,
+            "epsilon_timesteps": 6*24*365*20,
+        }
+    )
 
 elif algorithm == 'SAC': # SAC Configuration
     algo = SACConfig().training(
