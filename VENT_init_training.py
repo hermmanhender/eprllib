@@ -259,7 +259,7 @@ elif algorithm == 'DQN': # DQN Configuration
                 "type": "EpsilonGreedy",
                 "initial_epsilon": 1.,
                 "final_epsilon": 0.,
-                "epsilon_timesteps": 6*24*92*30,
+                "epsilon_timesteps": 6*24*365*20,
             }
         )
 
@@ -438,13 +438,13 @@ if not restore:
             #search_alg = BayesOptSearch(),
             # Search algorithm
             
-            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*92*60, grace_period=6*24*92*15),
+            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*30, grace_period=6*24*365*10),
             # Scheduler algorithm
             
         ),
         run_config=air.RunConfig(
             name='ASHA_tune_VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
-            stop={"episodes_total": 6*24*365*7},
+            stop={"episodes_total": 6*24*365*30},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(
