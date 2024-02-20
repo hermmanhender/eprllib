@@ -117,14 +117,14 @@ algorithm configuration here or modify the presents.
 if algorithm == 'PPO': # PPO Configuration
     algo = PPOConfig().training(
             # General Algo Configs
-            gamma=0.72 if not tune_runner else tune.uniform(0.7, 0.99),
+            gamma=0.72 if not tune_runner else tune.choice(0.7, 0.9, 0.99),
             # Float specifying the discount factor of the Markov Decision process.
-            lr=0.04 if not tune_runner else tune.uniform(0.001, 0.1),
+            lr=0.04 if not tune_runner else tune.choice(0.001, 0.01, 0.1),
             # The learning rate (float) or learning rate schedule
             #model=,
             # Arguments passed into the policy model. See models/catalog.py for a full list of the 
             # available model options.
-            train_batch_size=128,# if not tune_runner else tune.choice([128, 256]),
+            train_batch_size=128 if not tune_runner else tune.choice([8, 64, 128, 256]),
             # PPO Configs
             lr_schedule=None, # List[List[int | float]] | None = NotProvided,
             # Learning rate schedule. In the format of [[timestep, lr-value], [timestep, lr-value], …] 
@@ -135,7 +135,7 @@ if algorithm == 'PPO': # PPO Configuration
             use_gae=True, # bool | None = NotProvided,
             # If true, use the Generalized Advantage Estimator (GAE) with a value function, 
             # see https://arxiv.org/pdf/1506.02438.pdf.
-            lambda_=0.20216 if not tune_runner else tune.uniform(0, 1.0), # float | None = NotProvided,
+            lambda_=0.20216 if not tune_runner else tune.choice(0, 0.2, 0.5, 0.7, 1.0), # float | None = NotProvided,
             # The GAE (lambda) parameter.  The generalized advantage estimator for 0 < λ < 1 makes a 
             # compromise between bias and variance, controlled by parameter λ.
             use_kl_loss=True, # bool | None = NotProvided,
@@ -198,22 +198,22 @@ if algorithm == 'PPO': # PPO Configuration
 elif algorithm == 'DQN': # DQN Configuration
     algo = DQNConfig().training(
             # General Algo Configs
-            gamma = 0.7 if not tune_runner else tune.uniform(0.7, 0.99),
-            lr = 0.1 if not tune_runner else tune.uniform(0.001, 0.3),
-            grad_clip = 0.5 if not tune_runner else tune.uniform(0.5, 40.0),
+            gamma = 0.7 if not tune_runner else tune.choice([0.7, 0.9, 0.99]),
+            lr = 0.1 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
+            grad_clip = 40,
             grad_clip_by = 'global_norm',
-            train_batch_size = 8,# if not tune_runner else tune.choice([4, 8, 128, 256]),
+            train_batch_size = 8 if not tune_runner else tune.choice([8, 64, 128, 256]),
             model = {
                 "fcnet_hiddens": [1024,512,512,512],
                 "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
                 },
             optimizer = {},
             # DQN Configs
-            num_atoms = 40,
+            num_atoms = 100,
             v_min = -1,
             v_max = 0,
             noisy = True,
-            sigma0 = 0.66 if not tune_runner else tune.uniform(0, 1),
+            sigma0 = 0.66 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
             dueling = True,
             hiddens = [512],
             double_q = True,
@@ -221,13 +221,13 @@ elif algorithm == 'DQN': # DQN Configuration
             replay_buffer_config = {
                 '_enable_replay_buffer_api': True,
                 'type': 'MultiAgentPrioritizedReplayBuffer',
-                'capacity': 100000,
+                'capacity': 1000000,
                 'prioritized_replay_alpha': 0.6,
                 'prioritized_replay_beta': 0.4,
                 'prioritized_replay_eps': 1e-6,
                 'replay_sequence_length': 1,
                 },
-            categorical_distribution_temperature = 0.5 if not tune_runner else tune.uniform(0, 1),
+            categorical_distribution_temperature = 0.5 if not tune_runner else tune.choice([0.2, 0.5, 0.7, 1.]),
         ).environment(
             env="EPEnv",
             env_config=env_config,
@@ -259,7 +259,7 @@ elif algorithm == 'DQN': # DQN Configuration
                 "type": "EpsilonGreedy",
                 "initial_epsilon": 1.,
                 "final_epsilon": 0.,
-                "epsilon_timesteps": 6*24*365*4,
+                "epsilon_timesteps": 6*24*92*30,
             }
         )
 
@@ -420,7 +420,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "asha_1024p2x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
+    return "1024p2x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
@@ -435,15 +435,15 @@ if not restore:
             trial_dirname_creator=trial_str_creator,
             
             #search_alg = Repeater(BayesOptSearch(),repeat=10),
-            search_alg = BayesOptSearch(),
+            #search_alg = BayesOptSearch(),
             # Search algorithm
             
-            #scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*3, grace_period=6*24*365),
+            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*92*60, grace_period=6*24*92*15),
             # Scheduler algorithm
             
         ),
         run_config=air.RunConfig(
-            name='BOS_VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
+            name='ASHA_tune_VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
             stop={"episodes_total": 6*24*365*7},
             log_to_file=True,
             
