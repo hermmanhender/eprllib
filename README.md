@@ -10,9 +10,9 @@ The repository is ordned to be easy to read and to develope.
 
 In the main folder there are three scripts that are used to configurate the experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
 
--> init_training.py
--> init_conventional.py
--> init_evaluation.py
+    -> init_training.py
+    -> init_conventional.py
+    -> init_evaluation.py
 
 ### agents
 
