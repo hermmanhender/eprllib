@@ -8,72 +8,69 @@ Buildings have proven to be one of the energy sinks in recent decades. Both the 
 
 The repository is ordned to be easy to read and to develope.
 
-The **`agents`** folder is where the building models are allocated.
-```
--> agents
-    -> conventional.py
-    -> user.py
-```
-
-In the **`env`** folder there are alocated two files, the RLlib implementation for EnergyPlus and the
-EnergyPlus Runner implementation of EnergyPlus Python API. This two scripts are executed in two threads 
-to allow the simulation of the NREL software in a reinforcement learning way.
-```
--> env
-    ->nv_rllib_env.py
-    ->nv_ep_runner.py
-```
-The **`epjson`** folder is where the building models are allocated.
-```
--> epjson
-    -> file_to_simulate.epJSON
-```
-The **`epw`** folder is where the weather file and the statistical of the respective wheather are allocated. You will find in the preprocess folder a notebook to calculate the statisticals pkl file from the epw.
-```
--> epw
-    -> wheather_file.epw
-    -> wheather_stats.pkl
-```
-The **`postprocess`** folder...
-```
--> postprocess
-    -> postprocess_file.ipynb
-```
-The **`tools`** folder...
-```
--> tools
-    -> devices_space_action.py
-    -> ep_episode_config.py
-    -> weather_utils.py
-```
-Finally we have three scripts in the main repository that are used to configurate the 
-experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
+In the main folder there are three scripts that are used to configurate the experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
 
 -> init_training.py
 -> init_conventional.py
 -> init_evaluation.py
--> centralized_action_space.csv
 
-### Conventional controls
+### agents
 
-Control mechanisms for different elements are established:
+This folder is where the agent's models are allocated. For now the only agent runeable is `conventional` used to produce conventional actions in the environment to operate the opening of windows.
+```
+policy_config = { # conventional control config
+    'SP_temp': 22, #es el valor de temperatura de confort
+    'dT_up': 2.5, #es el límite superior para el rango de confort
+    'dT_dn': 2.5, #es el límite inferior para el rango de confort
+}
 
-* Blnds or shades
-* Windows
-* On-Off of heating and cooling systems
-* Thermostats dual comfort temperature
+policy = Conventional(policy_config)
+# define the conventional policy
 
-These are established according to intuitive conventional rules that are currently used in residential buildings.
+# ...
+# obtain here an observation of the environment
 
-### Clima stadistics
+action_1 = policy.window_opening(Ti, To, action_w1)
+# obtain the action of the conventional policy
+```
 
-### Aditional tools
+This module is used now only in the conventional evaluation to compare the DRL algorithm counter this RB control.
 
-## How to use and how to work
+In the future is expected to implement new agents to involucrate defferent inhabitants profiles or users.
+
+### env
+
+In this folder there are alocated two files that together implement the environment in Ray-RLlib. Both scripts are executed in different threads to allow the simulation of EnergyPlus Python API in a reinforcement learning way (a Markov Decission Process).
+
+In the nex image is show how the two scripts are related to coordinate the steps.
 
 ![Implementación del entorno de EnergyPlus en RLlib.](execution_flow.png)
 
+### epjson
+
+The environment implemented need a EnergyPlus input file. This file could be defined as an IDF file or an epJSON file. We use here the epJSON file because is easier to manipulate in the EnergyPlus Python API. Here are allocated the buildings model files.
+
+### epw
+
+Also EnergyPlus requires a weather epw file. This experiment run a building of the GEF IPV Argentina project. The project is allocated in all the country and here are the weather files for the Province of Mendoza only.
+
+### postprocess
+
+After training, the evaluation is defined as a postprocess. Here the two policies (conventional or RB and DRL) are compare. Also the policy follow for the DRL policy in each device is important to analisys and the beheavior of the neural network connections too.
+
+In this folder there are different notebook to this propose.
+
+### tools
+
+Different utilities are defined to use across the configurations. Here are alocated.
+
+## How to use and how to work
+
+To use you must to configurate the `VENT_init_training.py` and execute the experiment.
+
 ## Contribution
+
+(work in progress)
 
 ## Licency
 
