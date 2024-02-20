@@ -8,11 +8,14 @@ Buildings have proven to be one of the energy sinks in recent decades. Both the 
 
 The repository is ordned to be easy to read and to develope.
 
-In the main folder there are three scripts that are used to configurate the experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
+In the main folder there are three scripts and one notebook that are used to configurate the experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
 
     -> init_training.py
     -> init_conventional.py
     -> init_evaluation.py
+    -> Natural_ventilation_EnergyPlus_in_RLlib.ipynb
+
+The notebook `Natural_ventilation_EnergyPlus_in_RLlib.ipynb` implement the training in a Google Colab virtual machine configuration.
 
 ### agents
 
