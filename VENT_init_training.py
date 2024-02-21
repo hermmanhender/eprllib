@@ -12,6 +12,16 @@ RLlib requieriment to standarize an environment, based on the Farama Foundation 
 and called EnergyPlus Gym Environment. The second script, called EnergyPlus Runner, is the engine 
 of EnergyPlus Python API programmed to run as a Markov Dessicion Proccess.
 """
+"""## DEFINE ENVIRONMENT VARIABLES
+
+This is not always required, but here is an example of how to define 
+a environmet variable: (NOTE: This must be implemented before import ray.)
+
+>>> import os
+>>> os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+"""
+import os
+os.environ['RAY_DEDUP_LOGS'] = '0'
 
 """## IMPORT THE NECESARY LIBRARIES
 """
@@ -42,36 +52,21 @@ from env.VENT_ep_gym_env import EnergyPlusEnv_v0
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.
-import logging
-# Library to improve the logging of the Ray Cluster process
-
-"""## START LOGGING
-"""
-logger = logging.getLogger(__name__)
-
-"""## DEFINE ENVIRONMENT VARIABLES
-
-This is not always required, but here is an example of how to define 
-a environmet variable:
-
->>> import os
->>> os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-"""
 
 """## DEFINE THE EXPERIMENT CONTROLS
 """
 algorithm = 'DQN'
 # Define the algorithm to use to train the policy. Options are: PPO, SAC, DQN.
-tune_runner  = True
+tune_runner  = False
 # Define if the experiment tuning the variables or execute a unique configuration.
 restore = False
 # To define if is necesary to restore or not a previous experiment. Is necesary to stablish a 'restore_path'.
 restore_path = 'C:/Users/grhen/ray_results/VN_P1_Year_allWeathers_0.5_DQN'
 # Path to the folder where the experiment is located.
 env_config={ 
-    'weather_folder': '/epw/GEF',
+    'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
-    'epjson_folderpath': '/epjson',
+    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
     'epjson_output_folder': 'C:/Users/grhen/Documents/models',
     # Configure the directories for the experiment.
     'ep_terminal_output': False,
@@ -199,10 +194,10 @@ elif algorithm == 'DQN': # DQN Configuration
     algo = DQNConfig().training(
         # General Algo Configs
         gamma = 0.7 if not tune_runner else tune.choice([0.7, 0.9, 0.99]),
-        lr = 0.1 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
+        lr = 0.01 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
         grad_clip = 40,
         grad_clip_by = 'global_norm',
-        train_batch_size = 8 if not tune_runner else tune.choice([8, 64, 128, 256]),
+        train_batch_size = 64 if not tune_runner else tune.choice([8, 64, 128, 256]),
         model = {
             "fcnet_hiddens": [1024,512,512,512],
             "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
@@ -213,7 +208,7 @@ elif algorithm == 'DQN': # DQN Configuration
         v_min = -1,
         v_max = 0,
         noisy = True,
-        sigma0 = 0.66 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
+        sigma0 = 1.0 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
         dueling = True,
         hiddens = [512],
         double_q = True,
@@ -237,7 +232,7 @@ elif algorithm == 'DQN': # DQN Configuration
         recreate_failed_workers = True,
         restart_failed_sub_environments=False,
     ).rollouts(
-        num_rollout_workers = 1,
+        num_rollout_workers = 7,
         create_env_on_local_worker=True,
         rollout_fragment_length = 'auto',
         enable_connectors = True,
@@ -259,7 +254,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 6*24*365*20,
+            "epsilon_timesteps": 6*24*365*50,
         }
     )
 
@@ -428,7 +423,7 @@ if not restore:
         tune_config=tune.TuneConfig(
             mode="max",
             metric="episode_reward_mean",
-            num_samples=1000,
+            #num_samples=1000,
             # This is necesary to iterative execute the search_alg to improve the hyperparameters
             reuse_actors=False,
             trial_name_creator=trial_str_creator,
@@ -438,13 +433,13 @@ if not restore:
             #search_alg = BayesOptSearch(),
             # Search algorithm
             
-            scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*30, grace_period=6*24*365*10),
+            #scheduler = ASHAScheduler(time_attr = 'timesteps_total', max_t=6*24*365*30, grace_period=6*24*365*10),
             # Scheduler algorithm
             
         ),
         run_config=air.RunConfig(
-            name='ASHA_tune_VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
-            stop={"episodes_total": 6*24*365*30},
+            name='VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
+            stop={"episodes_total": 6*24*365*100},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(
