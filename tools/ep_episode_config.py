@@ -3,7 +3,10 @@
 import numpy as np
 import os
 import json
-from tools.weather_utils import weather_file
+try:
+    from tools.weather_utils import weather_file
+except: # This alternative is used when the code is used in Google Colab
+    from natural_ventilation_EP_RLlib.tools.weather_utils import weather_file
 
 def episode_epJSON(env_config: dict):
     """This method define the properties of the episode. Changing some properties as weather or 
