@@ -68,7 +68,7 @@ def epJSON_path(env_config: dict):
     Return:
         dict: The method returns the env_config with modifications.
     """
-    env_config['epjson'] = env_config['epjson_folderpath']+'/'+env_config['building_name']+'.epjson'
+    env_config['epjson'] = env_config['epjson_folderpath']+'/'+env_config['building_name']+'.epJSON'
     return env_config
 
 def inertial_mass(epJSON_object: dict[str,dict]):
