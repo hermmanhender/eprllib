@@ -6,7 +6,6 @@ This script contain the EnergyPlus Runner that execute EnergyPlus from its Pytho
 
 import os
 import sys
-from tools import ep_episode_config, devices_space_action as dsa, weather_utils
 import threading
 import numpy as np
 from queue import Queue
