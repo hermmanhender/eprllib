@@ -5,7 +5,7 @@ import os
 import json
 try:
     from tools.weather_utils import weather_file
-except: # This alternative is used when the code is used in Google Colab
+except ModuleNotFoundError: # This alternative is used when the code is used in Google Colab
     from natural_ventilation_EP_RLlib.tools.weather_utils import weather_file
 
 def episode_epJSON(env_config: dict):

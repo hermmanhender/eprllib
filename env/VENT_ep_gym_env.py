@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 # To specify the types of variables espected.
 try:
     from env.VENT_ep_runner import EnergyPlusRunner
-except: # This alternative is used when the code is used in Google Colab
+except ModuleNotFoundError: # This alternative is used when the code is used in Google Colab
     from natural_ventilation_EP_RLlib.env.VENT_ep_runner import EnergyPlusRunner
     
 # The EnergyPlus Runner.

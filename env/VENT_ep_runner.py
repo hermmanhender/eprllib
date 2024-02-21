@@ -14,7 +14,7 @@ from time import sleep
 from typing import Any, Dict, List, Optional
 try:
     from tools import ep_episode_config, devices_space_action as dsa, weather_utils
-except: # This alternative is used when the code is used in Google Colab
+except ModuleNotFoundError: # This alternative is used when the code is used in Google Colab
     from natural_ventilation_EP_RLlib.tools import ep_episode_config, devices_space_action as dsa, weather_utils
 
 os_platform = sys.platform
