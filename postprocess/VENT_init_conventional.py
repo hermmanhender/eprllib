@@ -3,11 +3,10 @@
 This script execute the conventional controls in the evaluation scenario.
 """
 import csv
-from tempfile import TemporaryDirectory
 from env.VENT_ep_gym_env import EnergyPlusEnv_v0
 from agents.conventional import Conventional
 from tools.devices_space_action import natural_ventilation_central_action
-import gymnasium as gym
+
 
 def init_rb_evaluation(
     env_config: dict,
@@ -115,6 +114,9 @@ def init_rb_evaluation(
     return episode_reward
 
 if __name__ == '__main__':
+    
+    from tempfile import TemporaryDirectory
+    import gymnasium as gym
     
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',

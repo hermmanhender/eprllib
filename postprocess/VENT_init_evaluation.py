@@ -2,11 +2,10 @@
 
 This script execute the conventional controls in the evaluation scenario.
 """
-import gymnasium as gym
 import csv
 from ray.rllib.policy.policy import Policy
 from env.VENT_ep_gym_env import EnergyPlusEnv_v0
-from tempfile import TemporaryDirectory
+
 
 def init_drl_evaluation(
     env_config: dict,
@@ -102,6 +101,10 @@ def init_drl_evaluation(
     return episode_reward
 
 if __name__ == '__main__':
+    
+    import gymnasium as gym
+    from tempfile import TemporaryDirectory
+
     # Controles de la simulación
     env_config={
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
