@@ -91,6 +91,10 @@ class EnergyPlusRunner:
         self.init_handles = False
         self.simulation_complete = False
         self.first_observation = True
+        self.dc_sum = 0
+        self.dh_sum = 0
+        self.ppd_avg = []
+        self.pmv_avg = []
         # Variables to be used in this thread.
 
         self.env_config = ep_episode_config.epJSON_path(self.env_config)
@@ -122,6 +126,8 @@ class EnergyPlusRunner:
             "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 9: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
+        self.prev_action_1 = 0
+        self.prev_action_2 = 0
         # Declaration of actuators this simulation will interact with.
         # Airflow Network Openings (EnergyPlus Documentation)
         # An actuator called “AirFlow Network Window/Door Opening” is available with a control type
@@ -244,35 +250,53 @@ class EnergyPlusRunner:
             }
         )
         # Upgrade of the timestep observation.
-        
-        self.cooling_queue.put(obs['dc'])
-        self.cooling_event.set()
-        self.heating_queue.put(obs['dh'])
-        self.heating_event.set()
-        self.beta_queue.put(obs['beta'])
-        self.beta_event.set()
-        self.emax_queue.put(obs['E_max'])
-        self.emax_event.set()
-        self.pmv_queue.put(obs["Fanger_PMV"])
-        self.pmv_event.set()
-        self.ppd_queue.put(obs["Fanger_PPD"])
-        self.ppd_event.set()
-        # Set the variables to communicate with queue before to delete the following.
-        
-        del obs["T_rad"]
-        del obs["Fanger_PMV"]
-        del obs["Fanger_PPD"]
-        # Variables are deleted from the observation because are difficult to mesure.
-        
-        next_obs = np.array(list(obs.values()))
-        # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-        weather_prob = self.weather_stats.ten_days_predictions(simulation_day)
-        # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
-        self.next_obs = np.concatenate([next_obs, weather_prob])
-        
-        self.obs_queue.put(self.next_obs)
-        self.obs_event.set()
-        # Set the observation to communicate with queue.
+        if time_step != 1:
+            # To not perform one observation per hour.
+            self.dc_sum += abs(obs['dc'])/3600000
+            self.dh_sum += abs(obs['dh'])/3600000
+            self.ppd_avg.append(obs["Fanger_PPD"])
+            self.pmv_avg.append(obs["Fanger_PMV"])
+            return
+        else:
+            if len(self.ppd_avg) != 0:
+                self.ppd_avg = sum(self.ppd_avg)/len(self.ppd_avg)
+                self.pmv_avg = sum(self.pmv_avg)/len(self.pmv_avg)
+            else:
+                self.ppd_avg = obs["Fanger_PPD"]
+                self.pmv_avg = obs["Fanger_PMV"]
+                
+            self.cooling_queue.put(self.dc_sum)
+            self.cooling_event.set()
+            self.heating_queue.put(self.dh_sum)
+            self.heating_event.set()
+            self.beta_queue.put(obs['beta'])
+            self.beta_event.set()
+            self.emax_queue.put(obs['E_max'])
+            self.emax_event.set()
+            self.pmv_queue.put(self.pmv_avg)
+            self.pmv_event.set()
+            self.ppd_queue.put(self.ppd_avg)
+            self.ppd_event.set()
+            # Set the variables to communicate with queue before to delete the following.
+            
+            del obs["T_rad"]
+            del obs["Fanger_PMV"]
+            del obs["Fanger_PPD"]
+            # Variables are deleted from the observation because are difficult to mesure.
+            
+            next_obs = np.array(list(obs.values()))
+            # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+            weather_prob = self.weather_stats.ten_days_predictions(simulation_day)
+            # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
+            self.next_obs = np.concatenate([next_obs, weather_prob])
+            
+            self.obs_queue.put(self.next_obs)
+            self.obs_event.set()
+            # Set the observation to communicate with queue.
+            self.dc_sum = 0
+            self.dh_sum = 0
+            self.ppd_avg = []
+            self.pmv_avg = []
 
     def _collect_first_obs(self, state_argument):
         """This method is used to collect only the first observation of the environment when the episode beggins.
@@ -294,29 +318,37 @@ class EnergyPlusRunner:
             # warming period are not complete.
             return
         
-        self.act_event.wait(20)
-        # Wait for an action.
-        if self.act_queue.empty():
-            # Return in the first timestep.
-            return
-        
-        next_central_action = self.act_queue.get()
-        # Get the central action from the EnergyPlus Environment `step` method.
-        # In the case of simple agent a int value and for multiagents a dictionary.
-        # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
-        # ventilation, shadow control or a integrate control.
-        next_action = dsa.natural_ventilation_action(next_central_action)
-        # Transform the centraliced action into a list of descentraliced actions.
+        if api.exchange.zone_time_step_number(state_argument) != 1:
+            action_1 = self.prev_action_1
+            action_2 = self.prev_action_2
+        else:
+            self.act_event.wait(20)
+            # Wait for an action.
+            if self.act_queue.empty():
+                # Return in the first timestep.
+                return
+            next_central_action = self.act_queue.get()
+            # Get the central action from the EnergyPlus Environment `step` method.
+            # In the case of simple agent a int value and for multiagents a dictionary.
+            # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
+            # ventilation, shadow control or a integrate control.
+            next_action = dsa.natural_ventilation_action(next_central_action)
+            # Transform the centraliced action into a list of descentraliced actions.
+            action_1 = next_action[0]
+            action_2 = next_action[1]
+            self.prev_action_1 = action_1
+            self.prev_action_2 = action_2
+        # Execute the same action during an hour.
         
         api.exchange.set_actuator_value(
             state=state_argument,
             actuator_handle=self.actuator_handles["opening_window_1"],
-            actuator_value=next_action[0]
+            actuator_value=action_1
         )
         api.exchange.set_actuator_value(
             state=state_argument,
             actuator_handle=self.actuator_handles["opening_window_2"],
-            actuator_value=next_action[1]
+            actuator_value=action_2
         )
         # Perform the actions in EnergyPlus simulation.
     
