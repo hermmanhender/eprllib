@@ -35,7 +35,6 @@ jobs:
         pip install tensorflow
         pip install gymnasium
         pip install bayesian-optimization
-        pip install numpy
     - name: Build package
       run: python -m build
     - name: natural_ventilation_EP_RLlib
