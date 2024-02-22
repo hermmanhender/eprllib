@@ -193,7 +193,7 @@ if algorithm == 'PPO': # PPO Configuration
 elif algorithm == 'DQN': # DQN Configuration
     algo = DQNConfig().training(
         # General Algo Configs
-        gamma = 0.7 if not tune_runner else tune.choice([0.7, 0.9, 0.99]),
+        gamma = 0.99 if not tune_runner else tune.choice([0.7, 0.9, 0.99]),
         lr = 0.01 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
         grad_clip = 40,
         grad_clip_by = 'global_norm',
@@ -208,15 +208,15 @@ elif algorithm == 'DQN': # DQN Configuration
         v_min = -1,
         v_max = 0,
         noisy = True,
-        sigma0 = 1.0 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
+        sigma0 = 0.7 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
         dueling = True,
         hiddens = [512],
         double_q = True,
-        n_step = 24,
+        n_step = 4,
         replay_buffer_config = {
             '_enable_replay_buffer_api': True,
             'type': 'MultiAgentPrioritizedReplayBuffer',
-            'capacity': 1000000,
+            'capacity': 500000,
             'prioritized_replay_alpha': 0.6,
             'prioritized_replay_beta': 0.4,
             'prioritized_replay_eps': 1e-6,
@@ -254,7 +254,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 6*24*365*50,
+            "epsilon_timesteps": 24*365*50,
         }
     )
 
@@ -439,7 +439,7 @@ if not restore:
         ),
         run_config=air.RunConfig(
             name='VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
-            stop={"episodes_total": 6*24*365*100},
+            stop={"episodes_total": 24*365*100},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(
