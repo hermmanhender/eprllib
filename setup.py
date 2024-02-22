@@ -13,7 +13,7 @@ setup(
   install_requires=[            # Los paquetes que usas en tu librería.
           'tensorflow',
           'torch',
-          'ray',
+          'ray[all]',
           'bayesian-optimization',
           'gumnasium'
       ],
