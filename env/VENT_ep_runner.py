@@ -250,7 +250,7 @@ class EnergyPlusRunner:
             }
         )
         # Upgrade of the timestep observation.
-        if time_step != 1:
+        if time_step != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
             # To not perform one observation per hour.
             self.dc_sum += abs(obs['dc'])/3600000
             self.dh_sum += abs(obs['dh'])/3600000
@@ -318,7 +318,7 @@ class EnergyPlusRunner:
             # warming period are not complete.
             return
         
-        if api.exchange.zone_time_step_number(state_argument) != 1:
+        if api.exchange.zone_time_step_number(state_argument) != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
             action_1 = self.prev_action_1
             action_2 = self.prev_action_2
         else:
