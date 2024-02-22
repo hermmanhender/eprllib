@@ -3,10 +3,8 @@
 import numpy as np
 import os
 import json
-try:
-    from tools.weather_utils import weather_file
-except ModuleNotFoundError: # This alternative is used when the code is used in Google Colab
-    from natural_ventilation_EP_RLlib.tools.weather_utils import weather_file
+from tools.weather_utils import weather_file
+
 
 def episode_epJSON(env_config: dict):
     """This method define the properties of the episode. Changing some properties as weather or 
@@ -44,7 +42,7 @@ def episode_epJSON(env_config: dict):
     env_config['inercial_mass'] = inertial_mass(epJSON_object)
     # The total inertial thermal mass is calculated.
     
-    env_config['E_max'] = (0.5+(0.5 - 0.08)*np.random.random_sample()) if not env_config['is_test'] else 2.5/6
+    env_config['E_max'] = (0.5+(0.5 - 0.08)*np.random.random_sample())*6 if not env_config['is_test'] else 2.5
     HVAC_names = [key for key in epJSON_object["ZoneHVAC:IdealLoadsAirSystem"].keys()]
     for hvac in range(len(HVAC_names)):
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_sensible_heating_capacity"] = env_config['E_max']

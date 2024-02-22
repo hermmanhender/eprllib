@@ -9,11 +9,7 @@ from queue import Empty, Full, Queue
 # Used to separate the execution in two threads and comunicate EnergyPlus with this environment.
 from typing import Any, Dict, Optional
 # To specify the types of variables espected.
-try:
-    from env.VENT_ep_runner import EnergyPlusRunner
-except ModuleNotFoundError: # This alternative is used when the code is used in Google Colab
-    from natural_ventilation_EP_RLlib.env.VENT_ep_runner import EnergyPlusRunner
-    
+from env.VENT_ep_runner import EnergyPlusRunner
 # The EnergyPlus Runner.
 
 class EnergyPlusEnv_v0(gym.Env):
