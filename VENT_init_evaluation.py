@@ -3,7 +3,6 @@
 This script execute the conventional controls in the evaluation scenario.
 """
 import gymnasium as gym
-import numpy as np
 import csv
 from ray.rllib.policy.policy import Policy
 from ray.rllib.utils.framework import try_import_tf
@@ -58,7 +57,7 @@ env_config={
 }
 
 # se importan las políticas convencionales para la configuracion especificada
-checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/asha_1024p2x512_dueT1x512_douT_DQN_2cecf_00006/checkpoint_000003'
+checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/1024p2x512_dueT1x512_douT_DQN_cb9bc_00000/checkpoint_000064'
 
 # Use the `from_checkpoint` utility of the Policy class:
 policy = Policy.from_checkpoint(checkpoint_path)
