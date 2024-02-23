@@ -35,19 +35,19 @@ def episode_epJSON(env_config: dict):
     env_config['construction_u_factor'] = u_factor(epJSON_object)
     # The global U factor is calculated.
     
-    for key in [key for key in epJSON_object["InternalMass"].keys()]:
+    """for key in [key for key in epJSON_object["InternalMass"].keys()]:
         epJSON_object["InternalMass"][key]["surface_area"] = np.random.randint(10,40) if not env_config['is_test'] else 15
         # The internal thermal mass is modified.
-    
+    """
     env_config['inercial_mass'] = inertial_mass(epJSON_object)
     # The total inertial thermal mass is calculated.
     
-    env_config['E_max'] = (0.5+(0.5 - 0.08)*np.random.random_sample())*6 if not env_config['is_test'] else 2.5
+    """env_config['E_max'] = (0.5+(0.5 - 0.08)*np.random.random_sample())*6 if not env_config['is_test'] else 2.5
     HVAC_names = [key for key in epJSON_object["ZoneHVAC:IdealLoadsAirSystem"].keys()]
     for hvac in range(len(HVAC_names)):
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_sensible_heating_capacity"] = env_config['E_max']
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = env_config['E_max']
-        # The limit capacity of bouth cooling and heating are changed.
+        # The limit capacity of bouth cooling and heating are changed."""
     
     env_config["epjson"] = f"{env_config['epjson_output_folder']}/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
     with open(env_config["epjson"], 'w') as fp:
