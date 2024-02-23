@@ -143,7 +143,7 @@ class EnergyPlusRunner:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
         established and the thread is generated here.
         """
-        self.env_config = ep_episode_config.episode_epJSON(self.env_config)
+        self.env_config['epw'], _, _, _ = ep_episode_config.weather_file(self.env_config)
         # Configurate the episode.
         
         self.weather_stats = weather_utils.Probabilities(self.env_config)
@@ -232,16 +232,16 @@ class EnergyPlusRunner:
             {
             'hora': hour,#10
             'simulation_day': simulation_day,#11
-            'volumen': self.env_config['volumen'],#12
-            'window_area_relation_north': self.env_config['window_area_relation_north'],#13
-            'window_area_relation_west': self.env_config['window_area_relation_west'],#14
-            'window_area_relation_south': self.env_config['window_area_relation_south'],#15
-            'window_area_relation_east': self.env_config['window_area_relation_east'],#16
-            'construction_u_factor': self.env_config['construction_u_factor'], #17
-            'inercial_mass': self.env_config['inercial_mass'], #18
-            'latitud': self.env_config['latitud'], #19
-            'longitud':self.env_config['longitud'], #20
-            'altitud': self.env_config['altitud'], #21
+            # 'volumen': self.env_config['volumen'],#12
+            # 'window_area_relation_north': self.env_config['window_area_relation_north'],#13
+            # 'window_area_relation_west': self.env_config['window_area_relation_west'],#14
+            # 'window_area_relation_south': self.env_config['window_area_relation_south'],#15
+            # 'window_area_relation_east': self.env_config['window_area_relation_east'],#16
+            # 'construction_u_factor': self.env_config['construction_u_factor'], #17
+            # 'inercial_mass': self.env_config['inercial_mass'], #18
+            # 'latitud': self.env_config['latitud'], #19
+            # 'longitud':self.env_config['longitud'], #20
+            # 'altitud': self.env_config['altitud'], #21
             'beta': self.env_config['beta'], #22
             'E_max': self.env_config['E_max'], #23
             "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #24
@@ -284,7 +284,7 @@ class EnergyPlusRunner:
             
             next_obs = np.array(list(obs.values()))
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            weather_prob = self.weather_stats.ten_days_predictions(simulation_day)
+            weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
             # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
             self.next_obs = np.concatenate([next_obs, weather_prob])
             
