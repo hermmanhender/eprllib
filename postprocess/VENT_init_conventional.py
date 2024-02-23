@@ -137,18 +137,12 @@ if __name__ == '__main__':
         'test_init_day': 1,
         'action_space': gym.spaces.Discrete(4),
         # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (1465,)),
+        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
         'building_name': 'prot_1',
-        'volumen': 131.6565,
-        'window_area_relation_north': 0,
-        'window_area_relation_west': 0,
-        'window_area_relation_south': 0.0115243076,
-        'window_area_relation_east': 0.0276970753,
-        'episode_len': 365,
-        'rotation': 0,
+        'E_max': 10,
     }
     
     policy_config = { # configuracion del control convencional
