@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'natural_ventilation_EP_RLlib',         # Nombre de la carpeta (MiLibreria)
   packages = ['natural_ventilation_EP_RLlib'],   # El mismo que en "name"
-  version = '1.0.2',      # Recuerda incrementar la versión con cada cambio
+  version = '1.0.6',      # Recuerda incrementar la versión con cada cambio
   license='MIT',        # Escoje una licencia: https://help.github.com/articles/licensing-a-repository
   description = "program used to investigate the control of natural ventilation in homes based on a DRL model. The program uses the EnergyPlus Python API and Ray's Tune and RLlib libraries.",   # Descripcion corta de mi libreria
   author = 'Germán Rodolfo Henderson',                   # Tu nombre
@@ -15,7 +15,7 @@ setup(
           'torch',
           'ray[all]',
           'bayesian-optimization',
-          'gumnasium'
+          'gymnasium'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # Escoje entre "3 - Alpha", "4 - Beta" or "5 - Production/Stable" como el estado actual de tu librería
