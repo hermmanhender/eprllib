@@ -82,18 +82,12 @@ env_config={
     'test_init_day': 1,
     'action_space': gym.spaces.Discrete(4),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (1465,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
     'building_name': 'prot_1',
-    'volumen': 131.6565,
-    'window_area_relation_north': 0,
-    'window_area_relation_west': 0,
-    'window_area_relation_south': 0.0115243076,
-    'window_area_relation_east': 0.0276970753,
-    'episode_len': 365,
-    'rotation': 0,
+    'E_max': 10,
 }
 
 """## INIT RAY AND REGISTER THE ENVIRONMENT
@@ -199,7 +193,7 @@ elif algorithm == 'DQN': # DQN Configuration
         grad_clip_by = 'global_norm',
         train_batch_size = 32 if not tune_runner else tune.choice([8, 64, 128, 256]),
         model = {
-            "fcnet_hiddens": [1024,512,512,512],
+            "fcnet_hiddens": [512,512,512,512],
             "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
             },
         optimizer = {},
@@ -415,7 +409,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "1024p2x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
+    return "4x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
