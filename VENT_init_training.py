@@ -80,9 +80,9 @@ env_config={
     'is_test': False,
     # For evaluation process 'is_test=True' and for trainig False.
     'test_init_day': 1,
-    'action_space': gym.spaces.Discrete(4),
+    'action_space': gym.spaces.Discrete(66),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
