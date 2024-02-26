@@ -12,6 +12,7 @@ from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional
 from tools import ep_episode_config, devices_space_action as dsa, weather_utils
+from agents.conventional import Conventional
 
 
 os_platform = sys.platform
@@ -93,6 +94,7 @@ class EnergyPlusRunner:
         self.dh_sum = 0
         self.ppd_avg = []
         self.pmv_avg = []
+        self.obs = {}
         # Variables to be used in this thread.
 
         self.env_config = ep_episode_config.epJSON_path(self.env_config)
@@ -120,12 +122,21 @@ class EnergyPlusRunner:
         # Declaration of meters this simulation will interact with.
 
         self.actuators = {
-            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_2"), # 8: opening factor between 0.0 and 1.0
-            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 9: opening factor between 0.0 and 1.0
+            "heating_setpoint": ("Schedule:Constant", "Schedule Value", "heating_setpoint"), # 8: 0-1
+            "cooling_setpoint": ("Schedule:Constant", "Schedule Value", "cooling_setpoint"), # 9: 0-1
+            "window_shading_control_1": ("Window Shading Control", "Control Status", "window_2"), # 10: 0.0: Shading device is off; 7.0: Exterior blind is on
+            "window_shading_control_2": ("Window Shading Control", "Control Status", "window_3"), # 11: 0.0: Shading device is off; 7.0: Exterior blind is on            
+            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_2"), # 12: opening factor between 0.0 and 1.0
+            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 13: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
-        self.prev_action_1 = 0
-        self.prev_action_2 = 0
+
+        self.prev_heating_setpoint_action = 19
+        self.prev_cooling_setpoint_action = 24
+        self.prev_window_shading_control_1_action = 0
+        self.prev_window_shading_control_2_action = 0
+        self.prev_opening_window_1_action = 0
+        self.prev_opening_window_2_action = 0
         # Declaration of actuators this simulation will interact with.
         # Airflow Network Openings (EnergyPlus Documentation)
         # An actuator called “AirFlow Network Window/Door Opening” is available with a control type
@@ -138,6 +149,14 @@ class EnergyPlusRunner:
         # the associated airflow network input objects. The actuator control involves setting the value of the
         # opening factor between 0.0 and 1.0. Use of this actuator with an air boundary surface is allowed,
         # but will generate a warning since air boundaries are typically always open.
+        
+        policy_config = { # configuracion del control convencional
+            'SP_temp': 22, #es el valor de temperatura de confort
+            'dT_up': 2.5, #es el límite superior para el rango de confort
+            'dT_dn': 2.5, #es el límite inferior para el rango de confort
+        }
+        self.conventional_policy = Conventional(policy_config)
+        self.dsp = dsa.DualSetPoint()
 
     def start(self) -> None:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
@@ -281,7 +300,7 @@ class EnergyPlusRunner:
             del obs["Fanger_PMV"]
             del obs["Fanger_PPD"]
             # Variables are deleted from the observation because are difficult to mesure.
-            
+            self.obs = obs
             next_obs = np.array(list(obs.values()))
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
             weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
@@ -317,8 +336,13 @@ class EnergyPlusRunner:
             return
         
         if api.exchange.zone_time_step_number(state_argument) != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
-            action_1 = self.prev_action_1
-            action_2 = self.prev_action_2
+            heating_setpoint_action = self.prev_heating_setpoint_action
+            cooling_setpoint_action = self.prev_cooling_setpoint_action
+            window_shading_control_1_action = self.prev_window_shading_control_1_action
+            window_shading_control_2_action = self.prev_window_shading_control_2_action
+            opening_window_1_action = self.prev_opening_window_1_action
+            opening_window_2_action = self.prev_opening_window_2_action
+            
         else:
             self.act_event.wait(20)
             # Wait for an action.
@@ -330,23 +354,55 @@ class EnergyPlusRunner:
             # In the case of simple agent a int value and for multiagents a dictionary.
             # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
             # ventilation, shadow control or a integrate control.
-            next_action = dsa.natural_ventilation_action(next_central_action)
+            next_action = self.dsp.dual_action(next_central_action)
             # Transform the centraliced action into a list of descentraliced actions.
-            action_1 = next_action[0]
-            action_2 = next_action[1]
-            self.prev_action_1 = action_1
-            self.prev_action_2 = action_2
+            
+            heating_setpoint_action = next_action[0]
+            cooling_setpoint_action = next_action[1]
+            window_shading_control_1_action = self.conventional_policy.window_shade(self.obs['Ti'],self.obs['rad'],self.prev_window_shading_control_1_action)
+            window_shading_control_2_action = window_shading_control_1_action
+            opening_window_1_action = self.conventional_policy.window_opening(self.obs['Ti'],self.obs['To'],self.prev_opening_window_1_action)
+            opening_window_2_action = opening_window_1_action
+            
+            self.prev_heating_setpoint_action = heating_setpoint_action
+            self.prev_cooling_setpoint_action = cooling_setpoint_action
+            self.prev_window_shading_control_1_action = window_shading_control_1_action
+            self.prev_window_shading_control_2_action = window_shading_control_2_action
+            self.prev_opening_window_1_action = opening_window_1_action
+            self.prev_opening_window_2_action = opening_window_2_action
         # Execute the same action during an hour.
         
         api.exchange.set_actuator_value(
             state=state_argument,
+            actuator_handle=self.actuator_handles["heating_setpoint"],
+            actuator_value=heating_setpoint_action
+        )
+        api.exchange.set_actuator_value(
+            state=state_argument,
+            actuator_handle=self.actuator_handles["cooling_setpoint"],
+            actuator_value=cooling_setpoint_action
+        )
+        
+        api.exchange.set_actuator_value(
+            state=state_argument,
+            actuator_handle=self.actuator_handles["window_shading_control_1"],
+            actuator_value=window_shading_control_1_action
+        )
+        api.exchange.set_actuator_value(
+            state=state_argument,
+            actuator_handle=self.actuator_handles["window_shading_control_2"],
+            actuator_value=window_shading_control_2_action
+        )
+        
+        api.exchange.set_actuator_value(
+            state=state_argument,
             actuator_handle=self.actuator_handles["opening_window_1"],
-            actuator_value=action_1
+            actuator_value=opening_window_1_action
         )
         api.exchange.set_actuator_value(
             state=state_argument,
             actuator_handle=self.actuator_handles["opening_window_2"],
-            actuator_value=action_2
+            actuator_value=opening_window_2_action
         )
         # Perform the actions in EnergyPlus simulation.
     
