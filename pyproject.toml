@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "natural_ventilation_EP_RLlib"
+version = "1.0.6"
+authors = [
+  { name="Germán Rodolfo Henderson"},
+]
+description = "Building control trought DRL."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/hermmanhender/natural_ventilation_EP_RLlib"
+"Bug Tracker" = "https://github.com/hermmanhender/natural_ventilation_EP_RLlib/issues"
