@@ -5,7 +5,7 @@ This script execute the conventional controls in the evaluation scenario.
 import csv
 from env.VENT_ep_gym_env import EnergyPlusEnv_v0
 from agents.conventional import Conventional
-from tools.devices_space_action import natural_ventilation_central_action
+from tools.devices_space_action import TwoWindowsCentralizedControl
 
 
 def init_rb_evaluation(
@@ -86,7 +86,7 @@ def init_rb_evaluation(
         
         action_1 = policy.window_opening(Ti, To, action_w1)
         action_2 = policy.window_opening(Ti, To, action_w2)
-        actions = natural_ventilation_central_action(action_1, action_2)
+        actions = TwoWindowsCentralizedControl.natural_ventilation_central_action(action_1, action_2)
         
         # se ejecuta un paso de tiempo
         obs, reward, terminated, truncated, infos = env.step(actions)
