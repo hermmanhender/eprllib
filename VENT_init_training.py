@@ -193,7 +193,7 @@ elif algorithm == 'DQN': # DQN Configuration
         grad_clip_by = 'global_norm',
         train_batch_size = 32 if not tune_runner else tune.choice([8, 64, 128, 256]),
         model = {
-            "fcnet_hiddens": [512,512,512,512],
+            "fcnet_hiddens": [512,512,512],
             "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
             },
         optimizer = {},
@@ -210,9 +210,9 @@ elif algorithm == 'DQN': # DQN Configuration
         replay_buffer_config = {
             '_enable_replay_buffer_api': True,
             'type': 'MultiAgentPrioritizedReplayBuffer',
-            'capacity': 1000000,
-            'prioritized_replay_alpha': 0.6,
-            'prioritized_replay_beta': 0.4,
+            'capacity': 500000,
+            'prioritized_replay_alpha': 0.7,
+            'prioritized_replay_beta': 0.6,
             'prioritized_replay_eps': 1e-6,
             'replay_sequence_length': 1,
             },
@@ -221,7 +221,7 @@ elif algorithm == 'DQN': # DQN Configuration
         env="EPEnv",
         env_config=env_config,
     ).framework(
-        framework = 'tf',
+        framework = 'torch',
     ).fault_tolerance(
         recreate_failed_workers = True,
         restart_failed_sub_environments=False,
@@ -248,7 +248,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 24*365*100,
+            "epsilon_timesteps": 24*365*150,
         }
     )
 
@@ -409,7 +409,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "4x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
+    return "3x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
