@@ -71,23 +71,16 @@ env_config={
     # Configure the directories for the experiment.
     'ep_terminal_output': False,
     # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
-    'beta': 0.5,
-    # This parameter is used to balance between energy and comfort of the inhabitatns. A
-    # value equal to 0 give a no importance to comfort and a value equal to 1 give no importance 
-    # to energy consume. Mathematically is the reward: 
-    # r = - beta*normaliced_energy - (1-beta)*normalized_comfort
-    # The range of this value goes from 0.0 to 1.0.,
     'is_test': False,
     # For evaluation process 'is_test=True' and for trainig False.
     'test_init_day': 1,
-    'action_space': gym.spaces.Discrete(66),
+    'action_space': gym.spaces.Discrete(4),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
-    'building_name': 'prot_1',
-    'E_max': 10,
+    'building_name': 'prot_1(comfort)',
 }
 
 """## INIT RAY AND REGISTER THE ENVIRONMENT
@@ -198,8 +191,8 @@ elif algorithm == 'DQN': # DQN Configuration
             },
         optimizer = {},
         # DQN Configs
-        num_atoms = 100,
-        v_min = -1,
+        num_atoms = 1,
+        v_min = -400000,
         v_max = 0,
         noisy = True,
         sigma0 = 0.7 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
@@ -432,7 +425,7 @@ if not restore:
             
         ),
         run_config=air.RunConfig(
-            name='VN_P1_'+str(env_config['beta'])+'_'+str(algorithm),
+            name='VN_P1_'+str(algorithm),
             stop={"episodes_total": 1000},
             log_to_file=True,
             

@@ -2,6 +2,8 @@
 
 This script execute the conventional controls in the evaluation scenario.
 """
+import sys
+sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
 from env.VENT_ep_gym_env import EnergyPlusEnv_v0
 from agents.conventional import Conventional
@@ -66,6 +68,7 @@ def init_rb_evaluation(
     """
     # se importan las políticas convencionales para la configuracion especificada
     policy = Conventional(policy_config)
+    action_space = TwoWindowsCentralizedControl()
     # se inicia el entorno con la configuración especificada
     env = EnergyPlusEnv_v0(env_config)
 
@@ -81,12 +84,12 @@ def init_rb_evaluation(
         # se calculan las acciones convencionales de cada elemento
         To = obs[0]
         Ti = obs[1]
-        action_w1 = obs[8]
-        action_w2 = obs[9]
+        action_w1 = obs[10]
+        action_w2 = obs[11]
         
         action_1 = policy.window_opening(Ti, To, action_w1)
         action_2 = policy.window_opening(Ti, To, action_w2)
-        actions = TwoWindowsCentralizedControl.natural_ventilation_central_action(action_1, action_2)
+        actions = action_space.natural_ventilation_central_action(action_1, action_2)
         
         # se ejecuta un paso de tiempo
         obs, reward, terminated, truncated, infos = env.step(actions)
@@ -115,23 +118,19 @@ def init_rb_evaluation(
 
 if __name__ == '__main__':
     
-    from tempfile import TemporaryDirectory
     import gymnasium as gym
+    import os
+    
+    name = 'VN_P1_RB'
     
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
-        'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
+        'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
         'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
         'epjson_output_folder': 'C:/Users/grhen/Documents/models',
         # Configure the directories for the experiment.
-        'ep_terminal_output': False,
+        'ep_terminal_output': True,
         # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
-        'beta': 0.5,
-        # This parameter is used to balance between energy and comfort of the inhabitatns. A
-        # value equal to 0 give a no importance to comfort and a value equal to 1 give no importance 
-        # to energy consume. Mathematically is the reward: 
-        # r = - beta*normaliced_energy - (1-beta)*normalized_comfort
-        # The range of this value goes from 0.0 to 1.0.,
         'is_test': True,
         # For evaluation process 'is_test=True' and for trainig False.
         'test_init_day': 1,
@@ -141,8 +140,7 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1',
-        'E_max': 10,
+        'building_name': 'prot_1(comfort)'
     }
     
     policy_config = { # configuracion del control convencional
@@ -150,8 +148,9 @@ if __name__ == '__main__':
         'dT_up': 2.5, #es el límite superior para el rango de confort
         'dT_dn': 2.5, #es el límite inferior para el rango de confort
     }
-    
-    name = 'VN_P1_0.5_RB'
-    
+    try:
+        os.makedirs(env_config['output'])
+    except OSError:
+        pass
     episode_reward = init_rb_evaluation(env_config, policy_config, name)
     print(f"Episode reward is: {episode_reward}.")

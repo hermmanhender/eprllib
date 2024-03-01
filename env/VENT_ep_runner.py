@@ -35,11 +35,7 @@ class EnergyPlusRunner:
         obs_queue: Queue,
         act_queue: Queue,
         cooling_queue: Queue,
-        heating_queue: Queue,
-        pmv_queue: Queue,
-        ppd_queue: Queue,
-        beta_queue: Queue,
-        emax_queue: Queue,
+        heating_queue: Queue
         ) -> None:
         """The object has an intensive interaction with EnergyPlus Environment script, exchange information
         between two threads. For a good coordination queue events are stablished and different canals of
@@ -52,10 +48,6 @@ class EnergyPlusRunner:
             act_queue (Queue): Queue object definition.
             cooling_queue (Queue): Queue object definition.
             heating_queue (Queue): Queue object definition.
-            pmv_queue (Queue): Queue object definition.
-            ppd_queue (Queue): Queue object definition.
-            beta_queue (Queue): Queue object definition.
-            emax_queue (Queue): Queue object definition.
         
         Return:
             None.
@@ -67,20 +59,12 @@ class EnergyPlusRunner:
         self.act_queue = act_queue
         self.cooling_queue = cooling_queue
         self.heating_queue = heating_queue
-        self.pmv_queue = pmv_queue
-        self.ppd_queue = ppd_queue
-        self.beta_queue = beta_queue
-        self.emax_queue = emax_queue
         # Asignation of variables.
         
         self.obs_event = threading.Event()
         self.act_event = threading.Event()
         self.cooling_event = threading.Event()
         self.heating_event = threading.Event()
-        self.pmv_event = threading.Event()
-        self.ppd_event = threading.Event()
-        self.beta_event = threading.Event()
-        self.emax_event = threading.Event()
         # The queue events are generated.
         
         self.energyplus_exec_thread: Optional[threading.Thread] = None
@@ -92,8 +76,6 @@ class EnergyPlusRunner:
         self.first_observation = True
         self.dc_sum = 0
         self.dh_sum = 0
-        self.ppd_avg = []
-        self.pmv_avg = []
         self.obs = {}
         # Variables to be used in this thread.
 
@@ -107,9 +89,6 @@ class EnergyPlusRunner:
             "d": ("Site Wind Direction", "Environment"), #3
             "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
             "RHi": ("Zone Air Relative Humidity", "Thermal Zone"), #5
-            "T_rad": ("Zone Mean Radiant Temperature", "Thermal Zone"), #del
-            "Fanger_PMV":("Zone Thermal Comfort Fanger Model PMV", "People"), #del
-            "Fanger_PPD":("Zone Thermal Comfort Fanger Model PPD", "People"), #del
         }
         self.var_handles: Dict[str, int] = {}
         # Declaration of variables this simulation will interact with.
@@ -122,17 +101,13 @@ class EnergyPlusRunner:
         # Declaration of meters this simulation will interact with.
 
         self.actuators = {
-            "heating_setpoint": ("Schedule:Constant", "Schedule Value", "heating_setpoint"), # 8: 0-1
-            "cooling_setpoint": ("Schedule:Constant", "Schedule Value", "cooling_setpoint"), # 9: 0-1
-            "window_shading_control_1": ("Window Shading Control", "Control Status", "window_2"), # 10: 0.0: Shading device is off; 7.0: Exterior blind is on
-            "window_shading_control_2": ("Window Shading Control", "Control Status", "window_3"), # 11: 0.0: Shading device is off; 7.0: Exterior blind is on            
-            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_2"), # 12: opening factor between 0.0 and 1.0
-            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 13: opening factor between 0.0 and 1.0
+            "window_shading_control_1": ("Window Shading Control", "Control Status", "window_2"), # 8: 0.0: Shading device is off; 7.0: Exterior blind is on
+            "window_shading_control_2": ("Window Shading Control", "Control Status", "window_3"), # 9: 0.0: Shading device is off; 7.0: Exterior blind is on            
+            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_2"), # 10: opening factor between 0.0 and 1.0
+            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 11: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
 
-        self.prev_heating_setpoint_action = 19
-        self.prev_cooling_setpoint_action = 24
         self.prev_window_shading_control_1_action = 0
         self.prev_window_shading_control_2_action = 0
         self.prev_opening_window_1_action = 0
@@ -156,7 +131,7 @@ class EnergyPlusRunner:
             'dT_dn': 2.5, #es el límite inferior para el rango de confort
         }
         self.conventional_policy = Conventional(policy_config)
-        self.dsp = dsa.DualSetPoint()
+        self.window_action_space = dsa.TwoWindowsCentralizedControl()
 
     def start(self) -> None:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
@@ -249,57 +224,24 @@ class EnergyPlusRunner:
         # Variables, meters and actuatos conditions as observation.
         obs.update(
             {
-            'hora': hour,#10
-            'simulation_day': simulation_day,#11
-            # 'volumen': self.env_config['volumen'],#12
-            # 'window_area_relation_north': self.env_config['window_area_relation_north'],#13
-            # 'window_area_relation_west': self.env_config['window_area_relation_west'],#14
-            # 'window_area_relation_south': self.env_config['window_area_relation_south'],#15
-            # 'window_area_relation_east': self.env_config['window_area_relation_east'],#16
-            # 'construction_u_factor': self.env_config['construction_u_factor'], #17
-            # 'inercial_mass': self.env_config['inercial_mass'], #18
-            # 'latitud': self.env_config['latitud'], #19
-            # 'longitud':self.env_config['longitud'], #20
-            # 'altitud': self.env_config['altitud'], #21
-            'beta': self.env_config['beta'], #22
-            'E_max': self.env_config['E_max'], #23
-            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #24
+            'hora': hour,#12
+            'simulation_day': simulation_day,#13
+            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #14
             }
         )
         # Upgrade of the timestep observation.
         if time_step != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
             # To not perform one observation per hour.
-            self.dc_sum += abs(obs['dc'])/3600000
-            self.dh_sum += abs(obs['dh'])/3600000
-            self.ppd_avg.append(obs["Fanger_PPD"])
-            self.pmv_avg.append(obs["Fanger_PMV"])
+            self.dc_sum += obs['dc']
+            self.dh_sum += obs['dh']
             return
         else:
-            if len(self.ppd_avg) != 0:
-                self.ppd_avg = sum(self.ppd_avg)/len(self.ppd_avg)
-                self.pmv_avg = sum(self.pmv_avg)/len(self.pmv_avg)
-            else:
-                self.ppd_avg = obs["Fanger_PPD"]
-                self.pmv_avg = obs["Fanger_PMV"]
-                
             self.cooling_queue.put(self.dc_sum)
             self.cooling_event.set()
             self.heating_queue.put(self.dh_sum)
             self.heating_event.set()
-            self.beta_queue.put(obs['beta'])
-            self.beta_event.set()
-            self.emax_queue.put(obs['E_max'])
-            self.emax_event.set()
-            self.pmv_queue.put(self.pmv_avg)
-            self.pmv_event.set()
-            self.ppd_queue.put(self.ppd_avg)
-            self.ppd_event.set()
             # Set the variables to communicate with queue before to delete the following.
             
-            del obs["T_rad"]
-            del obs["Fanger_PMV"]
-            del obs["Fanger_PPD"]
-            # Variables are deleted from the observation because are difficult to mesure.
             self.obs = obs
             next_obs = np.array(list(obs.values()))
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
@@ -312,8 +254,6 @@ class EnergyPlusRunner:
             # Set the observation to communicate with queue.
             self.dc_sum = 0
             self.dh_sum = 0
-            self.ppd_avg = []
-            self.pmv_avg = []
 
     def _collect_first_obs(self, state_argument):
         """This method is used to collect only the first observation of the environment when the episode beggins.
@@ -336,8 +276,6 @@ class EnergyPlusRunner:
             return
         
         if api.exchange.zone_time_step_number(state_argument) != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
-            heating_setpoint_action = self.prev_heating_setpoint_action
-            cooling_setpoint_action = self.prev_cooling_setpoint_action
             window_shading_control_1_action = self.prev_window_shading_control_1_action
             window_shading_control_2_action = self.prev_window_shading_control_2_action
             opening_window_1_action = self.prev_opening_window_1_action
@@ -354,34 +292,19 @@ class EnergyPlusRunner:
             # In the case of simple agent a int value and for multiagents a dictionary.
             # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
             # ventilation, shadow control or a integrate control.
-            next_action = self.dsp.dual_action(next_central_action)
+            next_action = self.window_action_space.natural_ventilation_action(next_central_action)
             # Transform the centraliced action into a list of descentraliced actions.
             
-            heating_setpoint_action = next_action[0]
-            cooling_setpoint_action = next_action[1]
             window_shading_control_1_action = self.conventional_policy.window_shade(self.obs['Ti'],self.obs['rad'],self.prev_window_shading_control_1_action)
             window_shading_control_2_action = window_shading_control_1_action
-            opening_window_1_action = self.conventional_policy.window_opening(self.obs['Ti'],self.obs['To'],self.prev_opening_window_1_action)
-            opening_window_2_action = opening_window_1_action
+            opening_window_1_action = next_action[0]
+            opening_window_2_action = next_action[1]
             
-            self.prev_heating_setpoint_action = heating_setpoint_action
-            self.prev_cooling_setpoint_action = cooling_setpoint_action
             self.prev_window_shading_control_1_action = window_shading_control_1_action
             self.prev_window_shading_control_2_action = window_shading_control_2_action
             self.prev_opening_window_1_action = opening_window_1_action
             self.prev_opening_window_2_action = opening_window_2_action
         # Execute the same action during an hour.
-        
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["heating_setpoint"],
-            actuator_value=heating_setpoint_action
-        )
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["cooling_setpoint"],
-            actuator_value=cooling_setpoint_action
-        )
         
         api.exchange.set_actuator_value(
             state=state_argument,
@@ -487,7 +410,6 @@ class EnergyPlusRunner:
         """Method to liberate the space in the different queue objects.
         """
         for q in [self.obs_queue, self.act_queue, self.cooling_queue, 
-                  self.heating_queue, self.pmv_queue, self.ppd_queue,
-                  self.beta_queue, self.emax_queue]:
+                  self.heating_queue]:
             while not q.empty():
                 q.get()
