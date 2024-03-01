@@ -121,7 +121,7 @@ if __name__ == '__main__':
     import gymnasium as gym
     import os
     
-    name = 'VN_P1_RB'
+    name = 'VN_P1_RB_2'
     
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
@@ -152,5 +152,6 @@ if __name__ == '__main__':
         os.makedirs(env_config['output'])
     except OSError:
         pass
+    
     episode_reward = init_rb_evaluation(env_config, policy_config, name)
     print(f"Episode reward is: {episode_reward}.")
