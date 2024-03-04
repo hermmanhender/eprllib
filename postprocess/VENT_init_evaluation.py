@@ -84,7 +84,7 @@ def init_drl_evaluation(
         row = []
         
         obs_list = obs.tolist()
-        for _ in range(25):
+        for _ in range(len(obs_list)):
             row.append(obs_list[_])
         
         row.append(reward)
@@ -127,7 +127,7 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1(comfort)',
+        'building_name': 'prot_1(comfort)(evaluation)',
     }
 
     # se importan las políticas convencionales para la configuracion especificada
