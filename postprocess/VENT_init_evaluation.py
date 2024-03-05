@@ -107,7 +107,7 @@ if __name__ == '__main__':
     import gymnasium as gym
     import os
 
-    name = 'VN_P1_DQN'
+    name = 'temperature_thermostats'
     
     # Controles de la simulación
     env_config={
@@ -127,7 +127,7 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1(comfort)(evaluation)',
+        'building_name': 'prot_1',
     }
 
     # se importan las políticas convencionales para la configuracion especificada

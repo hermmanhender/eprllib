@@ -121,7 +121,7 @@ if __name__ == '__main__':
     import gymnasium as gym
     import os
     
-    name = 'VN_P1_RB_2'
+    name = 'temperature_thermostats_RB'
     
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1(comfort)(evaluation)'
+        'building_name': 'prot_1'
     }
     
     policy_config = { # configuracion del control convencional
