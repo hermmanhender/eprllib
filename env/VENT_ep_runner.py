@@ -34,8 +34,7 @@ class EnergyPlusRunner:
         env_config: Dict[str, Any],
         obs_queue: Queue,
         act_queue: Queue,
-        cooling_queue: Queue,
-        heating_queue: Queue
+        infos_queue: Queue
         ) -> None:
         """The object has an intensive interaction with EnergyPlus Environment script, exchange information
         between two threads. For a good coordination queue events are stablished and different canals of
@@ -46,8 +45,7 @@ class EnergyPlusRunner:
             env_config (Dict[str, Any]): Environment configuration defined in the call to the EnergyPlus Environment.
             obs_queue (Queue): Queue object definition.
             act_queue (Queue): Queue object definition.
-            cooling_queue (Queue): Queue object definition.
-            heating_queue (Queue): Queue object definition.
+            infos_queue (Queue): Queue object definition.
         
         Return:
             None.
@@ -57,14 +55,12 @@ class EnergyPlusRunner:
         self.env_config['episode'] = self.episode
         self.obs_queue = obs_queue
         self.act_queue = act_queue
-        self.cooling_queue = cooling_queue
-        self.heating_queue = heating_queue
+        self.infos_queue = infos_queue
         # Asignation of variables.
         
         self.obs_event = threading.Event()
         self.act_event = threading.Event()
-        self.cooling_event = threading.Event()
-        self.heating_event = threading.Event()
+        self.infos_event = threading.Event()
         # The queue events are generated.
         
         self.energyplus_exec_thread: Optional[threading.Thread] = None
@@ -77,6 +73,7 @@ class EnergyPlusRunner:
         self.dc_sum = 0
         self.dh_sum = 0
         self.obs = {}
+        self.infos = {}
         # Variables to be used in this thread.
 
         self.env_config = ep_episode_config.epJSON_path(self.env_config)
@@ -89,6 +86,7 @@ class EnergyPlusRunner:
             "d": ("Site Wind Direction", "Environment"), #3
             "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
             "RHi": ("Zone Air Relative Humidity", "Thermal Zone"), #5
+            "ppd": ()
         }
         self.var_handles: Dict[str, int] = {}
         # Declaration of variables this simulation will interact with.
