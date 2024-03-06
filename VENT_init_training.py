@@ -184,7 +184,7 @@ elif algorithm == 'DQN': # DQN Configuration
         lr = 0.01 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
         grad_clip = 40,
         grad_clip_by = 'global_norm',
-        train_batch_size = 32 if not tune_runner else tune.choice([8, 64, 128, 256]),
+        train_batch_size = 96 if not tune_runner else tune.choice([8, 64, 128, 256]),
         model = {
             "fcnet_hiddens": [512,512,512],
             "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
@@ -241,7 +241,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 24*365*150,
+            "epsilon_timesteps": 24*365*200,
         }
     )
 
@@ -425,7 +425,7 @@ if not restore:
             
         ),
         run_config=air.RunConfig(
-            name='VN_P1_'+str(algorithm),
+            name='20240306_VN_P1_'+str(algorithm),
             stop={"episodes_total": 1000},
             log_to_file=True,
             

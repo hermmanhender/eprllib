@@ -604,9 +604,10 @@
             "outside_layer": "Membrana Geotextil 4mm"
         },
         "wall": {
-            "layer_2": "Ladrillon",
-            "layer_3": "Revoque",
-            "layer_4": "Enyesado",
+            "layer_2": "Poliestireno 25mm",
+            "layer_3": "Ladrillon",
+            "layer_4": "Revoque",
+            "layer_5": "Enyesado",
             "outside_layer": "Revoque"
         },
         "wall_interior": {
@@ -734,16 +735,6 @@
         }
     },
     "Material": {
-        "Aislacion Puerta Chapa": {
-            "conductivity": 0.035,
-            "density": 20,
-            "roughness": "VerySmooth",
-            "solar_absorptance": 0.7,
-            "specific_heat": 1674,
-            "thermal_absorptance": 0.9,
-            "thickness": 0.04,
-            "visible_absorptance": 0.7
-        },
         "Carpeta 40mm": {
             "conductivity": 1.16,
             "density": 2000,
@@ -762,16 +753,6 @@
             "specific_heat": 1050,
             "thermal_absorptance": 0.93,
             "thickness": 0.01,
-            "visible_absorptance": 0.7
-        },
-        "Chapa puerta": {
-            "conductivity": 65,
-            "density": 7800,
-            "roughness": "Rough",
-            "solar_absorptance": 0.7,
-            "specific_heat": 450,
-            "thermal_absorptance": 0.9,
-            "thickness": 0.003,
             "visible_absorptance": 0.7
         },
         "Contrapiso 10cm": {
@@ -854,14 +835,14 @@
             "thickness": 0.018,
             "visible_absorptance": 0.7
         },
-        "Placa madera puerta": {
-            "conductivity": 0.17,
-            "density": 800,
-            "roughness": "Smooth",
+        "Poliestireno 25mm": {
+            "conductivity": 0.035,
+            "density": 20,
+            "roughness": "VerySmooth",
             "solar_absorptance": 0.3,
-            "specific_heat": 1335,
+            "specific_heat": 1674,
             "thermal_absorptance": 0.9,
-            "thickness": 0.05,
+            "thickness": 0.025,
             "visible_absorptance": 0.3
         },
         "Poliestireno 50mm": {

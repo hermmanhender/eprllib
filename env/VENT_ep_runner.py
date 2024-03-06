@@ -86,7 +86,7 @@ class EnergyPlusRunner:
             "d": ("Site Wind Direction", "Environment"), #3
             "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
             "RHi": ("Zone Air Relative Humidity", "Thermal Zone"), #5
-            "ppd": ()
+            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "People") # infos
         }
         self.var_handles: Dict[str, int] = {}
         # Declaration of variables this simulation will interact with.
@@ -234,13 +234,14 @@ class EnergyPlusRunner:
             self.dh_sum += obs['dh']
             return
         else:
-            self.cooling_queue.put(self.dc_sum)
-            self.cooling_event.set()
-            self.heating_queue.put(self.dh_sum)
-            self.heating_event.set()
+            infos = {'dc': self.dc_sum, 'dh': self.dh_sum, 'ppd': obs['ppd']}
+            self.infos_queue.put(infos)
+            self.infos_event.set()
             # Set the variables to communicate with queue before to delete the following.
+            del obs['ppd']
             
             self.obs = obs
+            self.infos = infos
             next_obs = np.array(list(obs.values()))
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
             weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
@@ -407,7 +408,6 @@ class EnergyPlusRunner:
     def _flush_queues(self):
         """Method to liberate the space in the different queue objects.
         """
-        for q in [self.obs_queue, self.act_queue, self.cooling_queue, 
-                  self.heating_queue]:
+        for q in [self.obs_queue, self.act_queue, self.infos_queue]:
             while not q.empty():
                 q.get()
