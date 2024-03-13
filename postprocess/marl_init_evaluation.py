@@ -1,27 +1,26 @@
-"""# RUN CONVENTIONAL CONTROLS
+"""# RUN DRL CONTROLS
 
 This script execute the conventional controls in the evaluation scenario.
 """
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
-from agents.conventional import Conventional
-from tools.devices_space_action import TwoWindowsCentralizedControl
+from ray.rllib.policy.policy import Policy
+from env.marl_ep_gym_env import EnergyPlusEnv_v0
 
 
-def init_rb_evaluation(
+def init_drl_evaluation(
     env_config: dict,
-    policy_config: dict,
+    checkpoint_path: str,
     name: str
 ) -> float:
-    """This method execute RB Natural Ventilation Policy with `policy_config` configuration from
-    `checkpoint_path` for `EnergyPlusEnv_v0` with `env_config` configuration and save the results 
-    of an evaluation episode in `env_config['output']/name` file.
+    """This method restore a DRL Policy from `checkpoint_path` for `EnergyPlusEnv_v0` with 
+    `env_config` configuration and save the results of an evaluation episode in 
+    `env_config['output']/name` file.
 
     Args:
         env_config (dict): Environment configuration
-        policy_config (str): Configuration for the conventional policy.
+        checkpoint_path (str): Path to the checkpointing produced during training.
         name (str): file name where the results will be save.
     
     Return:
@@ -30,7 +29,7 @@ def init_rb_evaluation(
     ```
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
-        'output': TemporaryDirectory("output","RB_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
+        'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
         'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
         'epjson_output_folder': 'C:/Users/grhen/Documents/models',
         'ep_terminal_output': False,
@@ -48,84 +47,80 @@ def init_rb_evaluation(
         'episode_len': 365,
         'rotation': 0,
     }
+    checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/1024p2x512_dueT1x512_douT_DQN_cb9bc_00000/checkpoint_000064'
+    name = 'VN_P1_0.5_DQN'
     
-    policy_config = { # configuracion del control convencional
-        'SP_temp': 22, #es el valor de temperatura de confort
-        'dT_up': 2.5, #es el límite superior para el rango de confort
-        'dT_dn': 2.5, #es el límite inferior para el rango de confort
-    }
-    
-    name = 'VN_P1_0.5_RB'
-    
-    episode_reward = init_rb_evaluation(
+    episode_reward = init_drl_evaluation(
         env_config=env_config,
-        policy_config=policy_config,
+        checkpoint_path=checkpoint_path,
         name=name
     )
     
     print(f"Episode reward is: {episode_reward}.")
     ```
     """
-    # se importan las políticas convencionales para la configuracion especificada
-    policy = Conventional(policy_config)
-    action_space = TwoWindowsCentralizedControl()
+    # Use the `from_checkpoint` utility of the Policy class:
+    policy = Policy.from_checkpoint(checkpoint_path)
     # se inicia el entorno con la configuración especificada
     env = EnergyPlusEnv_v0(env_config)
-
+    _agents_id = env.get_agent_ids()
+    _agents_id_list = list(_agents_id)
     # open the file in the write mode
     data = open(env_config['output']+'/'+name+'.csv', 'w')
     # create the csv writer
     writer = csv.writer(data)
-    terminated = False # variable de control de lazo (es verdadera cuando termina un episodio)
+    terminated = {}
+    terminated["__all__"] = False # variable de control de lazo (es verdadera cuando termina un episodio)
     episode_reward = 0
     # se obtiene la observaión inicial del entorno para el episodio
-    obs, info = env.reset()
-    while not terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
+    obs_dict, infos = env.reset()
+    while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
-        To = obs[0]
-        Ti = obs[1]
-        action_w1 = obs[10]
-        action_w2 = obs[11]
-        
-        action_1 = 0#policy.window_opening(Ti, To, action_w1)
-        action_2 = 0#policy.window_opening(Ti, To, action_w2)
-        actions = action_space.natural_ventilation_central_action(action_1, action_2)
+        actions_dict = {}
+        for agent in _agents_id:
+            action, _, _ = policy['shared_policy'].compute_single_action(obs_dict[agent])
+            actions_dict[agent] = action
         
         # se ejecuta un paso de tiempo
-        obs, reward, terminated, truncated, infos = env.step(actions)
+        obs_dict, reward, terminated, truncated, infos = env.step(actions_dict)
         # se guardan los datos
         # write a row to the csv file
         row = []
         
-        obs_list = obs.tolist()
+        obs_list = obs_dict[_agents_id_list[0]].tolist()
         for _ in range(len(obs_list)):
             row.append(obs_list[_])
         
-        row.append(reward)
-        row.append(terminated)
-        row.append(truncated)
+        action_list = list(actions_dict.values())
+        for _ in range(len(action_list)):
+            row.append(action_list[_])
         
-        info_list = list(infos.values())
+        row.append(reward[_agents_id_list[0]])
+        row.append(terminated["__all__"])
+        row.append(truncated["__all__"])
+        
+        info_list = list(infos[_agents_id_list[0]].values())
         for _ in range(len(info_list)):
             row.append(info_list[_])
         
         writer.writerow(row)
-        episode_reward += reward
+        episode_reward += reward[_agents_id_list[0]]
     # close the file
     data.close()
-
+    
     return episode_reward
 
 if __name__ == '__main__':
     
     import gymnasium as gym
     import os
+
+    name = 'natural_drl_control'
     
-    name = 'natural_no_ventilation'
-    
-    env_config={ 
+    # Controles de la simulación
+    env_config={
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
-        'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
+        'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+name,
         'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
         'epjson_output_folder': 'C:/Users/grhen/Documents/models',
         # Configure the directories for the experiment.
@@ -140,18 +135,21 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1(natural)'
+        'building_name': 'prot_1(natural)',
     }
+
+    # se importan las políticas convencionales para la configuracion especificada
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240306_VN_prot_1_natural_DQN/3x512_dueT1x512_douT_DQN_083f9_00000/checkpoint_000535'
     
-    policy_config = { # configuracion del control convencional
-        'SP_temp': 22, #es el valor de temperatura de confort
-        'dT_up': 2.5, #es el límite superior para el rango de confort
-        'dT_dn': 2.5, #es el límite inferior para el rango de confort
-    }
     try:
         os.makedirs(env_config['output'])
     except OSError:
         pass
     
-    episode_reward = init_rb_evaluation(env_config, policy_config, name)
+    episode_reward = init_drl_evaluation(
+        env_config,
+        checkpoint_path,
+        name
+    )
+    
     print(f"Episode reward is: {episode_reward}.")

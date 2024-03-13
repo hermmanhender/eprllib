@@ -48,7 +48,8 @@ from ray.tune.search.bayesopt import BayesOptSearch
 # Search algorithm to tune the hyperparameters
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from ray.rllib.policy.policy import PolicySpec
+from env.marl_ep_gym_env import EnergyPlusEnv_v0
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.
@@ -74,9 +75,9 @@ env_config={
     'is_test': False,
     # For evaluation process 'is_test=True' and for trainig False.
     'test_init_day': 1,
-    'action_space': gym.spaces.Discrete(4),
+    'action_space': gym.spaces.Discrete(2),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (304,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
@@ -95,6 +96,10 @@ register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
 Different algorithms are configurated in the following lines. It is possible to add other
 algorithm configuration here or modify the presents.
 """
+
+def policy_mapping_fn(agent_id, episode, worker, **kwargs):
+    return "shared_policy"
+
 
 if algorithm == 'PPO': # PPO Configuration
     algo = PPOConfig().training(
@@ -226,7 +231,12 @@ elif algorithm == 'DQN': # DQN Configuration
         num_envs_per_worker=1,
     ).experimental(
         _enable_new_api_stack = False,
-    ).reporting( # multi_agent config va aquí
+    ).multi_agent(
+        policies = {
+            'shared_policy': PolicySpec(),
+        },
+        policy_mapping_fn = policy_mapping_fn,
+    ).reporting(
         min_sample_timesteps_per_iteration = 1000,
     ).checkpointing(
         export_native_model_files = True,
@@ -241,7 +251,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 24*365*200,
+            "epsilon_timesteps": 24*365*500,
         }
     )
 
@@ -426,7 +436,7 @@ if not restore:
         ),
         run_config=air.RunConfig(
             name='20240306_VN_prot_1_natural_'+str(algorithm),
-            stop={"episodes_total": 400},
+            stop={"episodes_total": 1000},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(

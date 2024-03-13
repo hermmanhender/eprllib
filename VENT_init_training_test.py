@@ -48,7 +48,7 @@ from ray.tune.search.bayesopt import BayesOptSearch
 # Search algorithm to tune the hyperparameters
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from env.VENT_ep_gym_env_test import EnergyPlusEnv_v0
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.
@@ -76,11 +76,11 @@ env_config={
     'test_init_day': 1,
     'action_space': gym.spaces.Discrete(4),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (299,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
-    'building_name': 'prot_1(natural)',
+    'building_name': 'AirflowNetwork3zVent',
 }
 
 """## INIT RAY AND REGISTER THE ENVIRONMENT

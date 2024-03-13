@@ -1,9 +1,9 @@
 {
     "AirflowNetwork:MultiZone:Component:SimpleOpening": {
         "window": {
-            "air_mass_flow_coefficient_when_opening_is_closed": 0.001,
+            "air_mass_flow_coefficient_when_opening_is_closed": 0.00058,
             "air_mass_flow_exponent_when_opening_is_closed": 0.65,
-            "discharge_coefficient": 1,
+            "discharge_coefficient": 2,
             "minimum_density_difference_for_two_way_flow": 0.001
         }
     },

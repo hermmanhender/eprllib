@@ -3,31 +3,25 @@
 This script define the environment of EnergyPlus implemented in RLlib. To works need to define the
 EnergyPlus Runner.
 """
-import gymnasium as gym
+from ray.rllib.env.multi_agent_env import MultiAgentEnv
 # Used to define the environment base and the size of action and observation spaces.
 from queue import Empty, Full, Queue
 # Used to separate the execution in two threads and comunicate EnergyPlus with this environment.
 from typing import Any, Dict, Optional
 # To specify the types of variables espected.
-from env.VENT_ep_runner import EnergyPlusRunner
+from env.marl_ep_runner import EnergyPlusRunner
 # The EnergyPlus Runner.
 
-class EnergyPlusEnv_v0(gym.Env):
+class EnergyPlusEnv_v0(MultiAgentEnv):
     def __init__(
         self,
         env_config: Dict[str, Any]
         ):
-        """Environment of a building that run with EnergyPlus Runner.
-
-        Args:
-            env_config (Dict[str, Any]): _description_
-                'action_space'
-                'observation_space'
-        """
         super().__init__()
         # super init of the base class gym.Env.
         self.env_config = env_config
         # asigning the configuration of the environment.
+        self._agent_ids = ['window_opening_1', 'window_opening_2', 'shading_control_1', 'shading_control_2']
         self.episode = -1
         # variable for the registry of the episode number.
         self.action_space = self.env_config['action_space']
@@ -56,57 +50,52 @@ class EnergyPlusEnv_v0(gym.Env):
         self.episode += 1
         # Increment the counting of episodes in 1.
         self.timestep = 0
-        
-        if not self.truncate_flag:
-            # This flag is implemented in cases when the episode would be truncated.
-            if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
-                # Condition implemented to restart a new epsiode when simulation is completed and EnergyPlus Runner is already inicialized.
-                self.energyplus_runner.stop()
-            
-            # If the EnergyPlus Runner is not inicialized is a new simulation run.
-            self.obs_queue = Queue(maxsize=1)
-            self.act_queue = Queue(maxsize=1)
-            self.infos_queue = Queue(maxsize=1)
-            # Define the queues for flow control between threads in a max size of 1 because EnergyPlus 
-            # time step will be processed at a time.
 
-            
-            self.energyplus_runner = EnergyPlusRunner(
-                # Start EnergyPlusRunner whith the following configuration.
-                episode=self.episode,
-                env_config=self.env_config,
-                obs_queue=self.obs_queue,
-                act_queue=self.act_queue,
-                infos_queue=self.infos_queue
-            )
-            
-            self.energyplus_runner.start()
-            # Divide the thread in two in this point.
-            self.energyplus_runner.obs_event.wait()
-            # Wait untill an observation is made.
-            obs = self.obs_queue.get()
-            # Get the observation.
-            self.energyplus_runner.infos_event.wait()
-            # Wait untill an cooling metric read is made.
-            infos = self.infos_queue.get()
-            # Get the cooling metric read. It is not used here, but yes in the step method and it is necesary
-            # to liberate the space in teh queue.
-            
-            self.last_obs = obs
-            self.last_infos = infos
-            # Save the observation as a last observation.
+        # This flag is implemented in cases when the episode would be truncated.
+        if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
+            # Condition implemented to restart a new epsiode when simulation is completed and EnergyPlus Runner is already inicialized.
+            self.energyplus_runner.stop()
         
-        else:
-            obs = self.last_obs
-            infos = self.last_infos
-            self.truncate_flag = False
+        # If the EnergyPlus Runner is not inicialized is a new simulation run.
+        self.obs_queue = Queue(maxsize=1)
+        self.act_queue = Queue(maxsize=1)
+        self.infos_queue = Queue(maxsize=1)
+        # Define the queues for flow control between threads in a max size of 1 because EnergyPlus 
+        # time step will be processed at a time.
+
+        self.energyplus_runner = EnergyPlusRunner(
+            # Start EnergyPlusRunner whith the following configuration.
+            episode=self.episode,
+            env_config=self.env_config,
+            obs_queue=self.obs_queue,
+            act_queue=self.act_queue,
+            infos_queue=self.infos_queue
+        )
+        
+        self.energyplus_runner.start()
+        # Divide the thread in two in this point.
+        self.energyplus_runner.obs_event.wait()
+        # Wait untill an observation is made.
+        obs = self.obs_queue.get()
+        # Get the observation.
+        self.energyplus_runner.infos_event.wait()
+        # Wait untill an cooling metric read is made.
+        infos = self.infos_queue.get()
+        # Get the cooling metric read. It is not used here, but yes in the step method and it is necesary
+        # to liberate the space in teh queue.
+        
+        self.last_obs = obs
+        self.last_infos = infos
+        # Save the observation as a last observation.
             
         return obs, infos
 
     def step(self, action):
         self.timestep += 1
-        terminated = False
-        truncated = False
+        terminated = {}
+        terminateds = False
+        truncated = {}
+        truncateds = False
         # terminated variable is used to determine the end of a episode. Is stablished as False until the
         # environment present a terminal state.
         timeout = 40
@@ -119,7 +108,7 @@ class EnergyPlusEnv_v0(gym.Env):
             if self.energyplus_runner.failed():
                 # check for simulation errors.
                 raise Exception("Faulty episode")
-            terminated = True
+            terminateds = True
             # if the simulation is complete, the episode is ended.
             obs = self.last_obs
             infos = self.last_infos
@@ -142,7 +131,7 @@ class EnergyPlusEnv_v0(gym.Env):
                 # Upgrade last observation.
 
             except (Full, Empty):
-                terminated = True
+                terminateds = True
                 # Set the terminated variable into True to finish the episode.
                 obs = self.last_obs
                 infos = self.last_infos
@@ -150,17 +139,24 @@ class EnergyPlusEnv_v0(gym.Env):
         
         if self.energyplus_runner.failed():
             # Raise an exception if the episode is faulty.
-            truncated = True
+            truncateds = True
             raise Exception("Faulty episode")
         
         # Transform energy variables in Joule to kWh
         
-        reward = -((22-infos['Ti'])**2)
+        reward = -((22-infos['window_opening_1']['Ti'])**2)
+        
+        reward_dict = {
+            'window_opening_1': reward,
+            'window_opening_2': reward,
+            'shading_control_1': reward,
+            'shading_control_2': reward,
+            }
         # Calculate the reward in the timestep
+        terminated["__all__"] = terminateds
+        truncated["__all__"] = truncateds
         
-        #truncated = self.timestep_cut(6*24*5, terminated)
-        
-        return obs, reward, terminated, truncated, infos
+        return obs, reward_dict, terminated, truncated, infos
 
     def close(self):
         if self.energyplus_runner is not None:

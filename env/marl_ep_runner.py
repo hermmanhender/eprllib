@@ -86,6 +86,7 @@ class EnergyPlusRunner:
             "d": ("Site Wind Direction", "Environment"), #3
             "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
             "RHi": ("Zone Air Relative Humidity", "Thermal Zone"), #5
+            "pres": ("Site Outdoor Air Barometric Pressure", "Environment"), #6
             "ppd": ("Zone Thermal Comfort Fanger Model PPD", "People") # infos
         }
         self.var_handles: Dict[str, int] = {}
@@ -105,11 +106,6 @@ class EnergyPlusRunner:
             "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 11: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
-
-        self.prev_window_shading_control_1_action = 0
-        self.prev_window_shading_control_2_action = 0
-        self.prev_opening_window_1_action = 0
-        self.prev_opening_window_2_action = 0
         # Declaration of actuators this simulation will interact with.
         # Airflow Network Openings (EnergyPlus Documentation)
         # An actuator called “AirFlow Network Window/Door Opening” is available with a control type
@@ -228,31 +224,36 @@ class EnergyPlusRunner:
             }
         )
         # Upgrade of the timestep observation.
-        if time_step != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
-            # To not perform one observation per hour.
-            self.dc_sum += obs['dc']
-            self.dh_sum += obs['dh']
-            return
-        else:
-            infos = {'dc': self.dc_sum, 'dh': self.dh_sum, 'ppd': obs['ppd'], 'Ti': obs['Ti']}
-            self.infos_queue.put(infos)
-            self.infos_event.set()
-            # Set the variables to communicate with queue before to delete the following.
-            del obs['ppd']
-            
-            self.obs = obs
-            self.infos = infos
-            next_obs = np.array(list(obs.values()))
-            # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
-            # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
-            self.next_obs = np.concatenate([next_obs, weather_prob])
-            
-            self.obs_queue.put(self.next_obs)
-            self.obs_event.set()
-            # Set the observation to communicate with queue.
-            self.dc_sum = 0
-            self.dh_sum = 0
+        infos_dict = {'dc': obs['dc'], 'dh': obs['dh'], 'ppd': obs['ppd'], 'Ti': obs['Ti']}
+        infos = {
+            'window_opening_1': infos_dict,
+            'window_opening_2': infos_dict,
+            'shading_control_1': infos_dict,
+            'shading_control_2': infos_dict,
+        }
+        self.infos_queue.put(infos)
+        self.infos_event.set()
+        # Set the variables to communicate with queue before to delete the following.
+        del obs['ppd']
+        
+        self.obs = obs
+        self.infos = infos
+        next_obs = np.array(list(obs.values()))
+        # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+        weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
+        # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
+        next_obs = np.concatenate([next_obs, weather_prob])
+        
+        next_obs_dict = {
+            'window_opening_1': np.concatenate(([1], next_obs)),
+            'window_opening_2': np.concatenate(([2], next_obs)),
+            'shading_control_1': np.concatenate(([3], next_obs)),
+            'shading_control_2': np.concatenate(([4], next_obs)),
+        }
+        
+        self.obs_queue.put(next_obs_dict)
+        self.obs_event.set()
+        # Set the observation to communicate with queue.
 
     def _collect_first_obs(self, state_argument):
         """This method is used to collect only the first observation of the environment when the episode beggins.
@@ -274,47 +275,19 @@ class EnergyPlusRunner:
             # warming period are not complete.
             return
         
-        if api.exchange.zone_time_step_number(state_argument) != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
-            window_shading_control_1_action = self.prev_window_shading_control_1_action
-            window_shading_control_2_action = self.prev_window_shading_control_2_action
-            opening_window_1_action = self.prev_opening_window_1_action
-            opening_window_2_action = self.prev_opening_window_2_action
-            
-        else:
-            self.act_event.wait(20)
-            # Wait for an action.
-            if self.act_queue.empty():
-                # Return in the first timestep.
-                return
-            next_central_action = self.act_queue.get()
-            # Get the central action from the EnergyPlus Environment `step` method.
-            # In the case of simple agent a int value and for multiagents a dictionary.
-            # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
-            # ventilation, shadow control or a integrate control.
-            next_action = self.window_action_space.natural_ventilation_action(next_central_action)
-            # Transform the centraliced action into a list of descentraliced actions.
-            
-            window_shading_control_1_action = self.conventional_policy.window_shade(self.obs['Ti'],self.obs['rad'],self.prev_window_shading_control_1_action)
-            window_shading_control_2_action = window_shading_control_1_action
-            opening_window_1_action = next_action[0]
-            opening_window_2_action = next_action[1]
-            
-            self.prev_window_shading_control_1_action = window_shading_control_1_action
-            self.prev_window_shading_control_2_action = window_shading_control_2_action
-            self.prev_opening_window_1_action = opening_window_1_action
-            self.prev_opening_window_2_action = opening_window_2_action
+        self.act_event.wait(20)
+        # Wait for an action.
+        if self.act_queue.empty():
+            # Return in the first timestep.
+            return
+        dict_action = self.act_queue.get()
+        # Get the central action from the EnergyPlus Environment `step` method.
+        # In the case of simple agent a int value and for multiagents a dictionary.
+        opening_window_1_action = dict_action['window_opening_1']
+        opening_window_2_action = dict_action['window_opening_2']
+        window_shading_control_1_action = dict_action['shading_control_1']
+        window_shading_control_2_action = dict_action['shading_control_2']
         # Execute the same action during an hour.
-        
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["window_shading_control_1"],
-            actuator_value=window_shading_control_1_action
-        )
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["window_shading_control_2"],
-            actuator_value=window_shading_control_2_action
-        )
         
         api.exchange.set_actuator_value(
             state=state_argument,
@@ -325,6 +298,16 @@ class EnergyPlusRunner:
             state=state_argument,
             actuator_handle=self.actuator_handles["opening_window_2"],
             actuator_value=opening_window_2_action
+        )
+        api.exchange.set_actuator_value(
+            state=state_argument,
+            actuator_handle=self.actuator_handles["window_shading_control_1"],
+            actuator_value=window_shading_control_1_action
+        )
+        api.exchange.set_actuator_value(
+            state=state_argument,
+            actuator_handle=self.actuator_handles["window_shading_control_2"],
+            actuator_value=window_shading_control_2_action
         )
         # Perform the actions in EnergyPlus simulation.
     

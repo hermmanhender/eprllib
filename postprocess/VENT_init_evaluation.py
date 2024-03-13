@@ -107,7 +107,7 @@ if __name__ == '__main__':
     import gymnasium as gym
     import os
 
-    name = 'temperature_thermostats'
+    name = 'natural_drl_control'
     
     # Controles de la simulación
     env_config={
@@ -127,11 +127,11 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1',
+        'building_name': 'prot_1(natural)',
     }
 
     # se importan las políticas convencionales para la configuracion especificada
-    checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_DQN/3x512_dueT1x512_douT_DQN_22db4_00000/checkpoint_000099'
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240306_VN_prot_1_natural_DQN/3x512_dueT1x512_douT_DQN_4353d_00000/checkpoint_000085'
     
     try:
         os.makedirs(env_config['output'])
