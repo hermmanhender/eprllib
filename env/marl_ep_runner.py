@@ -81,29 +81,24 @@ class EnergyPlusRunner:
         
         self.variables = {
             "To": ("Site Outdoor Air Drybulb Temperature", "Environment"), #0
-            "Ti": ("Zone Mean Air Temperature", "Thermal Zone"), #1
+            "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Room1"), #1
             "v": ("Site Wind Speed", "Environment"), #2
             "d": ("Site Wind Direction", "Environment"), #3
             "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
-            "RHi": ("Zone Air Relative Humidity", "Thermal Zone"), #5
+            "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Room1"), #5
             "pres": ("Site Outdoor Air Barometric Pressure", "Environment"), #6
-            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "People") # infos
+            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Room1 Occupancy") # infos
         }
         self.var_handles: Dict[str, int] = {}
         # Declaration of variables this simulation will interact with.
 
-        self.meters = {
-            "dh": "Heating:DistrictHeatingWater", #6
-            "dc": "Cooling:DistrictCooling" #7
-        }
+        self.meters = {}
         self.meter_handles: Dict[str, int] = {}
         # Declaration of meters this simulation will interact with.
 
         self.actuators = {
-            "window_shading_control_1": ("Window Shading Control", "Control Status", "window_2"), # 8: 0.0: Shading device is off; 7.0: Exterior blind is on
-            "window_shading_control_2": ("Window Shading Control", "Control Status", "window_3"), # 9: 0.0: Shading device is off; 7.0: Exterior blind is on            
-            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_2"), # 10: opening factor between 0.0 and 1.0
-            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 11: opening factor between 0.0 and 1.0
+            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "room1_N_window"), # 7: opening factor between 0.0 and 1.0
+            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "room1_S_window"), # 8: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
         # Declaration of actuators this simulation will interact with.
@@ -118,14 +113,6 @@ class EnergyPlusRunner:
         # the associated airflow network input objects. The actuator control involves setting the value of the
         # opening factor between 0.0 and 1.0. Use of this actuator with an air boundary surface is allowed,
         # but will generate a warning since air boundaries are typically always open.
-        
-        policy_config = { # configuracion del control convencional
-            'SP_temp': 22, #es el valor de temperatura de confort
-            'dT_up': 2.5, #es el límite superior para el rango de confort
-            'dT_dn': 2.5, #es el límite inferior para el rango de confort
-        }
-        self.conventional_policy = Conventional(policy_config)
-        self.window_action_space = dsa.TwoWindowsCentralizedControl()
 
     def start(self) -> None:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
@@ -218,18 +205,19 @@ class EnergyPlusRunner:
         # Variables, meters and actuatos conditions as observation.
         obs.update(
             {
-            'hora': hour,#12
-            'simulation_day': simulation_day,#13
+            'day_of_the_week': api.exchange.day_of_week(state_argument), #9
+            'is_raining': api.exchange.is_raining(state_argument), #10
+            'sun_is_up': api.exchange.sun_is_up(state_argument), #11
+            'hora': hour, #12
+            'simulation_day': simulation_day, #13
             "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #14
             }
         )
         # Upgrade of the timestep observation.
-        infos_dict = {'dc': obs['dc'], 'dh': obs['dh'], 'ppd': obs['ppd'], 'Ti': obs['Ti']}
+        infos_dict = {'ppd': obs['ppd'], 'Ti': obs['Ti']}
         infos = {
             'window_opening_1': infos_dict,
             'window_opening_2': infos_dict,
-            'shading_control_1': infos_dict,
-            'shading_control_2': infos_dict,
         }
         self.infos_queue.put(infos)
         self.infos_event.set()
@@ -245,10 +233,8 @@ class EnergyPlusRunner:
         next_obs = np.concatenate([next_obs, weather_prob])
         
         next_obs_dict = {
-            'window_opening_1': np.concatenate(([1], next_obs)),
-            'window_opening_2': np.concatenate(([2], next_obs)),
-            'shading_control_1': np.concatenate(([3], next_obs)),
-            'shading_control_2': np.concatenate(([4], next_obs)),
+            'window_opening_1': np.concatenate(([10], next_obs)),
+            'window_opening_2': np.concatenate(([20], next_obs)),
         }
         
         self.obs_queue.put(next_obs_dict)
@@ -285,8 +271,6 @@ class EnergyPlusRunner:
         # In the case of simple agent a int value and for multiagents a dictionary.
         opening_window_1_action = dict_action['window_opening_1']
         opening_window_2_action = dict_action['window_opening_2']
-        window_shading_control_1_action = dict_action['shading_control_1']
-        window_shading_control_2_action = dict_action['shading_control_2']
         # Execute the same action during an hour.
         
         api.exchange.set_actuator_value(
@@ -298,16 +282,6 @@ class EnergyPlusRunner:
             state=state_argument,
             actuator_handle=self.actuator_handles["opening_window_2"],
             actuator_value=opening_window_2_action
-        )
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["window_shading_control_1"],
-            actuator_value=window_shading_control_1_action
-        )
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["window_shading_control_2"],
-            actuator_value=window_shading_control_2_action
         )
         # Perform the actions in EnergyPlus simulation.
     

@@ -21,7 +21,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # super init of the base class gym.Env.
         self.env_config = env_config
         # asigning the configuration of the environment.
-        self._agent_ids = ['window_opening_1', 'window_opening_2', 'shading_control_1', 'shading_control_2']
+        self._agent_ids = ['window_opening_1', 'window_opening_2']
         self.episode = -1
         # variable for the registry of the episode number.
         self.action_space = self.env_config['action_space']
@@ -148,9 +148,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         reward_dict = {
             'window_opening_1': reward,
-            'window_opening_2': reward,
-            'shading_control_1': reward,
-            'shading_control_2': reward,
+            'window_opening_2': reward
             }
         # Calculate the reward in the timestep
         terminated["__all__"] = terminateds

@@ -1,26 +1,26 @@
-"""# RUN DRL CONTROLS
+"""# RUN CONVENTIONAL CONTROLS
 
 This script execute the conventional controls in the evaluation scenario.
 """
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from ray.rllib.policy.policy import Policy
 from env.marl_ep_gym_env import EnergyPlusEnv_v0
+from agents.conventional import Conventional
 
 
-def init_drl_evaluation(
+def init_rb_evaluation(
     env_config: dict,
-    checkpoint_path: str,
+    policy_config: dict,
     name: str
 ) -> float:
-    """This method restore a DRL Policy from `checkpoint_path` for `EnergyPlusEnv_v0` with 
-    `env_config` configuration and save the results of an evaluation episode in 
-    `env_config['output']/name` file.
+    """This method execute RB Natural Ventilation Policy with `policy_config` configuration from
+    `checkpoint_path` for `EnergyPlusEnv_v0` with `env_config` configuration and save the results 
+    of an evaluation episode in `env_config['output']/name` file.
 
     Args:
         env_config (dict): Environment configuration
-        checkpoint_path (str): Path to the checkpointing produced during training.
+        policy_config (str): Configuration for the conventional policy.
         name (str): file name where the results will be save.
     
     Return:
@@ -29,7 +29,7 @@ def init_drl_evaluation(
     ```
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
-        'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
+        'output': TemporaryDirectory("output","RB_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
         'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
         'epjson_output_folder': 'C:/Users/grhen/Documents/models',
         'ep_terminal_output': False,
@@ -47,24 +47,31 @@ def init_drl_evaluation(
         'episode_len': 365,
         'rotation': 0,
     }
-    checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/1024p2x512_dueT1x512_douT_DQN_cb9bc_00000/checkpoint_000064'
-    name = 'VN_P1_0.5_DQN'
     
-    episode_reward = init_drl_evaluation(
+    policy_config = { # configuracion del control convencional
+        'SP_temp': 22, #es el valor de temperatura de confort
+        'dT_up': 2.5, #es el límite superior para el rango de confort
+        'dT_dn': 2.5, #es el límite inferior para el rango de confort
+    }
+    
+    name = 'VN_P1_0.5_RB'
+    
+    episode_reward = init_rb_evaluation(
         env_config=env_config,
-        checkpoint_path=checkpoint_path,
+        policy_config=policy_config,
         name=name
     )
     
     print(f"Episode reward is: {episode_reward}.")
     ```
     """
-    # Use the `from_checkpoint` utility of the Policy class:
-    policy = Policy.from_checkpoint(checkpoint_path)
+    # se importan las políticas convencionales para la configuracion especificada
+    policy = Conventional(policy_config)
     # se inicia el entorno con la configuración especificada
     env = EnergyPlusEnv_v0(env_config)
     _agents_id = env.get_agent_ids()
     _agents_id_list = list(_agents_id)
+
     # open the file in the write mode
     data = open(env_config['output']+'/'+name+'.csv', 'w')
     # create the csv writer
@@ -76,10 +83,15 @@ def init_drl_evaluation(
     obs_dict, infos = env.reset()
     while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
-        actions_dict = {}
-        for agent in _agents_id:
-            action, _, _ = policy['shared_policy'].compute_single_action(obs_dict[agent])
-            actions_dict[agent] = action
+        To = obs_dict[_agents_id_list[0]][0]
+        Ti = obs_dict[_agents_id_list[0]][1]
+        action_w1 = obs_dict[_agents_id_list[0]][7]
+        action_w2 = obs_dict[_agents_id_list[0]][8]
+        
+        actions_dict = {
+            'window_opening_1': policy.window_opening(Ti, To, action_w1),
+            'window_opening_2': policy.window_opening(Ti, To, action_w2)
+        }
         
         # se ejecuta un paso de tiempo
         obs_dict, reward, terminated, truncated, infos = env.step(actions_dict)
@@ -107,20 +119,19 @@ def init_drl_evaluation(
         episode_reward += reward[_agents_id_list[0]]
     # close the file
     data.close()
-    
+
     return episode_reward
 
 if __name__ == '__main__':
     
     import gymnasium as gym
     import os
-
-    name = 'natural_drl_control'
     
-    # Controles de la simulación
-    env_config={
+    name = 'prot3_rb'
+    
+    env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
-        'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+name,
+        'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
         'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
         'epjson_output_folder': 'C:/Users/grhen/Documents/models',
         # Configure the directories for the experiment.
@@ -135,21 +146,18 @@ if __name__ == '__main__':
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_3_ceiling',
+        'building_name': 'prot_3_ceiling'
     }
-
-    # se importan las políticas convencionales para la configuracion especificada
-    checkpoint_path = 'C:/Users/grhen/ray_results/20240306_VN_prot_1_natural_DQN/3x512_dueT1x512_douT_DQN_083f9_00000/checkpoint_000535'
     
+    policy_config = { # configuracion del control convencional
+        'SP_temp': 22, #es el valor de temperatura de confort
+        'dT_up': 2.5, #es el límite superior para el rango de confort
+        'dT_dn': 2.5, #es el límite inferior para el rango de confort
+    }
     try:
         os.makedirs(env_config['output'])
     except OSError:
         pass
     
-    episode_reward = init_drl_evaluation(
-        env_config,
-        checkpoint_path,
-        name
-    )
-    
+    episode_reward = init_rb_evaluation(env_config, policy_config, name)
     print(f"Episode reward is: {episode_reward}.")

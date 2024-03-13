@@ -81,7 +81,7 @@ env_config={
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
-    'building_name': 'prot_1(natural)',
+    'building_name': 'prot_3_ceiling',
 }
 
 """## INIT RAY AND REGISTER THE ENVIRONMENT
@@ -435,7 +435,7 @@ if not restore:
             
         ),
         run_config=air.RunConfig(
-            name='20240306_VN_prot_1_natural_'+str(algorithm),
+            name='20240306_VN_marl_prot3_'+str(algorithm),
             stop={"episodes_total": 1000},
             log_to_file=True,
             
