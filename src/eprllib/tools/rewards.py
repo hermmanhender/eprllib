@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 
-def reward_function_T3(config: Dict[str, Any], obs: dict, infos: dict, agent_ids: list) -> float:
+def reward_function_T3(config: Dict[str, Any], obs: dict, infos: dict) -> float:
     """This function returns the reward calcualted as the absolute value of the cube in the 
     difference between set point temperatur for comfort and the temperature measured in the 
     thermal zone when there are people in the zone but zero when is not.
@@ -15,8 +15,9 @@ def reward_function_T3(config: Dict[str, Any], obs: dict, infos: dict, agent_ids
     Returns:
         float: reward value
     """
+    agent_ids = config['agent_ids']
     T_confort = config.get('T_confort', 23.5)
-    occupancy = infos[agent_ids[0]]['occupancy'],
+    occupancy = infos[agent_ids[0]]['occupancy']
     T_zone = infos[agent_ids[0]]['Ti']
     if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
         reward = -(min(abs((T_confort - T_zone)**3),343.))
@@ -32,7 +33,7 @@ def reward_function_T3(config: Dict[str, Any], obs: dict, infos: dict, agent_ids
             reward = 0.
     return reward
 
-def reward_function_T2(config: Dict[str, Any], obs: dict, infos: dict, agent_ids: list) -> float:
+def reward_function_T2(config: Dict[str, Any], obs: dict, infos: dict) -> float:
     """This function returns the reward calcualted as the absolute value of the square in the 
     difference between set point temperatur for comfort and the temperature measured in the 
     thermal zone when there are people in the zone but zero when is not.
@@ -46,8 +47,9 @@ def reward_function_T2(config: Dict[str, Any], obs: dict, infos: dict, agent_ids
     Returns:
         float: reward value
     """
+    agent_ids = config['agent_ids']
     T_confort = config.get('T_confort', 23.5)
-    occupancy = infos[agent_ids[0]]['occupancy'],
+    occupancy = infos[agent_ids[0]]['occupancy']
     T_zone = infos[agent_ids[0]]['Ti']
     if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
         reward = -(min(abs((T_confort - T_zone)**2),49.))

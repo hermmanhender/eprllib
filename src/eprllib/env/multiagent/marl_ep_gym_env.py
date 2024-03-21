@@ -143,10 +143,10 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # Calculate the reward in the timestep
         reward_function = self.env_config['reward_function']
-        reward = reward_function(self.env_config, obs, infos, self._agent_ids)
+        reward = reward_function(self.env_config, obs, infos)
         
         reward_dict = {}
-        for agent in self._agent_ids:
+        for agent in self.env_config['agent_ids']:
             reward_dict[agent] =  reward
         
         terminated["__all__"] = terminateds

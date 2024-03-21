@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "eprllib"
-version = "0.0.3"
+version = "0.0.7"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
@@ -17,10 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "tensorflow ==2.15.0",
-    "torch ==2.1.2",
-    "ray[all] ==9.2.3",
-    "bayesian-optimization ==1.4.3",
+    "ray[all] ==2.9.3",
     "gymnasium ==0.28.1"
 ]
 
