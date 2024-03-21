@@ -80,25 +80,29 @@ class EnergyPlusRunner:
         # The path for the epjson file is defined.
         
         self.variables = {
-            "To": ("Site Outdoor Air Drybulb Temperature", "Environment"), #0
-            "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Room1"), #1
-            "v": ("Site Wind Speed", "Environment"), #2
-            "d": ("Site Wind Direction", "Environment"), #3
-            "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
-            "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Room1"), #5
-            "pres": ("Site Outdoor Air Barometric Pressure", "Environment"), #6
-            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Room1 Occupancy") # infos
+            "To": ("Site Outdoor Air Drybulb Temperature", "Environment"), #1
+            "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Living"), #2
+            "v": ("Site Wind Speed", "Environment"), #3
+            "d": ("Site Wind Direction", "Environment"), #4
+            "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #5
+            "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Living"), #6
+            "pres": ("Site Outdoor Air Barometric Pressure", "Environment"), #7
+            "occupancy": ("Zone People Occupant Count", "Thermal Zone: Living"), #8
+            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Living Occupancy") # infos
         }
         self.var_handles: Dict[str, int] = {}
         # Declaration of variables this simulation will interact with.
 
-        self.meters = {}
+        self.meters = {
+            "electricity": "Electricity:Zone:THERMAL ZONE: LIVING", #9
+            "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING", #10
+        }
         self.meter_handles: Dict[str, int] = {}
         # Declaration of meters this simulation will interact with.
 
         self.actuators = {
-            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "room1_N_window"), # 7: opening factor between 0.0 and 1.0
-            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "room1_S_window"), # 8: opening factor between 0.0 and 1.0
+            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"), # 11: opening factor between 0.0 and 1.0
+            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"), # 12: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
         # Declaration of actuators this simulation will interact with.
@@ -205,16 +209,16 @@ class EnergyPlusRunner:
         # Variables, meters and actuatos conditions as observation.
         obs.update(
             {
-            'day_of_the_week': api.exchange.day_of_week(state_argument), #9
-            'is_raining': api.exchange.is_raining(state_argument), #10
-            'sun_is_up': api.exchange.sun_is_up(state_argument), #11
-            'hora': hour, #12
-            'simulation_day': simulation_day, #13
-            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #14
+            'day_of_the_week': api.exchange.day_of_week(state_argument), #13
+            'is_raining': api.exchange.is_raining(state_argument), #14
+            'sun_is_up': api.exchange.sun_is_up(state_argument), #15
+            'hora': hour, #16
+            'simulation_day': simulation_day, #17
+            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #18
             }
         )
         # Upgrade of the timestep observation.
-        infos_dict = {'ppd': obs['ppd'], 'Ti': obs['Ti']}
+        infos_dict = {'ppd': obs['ppd'], 'Ti': obs['Ti'], "occupancy": obs['occupancy']}
         infos = {
             'window_opening_1': infos_dict,
             'window_opening_2': infos_dict,
