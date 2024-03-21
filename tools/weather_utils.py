@@ -128,7 +128,7 @@ class Probabilities:
             for v in data_list[e]:
                 single_shape_list.append(v)
                 # append each value of each day and hour in a consecutive way in the empty list.
-        desviation = [1, 10, 20, 0.5, 10, 0.2]
+        desviation = [0, 0, 0, 0, 0, 0]
         # Assignation of the desviation for each variable, in order with the epw variables consulted.
         prob_index = 0
         for e in range(len(single_shape_list)):
