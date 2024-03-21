@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "natural_ventilation_EP_RLlib"
-version = "1.0.6"
+name = "eprllib"
+version = "1.0"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
@@ -12,7 +12,7 @@ description = "Building control trought DRL."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
