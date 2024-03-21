@@ -5,9 +5,9 @@ This script execute the conventional controls and generate experiences in batch 
 import sys
 sys.path.insert(0,'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 from tempfile import TemporaryDirectory
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
-from agents.conventional import Conventional
-from tools.devices_space_action import natural_ventilation_central_action
+from eprllib.env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from eprllib.agents.conventional import Conventional
+from eprllib.tools.devices_space_action import natural_ventilation_central_action
 
 import gymnasium as gym
 import numpy as np

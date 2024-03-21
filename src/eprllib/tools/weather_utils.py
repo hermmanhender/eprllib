@@ -54,7 +54,7 @@ class Probabilities:
         """
         self.env_config = env_config
         
-        with open(self.env_config["epw"]) as file:
+        with open(self.env_config["epw"] if self.env_config['is_test'] else self.env_config["epw_training"]) as file:
             self.weather_file: DataFrame = pd.read_csv(
                 file,
                 header = None,

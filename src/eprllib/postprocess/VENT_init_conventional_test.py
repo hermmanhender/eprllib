@@ -5,9 +5,9 @@ This script execute the conventional controls in the evaluation scenario.
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from env.VENT_ep_gym_env_test import EnergyPlusEnv_v0
-from agents.conventional import Conventional
-from tools.devices_space_action import TwoWindowsCentralizedControl
+from eprllib.env.VENT_ep_gym_env_test import EnergyPlusEnv_v0
+from eprllib.agents.conventional import Conventional
+from eprllib.tools.devices_space_action import TwoWindowsCentralizedControl
 
 
 def init_rb_evaluation(

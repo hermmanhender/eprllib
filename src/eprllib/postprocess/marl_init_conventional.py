@@ -5,8 +5,8 @@ This script execute the conventional controls in the evaluation scenario.
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from env.marl_ep_gym_env import EnergyPlusEnv_v0
-from agents.conventional import Conventional
+from eprllib.env.marl_ep_gym_env import EnergyPlusEnv_v0
+from eprllib.agents.conventional import Conventional
 
 
 def init_rb_evaluation(

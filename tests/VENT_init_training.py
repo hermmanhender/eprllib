@@ -48,7 +48,7 @@ from ray.tune.search.bayesopt import BayesOptSearch
 # Search algorithm to tune the hyperparameters
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from eprllib.env.VENT_ep_gym_env import EnergyPlusEnv_v0
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.

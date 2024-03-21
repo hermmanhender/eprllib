@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 name = "eprllib"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
@@ -15,6 +15,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "tensorflow ==2.15.0",
+    "torch ==2.1.2",
+    "ray[all] ==9.2.3",
+    "bayesian-optimization ==1.4.3",
+    "gymnasium ==0.28.1"
 ]
 
 [project.urls]

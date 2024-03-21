@@ -26,6 +26,8 @@ os.environ['RAY_DEDUP_LOGS'] = '0'
 """## IMPORT THE NECESARY LIBRARIES
 """
 import time
+import sys
+sys.path.append('C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/src')
 from tempfile import TemporaryDirectory
 # This library generate a tmp folder to save the the EnergyPlus output
 import gymnasium as gym
@@ -50,8 +52,8 @@ from ray.tune.search.bayesopt import BayesOptSearch
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
 from ray.rllib.policy.policy import PolicySpec
-from env.marl_ep_gym_env import EnergyPlusEnv_v0
-from tools import rewards
+from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
+from eprllib.tools import rewards
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.
@@ -66,27 +68,62 @@ restore = False
 # To define if is necesary to restore or not a previous experiment. Is necesary to stablish a 'restore_path'.
 restore_path = ''
 # Path to the folder where the experiment is located.
-env_config={ 
-    'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
+env_config={
+    # === ENERGYPLUS OPTIONS === #
+    'epjson': "path_to_epjson_file",
+    "epw_training": "path_to_epw_training_file",
+    "epw": "path_to_epw_evaluation_file",
+    # Configure the output directory for the EnergyPlus simulation.
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
-    'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
-    'epjson_output_folder': 'C:/Users/grhen/Documents/models',
-    # Configure the directories for the experiment.
-    'ep_terminal_output': False,
     # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
-    'is_test': False,
+    'ep_terminal_output': False,
+    
+    # === EXPERIMENT OPTIONS === #
     # For evaluation process 'is_test=True' and for trainig False.
-    'test_init_day': 1,
-    'action_space': gym.spaces.Discrete(2),
+    'is_test': False,
+    
+    # === ENVIRONMENT OPTIONS === #
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
+    'action_space': gym.spaces.Discrete(2),
     # observation space for simple agent case
+    # This is equal to the the sume of:
+    #   + ep_variables
+    #   + ep_meters
+    #   + ep_actuators
+    #   + weather_prob_days*144
+    #   - no_observable_variables
+    #   + 1 (agent_indicator)
+    #   + 6 ('day_of_the_week','is_raining','sun_is_up','hora','simulation_day','rad')
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
+    'reward_function': rewards.reward_function_T3,
+    "ep_variables":{
+        "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
+        "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Living"),
+        "v": ("Site Wind Speed", "Environment"),
+        "d": ("Site Wind Direction", "Environment"),
+        "RHo": ("Site Outdoor Air Relative Humidity", "Environment"),
+        "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Living"),
+        "pres": ("Site Outdoor Air Barometric Pressure", "Environment"),
+        "occupancy": ("Zone People Occupant Count", "Thermal Zone: Living"),
+        "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Living Occupancy")
+    },
+    "ep_meters": {
+        "electricity": "Electricity:Zone:THERMAL ZONE: LIVING",
+        "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING",
+    },
+    "ep_actuators": {
+        "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"),
+        "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"),
+    },
+    "infos_variables": ["ppd", "occupancy", "Ti"],
+    "no_observable_variables": ["ppd"],
     
-    # BUILDING CONFIGURATION
-    'building_name': 'prot_3_ceiling',
-    
-    'reward_function': rewards.reward_function
+    # === OPTIONAL === #
+    "timeout": 5,
+    "T_confort": 23.5,
+    "weather_prob_days": 2
 }
+env_config["agent_ids"] = [key for key in env_config["ep_actuators"].keys()]
 
 """## INIT RAY AND REGISTER THE ENVIRONMENT
 """
@@ -237,7 +274,7 @@ elif algorithm == 'DQN': # DQN Configuration
         optimizer = {},
         # DQN Configs
         num_atoms = 100,
-        v_min = -125,
+        v_min = -343,
         v_max = 0,
         noisy = True,
         sigma0 = 0.7 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
@@ -475,9 +512,8 @@ if not restore:
             
         ),
         run_config=air.RunConfig(
-            name="{date}_VN_marl_{building}_{algorithm}".format(
+            name="{date}_VN_marl_{algorithm}".format(
                 date=str(time.time()),
-                building=env_config['building_name'],
                 algorithm=str(algorithm)
             ),
             stop={"episodes_total": 200},
