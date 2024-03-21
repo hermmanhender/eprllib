@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eprllib"
-version = "1.0"
+version = "0.0.1"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
@@ -12,7 +12,7 @@ description = "Building control trought DRL."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
