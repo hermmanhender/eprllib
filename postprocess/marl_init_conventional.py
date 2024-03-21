@@ -83,10 +83,10 @@ def init_rb_evaluation(
     obs_dict, infos = env.reset()
     while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
-        To = obs_dict[_agents_id_list[0]][0]
-        Ti = obs_dict[_agents_id_list[0]][1]
-        action_w1 = obs_dict[_agents_id_list[0]][7]
-        action_w2 = obs_dict[_agents_id_list[0]][8]
+        To = obs_dict[_agents_id_list[0]][1]
+        Ti = obs_dict[_agents_id_list[0]][2]
+        action_w1 = obs_dict[_agents_id_list[0]][11]
+        action_w2 = obs_dict[_agents_id_list[0]][12]
         
         actions_dict = {
             'window_opening_1': policy.window_opening(Ti, To, action_w1),
@@ -126,6 +126,7 @@ if __name__ == '__main__':
     
     import gymnasium as gym
     import os
+    from tools import rewards
     
     name = 'prot3_rb'
     
@@ -142,17 +143,18 @@ if __name__ == '__main__':
         'test_init_day': 1,
         'action_space': gym.spaces.Discrete(4),
         # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_3_ceiling'
+        'building_name': 'prot_3_ceiling',
+        'reward_function': rewards.reward_function,
     }
     
     policy_config = { # configuracion del control convencional
-        'SP_temp': 22, #es el valor de temperatura de confort
-        'dT_up': 2.5, #es el límite superior para el rango de confort
-        'dT_dn': 2.5, #es el límite inferior para el rango de confort
+        'SP_temp': 23.5, #es el valor de temperatura de confort
+        'dT_up': 3.5, #es el límite superior para el rango de confort
+        'dT_dn': 3.5, #es el límite inferior para el rango de confort
     }
     try:
         os.makedirs(env_config['output'])
