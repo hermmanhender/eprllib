@@ -142,7 +142,7 @@ if __name__ == '__main__':
     }
 
     # se importan las políticas convencionales para la configuracion especificada
-    checkpoint_path = 'C:/Users/grhen/ray_results/20240318_VN_marl_prot3_DQN/3x512_dueT1x512_douT_DQN_d18a9_00000/checkpoint_000142'
+    checkpoint_path = 'C:/Users/grhen/ray_results/1710878306.4748695_VN_marl_prot_3_ceiling_DQN/4x512_dueT1x512_douT_DQN_0cb19_00000/checkpoint_000029'
     
     try:
         os.makedirs(env_config['output'])
