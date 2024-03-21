@@ -5,9 +5,8 @@ This script execute the conventional controls in the evaluation scenario.
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from env.marl_ep_gym_env import EnergyPlusEnv_v0
 from agents.conventional import Conventional
-from tools.devices_space_action import TwoWindowsCentralizedControl
 
 
 def init_rb_evaluation(
@@ -68,49 +67,56 @@ def init_rb_evaluation(
     """
     # se importan las políticas convencionales para la configuracion especificada
     policy = Conventional(policy_config)
-    action_space = TwoWindowsCentralizedControl()
     # se inicia el entorno con la configuración especificada
     env = EnergyPlusEnv_v0(env_config)
+    _agents_id = env.get_agent_ids()
+    _agents_id_list = list(_agents_id)
 
     # open the file in the write mode
     data = open(env_config['output']+'/'+name+'.csv', 'w')
     # create the csv writer
     writer = csv.writer(data)
-    terminated = False # variable de control de lazo (es verdadera cuando termina un episodio)
+    terminated = {}
+    terminated["__all__"] = False # variable de control de lazo (es verdadera cuando termina un episodio)
     episode_reward = 0
     # se obtiene la observaión inicial del entorno para el episodio
-    obs, info = env.reset()
-    while not terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
+    obs_dict, infos = env.reset()
+    while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
-        To = obs[0]
-        Ti = obs[1]
-        action_w1 = obs[10]
-        action_w2 = obs[11]
+        To = obs_dict[_agents_id_list[0]][1]
+        Ti = obs_dict[_agents_id_list[0]][2]
+        action_w1 = obs_dict[_agents_id_list[0]][11]
+        action_w2 = obs_dict[_agents_id_list[0]][12]
         
-        action_1 = 0#policy.window_opening(Ti, To, action_w1)
-        action_2 = 0#policy.window_opening(Ti, To, action_w2)
-        actions = action_space.natural_ventilation_central_action(action_1, action_2)
+        actions_dict = {
+            'window_opening_1': policy.window_opening(Ti, To, action_w1),
+            'window_opening_2': policy.window_opening(Ti, To, action_w2)
+        }
         
         # se ejecuta un paso de tiempo
-        obs, reward, terminated, truncated, infos = env.step(actions)
+        obs_dict, reward, terminated, truncated, infos = env.step(actions_dict)
         # se guardan los datos
         # write a row to the csv file
         row = []
         
-        obs_list = obs.tolist()
+        obs_list = obs_dict[_agents_id_list[0]].tolist()
         for _ in range(len(obs_list)):
             row.append(obs_list[_])
         
-        row.append(reward)
-        row.append(terminated)
-        row.append(truncated)
+        action_list = list(actions_dict.values())
+        for _ in range(len(action_list)):
+            row.append(action_list[_])
         
-        info_list = list(infos.values())
+        row.append(reward[_agents_id_list[0]])
+        row.append(terminated["__all__"])
+        row.append(truncated["__all__"])
+        
+        info_list = list(infos[_agents_id_list[0]].values())
         for _ in range(len(info_list)):
             row.append(info_list[_])
         
         writer.writerow(row)
-        episode_reward += reward
+        episode_reward += reward[_agents_id_list[0]]
     # close the file
     data.close()
 
@@ -120,8 +126,9 @@ if __name__ == '__main__':
     
     import gymnasium as gym
     import os
+    from tools import rewards
     
-    name = 'natural_no_ventilation'
+    name = 'prot3_rb'
     
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
@@ -136,17 +143,18 @@ if __name__ == '__main__':
         'test_init_day': 1,
         'action_space': gym.spaces.Discrete(4),
         # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1(natural)'
+        'building_name': 'prot_3_ceiling',
+        'reward_function': rewards.reward_function,
     }
     
     policy_config = { # configuracion del control convencional
-        'SP_temp': 22, #es el valor de temperatura de confort
-        'dT_up': 2.5, #es el límite superior para el rango de confort
-        'dT_dn': 2.5, #es el límite inferior para el rango de confort
+        'SP_temp': 23.5, #es el valor de temperatura de confort
+        'dT_up': 3.5, #es el límite superior para el rango de confort
+        'dT_dn': 3.5, #es el límite inferior para el rango de confort
     }
     try:
         os.makedirs(env_config['output'])

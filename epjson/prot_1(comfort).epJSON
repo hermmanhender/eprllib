@@ -160,7 +160,7 @@
             "loads_convergence_tolerance_value": 0.04,
             "maximum_number_of_warmup_days": 25,
             "minimum_number_of_warmup_days": 3,
-            "north_axis": 111,
+            "north_axis": 0,
             "solar_distribution": "FullExterior",
             "temperature_convergence_tolerance_value": 0.5,
             "terrain": "City"
@@ -176,52 +176,52 @@
                 {
                     "vertex_x_coordinate": 8.9,
                     "vertex_y_coordinate": 6.65,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 0.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
-                    "vertex_y_coordinate": 0.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 2.7,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 4.4,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 4.4,
                     "vertex_y_coordinate": 6.65,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 }
             ],
             "wind_exposure": "NoWind",
@@ -235,7 +235,7 @@
             "vertices": [
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
@@ -254,33 +254,33 @@
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
-                    "vertex_y_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
                     "vertex_z_coordinate": 2.55
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 0.0,
+                    "vertex_y_coordinate": 0,
                     "vertex_z_coordinate": 2.55
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 }
             ],
@@ -294,23 +294,23 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 0.0,
-                    "vertex_y_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
-                    "vertex_y_coordinate": 0.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 0.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 0.0,
+                    "vertex_y_coordinate": 0,
                     "vertex_z_coordinate": 2.55
                 }
             ],
@@ -325,22 +325,22 @@
             "vertices": [
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 0.0,
+                    "vertex_y_coordinate": 0,
                     "vertex_z_coordinate": 2.55
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 0.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 }
             ],
@@ -355,22 +355,22 @@
             "vertices": [
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 }
             ],
@@ -385,18 +385,18 @@
             "vertices": [
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 8.9,
                     "vertex_y_coordinate": 6.65,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 8.9,
@@ -421,12 +421,12 @@
                 {
                     "vertex_x_coordinate": 8.9,
                     "vertex_y_coordinate": 6.65,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 4.4,
                     "vertex_y_coordinate": 6.65,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 4.4,
@@ -451,12 +451,12 @@
                 {
                     "vertex_x_coordinate": 4.4,
                     "vertex_y_coordinate": 6.65,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 4.4,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
                     "vertex_x_coordinate": 4.4,
@@ -481,15 +481,15 @@
                 {
                     "vertex_x_coordinate": 4.4,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
                     "vertex_z_coordinate": 2.55
                 }
@@ -504,22 +504,22 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 2.7,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 }
@@ -534,22 +534,22 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 2.7,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 }
@@ -564,23 +564,23 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
-                    "vertex_y_coordinate": 0.0,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
-                    "vertex_y_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
                     "vertex_z_coordinate": 2.55
                 }
             ],
@@ -594,16 +594,21 @@
             "outside_layer": "Contrapiso 10cm"
         },
         "roof": {
-            "layer_2": "Mortero_poliestireno",
-            "layer_3": "Aislacion050",
-            "layer_4": "Losa HA 12cm",
-            "layer_5": "Enyesado",
-            "outside_layer": "Membrana5mm"
+            "layer_2": "Carpeta 40mm",
+            "layer_3": "Poliestireno 50mm",
+            "layer_4": "Membrana 3mm",
+            "layer_5": "Losa HA 12cm",
+            "layer_6": "Ladrillo Ceramico",
+            "layer_7": "Salpicado",
+            "layer_8": "Enyesado",
+            "outside_layer": "Membrana Geotextil 4mm"
         },
         "wall": {
-            "layer_2": "Ladrillon",
-            "layer_3": "Revoque",
-            "outside_layer": "Aislacion045"
+            "layer_2": "Poliestireno 25mm",
+            "layer_3": "Ladrillon",
+            "layer_4": "Revoque",
+            "layer_5": "Enyesado",
+            "outside_layer": "Revoque"
         },
         "wall_interior": {
             "layer_2": "Placa de yeso",
@@ -730,25 +735,15 @@
         }
     },
     "Material": {
-        "Aislacion045": {
-            "conductivity": 0.035,
-            "density": 20,
-            "roughness": "VerySmooth",
+        "Carpeta 40mm": {
+            "conductivity": 1.16,
+            "density": 2000,
+            "roughness": "Rough",
             "solar_absorptance": 0.3,
-            "specific_heat": 1674,
-            "thermal_absorptance": 0.9,
-            "thickness": 0.045,
-            "visible_absorptance": 0.3
-        },
-        "Aislacion050": {
-            "conductivity": 0.035,
-            "density": 20,
-            "roughness": "VerySmooth",
-            "solar_absorptance": 0.3,
-            "specific_heat": 1674,
-            "thermal_absorptance": 0.9,
-            "thickness": 0.05,
-            "visible_absorptance": 0.3
+            "specific_heat": 1000,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.04,
+            "visible_absorptance": 0.7
         },
         "Ceramica piso": {
             "conductivity": 0.93,
@@ -771,13 +766,23 @@
             "visible_absorptance": 0.7
         },
         "Enyesado": {
-            "conductivity": 0.49,
+            "conductivity": 0.5,
             "density": 900,
             "roughness": "MediumSmooth",
             "solar_absorptance": 0.7,
             "specific_heat": 850,
             "thermal_absorptance": 0.9,
             "thickness": 0.02,
+            "visible_absorptance": 0.7
+        },
+        "Ladrillo Ceramico": {
+            "conductivity": 1,
+            "density": 1750,
+            "roughness": "MediumRough",
+            "solar_absorptance": 0.7,
+            "specific_heat": 980,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.3,
             "visible_absorptance": 0.7
         },
         "Ladrillon": {
@@ -787,11 +792,11 @@
             "solar_absorptance": 0.3,
             "specific_heat": 880,
             "thermal_absorptance": 0.9,
-            "thickness": 0.17,
+            "thickness": 0.2,
             "visible_absorptance": 0.3
         },
         "Losa HA 12cm": {
-            "conductivity": 1.63,
+            "conductivity": 1.16,
             "density": 2000,
             "roughness": "Rough",
             "solar_absorptance": 0.3,
@@ -800,25 +805,25 @@
             "thickness": 0.12,
             "visible_absorptance": 0.7
         },
-        "Membrana5mm": {
-            "conductivity": 0.7,
+        "Membrana 3mm": {
+            "conductivity": 0.17,
             "density": 1200,
             "roughness": "Smooth",
             "solar_absorptance": 0.3,
             "specific_heat": 1670,
             "thermal_absorptance": 0.9,
-            "thickness": 0.005,
+            "thickness": 0.003,
             "visible_absorptance": 0.3
         },
-        "Mortero_poliestireno": {
-            "conductivity": 0.09,
-            "density": 1000,
-            "roughness": "VeryRough",
+        "Membrana Geotextil 4mm": {
+            "conductivity": 0.17,
+            "density": 1200,
+            "roughness": "Smooth",
             "solar_absorptance": 0.3,
-            "specific_heat": 1200,
-            "thermal_absorptance": 0.93,
-            "thickness": 0.05,
-            "visible_absorptance": 0.7
+            "specific_heat": 1670,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.004,
+            "visible_absorptance": 0.3
         },
         "Placa de yeso": {
             "conductivity": 0.25,
@@ -830,8 +835,28 @@
             "thickness": 0.018,
             "visible_absorptance": 0.7
         },
+        "Poliestireno 25mm": {
+            "conductivity": 0.035,
+            "density": 20,
+            "roughness": "VerySmooth",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1674,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.025,
+            "visible_absorptance": 0.3
+        },
+        "Poliestireno 50mm": {
+            "conductivity": 0.035,
+            "density": 20,
+            "roughness": "VerySmooth",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1674,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.05,
+            "visible_absorptance": 0.3
+        },
         "Revoque": {
-            "conductivity": 1.1,
+            "conductivity": 0.93,
             "density": 1900,
             "roughness": "Rough",
             "solar_absorptance": 0.3,
@@ -839,11 +864,16 @@
             "thermal_absorptance": 0.93,
             "thickness": 0.025,
             "visible_absorptance": 0.7
-        }
-    },
-    "OutdoorAir:Node": {
-        "NODE 1": {
-            "height_above_ground": 1
+        },
+        "Salpicado": {
+            "conductivity": 0.93,
+            "density": 1900,
+            "roughness": "VeryRough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1050,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.01,
+            "visible_absorptance": 0.7
         }
     },
     "Output:Diagnostics": {
@@ -945,11 +975,13 @@
         }
     },
     "People": {
-        "People": {
+        "people": {
             "activity_level_schedule_name": "Activity_person",
             "air_velocity_schedule_name": "Air_velocity",
             "carbon_dioxide_generation_rate": 3.82e-08,
-            "clothing_insulation_calculation_method": "DynamicClothingModelASHRAE55",
+            "clothing_insulation_calculation_method": "ClothingInsulationSchedule",
+            "clothing_insulation_calculation_method_schedule_name": "clo_mode",
+            "clothing_insulation_schedule_name": "clo",
             "cold_stress_temperature_threshold": 15.56,
             "enable_ashrae_55_comfort_warnings": "No",
             "fraction_radiant": 0.3,
@@ -1021,25 +1053,25 @@
                     "field": "Until: 7:00"
                 },
                 {
-                    "field": 0.7
+                    "field": 0.1
                 },
                 {
                     "field": "Until 15:00"
                 },
                 {
-                    "field": 0.0
+                    "field": 0.1
                 },
                 {
                     "field": "Until 19:00"
                 },
                 {
-                    "field": 0.5
+                    "field": 0.1
                 },
                 {
                     "field": "Until 24:00"
                 },
                 {
-                    "field": 0.7
+                    "field": 0.1
                 }
             ],
             "schedule_type_limits_name": "Any Number"
@@ -1078,6 +1110,23 @@
             ],
             "schedule_type_limits_name": "On/Off"
         },
+        "HVACTemplate-Always 4": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: AllDays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 4
+                }
+            ],
+            "schedule_type_limits_name": "HVACTemplate Any Number"
+        },
         "Work Efficiency": {
             "data": [
                 {
@@ -1094,81 +1143,6 @@
                 }
             ],
             "schedule_type_limits_name": "Fraction"
-        },
-        "ZONE CONTROL TYPE SCHED": {
-            "data": [
-                {
-                    "field": "Through: 3/31"
-                },
-                {
-                    "field": "For: Alldays"
-                },
-                {
-                    "field": "Until: 24:00"
-                },
-                {
-                    "field": 4.0
-                },
-                {
-                    "field": "Through: 9/30"
-                },
-                {
-                    "field": "For: Alldays"
-                },
-                {
-                    "field": "Until: 24:00"
-                },
-                {
-                    "field": 4.0
-                },
-                {
-                    "field": "Through: 12/31"
-                },
-                {
-                    "field": "For: Alldays"
-                },
-                {
-                    "field": "Until: 24:00"
-                },
-                {
-                    "field": 4.0
-                }
-            ],
-            "schedule_type_limits_name": "Control Type"
-        },
-        "cooling_setpoint": {
-            "data": [
-                {
-                    "field": "Through: 12/31"
-                },
-                {
-                    "field": "For: Alldays"
-                },
-                {
-                    "field": "Until: 24:00"
-                },
-                {
-                    "field": 24.0
-                }
-            ],
-            "schedule_type_limits_name": "Temperature"
-        },
-        "heating_setpoint": {
-            "data": [
-                {
-                    "field": "Through: 12/31"
-                },
-                {
-                    "field": "For: Alldays"
-                },
-                {
-                    "field": "Until: 24:00"
-                },
-                {
-                    "field": 19.0
-                }
-            ],
-            "schedule_type_limits_name": "Temperature"
         },
         "number_people": {
             "data": [
@@ -1192,6 +1166,34 @@
         "HVAC_OnOff": {
             "hourly_value": 1,
             "schedule_type_limits_name": "AviabilityType"
+        },
+        "clo": {
+            "hourly_value": 0.5,
+            "schedule_type_limits_name": "Any Number"
+        },
+        "clo_mode": {
+            "hourly_value": 1,
+            "schedule_type_limits_name": "Any Number"
+        },
+        "comfort_control_mode": {
+            "hourly_value": 4,
+            "schedule_type_limits_name": "Control Type"
+        },
+        "comfort_cooling": {
+            "hourly_value": 1,
+            "schedule_type_limits_name": "Any Number"
+        },
+        "comfort_heating": {
+            "hourly_value": -1,
+            "schedule_type_limits_name": "Any Number"
+        },
+        "cooling_setpoint": {
+            "hourly_value": 24,
+            "schedule_type_limits_name": "Temperature"
+        },
+        "heating_setpoint": {
+            "hourly_value": 19,
+            "schedule_type_limits_name": "Temperature"
         }
     },
     "ScheduleTypeLimits": {
@@ -1219,6 +1221,7 @@
             "numeric_type": "Continuous",
             "upper_limit_value": 1
         },
+        "HVACTemplate Any Number": {},
         "On/Off": {
             "lower_limit_value": 0,
             "numeric_type": "Discrete",
@@ -1242,12 +1245,12 @@
                 },
                 {
                     "vertex_x_coordinate": 8.9,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
                     "vertex_x_coordinate": 7.3,
-                    "vertex_y_coordinate": 3.0,
+                    "vertex_y_coordinate": 3,
                     "vertex_z_coordinate": 2.55
                 },
                 {
@@ -1318,12 +1321,12 @@
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.95,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
                     "vertex_z_coordinate": 2.55
                 }
@@ -1332,12 +1335,12 @@
         "shadow_5": {
             "vertices": [
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 1.1,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 0.0,
+                    "vertex_x_coordinate": 0,
                     "vertex_y_coordinate": 2.7,
                     "vertex_z_coordinate": 2.55
                 },
@@ -1356,22 +1359,22 @@
         "shadow_6": {
             "vertices": [
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.95,
                     "vertex_z_coordinate": 2.55
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.95,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
-                    "vertex_z_coordinate": 0.0
+                    "vertex_z_coordinate": 0
                 },
                 {
-                    "vertex_x_coordinate": 2.0,
+                    "vertex_x_coordinate": 2,
                     "vertex_y_coordinate": 6.3,
                     "vertex_z_coordinate": 2.55
                 }
@@ -1407,10 +1410,10 @@
             "algorithm": "SimpleCombined"
         }
     },
-    "ThermostatSetpoint:DualSetpoint": {
-        "Dual_temp_sp": {
-            "cooling_setpoint_temperature_schedule_name": "cooling_setpoint",
-            "heating_setpoint_temperature_schedule_name": "heating_setpoint"
+    "ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint": {
+        "comfort_dsp": {
+            "fanger_thermal_comfort_cooling_schedule_name": "comfort_cooling",
+            "fanger_thermal_comfort_heating_schedule_name": "comfort_heating"
         }
     },
     "Timestep": {
@@ -1506,30 +1509,33 @@
             "z_origin": 0
         }
     },
-    "ZoneControl:Thermostat": {
-        "Termostato": {
-            "control_1_name": "Dual_temp_sp",
-            "control_1_object_type": "ThermostatSetpoint:DualSetpoint",
-            "control_type_schedule_name": "ZONE CONTROL TYPE SCHED",
+    "ZoneControl:Thermostat:ThermalComfort": {
+        "comfort_thermostat": {
+            "averaging_method": "PeopleAverage",
+            "maximum_dry_bulb_temperature_setpoint": 50,
+            "specific_people_name": "people",
+            "thermal_comfort_control_1_name": "comfort_dsp",
+            "thermal_comfort_control_1_object_type": "ThermostatSetpoint:ThermalComfort:Fanger:DualSetpoint",
+            "thermal_comfort_control_type_schedule_name": "comfort_control_mode",
             "zone_or_zonelist_name": "Thermal Zone"
         }
     },
     "ZoneHVAC:EquipmentConnections": {
         "ZoneHVAC:EquipmentConnections 1": {
-            "zone_air_exhaust_node_or_nodelist_name": "NODE 1",
-            "zone_air_inlet_node_or_nodelist_name": "ZoneInlets",
-            "zone_air_node_name": "ZoneAirNode",
-            "zone_conditioning_equipment_list_name": "Equipos",
-            "zone_name": "Thermal Zone"
+            "zone_air_inlet_node_or_nodelist_name": "Thermal Zone Ideal Loads Supply Inlet",
+            "zone_air_node_name": "Thermal Zone Zone Air Node",
+            "zone_conditioning_equipment_list_name": "Thermal Zone Equipment",
+            "zone_name": "Thermal Zone",
+            "zone_return_air_node_or_nodelist_name": "Thermal Zone Return Outlet"
         }
     },
     "ZoneHVAC:EquipmentList": {
-        "Equipos": {
+        "Thermal Zone Equipment": {
             "equipment": [
                 {
                     "zone_equipment_cooling_sequence": 1,
                     "zone_equipment_heating_or_no_load_sequence": 1,
-                    "zone_equipment_name": "Refrigeracion",
+                    "zone_equipment_name": "Thermal Zone Ideal Loads Air System",
                     "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem"
                 }
             ],
@@ -1537,20 +1543,23 @@
         }
     },
     "ZoneHVAC:IdealLoadsAirSystem": {
-        "Refrigeracion": {
+        "Thermal Zone Ideal Loads Air System": {
             "availability_schedule_name": "HVAC_OnOff",
-            "cooling_limit": "LimitCapacity",
+            "cooling_limit": "NoLimit",
+            "cooling_sensible_heat_ratio": 0.7,
             "dehumidification_control_type": "None",
-            "heating_limit": "LimitCapacity",
+            "demand_controlled_ventilation_type": "None",
+            "heat_recovery_type": "None",
+            "heating_limit": "NoLimit",
             "humidification_control_type": "None",
+            "latent_heat_recovery_effectiveness": 0.65,
             "maximum_heating_supply_air_humidity_ratio": 0.0156,
             "maximum_heating_supply_air_temperature": 50,
-            "maximum_sensible_heating_capacity": 10000,
-            "maximum_total_cooling_capacity": 10000,
             "minimum_cooling_supply_air_humidity_ratio": 0.0077,
-            "minimum_cooling_supply_air_temperature": 15,
-            "zone_exhaust_air_node_name": "NODE 1",
-            "zone_supply_air_node_name": "ZoneInlets"
+            "minimum_cooling_supply_air_temperature": 13,
+            "outdoor_air_economizer_type": "NoEconomizer",
+            "sensible_heat_recovery_effectiveness": 0.7,
+            "zone_supply_air_node_name": "Thermal Zone Ideal Loads Supply Inlet"
         }
     }
 }

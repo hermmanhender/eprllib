@@ -5,7 +5,7 @@ This script execute the conventional controls in the evaluation scenario.
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from env.VENT_ep_gym_env_test import EnergyPlusEnv_v0
 from agents.conventional import Conventional
 from tools.devices_space_action import TwoWindowsCentralizedControl
 
@@ -84,11 +84,11 @@ def init_rb_evaluation(
         # se calculan las acciones convencionales de cada elemento
         To = obs[0]
         Ti = obs[1]
-        action_w1 = obs[10]
-        action_w2 = obs[11]
+        action_w1 = obs[6]
+        action_w2 = obs[7]
         
-        action_1 = 0#policy.window_opening(Ti, To, action_w1)
-        action_2 = 0#policy.window_opening(Ti, To, action_w2)
+        action_1 = policy.window_opening(Ti, To, action_w1)
+        action_2 = policy.window_opening(Ti, To, action_w2)
         actions = action_space.natural_ventilation_central_action(action_1, action_2)
         
         # se ejecuta un paso de tiempo
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     import gymnasium as gym
     import os
     
-    name = 'natural_no_ventilation'
+    name = 'natural_rb_ventilation'
     
     env_config={ 
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
@@ -136,11 +136,11 @@ if __name__ == '__main__':
         'test_init_day': 1,
         'action_space': gym.spaces.Discrete(4),
         # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (299,)),
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1(natural)'
+        'building_name': 'AirflowNetwork3zVent'
     }
     
     policy_config = { # configuracion del control convencional

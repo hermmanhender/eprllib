@@ -25,6 +25,7 @@ os.environ['RAY_DEDUP_LOGS'] = '0'
 
 """## IMPORT THE NECESARY LIBRARIES
 """
+import time
 from tempfile import TemporaryDirectory
 # This library generate a tmp folder to save the the EnergyPlus output
 import gymnasium as gym
@@ -48,7 +49,9 @@ from ray.tune.search.bayesopt import BayesOptSearch
 # Search algorithm to tune the hyperparameters
 from ray.tune.search import Repeater
 # Tool to evaluate multiples seeds in a configuration of hyperparameters
-from env.VENT_ep_gym_env import EnergyPlusEnv_v0
+from ray.rllib.policy.policy import PolicySpec
+from env.marl_ep_gym_env import EnergyPlusEnv_v0
+from tools import rewards
 # The EnergyPlus Environment configuration. There is defined the reward function 
 # and also is define the flux of execution of the MDP.
 # TODO: Make a singular configuration for all the cases that I would to analise.
@@ -61,7 +64,7 @@ tune_runner  = False
 # Define if the experiment tuning the variables or execute a unique configuration.
 restore = False
 # To define if is necesary to restore or not a previous experiment. Is necesary to stablish a 'restore_path'.
-restore_path = 'C:/Users/grhen/ray_results/VN_P1_Year_allWeathers_0.5_DQN'
+restore_path = ''
 # Path to the folder where the experiment is located.
 env_config={ 
     'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
@@ -74,13 +77,15 @@ env_config={
     'is_test': False,
     # For evaluation process 'is_test=True' and for trainig False.
     'test_init_day': 1,
-    'action_space': gym.spaces.Discrete(4),
+    'action_space': gym.spaces.Discrete(2),
     # action space for simple agent case
-    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
     # observation space for simple agent case
     
     # BUILDING CONFIGURATION
-    'building_name': 'prot_1(natural)',
+    'building_name': 'prot_3_ceiling',
+    
+    'reward_function': rewards.reward_function
 }
 
 """## INIT RAY AND REGISTER THE ENVIRONMENT
@@ -95,6 +100,10 @@ register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
 Different algorithms are configurated in the following lines. It is possible to add other
 algorithm configuration here or modify the presents.
 """
+
+def policy_mapping_fn(agent_id, episode, worker, **kwargs):
+    return "shared_policy"
+
 
 if algorithm == 'PPO': # PPO Configuration
     algo = PPOConfig().training(
@@ -184,15 +193,51 @@ elif algorithm == 'DQN': # DQN Configuration
         lr = 0.01 if not tune_runner else tune.choice([0.001, 0.01, 0.1]),
         grad_clip = 40,
         grad_clip_by = 'global_norm',
-        train_batch_size = 96 if not tune_runner else tune.choice([8, 64, 128, 256]),
+        train_batch_size = 256 if not tune_runner else tune.choice([8, 64, 128, 256]),
         model = {
-            "fcnet_hiddens": [512,512,512],
+            "fcnet_hiddens": [512,512,512,512],
             "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
+            
+            # == LSTM ==
+            # Whether to wrap the model with an LSTM.
+            # Este parámetro booleano determina si se utilizará una LSTM en el modelo. Si se 
+            # establece en True, la red neuronal del modelo se envolverá con una capa LSTM. Si 
+            # se establece en False, se utilizará una arquitectura de red neuronal estándar sin LSTM.
+            "use_lstm": False,
+            # Max seq len for training the LSTM, defaults to 20.
+            # Este parámetro define la longitud máxima de la secuencia de entrada para entrenar 
+            # la LSTM. En otras palabras, especifica el número máximo de pasos de tiempo pasados 
+            # que la LSTM recordará durante el entrenamiento. Si el entorno genera secuencias 
+            # más largas que este valor, se truncarán.
+            "max_seq_len": 20,
+            # Size of the LSTM cell.
+            # Este parámetro especifica el tamaño de la celda LSTM, es decir, el número de 
+            # unidades o neuronas en la capa LSTM. Un tamaño de celda más grande puede permitir 
+            # que la LSTM capture patrones más complejos en los datos, pero también aumentará 
+            # la complejidad computacional del modelo.
+            "lstm_cell_size": 256,
+            # Whether to feed a_{t-1} to LSTM (one-hot encoded if discrete).
+            # Este parámetro determina si la acción anterior, a_{t-1}, se debe alimentar a la 
+            # LSTM como una entrada adicional. Esto puede ser útil en entornos donde la acción 
+            # anterior es relevante para la toma de decisiones actual.
+            "lstm_use_prev_action": False,
+            # Whether to feed r_{t-1} to LSTM.
+            # Este parámetro especifica si la recompensa anterior, r_{t-1}, se debe alimentar a 
+            # la LSTM como una entrada adicional. Al igual que con la acción anterior, esto puede 
+            # ser útil en entornos donde la recompensa anterior afecta la toma de decisiones actual.
+            "lstm_use_prev_reward": False,
+            # Whether the LSTM is time-major (TxBx..) or batch-major (BxTx..).
+            # Este parámetro determina si la estructura de datos de entrada para la 
+            # LSTM es de tipo "time-major" (tiempo x lote x ...) o "batch-major" 
+            # (lote x tiempo x ...). Por lo general, no es necesario cambiar este parámetro, 
+            # a menos que se tenga experiencia específica con la manipulación de datos LSTM.
+            "_time_major": False,
+            
             },
         optimizer = {},
         # DQN Configs
-        num_atoms = 1,
-        v_min = -400000,
+        num_atoms = 100,
+        v_min = -16000,
         v_max = 0,
         noisy = True,
         sigma0 = 0.7 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
@@ -203,7 +248,7 @@ elif algorithm == 'DQN': # DQN Configuration
         replay_buffer_config = {
             '_enable_replay_buffer_api': True,
             'type': 'MultiAgentPrioritizedReplayBuffer',
-            'capacity': 500000,
+            'capacity': 5000000,
             'prioritized_replay_alpha': 0.7,
             'prioritized_replay_beta': 0.6,
             'prioritized_replay_eps': 1e-6,
@@ -226,7 +271,12 @@ elif algorithm == 'DQN': # DQN Configuration
         num_envs_per_worker=1,
     ).experimental(
         _enable_new_api_stack = False,
-    ).reporting( # multi_agent config va aquí
+    ).multi_agent(
+        policies = {
+            'shared_policy': PolicySpec(),
+        },
+        policy_mapping_fn = policy_mapping_fn,
+    ).reporting(
         min_sample_timesteps_per_iteration = 1000,
     ).checkpointing(
         export_native_model_files = True,
@@ -241,7 +291,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 24*365*200,
+            "epsilon_timesteps": 6*24*365*400,
         }
     )
 
@@ -402,7 +452,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "3x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
+    return "4x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
@@ -425,13 +475,17 @@ if not restore:
             
         ),
         run_config=air.RunConfig(
-            name='20240306_VN_prot_1_natural_'+str(algorithm),
-            stop={"episodes_total": 400},
+            name="{date}_VN_marl_{building}_{algorithm}".format(
+                date=str(time.time()),
+                building=env_config['building_name'],
+                algorithm=str(algorithm)
+            ),
+            stop={"episodes_total": 800},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_at_end = True,
-                checkpoint_frequency = 40,
+                checkpoint_frequency = 100,
                 #num_to_keep = 20
             ),
             failure_config=air.FailureConfig(

@@ -2,6 +2,8 @@
 
 This script execute the conventional controls in the evaluation scenario.
 """
+import sys
+sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
 from ray.rllib.policy.policy import Policy
 from env.VENT_ep_gym_env import EnergyPlusEnv_v0
@@ -82,7 +84,7 @@ def init_drl_evaluation(
         row = []
         
         obs_list = obs.tolist()
-        for _ in range(25):
+        for _ in range(len(obs_list)):
             row.append(obs_list[_])
         
         row.append(reward)
@@ -103,46 +105,38 @@ def init_drl_evaluation(
 if __name__ == '__main__':
     
     import gymnasium as gym
-    from tempfile import TemporaryDirectory
+    import os
 
+    name = 'natural_drl_control'
+    
     # Controles de la simulación
     env_config={
         'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
-        'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
+        'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+name,
         'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
         'epjson_output_folder': 'C:/Users/grhen/Documents/models',
         # Configure the directories for the experiment.
-        'ep_terminal_output': False,
+        'ep_terminal_output': True,
         # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
-        'beta': 0.5,
-        # This parameter is used to balance between energy and comfort of the inhabitatns. A
-        # value equal to 0 give a no importance to comfort and a value equal to 1 give no importance 
-        # to energy consume. Mathematically is the reward: 
-        # r = - beta*normaliced_energy - (1-beta)*normalized_comfort
-        # The range of this value goes from 0.0 to 1.0.,
         'is_test': True,
         # For evaluation process 'is_test=True' and for trainig False.
         'test_init_day': 1,
         'action_space': gym.spaces.Discrete(4),
         # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (1465,)),
+        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
-        'building_name': 'prot_1',
-        'volumen': 131.6565,
-        'window_area_relation_north': 0,
-        'window_area_relation_west': 0,
-        'window_area_relation_south': 0.0115243076,
-        'window_area_relation_east': 0.0276970753,
-        'episode_len': 365,
-        'rotation': 0,
+        'building_name': 'prot_1(natural)',
     }
 
     # se importan las políticas convencionales para la configuracion especificada
-    checkpoint_path = 'C:/Users/grhen/ray_results/VN_P1_0.5_DQN/1024p2x512_dueT1x512_douT_DQN_cb9bc_00000/checkpoint_000064'
-
-    name = 'VN_P1_0.5_DQN'
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240306_VN_prot_1_natural_DQN/3x512_dueT1x512_douT_DQN_4353d_00000/checkpoint_000085'
+    
+    try:
+        os.makedirs(env_config['output'])
+    except OSError:
+        pass
     
     episode_reward = init_drl_evaluation(
         env_config,

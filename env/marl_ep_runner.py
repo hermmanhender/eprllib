@@ -80,36 +80,31 @@ class EnergyPlusRunner:
         # The path for the epjson file is defined.
         
         self.variables = {
-            "To": ("Site Outdoor Air Drybulb Temperature", "Environment"), #0
-            "Ti": ("Zone Mean Air Temperature", "Thermal Zone"), #1
-            "v": ("Site Wind Speed", "Environment"), #2
-            "d": ("Site Wind Direction", "Environment"), #3
-            "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #4
-            "RHi": ("Zone Air Relative Humidity", "Thermal Zone"), #5
-            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "People") # infos
+            "To": ("Site Outdoor Air Drybulb Temperature", "Environment"), #1
+            "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Living"), #2
+            "v": ("Site Wind Speed", "Environment"), #3
+            "d": ("Site Wind Direction", "Environment"), #4
+            "RHo": ("Site Outdoor Air Relative Humidity", "Environment"), #5
+            "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Living"), #6
+            "pres": ("Site Outdoor Air Barometric Pressure", "Environment"), #7
+            "occupancy": ("Zone People Occupant Count", "Thermal Zone: Living"), #8
+            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Living Occupancy") # infos
         }
         self.var_handles: Dict[str, int] = {}
         # Declaration of variables this simulation will interact with.
 
         self.meters = {
-            "dh": "Heating:DistrictHeatingWater", #6
-            "dc": "Cooling:DistrictCooling" #7
+            "electricity": "Electricity:Zone:THERMAL ZONE: LIVING", #9
+            "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING", #10
         }
         self.meter_handles: Dict[str, int] = {}
         # Declaration of meters this simulation will interact with.
 
         self.actuators = {
-            "window_shading_control_1": ("Window Shading Control", "Control Status", "window_2"), # 8: 0.0: Shading device is off; 7.0: Exterior blind is on
-            "window_shading_control_2": ("Window Shading Control", "Control Status", "window_3"), # 9: 0.0: Shading device is off; 7.0: Exterior blind is on            
-            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_2"), # 10: opening factor between 0.0 and 1.0
-            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_3"), # 11: opening factor between 0.0 and 1.0
+            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"), # 11: opening factor between 0.0 and 1.0
+            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"), # 12: opening factor between 0.0 and 1.0
         }
         self.actuator_handles: Dict[str, int] = {}
-
-        self.prev_window_shading_control_1_action = 0
-        self.prev_window_shading_control_2_action = 0
-        self.prev_opening_window_1_action = 0
-        self.prev_opening_window_2_action = 0
         # Declaration of actuators this simulation will interact with.
         # Airflow Network Openings (EnergyPlus Documentation)
         # An actuator called “AirFlow Network Window/Door Opening” is available with a control type
@@ -122,14 +117,6 @@ class EnergyPlusRunner:
         # the associated airflow network input objects. The actuator control involves setting the value of the
         # opening factor between 0.0 and 1.0. Use of this actuator with an air boundary surface is allowed,
         # but will generate a warning since air boundaries are typically always open.
-        
-        policy_config = { # configuracion del control convencional
-            'SP_temp': 22, #es el valor de temperatura de confort
-            'dT_up': 2.5, #es el límite superior para el rango de confort
-            'dT_dn': 2.5, #es el límite inferior para el rango de confort
-        }
-        self.conventional_policy = Conventional(policy_config)
-        self.window_action_space = dsa.TwoWindowsCentralizedControl()
 
     def start(self) -> None:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
@@ -222,37 +209,41 @@ class EnergyPlusRunner:
         # Variables, meters and actuatos conditions as observation.
         obs.update(
             {
-            'hora': hour,#12
-            'simulation_day': simulation_day,#13
-            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #14
+            'day_of_the_week': api.exchange.day_of_week(state_argument), #13
+            'is_raining': api.exchange.is_raining(state_argument), #14
+            'sun_is_up': api.exchange.sun_is_up(state_argument), #15
+            'hora': hour, #16
+            'simulation_day': simulation_day, #17
+            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step), #18
             }
         )
         # Upgrade of the timestep observation.
-        if time_step != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
-            # To not perform one observation per hour.
-            self.dc_sum += obs['dc']
-            self.dh_sum += obs['dh']
-            return
-        else:
-            infos = {'dc': self.dc_sum, 'dh': self.dh_sum, 'ppd': obs['ppd'], 'Ti': obs['Ti']}
-            self.infos_queue.put(infos)
-            self.infos_event.set()
-            # Set the variables to communicate with queue before to delete the following.
-            del obs['ppd']
-            
-            self.obs = obs
-            self.infos = infos
-            next_obs = np.array(list(obs.values()))
-            # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
-            # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
-            self.next_obs = np.concatenate([next_obs, weather_prob])
-            
-            self.obs_queue.put(self.next_obs)
-            self.obs_event.set()
-            # Set the observation to communicate with queue.
-            self.dc_sum = 0
-            self.dh_sum = 0
+        infos_dict = {'ppd': obs['ppd'], 'Ti': obs['Ti'], "occupancy": obs['occupancy']}
+        infos = {
+            'window_opening_1': infos_dict,
+            'window_opening_2': infos_dict,
+        }
+        self.infos_queue.put(infos)
+        self.infos_event.set()
+        # Set the variables to communicate with queue before to delete the following.
+        del obs['ppd']
+        
+        self.obs = obs
+        self.infos = infos
+        next_obs = np.array(list(obs.values()))
+        # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+        weather_prob = self.weather_stats.n_days_predictions(simulation_day, 2)
+        # Consult the stadistics of the weather to put into the obs array. This add 1440 elements to the observation.
+        next_obs = np.concatenate([next_obs, weather_prob])
+        
+        next_obs_dict = {
+            'window_opening_1': np.concatenate(([10], next_obs)),
+            'window_opening_2': np.concatenate(([20], next_obs)),
+        }
+        
+        self.obs_queue.put(next_obs_dict)
+        self.obs_event.set()
+        # Set the observation to communicate with queue.
 
     def _collect_first_obs(self, state_argument):
         """This method is used to collect only the first observation of the environment when the episode beggins.
@@ -274,47 +265,17 @@ class EnergyPlusRunner:
             # warming period are not complete.
             return
         
-        if api.exchange.zone_time_step_number(state_argument) != 1: # TODO: hacer que la cantidad de pasos de tiempo ejecutados en RLlib se controlen desde la configuración del entorno.
-            window_shading_control_1_action = self.prev_window_shading_control_1_action
-            window_shading_control_2_action = self.prev_window_shading_control_2_action
-            opening_window_1_action = self.prev_opening_window_1_action
-            opening_window_2_action = self.prev_opening_window_2_action
-            
-        else:
-            self.act_event.wait(20)
-            # Wait for an action.
-            if self.act_queue.empty():
-                # Return in the first timestep.
-                return
-            next_central_action = self.act_queue.get()
-            # Get the central action from the EnergyPlus Environment `step` method.
-            # In the case of simple agent a int value and for multiagents a dictionary.
-            # TODO: Make this EPRunner abble to simple and multi-agent configuration and for natural
-            # ventilation, shadow control or a integrate control.
-            next_action = self.window_action_space.natural_ventilation_action(next_central_action)
-            # Transform the centraliced action into a list of descentraliced actions.
-            
-            window_shading_control_1_action = self.conventional_policy.window_shade(self.obs['Ti'],self.obs['rad'],self.prev_window_shading_control_1_action)
-            window_shading_control_2_action = window_shading_control_1_action
-            opening_window_1_action = next_action[0]
-            opening_window_2_action = next_action[1]
-            
-            self.prev_window_shading_control_1_action = window_shading_control_1_action
-            self.prev_window_shading_control_2_action = window_shading_control_2_action
-            self.prev_opening_window_1_action = opening_window_1_action
-            self.prev_opening_window_2_action = opening_window_2_action
+        self.act_event.wait(20)
+        # Wait for an action.
+        if self.act_queue.empty():
+            # Return in the first timestep.
+            return
+        dict_action = self.act_queue.get()
+        # Get the central action from the EnergyPlus Environment `step` method.
+        # In the case of simple agent a int value and for multiagents a dictionary.
+        opening_window_1_action = dict_action['window_opening_1']
+        opening_window_2_action = dict_action['window_opening_2']
         # Execute the same action during an hour.
-        
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["window_shading_control_1"],
-            actuator_value=window_shading_control_1_action
-        )
-        api.exchange.set_actuator_value(
-            state=state_argument,
-            actuator_handle=self.actuator_handles["window_shading_control_2"],
-            actuator_value=window_shading_control_2_action
-        )
         
         api.exchange.set_actuator_value(
             state=state_argument,
