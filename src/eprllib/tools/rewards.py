@@ -14,15 +14,15 @@ def reward_function(occupancy:float, T_zone:float, T_confort:float=23.5) -> floa
         float: reward value
     """
     if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
-        reward = -(abs((T_confort - T_zone)**3))
+        reward = -(min(abs((T_confort - T_zone)**3),125))
     else:
         # If there are not people, only the reward is calculated when the environment is far away
         # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
         # InputOutput Reference p.522
         if T_zone > 29.4:
-            reward = -(abs((T_confort - T_zone)**3))
+            reward = -125
         elif T_zone < 16.7:
-            reward = -(abs((T_confort - T_zone)**3))
+            reward = -125
         else:
             reward = 0.
     return reward

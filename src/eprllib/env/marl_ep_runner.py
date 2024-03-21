@@ -260,16 +260,15 @@ class EnergyPlusRunner:
     def _send_actions(self, state_argument):
         """EnergyPlus callback that sets actuator value from last decided action
         """
-        if self.simulation_complete or not self._init_callback(state_argument):
+        if self.simulation_complete or not self._init_callback(state_argument) or self.first_observation:
             # To not perform actions when the episode is ended or if the callbacks and the 
             # warming period are not complete.
             return
         
-        self.act_event.wait(20)
-        # Wait for an action.
-        if self.act_queue.empty():
-            # Return in the first timestep.
+        event_flag = self.act_event.wait(10)
+        if not event_flag:
             return
+        # Wait for an action.
         dict_action = self.act_queue.get()
         # Get the central action from the EnergyPlus Environment `step` method.
         # In the case of simple agent a int value and for multiagents a dictionary.

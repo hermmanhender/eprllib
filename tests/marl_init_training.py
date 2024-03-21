@@ -195,7 +195,7 @@ elif algorithm == 'DQN': # DQN Configuration
         grad_clip_by = 'global_norm',
         train_batch_size = 256 if not tune_runner else tune.choice([8, 64, 128, 256]),
         model = {
-            "fcnet_hiddens": [512,512,512,512],
+            "fcnet_hiddens": [256,256,256],
             "fcnet_activation": "relu", #if not tune_runner else tune.choice(['tanh', 'relu', 'swish', 'linear']),
             
             # == LSTM ==
@@ -213,7 +213,7 @@ elif algorithm == 'DQN': # DQN Configuration
             # Size of the LSTM cell.
             # Este parámetro especifica el tamaño de la celda LSTM, es decir, el número de 
             # unidades o neuronas en la capa LSTM. Un tamaño de celda más grande puede permitir 
-            # que la LSTM capture patrones más complejos en los datos, pero también aumentará 
+            # que la LSTM capture patrones más complejos en los d5atos, pero también aumentará 
             # la complejidad computacional del modelo.
             "lstm_cell_size": 256,
             # Whether to feed a_{t-1} to LSTM (one-hot encoded if discrete).
@@ -237,12 +237,12 @@ elif algorithm == 'DQN': # DQN Configuration
         optimizer = {},
         # DQN Configs
         num_atoms = 100,
-        v_min = -16000,
+        v_min = -125,
         v_max = 0,
         noisy = True,
         sigma0 = 0.7 if not tune_runner else tune.choice([0., 0.2, 0.5, 0.7, 1.]),
         dueling = True,
-        hiddens = [512],
+        hiddens = [256],
         double_q = True,
         n_step = 12,
         replay_buffer_config = {
@@ -291,7 +291,7 @@ elif algorithm == 'DQN': # DQN Configuration
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.,
             "final_epsilon": 0.,
-            "epsilon_timesteps": 6*24*365*400,
+            "epsilon_timesteps": 6*24*365*100,
         }
     )
 
@@ -452,7 +452,7 @@ def trial_str_creator(trial):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    return "4x512_dueT1x512_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
+    return "3x256_dueT1x256_douT_{}_{}".format(trial.trainable_name, trial.trial_id)
 
 if not restore:
     tune.Tuner(
@@ -480,12 +480,12 @@ if not restore:
                 building=env_config['building_name'],
                 algorithm=str(algorithm)
             ),
-            stop={"episodes_total": 800},
+            stop={"episodes_total": 200},
             log_to_file=True,
             
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_at_end = True,
-                checkpoint_frequency = 100,
+                checkpoint_frequency = 50,
                 #num_to_keep = 20
             ),
             failure_config=air.FailureConfig(

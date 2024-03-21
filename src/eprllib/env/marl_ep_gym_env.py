@@ -98,7 +98,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         truncateds = False
         # terminated variable is used to determine the end of a episode. Is stablished as False until the
         # environment present a terminal state.
-        timeout = 40
+        timeout = 5
         # timeout is set to 4s to handle end of simulation cases, which happens async
         # and materializes by worker thread waiting on this queue (EnergyPlus callback
         # not consuming yet/anymore).timeout value can be increased if E+ timestep takes longer.
