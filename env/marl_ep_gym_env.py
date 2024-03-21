@@ -144,7 +144,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # Transform energy variables in Joule to kWh
         
-        reward = -((22-infos['window_opening_1']['Ti'])**2)
+        reward_function = self.env_config['reward_function']
+        
+        reward = reward_function(infos['window_opening_1']['occupancy'], infos['window_opening_1']['Ti'])
         
         reward_dict = {
             'window_opening_1': reward,
