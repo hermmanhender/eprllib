@@ -114,8 +114,9 @@ if __name__ == '__main__':
     
     import gymnasium as gym
     import os
+    from tools import rewards
 
-    name = 'natural_drl_control'
+    name = 'prot3_drl'
     
     # Controles de la simulación
     env_config={
@@ -129,17 +130,19 @@ if __name__ == '__main__':
         'is_test': True,
         # For evaluation process 'is_test=True' and for trainig False.
         'test_init_day': 1,
-        'action_space': gym.spaces.Discrete(4),
+        'action_space': gym.spaces.Discrete(2),
         # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (303,)),
+        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
         # observation space for simple agent case
         
         # BUILDING CONFIGURATION
         'building_name': 'prot_3_ceiling',
+        
+        'reward_function': rewards.reward_function,
     }
 
     # se importan las políticas convencionales para la configuracion especificada
-    checkpoint_path = 'C:/Users/grhen/ray_results/20240306_VN_prot_1_natural_DQN/3x512_dueT1x512_douT_DQN_083f9_00000/checkpoint_000535'
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240318_VN_marl_prot3_DQN/3x512_dueT1x512_douT_DQN_d18a9_00000/checkpoint_000142'
     
     try:
         os.makedirs(env_config['output'])
