@@ -96,7 +96,7 @@
             "leakage_component_name": "WindowOpening",
             "surface_name": "living_E_window",
             "ventilation_control_mode": "Constant",
-            "venting_availability_schedule_name": "Always Off Discrete",
+            "venting_availability_schedule_name": "Always On Discrete",
             "window_door_opening_factor_or_crack_factor": 1
         },
         "AirflowNetwork:MultiZone:Surface 6": {
@@ -120,7 +120,7 @@
             "leakage_component_name": "WindowOpening",
             "surface_name": "living_NW_window",
             "ventilation_control_mode": "Constant",
-            "venting_availability_schedule_name": "Always Off Discrete",
+            "venting_availability_schedule_name": "Always On Discrete",
             "window_door_opening_factor_or_crack_factor": 1
         },
         "AirflowNetwork:MultiZone:Surface 8": {
@@ -2544,6 +2544,16 @@
     "OutdoorAir:Node": {
         "Model Outdoor Air Node": {}
     },
+    "Output:Meter": {
+        "Output:Meter 1": {
+            "key_name": "Electricity:Zone:THERMAL ZONE: LIVING",
+            "reporting_frequency": "Timestep"
+        },
+        "Output:Meter 2": {
+            "key_name": "NaturalGas:Zone:THERMAL ZONE: LIVING",
+            "reporting_frequency": "Timestep"
+        }
+    },
     "Output:Variable": {
         "Output:Variable 1": {
             "key_value": "*",
@@ -2584,6 +2594,11 @@
             "key_value": "*",
             "reporting_frequency": "Timestep",
             "variable_name": "Zone Thermal Comfort Fanger Model PPD"
+        },
+        "Output:Variable 9": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone People Occupant Count"
         }
     },
     "Output:VariableDictionary": {
@@ -2655,7 +2670,7 @@
             "begin_year": 2009,
             "day_of_week_for_start_day": "Thursday",
             "end_day_of_month": 31,
-            "end_month": 12,
+            "end_month": 3,
             "end_year": 2009,
             "use_weather_file_daylight_saving_period": "No",
             "use_weather_file_holidays_and_special_days": "No",
