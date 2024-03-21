@@ -8,7 +8,7 @@ setup(
   author = 'Germán Rodolfo Henderson',                   # Tu nombre
   author_email = 'hendger.07@gmail.com',      # Tu correo electrónico
   url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib',   # Tu github o tu sitio web
-  download_url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib/archive/refs/tags/v0.0.1.tar.gz',    # Ahora hablamos de esto
+  download_url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib/dist/eprllib-0.0.1.tar.gz',    # Ahora hablamos de esto
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
   install_requires=[            # Los paquetes que usas en tu librería.
           'tensorflow',
