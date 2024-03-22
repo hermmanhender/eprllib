@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional
 # To specify the types of variables espected.
 from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
 # The EnergyPlus Runner.
+from gymnasium.spaces import Box
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     def __init__(
@@ -26,7 +27,18 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self._agent_ids = env_config['agent_ids']
         # asignation of environment spaces.
         self.action_space = self.env_config['action_space']
-        self.observation_space = self.env_config['observation_space']
+        
+        obs_space_len = sum([
+            len(self.env_config['ep_variables']),
+            len(self.env_config['ep_meters']),
+            len(self.env_config['ep_actuators']),
+            self.env_config['weather_prob_days'] * 144,
+            -len(self.env_config['no_observable_variables']),
+            1, # (agent_indicator)
+            6 # ('day_of_the_week','is_raining','sun_is_up','hora','simulation_day','rad')
+        ])
+
+        self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
         
         # EnergyPlus Runner class.
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
