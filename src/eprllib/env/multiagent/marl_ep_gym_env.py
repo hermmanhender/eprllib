@@ -11,7 +11,6 @@ from typing import Any, Dict, Optional
 # To specify the types of variables espected.
 from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
 # The EnergyPlus Runner.
-from numpy import array
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     def __init__(
@@ -42,8 +41,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.last_obs = {}
         self.last_infos = {}
         for agent in env_config['agent_ids']:
-            self.last_obs[agent] = array()
-            self.last_infos[agent] = array()
+            self.last_obs[agent] = []
+            self.last_infos[agent] = []
             
 
     def reset(
