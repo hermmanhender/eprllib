@@ -1,79 +1,137 @@
-# DRL-based natural ventilation management model with RLlib and EnergyPlus
+# eprllib: EnergyPlus as a Markov Decission Process (MDP) environment for Deep Reinforcement Learning (DRL) in RLlib 
 
-## Description
+This repository provides a set of methods to establish the computational loop of EnergyPlus within a Markov Decision Process (MDP), treating it as a multi-agent environment compatible with RLlib. The main goal is to offer a simple configuration of EnergyPlus as a standard environment for experimentation with Deep Reinforcement Learning.
 
-Buildings have proven to be one of the energy sinks in recent decades. Both the industrial and commercial sectors and the residential sector are consumers of a large part of the energy and responsible for greenhouse gas emissions due to these consumptions. In general, these consumptions are associated with the use of energy inside buildings. In the residential sector, in particular, most of the primary energy is consumed for heating, ventilation or air conditioning (HVAC) and for cooking food. Currently, HVAC systems are automated to achieve high performance and high comfort features. However, they have many problems still unresolved. Its automation is based on instantaneous variables and does not consider the user's activity or the use of passive air conditioning strategies in the home, such as natural ventilation, taking advantage of the sun through windows. On the other hand, the accelerated development of artificial intelligence in recent years provides novel tools to address complex problems such as the energy operation of a building. Within these tools, DRL (Deep Reinforcement Learning) adapts well to the type of problem to be solved. It is for all this that the development of a control model that manages energy use is proposed, considering the user's activity and the bioclimatic strategies that a home has, particularly for this work, natural ventilation.
+## Installation
 
-## Repository organization
+To install EnergyPlusRL, simply use pip:
 
-The repository is ordned to be easy to read and to develope.
-
-In the main folder there are three scripts and one notebook that are used to configurate the experiment to be running or execute the evaluation of the policy trained and compare with the conventional policy.
-
-    -> init_training.py
-    -> init_conventional.py
-    -> init_evaluation.py
-    -> Natural_ventilation_EnergyPlus_in_RLlib.ipynb
-
-The notebook `Natural_ventilation_EnergyPlus_in_RLlib.ipynb` implement the training in a Google Colab virtual machine configuration.
-
-### agents
-
-This folder is where the agent's models are allocated. For now the only agent runeable is `conventional` used to produce conventional actions in the environment to operate the opening of windows.
 ```
-policy_config = { # conventional control config
-    'SP_temp': 22, #es el valor de temperatura de confort
-    'dT_up': 2.5, #es el límite superior para el rango de confort
-    'dT_dn': 2.5, #es el límite inferior para el rango de confort
+pip install eprllib
+```
+
+## Key Features
+
+* Integration of EnergyPlus and RLlib: This package facilitates setting up a Reinforcement Learning environment using EnergyPlus as the base, allowing for experimentation with energy control policies in buildings.
+* Simplified Configuration: To use this environment, you simply need to provide a configuration in the form of a dictionary that includes state variables, metrics, actuators (which will also serve as agents in the environment), and other optional features.
+* Flexibility and Compatibility: EnergyPlusRL easily integrates with RLlib, a popular framework for Reinforcement Learning, enabling smooth setup and training of control policies for actionable elements in buildings.
+
+## Usage
+
+1. Import the package into your Python script.
+2. Define your environment configuration in a dictionary, specifying state variables, metrics, actuators, and other relevant features as needed. (See Documentation section to know all the parameters).
+3. Configure RLlib for training control policies using the EnergyPlusRL environment.
+4. Execute the training of your Reinforcement Learning model and evaluate the results obtained.
+
+## Example configuration
+
+```
+import ray
+from ray.tune import register_env
+from ray import tune, air
+from ray.rllib.algorithms.dqn.dqn import DQNConfig
+from ray.rllib.policy.policy import PolicySpec
+import gymnasium as gym
+from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
+
+env_config={
+    # === ENERGYPLUS OPTIONS === #
+    'epjson': '/content/prot_3_ceiling.epJSON',
+    "epw_training": np.random.choice(["/content/GEF_Lujan_de_cuyo-hour-H1.epw","/content/GEF_Lujan_de_cuyo-hour-H2.epw","/content/GEF_Lujan_de_cuyo-hour-H3.epw"]),
+    "epw": "/content/GEF_Lujan_de_cuyo-hour-H4.epw",
+    # Configure the output directory for the EnergyPlus simulation.
+    'output': '/content/output',
+    # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
+    'ep_terminal_output': False,
+
+    # === EXPERIMENT OPTIONS === #
+    # For evaluation process 'is_test=True' and for trainig False.
+    'is_test': False,
+
+    # === ENVIRONMENT OPTIONS === #
+    # action space for simple agent case
+    'action_space': gym.spaces.Discrete(2),
+    # observation space for simple agent case
+    # This is equal to the the sume of:
+    #   + ep_variables
+    #   + ep_meters
+    #   + ep_actuators
+    #   + weather_prob_days*144
+    #   - no_observable_variables
+    #   + 1 (agent_indicator)
+    #   + 6 ('day_of_the_week','is_raining','sun_is_up','hora','simulation_day','rad')
+    'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
+    'reward_function': eprllib.tools.rewards.reward_function_T3,
+    "ep_variables":{
+        "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
+        "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Living"),
+        "v": ("Site Wind Speed", "Environment"),
+        "d": ("Site Wind Direction", "Environment"),
+        "RHo": ("Site Outdoor Air Relative Humidity", "Environment"),
+        "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Living"),
+        "pres": ("Site Outdoor Air Barometric Pressure", "Environment"),
+        "occupancy": ("Zone People Occupant Count", "Thermal Zone: Living"),
+        "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Living Occupancy")
+    },
+    "ep_meters": {
+        "electricity": "Electricity:Zone:THERMAL ZONE: LIVING",
+        "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING",
+    },
+    "ep_actuators": {
+        "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"),
+        "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"),
+    },
+    "infos_variables": ["ppd", "occupancy", "Ti"],
+    "no_observable_variables": ["ppd"],
+
+    # === OPTIONAL === #
+    "timeout": 10,
+    "T_confort": 23.5,
+    "weather_prob_days": 2
 }
 
-policy = Conventional(policy_config)
-# define the conventional policy
+def policy_mapping_fn(agent_id, episode, worker, **kwargs):
+    return "shared_policy"
 
-# ...
-# obtain here an observation of the environment
+# To register the custom environment.
+ray.init()
+register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
 
-action_1 = policy.window_opening(Ti, To, action_w1)
-# obtain the action of the conventional policy
+algo = DQNConfig().training(
+    gamma = 0.99,
+    lr = 0.01,
+).environment(
+    env="EPEnv",
+    env_config=env_config,
+).framework(
+    framework = 'torch',
+).rollouts(
+    num_rollout_workers = 0,
+).experimental(
+    _enable_new_api_stack = False,
+).multi_agent(
+    policies = {
+        'shared_policy': PolicySpec(),
+    },
+    policy_mapping_fn = policy_mapping_fn,
+)
+
+tune.Tuner(
+    algorithm,
+    tune_config=tune.TuneConfig(
+        mode="max",
+        metric="episode_reward_mean",
+    ),
+    run_config=air.RunConfig(
+        stop={"episodes_total": 800},
+    ),
+    param_space=algo.to_dict(),
+).fit()
 ```
-
-This module is used now only in the conventional evaluation to compare the DRL algorithm counter this RB control.
-
-In the future is expected to implement new agents to involucrate defferent inhabitants profiles or users.
-
-### env
-
-In this folder there are alocated two files that together implement the environment in Ray-RLlib. Both scripts are executed in different threads to allow the simulation of EnergyPlus Python API in a reinforcement learning way (a Markov Decission Process).
-
-In the nex image is show how the two scripts are related to coordinate the steps.
-
-![Implementación del entorno de EnergyPlus en RLlib.](execution_flow.png)
-
-### epjson
-
-The environment implemented need a EnergyPlus input file. This file could be defined as an IDF file or an epJSON file. We use here the epJSON file because is easier to manipulate in the EnergyPlus Python API. Here are allocated the buildings model files.
-
-### epw
-
-Also EnergyPlus requires a weather epw file. This experiment run a building of the GEF IPV Argentina project. The project is allocated in all the country and here are the weather files for the Province of Mendoza only.
-
-### postprocess
-
-After training, the evaluation is defined as a postprocess. Here the two policies (conventional or RB and DRL) are compare. Also the policy follow for the DRL policy in each device is important to analisys and the beheavior of the neural network connections too.
-
-In this folder there are different notebook to this propose.
-
-### tools
-
-Different utilities are defined to use across the configurations. Here are alocated.
-
-## How to use and how to work
-
-To use you must to configurate the `VENT_init_training.py` and execute the experiment.
 
 ## Contribution
 
-(work in progress)
+Contributions are welcome! If you wish to improve this project or add new features, feel free to submit a pull request.
 
 ## Licency
 
@@ -98,5 +156,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
 
