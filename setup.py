@@ -8,7 +8,7 @@ setup(
   author = 'Germán Rodolfo Henderson',                   # Tu nombre
   author_email = 'hendger.07@gmail.com',      # Tu correo electrónico
   url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib',   # Tu github o tu sitio web
-  download_url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib/dist/eprllib-0.0.3.tar.gz',    # Ahora hablamos de esto
+  download_url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib/dist/eprllib-1.0.6.tar.gz',    # Ahora hablamos de esto
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
   install_requires=[            # Los paquetes que usas en tu librería.
           "ray[all] ==9.2.3",
