@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: natural_ventilation_EP_RLlib
+name: eprllib
 
 on:
   release:
@@ -31,10 +31,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
         pip install ray[all]
-        pip install torch
-        pip install tensorflow
         pip install gymnasium
-        pip install bayesian-optimization
     - name: Build package
       run: python -m build
     - name: natural_ventilation_EP_RLlib
