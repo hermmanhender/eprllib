@@ -11,7 +11,7 @@ setup(
   download_url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib/dist/eprllib-1.0.6.tar.gz',    # Ahora hablamos de esto
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
   install_requires=[            # Los paquetes que usas en tu librería.
-          "ray[all] ==9.2.3",
+          "ray[all] ==9.10.0",
           "gymnasium ==0.28.1"
       ],
   classifiers=[
