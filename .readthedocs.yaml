@@ -2,7 +2,11 @@
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
+<<<<<<< Updated upstream
 version: 1.0.3
+=======
+version: 1.0.4
+>>>>>>> Stashed changes
 
 # Set the OS, Python version and other tools you might need
 build:
@@ -32,4 +36,8 @@ sphinx:
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 # python:
 #   install:
+<<<<<<< Updated upstream
 #     - requirements: docs/requirements.txt
+=======
+#     - requirements: docs/requirements.txt
+>>>>>>> Stashed changes
