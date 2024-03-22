@@ -163,9 +163,12 @@ class EnergyPlusRunner:
         """EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
-        # To not perform observations when the episode is ended or if the callbacks and the 
+        # To not perform observations when the callbacks and the 
         # warming period are not complete.
-        if self.simulation_complete or not self._init_callback(state_argument):
+        if not self._init_callback(state_argument):
+            return
+        # To not perform observations when the episode is ended
+        if self.simulation_complete:
             return
         
         # Variables, meters and actuatos conditions as observation.
@@ -253,9 +256,13 @@ class EnergyPlusRunner:
     def _send_actions(self, state_argument):
         """EnergyPlus callback that sets actuator value from last decided action
         """
-        # To not perform actions when the episode is ended or if the callbacks and the 
-        # warming period are not complete.
-        if self.simulation_complete or not self._init_callback(state_argument) or self.first_observation:
+          
+        # To not perform actions if the callbacks and the warming period are not complete.
+        if not self._init_callback(state_argument):
+            return
+        # To not perform actions when the episode is ended or is the first timestep
+        # and there are not observations.
+        if self.simulation_complete or self.first_observation:
             return
         
         # Wait for an action.

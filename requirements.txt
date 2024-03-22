@@ -1,5 +1,2 @@
-bayesian-optimization>=1.4.3
 gymnasium>=0.28.1
 ray>=2.9.1
-tensorflow>=2.15.0
-torch>=2.1.2

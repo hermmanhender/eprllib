@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional
 # To specify the types of variables espected.
 from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
 # The EnergyPlus Runner.
+from numpy import array
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     def __init__(
@@ -22,7 +23,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # asigning the configuration of the environment.
         self.env_config = env_config
         # asignation of the agents ids for the environment.
-        self._agent_ids: list = env_config['agent_ids']
+        self._agent_ids = env_config['agent_ids']
         # asignation of environment spaces.
         self.action_space = self.env_config['action_space']
         self.observation_space = self.env_config['observation_space']
@@ -40,6 +41,10 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # dict to save the last observation and infos in the environment.
         self.last_obs = {}
         self.last_infos = {}
+        for agent in env_config['agent_ids']:
+            self.last_obs[agent] = array()
+            self.last_infos[agent] = array()
+            
 
     def reset(
         self, *,
