@@ -64,10 +64,7 @@ env_config={
     'is_test': False,
     
     # === ENVIRONMENT OPTIONS === #
-    'multiagent_aproach': 'centralized', # options are 'centralized', 'shared', 'independent'
-    'action_space': gym.spaces.Discrete(2),
-    # For centralize policy it is necesary to transform the action into a 
-    # tuple of actions for each individual agent.
+    'action_space': gym.spaces.Discrete(4),
     'action_transformer': action_transformers.thermostat_dual,
     'reward_function': rewards.reward_function_T3,
     "ep_variables":{
@@ -86,15 +83,15 @@ env_config={
         "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING",
     },
     "ep_actuators": {
-        "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"),
-        "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"),
+        "cooling_setpoint": ("Schedule:Constant", "Schedule Value", "schedule_name"),
+        "heating_serpoint": ("Schedule:Constant", "Schedule Value", "schedule_name"),
     },
     "infos_variables": ["ppd", "occupancy", "Ti"],
     "no_observable_variables": ["ppd"],
     
     # === OPTIONAL === #
     "timeout": 10,
-    "T_confort": 23.5,
+    "T_confort": 22,
     "weather_prob_days": 2
 }
 
