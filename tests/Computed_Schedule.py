@@ -54,7 +54,7 @@ from numpy.random import choice
 # define the eprllib configuration
 env_config={
     # === ENERGYPLUS OPTIONS === #
-    'epjson': "path_to/RefBldgSmallOfficeNew2004_Chicago.idf",
+    'epjson': "energyplus/testfiles/RefBldgSmallOfficeNew2004_Chicago.idf",
     "epw_training": "path_to/Chicago.epw",
     "epw": "path_to/Chicago.epw",
     'output': TemporaryDirectory("output","eprllib",'path_to_outputs_folder'),
@@ -83,8 +83,8 @@ env_config={
         "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING",
     },
     "ep_actuators": {
-        "cooling_setpoint": ("Schedule:Constant", "Schedule Value", "schedule_name"),
-        "heating_serpoint": ("Schedule:Constant", "Schedule Value", "schedule_name"),
+        "cooling_setpoint": ("Schedule:Constant", "Schedule Value", "CLDSP_SC"),
+        "heating_serpoint": ("Schedule:Constant", "Schedule Value", "HTDSP_SC"),
     },
     "infos_variables": ["ppd", "occupancy", "Ti"],
     "no_observable_variables": ["ppd"],
