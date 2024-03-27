@@ -11,7 +11,7 @@ def thermostat_dual(agent_id, action):
     if agent_id == 'cooling_setpoint':
         transform_action = 23 + action
     elif agent_id == 'heating_setpoint':
-        transform_action = 21 - 
+        transform_action = 21 - action
     else:
         transform_action = -1
         print('The agent id it is not in the list of agents for this action_transform_method. The agent allowed are cooling_setpoint and heating_setpoint. Please notice that.')
