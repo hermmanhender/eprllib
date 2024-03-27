@@ -90,12 +90,11 @@ env_config={
         'sun_is_up',
         "today_weather_beam_solar_at_time",
         ],
-    "infos_variables": ["ppd", "occupancy", "Ti", 'heating_meter', 'cooling_meter'],
+    "infos_variables": ["ppd", 'heating_meter', 'cooling_meter'],
     "no_observable_variables": ["ppd"],
     
     # === OPTIONAL === #
     "timeout": 10,
-    "T_confort": 22,
     'beta_reward': 0.5,
     "weather_prob_days": 2
 }
