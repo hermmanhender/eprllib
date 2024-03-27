@@ -48,7 +48,7 @@ from ray.tune import register_env
 from ray.rllib.algorithms.dqn.dqn import DQNConfig
 from ray.rllib.policy.policy import PolicySpec
 from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
-from eprllib.tools import rewards, utils
+from eprllib.tools import rewards, utils, action_transformers
 from numpy.random import choice
 
 # define the eprllib configuration
@@ -64,7 +64,8 @@ env_config={
     'is_test': False,
     
     # === ENVIRONMENT OPTIONS === #
-    'action_space': gym.spaces.Discrete(2), #TODO: Add action transformation option.
+    'action_space': gym.spaces.Discrete(2),
+    'action_transformer': action_transformers.thermostat_dual,
     'reward_function': rewards.reward_function_T3,
     "ep_variables":{
         "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
