@@ -7,8 +7,8 @@ setup(
   description = "program used to investigate the control of natural ventilation in homes based on a DRL model. The program uses the EnergyPlus Python API and Ray's Tune and RLlib libraries.",   # Descripcion corta de mi libreria
   author = 'Germán Rodolfo Henderson',                   # Tu nombre
   author_email = 'hendger.07@gmail.com',      # Tu correo electrónico
-  url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib',   # Tu github o tu sitio web
-  download_url = 'https://github.com/hermmanhender/natural_ventilation_EP_RLlib/dist/eprllib-1.0.6.tar.gz',    # Ahora hablamos de esto
+  url = 'https://github.com/hermmanhender/eprllib',   # Tu github o tu sitio web
+  download_url = 'https://github.com/hermmanhender/eprllib/dist/eprllib-1.0.6.tar.gz',    # Ahora hablamos de esto
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
   install_requires=[            # Los paquetes que usas en tu librería.
           "ray[all] ==9.10.0",
