@@ -64,7 +64,10 @@ env_config={
     'is_test': False,
     
     # === ENVIRONMENT OPTIONS === #
+    'multiagent_aproach': 'centralized', # options are 'centralized', 'shared', 'independent'
     'action_space': gym.spaces.Discrete(2),
+    # For centralize policy it is necesary to transform the action into a 
+    # tuple of actions for each individual agent.
     'action_transformer': action_transformers.thermostat_dual,
     'reward_function': rewards.reward_function_T3,
     "ep_variables":{
