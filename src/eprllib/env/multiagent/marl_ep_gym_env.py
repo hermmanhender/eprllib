@@ -32,10 +32,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             len(self.env_config['ep_variables']),
             len(self.env_config['ep_meters']),
             len(self.env_config['ep_actuators']),
+            len(self.env_config['time_variables']),
+            len(self.env_config['weather_variables']),
             self.env_config['weather_prob_days'] * 144,
             -len(self.env_config['no_observable_variables']),
             1, # (agent_indicator)
-            6 # ('day_of_the_week','is_raining','sun_is_up','hora','simulation_day','rad')
         ])
 
         self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
