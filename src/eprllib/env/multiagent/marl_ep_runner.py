@@ -191,19 +191,77 @@ class EnergyPlusRunner:
         }
         
         # Upgrade of the timestep observation with other variables.
-        time_step = api.exchange.zone_time_step_number(state_argument)
-        hour = api.exchange.hour(state_argument)
-        simulation_day = api.exchange.day_of_year(state_argument)
-        obs.update(
-            {
-            'day_of_the_week': api.exchange.day_of_week(state_argument),
-            'is_raining': api.exchange.is_raining(state_argument),
-            'sun_is_up': api.exchange.sun_is_up(state_argument),
-            'hora': hour,
-            'simulation_day': simulation_day,
-            "rad": api.exchange.today_weather_beam_solar_at_time(state_argument, hour, time_step),
+        if self.env_config.get('time_variables', False):
+            time_variables_methods = {
+                'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
+                'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
+                'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
+                'day_of_month': api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
+                'day_of_week': api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
+                'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
+                'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
+                'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
+                'minutes': api.exchange.minutes(state_argument), # Get the current minutes into the hour (1-60)
+                'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
+                'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
+                'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
+                'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
+                'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
+                'zone_time_step_number': api.exchange.zone_time_step_number(state_argument) # The current zone time step index, from 1 to the number of zone time steps per hour
             }
-        )
+            time_variables_list = self.env_config['time_variables']
+            time_variables_dict = {}
+            for variable in time_variables_list:
+                variable_method = time_variables_methods[variable]
+                time_variables_dict[variable] = variable_method(state_argument)
+            
+            obs.update(time_variables_dict)
+            
+        if self.env_config.get('time_variables', False):
+            hour = api.exchange.hour(state_argument)
+            zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
+            
+            weather_variables_methods = {
+                'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
+                'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
+                # Gets the specified weather data at the specified hour and time step index within that hour
+                'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
+                'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
+                'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number)
+            }
+            weather_variables_list = self.env_config['weather_variables']
+            weather_variables_dict = {}
+            for variable in weather_variables_list:
+                variable_method = weather_variables_methods[variable]
+                weather_variables_dict[variable] = variable_method(state_argument)
+            
+            obs.update(weather_variables_dict)
+            
         # Set the variables in the infos dict before to delete from the obs dict.
         infos_dict = {}
         for variable in self.env_config['infos_variables']:
@@ -228,7 +286,7 @@ class EnergyPlusRunner:
         
         # Consult the stadistics of the weather to put into the obs array. This add 1440 elements 
         # to the observation.
-        weather_prob = self.weather_stats.n_days_predictions(simulation_day, self.env_config.get('weather_prob_days', 2))
+        weather_prob = self.weather_stats.n_days_predictions(api.exchange.day_of_year(state_argument), self.env_config.get('weather_prob_days', 2))
         next_obs = np.concatenate([next_obs, weather_prob])
         
         next_obs_dict = {}
