@@ -1,7 +1,7 @@
 """# ENERGYPLUS RUNNER
 
-This script contain the EnergyPlus Runner that execute EnergyPlus from its Python API in the version
-23.2.0.
+This script contain the EnergyPlus Runner that execute EnergyPlus from its 
+Python API in the version 23.2.0.
 """
 
 import sys
@@ -273,6 +273,15 @@ class EnergyPlusRunner:
         # Get the central action from the EnergyPlus Environment `step` method.
         # In the case of simple agent a int value and for multiagents a dictionary.
         dict_action = self.act_queue.get()
+        
+        # Validate if the action must be transformed
+        if self.env_config.get('action_transformer', False):
+            action_transformer = self.env_config['action_transformer']
+            dict_action_transformed = {}
+            # Transform all the actions
+            for agent in self.env_config['agent_ids']:
+                dict_action_transformed[agent] = action_transformer(dict_action[agent])
+            dict_action = dict_action_transformed
         
         # Perform the actions in EnergyPlus simulation.       
         for agent in self.env_config['agent_ids']:
