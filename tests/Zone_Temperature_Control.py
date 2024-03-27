@@ -60,7 +60,7 @@ env_config={
     # === ENVIRONMENT OPTIONS === #
     'action_space': Discrete(4),
     'action_transformer': action_transformers.thermostat_dual,
-    'reward_function': rewards.reward_function_T3_Energy,
+    'reward_function': rewards.PPD_Energy_reward,
     "ep_variables":{
         "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
         "Ti": ("Zone Mean Air Temperature", "Core_ZN"),
@@ -108,7 +108,6 @@ register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
 def policy_mapping_fn(agent_id, episode, worker, **kwargs):
     return "shared_policy"
 
-
 algo = DQNConfig().training(
     # === General Algo Configs === #
     gamma = 0.99,
@@ -146,9 +145,6 @@ algo = DQNConfig().training(
     env_config=env_config,
 ).framework(
     framework = 'torch',
-).fault_tolerance(
-    recreate_failed_workers = True,
-    restart_failed_sub_environments=False,
 ).rollouts(
     num_rollout_workers = 7,
     create_env_on_local_worker=True,
@@ -162,12 +158,6 @@ algo = DQNConfig().training(
         'shared_policy': PolicySpec(),
     },
     policy_mapping_fn = policy_mapping_fn,
-).reporting(
-    min_sample_timesteps_per_iteration = 1000,
-).checkpointing(
-    export_native_model_files = True,
-).debugging(
-    log_level = "ERROR",
 ).resources(
     num_gpus = 0,
 )
@@ -186,23 +176,12 @@ tune.Tuner(
     tune_config=tune.TuneConfig(
         mode="max",
         metric="episode_reward_mean",
-        reuse_actors=False,
-        trial_name_creator=utils.trial_str_creator,
-        trial_dirname_creator=utils.trial_str_creator,
     ),
     run_config=air.RunConfig(
-        name="{date}_VN_marl".format(
-            date=str(time.time())
-        ),
         stop={"episodes_total": 200},
-        log_to_file=True,
-        
         checkpoint_config=air.CheckpointConfig(
             checkpoint_at_end = True,
-            checkpoint_frequency = 50,
-        ),
-        failure_config=air.FailureConfig(
-            max_failures=100
+            checkpoint_frequency = 10,
         ),
     ),
     param_space=algo.to_dict(),
