@@ -1,5 +1,5 @@
 """
-# Example: Computed Schedule
+# Example: Zone Temperature Control
 
 ## Problem Statement
 
@@ -31,17 +31,12 @@ Furthermore, it is essential to elucidate how the DRL algorithm interacts
 with the EnergyPlus simulation. By detailing the learning process over 
 time, readers gain a deeper understanding of the practical implementation 
 and the iterative nature of DRL in optimizing building energy management.
-
-
-built-in variables:
-    Hour
-    DayOfWeek
 """
 
 # import the necessary libraries
 import time
 from tempfile import TemporaryDirectory
-import gymnasium as gym
+from gymnasium.spaces import Discrete
 import ray
 from ray import air, tune
 from ray.tune import register_env
@@ -49,14 +44,13 @@ from ray.rllib.algorithms.dqn.dqn import DQNConfig
 from ray.rllib.policy.policy import PolicySpec
 from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 from eprllib.tools import rewards, utils, action_transformers
-from numpy.random import choice
 
 # define the eprllib configuration
 env_config={
     # === ENERGYPLUS OPTIONS === #
-    'epjson': "energyplus/testfiles/RefBldgSmallOfficeNew2004_Chicago.idf",
-    "epw_training": "path_to/Chicago.epw",
-    "epw": "path_to/Chicago.epw",
+    'epjson': "C:/EnergyPlusV23-2-0/ExampleFiles/RefBldgSmallOfficeNew2004_Chicago.idf",
+    "epw_training": "C:/EnergyPlusV23-2-0/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
+    "epw": "C:/EnergyPlusV23-2-0/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
     'output': TemporaryDirectory("output","eprllib",'path_to_outputs_folder'),
     'ep_terminal_output': False,
     
@@ -64,34 +58,45 @@ env_config={
     'is_test': False,
     
     # === ENVIRONMENT OPTIONS === #
-    'action_space': gym.spaces.Discrete(4),
+    'action_space': Discrete(4),
     'action_transformer': action_transformers.thermostat_dual,
-    'reward_function': rewards.reward_function_T3,
+    'reward_function': rewards.reward_function_T3_Energy,
     "ep_variables":{
         "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
-        "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Living"),
+        "Ti": ("Zone Mean Air Temperature", "Core_ZN"),
         "v": ("Site Wind Speed", "Environment"),
         "d": ("Site Wind Direction", "Environment"),
         "RHo": ("Site Outdoor Air Relative Humidity", "Environment"),
-        "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Living"),
+        "RHi": ("Zone Air Relative Humidity", "Core_ZN"),
         "pres": ("Site Outdoor Air Barometric Pressure", "Environment"),
-        "occupancy": ("Zone People Occupant Count", "Thermal Zone: Living"),
-        "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Living Occupancy")
+        "occupancy": ("Zone People Occupant Count", "Core_ZN"),
+        "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Core_ZN People")
     },
     "ep_meters": {
-        "electricity": "Electricity:Zone:THERMAL ZONE: LIVING",
-        "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING",
+        "heating_meter": "Heating:Electricity: Core_ZN",
+        "cooling_meter": "Cooling:Electricity: Core_ZN",
     },
     "ep_actuators": {
-        "cooling_setpoint": ("Schedule:Constant", "Schedule Value", "CLDSP_SC"),
-        "heating_serpoint": ("Schedule:Constant", "Schedule Value", "HTDSP_SC"),
+        "cooling_setpoint": ("Zone Temperature Control", "Cooling Setpoint", "Core_ZN"),
+        "heating_serpoint": ("Zone Temperature Control", "Heating Setpoint", "Core_ZN"),
     },
-    "infos_variables": ["ppd", "occupancy", "Ti"],
+    'time_variables': [
+        'hour',
+        'day_of_year',
+        'day_of_the_week',
+        ],
+    'weather_variables': [
+        'is_raining',
+        'sun_is_up',
+        "today_weather_beam_solar_at_time",
+        ],
+    "infos_variables": ["ppd", "occupancy", "Ti", 'heating_meter', 'cooling_meter'],
     "no_observable_variables": ["ppd"],
     
     # === OPTIONAL === #
     "timeout": 10,
     "T_confort": 22,
+    'beta_reward': 0.5,
     "weather_prob_days": 2
 }
 
