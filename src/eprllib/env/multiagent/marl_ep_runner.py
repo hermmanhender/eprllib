@@ -280,7 +280,7 @@ class EnergyPlusRunner:
             dict_action_transformed = {}
             # Transform all the actions
             for agent in self.env_config['agent_ids']:
-                dict_action_transformed[agent] = action_transformer(dict_action[agent])
+                dict_action_transformed[agent] = action_transformer(agent, dict_action[agent])
             dict_action = dict_action_transformed
         
         # Perform the actions in EnergyPlus simulation.       
