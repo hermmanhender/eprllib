@@ -22,5 +22,5 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/hermmanhender/natural_ventilation_EP_RLlib"
-"Bug Tracker" = "https://github.com/hermmanhender/natural_ventilation_EP_RLlib/issues"
+"Homepage" = "https://github.com/hermmanhender/eprllib"
+"Bug Tracker" = "https://github.com/hermmanhender/eprllib/issues"
