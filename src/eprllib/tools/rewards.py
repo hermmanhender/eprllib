@@ -102,7 +102,7 @@ def reward_function_T3_Energy(config: Dict[str, Any], obs: dict, infos: dict) ->
             reward = -beta_reward*(cooling_meter+heating_meter)
     return reward
     
-def PPD_Energy_rewardconfig: Dict[str, Any], obs: dict, infos: dict) -> float:
+def PPD_Energy_reward(config: Dict[str, Any], obs: dict, infos: dict) -> float:
     """This function returns the reward calcualted as the absolute value of the cube in the 
     difference between set point temperatur for comfort and the temperature measured in the 
     thermal zone when there are people in the zone but zero when is not.
