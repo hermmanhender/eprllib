@@ -200,8 +200,7 @@ class EnergyPlusRunner:
             time_variables_list = self.env_config['time_variables']
             time_variables_dict = {}
             for variable in time_variables_list:
-                variable_method = time_variables_methods[variable]
-                time_variables_dict[variable] = variable_method(state_argument)
+                time_variables_dict[variable] = time_variables_methods[variable]
             
             obs.update(time_variables_dict)
             
@@ -245,8 +244,7 @@ class EnergyPlusRunner:
             weather_variables_list = self.env_config['weather_variables']
             weather_variables_dict = {}
             for variable in weather_variables_list:
-                variable_method = weather_variables_methods[variable]
-                weather_variables_dict[variable] = variable_method(state_argument)
+                weather_variables_dict[variable] = weather_variables_methods[variable]
             
             obs.update(weather_variables_dict)
             
