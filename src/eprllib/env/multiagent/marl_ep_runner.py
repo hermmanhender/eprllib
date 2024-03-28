@@ -112,18 +112,6 @@ class EnergyPlusRunner:
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state = api.state_manager.new_state()
         
-        
-        api.runtime.callback_begin_system_timestep_before_predictor(self.energyplus_state, self._collect_first_obs)
-        """Collect the first observation.
-        This is execute only once at the begginig of the episode.
-        The calling point called “BeginTimestepBeforePredictor” occurs near the beginning of each timestep
-        but before the predictor executes. “Predictor” refers to the step in EnergyPlus modeling when the
-        zone loads are calculated. This calling point is useful for controlling components that affect the
-        thermal loads the HVAC systems will then attempt to meet. Programs called from this point
-        might actuate internal gains based on current weather or on the results from the previous timestep.
-        Demand management routines might use this calling point to reduce lighting or process loads,
-        change thermostat settings, etc."""
-        
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
         """Execute the actions in the environment.
         The calling point called “BeginZoneTimestepAfterInitHeatBalance” occurs at the beginning of each
@@ -320,12 +308,17 @@ class EnergyPlusRunner:
             return
         # To not perform actions when the episode is ended or is the first timestep
         # and there are not observations.
-        if self.simulation_complete or self.first_observation:
+        if self.simulation_complete:
             return
         
+        # If is the first timestep, obtain the first observation before to consult for an action
+        if self.first_observation:
+            self._collect_first_obs(state_argument)
+            
         # Wait for an action.
-        event_flag = self.act_event.wait(10)
+        event_flag = self.act_event.wait(120)
         if not event_flag:
+            print('The time waiting an action was over.')
             return
         
         # Get the central action from the EnergyPlus Environment `step` method.
