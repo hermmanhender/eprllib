@@ -123,5 +123,5 @@ def PPD_Energy_reward(config: Dict[str, Any], obs: dict, infos: dict) -> float:
     heating_meter = infos[agent_ids[0]]['heating_meter']
     PPD = infos[agent_ids[0]]['ppd']
     
-    return -beta_reward*(cooling_meter + heating_meter) -(1-beta_ reward)*PPD
+    return -beta_reward*(cooling_meter + heating_meter) -(1-beta_reward)*PPD
     
