@@ -48,6 +48,16 @@ env_config={
         "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"),
         "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"),
     },
+    'time_variables': [
+        'hour',
+        'day_of_year',
+        'day_of_the_week',
+        ],
+    'weather_variables': [
+        'is_raining',
+        'sun_is_up',
+        "today_weather_beam_solar_at_time",
+        ],
     "infos_variables": ["ppd", "occupancy", "Ti"],
     "no_observable_variables": ["ppd"],
     
