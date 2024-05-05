@@ -116,13 +116,13 @@ if __name__ == '__main__':
     import os
     from eprllib.tools import rewards
 
-    name = 'prot3_drl'
+    name = 'prot3_drl_3'
     
     # Controles de la simulación
     env_config={
         # === ENERGYPLUS OPTIONS === #
-        'epjson': "/src/eprllib/epjson/prot_3_ceiling.epJSON",
-        "epw": "/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H4.epw",
+        'epjson': "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/prot_3_ceiling.epJSON",
+        "epw": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/GEF_Lujan_de_cuyo-hour-H4.epw",
         'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
         'ep_terminal_output': True,
 
@@ -171,7 +171,10 @@ if __name__ == '__main__':
     }
 
     # se importan las políticas convencionales para la configuracion especificada
-    checkpoint_path = 'C:/Users/grhen/ray_results/1710878306.4748695_VN_marl_prot_3_ceiling_DQN/4x512_dueT1x512_douT_DQN_0cb19_00000/checkpoint_000029'
+    # prot3_drl_1 - Caso de 3x256_dueT1x256_douT_DQN y train_batch_size=512
+    # checkpoint_path = 'C:/Users/grhen/ray_results/20240503164618_VN_marl_DQN/3x256_dueT1x256_douT_DQN_e6d20_00000/checkpoint_000047'
+    # prot3_drl_2 - Caso de 256+2x512+256_dueT1x256_douT_DQN y train_batch_size=1024
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240504023229_VN_marl_DQN/3x256_dueT1x256_douT_DQN_ca4f7_00000/checkpoint_000045'
     
     try:
         os.makedirs(env_config['output'])

@@ -83,14 +83,14 @@ def init_rb_evaluation(
     obs_dict, infos = env.reset()
     while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
-        To = obs_dict[_agents_id_list[0]][1]
-        Ti = obs_dict[_agents_id_list[0]][2]
-        action_w1 = obs_dict[_agents_id_list[0]][11]
-        action_w2 = obs_dict[_agents_id_list[0]][12]
+        To = infos[_agents_id_list[0]]["To"]
+        Ti = infos[_agents_id_list[0]]["Ti"]
+        action_w1 = infos[_agents_id_list[0]]["opening_window_1"]
+        action_w2 = infos[_agents_id_list[0]]["opening_window_2"]
         
         actions_dict = {
-            'window_opening_1': policy.window_opening(Ti, To, action_w1),
-            'window_opening_2': policy.window_opening(Ti, To, action_w2)
+            'opening_window_1': policy.window_opening(Ti, To, action_w1),
+            'opening_window_2': policy.window_opening(Ti, To, action_w2)
         }
         
         # se ejecuta un paso de tiempo
@@ -132,8 +132,8 @@ if __name__ == '__main__':
     
     env_config={
         # === ENERGYPLUS OPTIONS === #
-        'epjson': "/src/eprllib/epjson/prot_3_ceiling.epJSON",
-        "epw": "/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H4.epw",
+        'epjson': "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/prot_3_ceiling.epJSON",
+        "epw": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/GEF_Lujan_de_cuyo-hour-H4.epw",
         'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
         'ep_terminal_output': True,
 
@@ -172,7 +172,7 @@ if __name__ == '__main__':
             'sun_is_up',
             "today_weather_beam_solar_at_time",
             ],
-        "infos_variables": ["ppd", "occupancy", "Ti"],
+        "infos_variables": ["ppd", "occupancy", "Ti", "To", "opening_window_1", "opening_window_2"],
         "no_observable_variables": ["ppd"],
         
         # === OPTIONAL === #

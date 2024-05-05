@@ -81,8 +81,8 @@ def init_rb_evaluation(
         # se calculan las acciones convencionales de cada elemento
         
         actions_dict = {
-            'window_opening_1': 0,
-            'window_opening_2': 0
+            'opening_window_1': 0,
+            'opening_window_2': 0
         }
         
         # se ejecuta un paso de tiempo
@@ -124,8 +124,8 @@ if __name__ == '__main__':
     
     env_config={
         # === ENERGYPLUS OPTIONS === #
-        'epjson': "/src/eprllib/epjson/prot_3_ceiling.epJSON",
-        "epw": "/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H4.epw",
+        'epjson': "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/prot_3_ceiling.epJSON",
+        "epw": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/GEF_Lujan_de_cuyo-hour-H4.epw",
         'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
         'ep_terminal_output': True,
 
