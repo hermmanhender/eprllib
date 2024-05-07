@@ -5,7 +5,7 @@ This script execute the conventional controls in the evaluation scenario.
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 import csv
-from eprllib.env.marl_ep_gym_env import EnergyPlusEnv_v0
+from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 from eprllib.agents.conventional import Conventional
 
 
@@ -83,14 +83,14 @@ def init_rb_evaluation(
     obs_dict, infos = env.reset()
     while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
-        To = obs_dict[_agents_id_list[0]][1]
-        Ti = obs_dict[_agents_id_list[0]][2]
-        action_w1 = obs_dict[_agents_id_list[0]][11]
-        action_w2 = obs_dict[_agents_id_list[0]][12]
+        To = infos[_agents_id_list[0]]["To"]
+        Ti = infos[_agents_id_list[0]]["Ti"]
+        action_w1 = infos[_agents_id_list[0]]["opening_window_1"]
+        action_w2 = infos[_agents_id_list[0]]["opening_window_2"]
         
         actions_dict = {
-            'window_opening_1': policy.window_opening(Ti, To, action_w1),
-            'window_opening_2': policy.window_opening(Ti, To, action_w2)
+            'opening_window_1': policy.window_opening(Ti, To, action_w1),
+            'opening_window_2': policy.window_opening(Ti, To, action_w2)
         }
         
         # se ejecuta un paso de tiempo
@@ -126,29 +126,59 @@ if __name__ == '__main__':
     
     import gymnasium as gym
     import os
-    from tools import rewards
+    from eprllib.tools import rewards
     
     name = 'prot3_rb'
     
-    env_config={ 
-        'weather_folder': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epw/GEF',
+    env_config={
+        # === ENERGYPLUS OPTIONS === #
+        'epjson': "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/prot_3_ceiling.epJSON",
+        "epw": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/natural_ventilation/files/GEF_Lujan_de_cuyo-hour-H4.epw",
         'output': 'C:/Users/grhen/Documents/Resultados_RLforEP/'+ name,
-        'epjson_folderpath': 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/epjson',
-        'epjson_output_folder': 'C:/Users/grhen/Documents/models',
-        # Configure the directories for the experiment.
         'ep_terminal_output': True,
-        # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
+
+        # === EXPERIMENT OPTIONS === #
         'is_test': True,
-        # For evaluation process 'is_test=True' and for trainig False.
-        'test_init_day': 1,
-        'action_space': gym.spaces.Discrete(4),
-        # action space for simple agent case
-        'observation_space': gym.spaces.Box(float("-inf"), float("inf"), (307,)),
-        # observation space for simple agent case
         
-        # BUILDING CONFIGURATION
-        'building_name': 'prot_3_ceiling',
-        'reward_function': rewards.reward_function,
+        # === ENVIRONMENT OPTIONS === #
+        'action_space': gym.spaces.Discrete(2),
+        'reward_function': rewards.reward_function_T3,
+        "ep_variables":{
+            "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
+            "Ti": ("Zone Mean Air Temperature", "Thermal Zone: Living"),
+            "v": ("Site Wind Speed", "Environment"),
+            "d": ("Site Wind Direction", "Environment"),
+            "RHo": ("Site Outdoor Air Relative Humidity", "Environment"),
+            "RHi": ("Zone Air Relative Humidity", "Thermal Zone: Living"),
+            "pres": ("Site Outdoor Air Barometric Pressure", "Environment"),
+            "occupancy": ("Zone People Occupant Count", "Thermal Zone: Living"),
+            "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Living Occupancy")
+        },
+        "ep_meters": {
+            "electricity": "Electricity:Zone:THERMAL ZONE: LIVING",
+            "gas": "NaturalGas:Zone:THERMAL ZONE: LIVING",
+        },
+        "ep_actuators": {
+            "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"),
+            "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"),
+        },
+        'time_variables': [
+            'hour',
+            'day_of_year',
+            'day_of_the_week',
+            ],
+        'weather_variables': [
+            'is_raining',
+            'sun_is_up',
+            "today_weather_beam_solar_at_time",
+            ],
+        "infos_variables": ["ppd", "occupancy", "Ti", "To", "opening_window_1", "opening_window_2"],
+        "no_observable_variables": ["ppd"],
+        
+        # === OPTIONAL === #
+        "timeout": 10,
+        "T_confort": 23.5,
+        "weather_prob_days": 2
     }
     
     policy_config = { # configuracion del control convencional
