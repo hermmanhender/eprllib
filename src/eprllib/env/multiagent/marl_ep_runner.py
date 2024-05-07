@@ -204,7 +204,7 @@ class EnergyPlusRunner:
             
             obs.update(time_variables_dict)
             
-        if self.env_config.get('time_variables', False):
+        if self.env_config.get('weather_variables', False):
             hour = api.exchange.hour(state_argument)
             zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
             
