@@ -25,6 +25,7 @@ env_config={
     
     # === EXPERIMENT OPTIONS === #
     'is_test': False,
+    'episode_len_fn': utils.len_episode,
     
     # === ENVIRONMENT OPTIONS === #
     'action_space': gym.spaces.Discrete(2),

@@ -15,7 +15,7 @@ def trial_str_creator(trial, name:str='eprllib'):
     """
     return "{}_{}_{}".format(name, trial.trainable_name, trial.trial_id)
 
-def len_episode(epjson_file:str, output_folder:str, episode_len:int=7, init_julian_day:int=0) -> str:
+def len_episode(env_config:dict) -> str:
     """This function is used to modify the RunPeriod longitude of a epJSON file.
     
     Args:
@@ -27,12 +27,16 @@ def len_episode(epjson_file:str, output_folder:str, episode_len:int=7, init_juli
     Return:
         str: path to the modified epJSON file.
     """
+    epjson_file = env_config['epjson']
+    output_folder = env_config['output']
+    episode_len = env_config.get('episode_len',7)
+    init_julian_day = env_config.get('init_julian_day', 0)
     # Open the epjson file
     with open(epjson_file) as epf:
         epjson_object = pd.read_json(epf)
     # Transform the julian day into day,month tuple
     if init_julian_day <= 0:
-        init_julian_day = np.random.randint()
+        init_julian_day = np.random.randint(1, 366-episode_len)
     init_day, init_month = from_julian_day(init_julian_day)
     # Calculate the final day and month
     end_julian_day = init_julian_day + episode_len

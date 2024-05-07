@@ -83,7 +83,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Define the RunPeriod of execution
         dynamic_episode_longitude = self.env_config['episode_len_fn']
         if dynamic_episode_longitude != None:
-            self.env_config['epjson'] = dynamic_episode_longitude(self.env_config['epjson'])
+            self.env_config['epjson'] = dynamic_episode_longitude(self.env_config)
         
         # Start EnergyPlusRunner whith the following configuration.
         self.energyplus_runner = EnergyPlusRunner(
