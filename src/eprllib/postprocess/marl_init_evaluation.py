@@ -116,7 +116,7 @@ if __name__ == '__main__':
     import os
     from eprllib.tools import rewards
 
-    name = 'prot3_drl_4'
+    name = 'prot3_drl_5'
     
     # Controles de la simulación
     env_config={
@@ -179,6 +179,9 @@ if __name__ == '__main__':
     # checkpoint_path = 'C:/Users/grhen/ray_results/20240504182238_VN_marl_DQN/3x256_dueT1x256_douT_DQN_8637b_00000/checkpoint_000046'
     # prot3_drl_4 - train_batch_size=10000
     checkpoint_path = 'C:/Users/grhen/ray_results/20240506100817_VN_marl_DQN/3x256_dueT1x256_douT_DQN_cbd3d_00000/checkpoint_000072'
+    
+    # prot3_drl_5 - PPO
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240510100839_VN_marl_PPO/3x256_dueT1x256_douT_PPO_82336_00000/checkpoint_000004'
     
     try:
         os.makedirs(env_config['output'])
