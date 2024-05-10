@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "eprllib"
-version = "1.0.9"
+version = "1.0.10"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
@@ -17,7 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "ray[all] ==2.9.3",
+    "ray[all] ==2.21.0",
     "gymnasium ==0.28.1",
 ]
 

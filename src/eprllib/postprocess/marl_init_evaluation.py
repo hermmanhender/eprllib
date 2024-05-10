@@ -176,7 +176,9 @@ if __name__ == '__main__':
     # prot3_drl_2 - Caso de 256+2x512+256_dueT1x256_douT_DQN y train_batch_size=1024
     # checkpoint_path = 'C:/Users/grhen/ray_results/20240504023229_VN_marl_DQN/3x256_dueT1x256_douT_DQN_ca4f7_00000/checkpoint_000045'
     # prot3_drl_3 - Caso de 3x256_dueT1x256_douT_DQN y train_batch_size=512, r=-ppd
-    checkpoint_path = 'C:/Users/grhen/ray_results/20240504182238_VN_marl_DQN/3x256_dueT1x256_douT_DQN_8637b_00000/checkpoint_000046'
+    # checkpoint_path = 'C:/Users/grhen/ray_results/20240504182238_VN_marl_DQN/3x256_dueT1x256_douT_DQN_8637b_00000/checkpoint_000046'
+    # prot3_drl_4 - train_batch_size=10000
+    checkpoint_path = 'C:/Users/grhen/ray_results/20240506100817_VN_marl_DQN/3x256_dueT1x256_douT_DQN_cbd3d_00000/checkpoint_000072'
     
     try:
         os.makedirs(env_config['output'])
