@@ -15,11 +15,11 @@ from numpy.random import choice
 
 env_config={
     # === ENERGYPLUS OPTIONS === #
-    'epjson': "/src/eprllib/epjson/prot_3_ceiling.epJSON",
-    "epw_training": choice(["/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H1.epw",
-                            "/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H2.epw",
-                            "/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H3.epw"]),
-    "epw": "/src/eprllib/epw/GEF/GEF_Lujan_de_cuyo-hour-H4.epw",
+    'epjson': "tests/files/prot_3_ceiling.epJSON",
+    "epw_training": choice(["tests/files/GEF_Lujan_de_cuyo-hour-H1.epw",
+                            "tests/files/GEF_Lujan_de_cuyo-hour-H2.epw",
+                            "tests/files/GEF_Lujan_de_cuyo-hour-H3.epw"]),
+    "epw": "tests/files/GEF_Lujan_de_cuyo-hour-H4.epw",
     'output': TemporaryDirectory("output","DQN_",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
     'ep_terminal_output': False,
     
