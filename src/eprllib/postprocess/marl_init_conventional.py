@@ -4,6 +4,7 @@ This script execute the conventional controls in the evaluation scenario.
 """
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
+import os
 import csv
 from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 from eprllib.agents.conventional import Conventional
@@ -71,7 +72,9 @@ def init_rb_evaluation(
     env = EnergyPlusEnv_v0(env_config)
     _agents_id = env.get_agent_ids()
     _agents_id_list = list(_agents_id)
-
+    # create the output folder if it doesn't exist
+    if not os.path.exists(env_config['output']):
+        os.makedirs(env_config['output'])
     # open the file in the write mode
     data = open(env_config['output']+'/'+name+'.csv', 'w')
     # create the csv writer
