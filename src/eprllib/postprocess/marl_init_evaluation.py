@@ -4,6 +4,7 @@ This script execute the conventional controls in the evaluation scenario.
 """
 import sys
 sys.path.insert(0, 'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
+import os
 import csv
 from ray.rllib.policy.policy import Policy
 from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
