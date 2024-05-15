@@ -250,8 +250,9 @@ class EnergyPlusRunner:
             
         # Set the variables in the infos dict before to delete from the obs dict.
         infos_dict = {}
-        for variable in self.env_config['infos_variables']:
-            infos_dict[variable] = obs[variable]
+        if self.env_config.get('infos_variables', False):
+            for variable in self.env_config['infos_variables']:
+                infos_dict[variable] = obs[variable]
         
         infos = {}
         for agent in self.env_config['agent_ids']:
@@ -260,8 +261,9 @@ class EnergyPlusRunner:
         self.infos_queue.put(infos)
         self.infos_event.set()
         
-        for variable in self.env_config['no_observable_variables']:
-            del obs[variable]
+        if self.env_config.get('no_observable_variables', False):
+            for variable in self.env_config['no_observable_variables']:
+                del obs[variable]
         
         # save the last obs and infos dicts.
         self.obs = obs
@@ -276,10 +278,10 @@ class EnergyPlusRunner:
         next_obs = np.concatenate([next_obs, weather_prob])
         
         next_obs_dict = {}
-        agent_indicator = 10
+        agent_indicator = 1
         for agent in self.env_config['agent_ids']:
             next_obs_dict[agent] = np.concatenate(([agent_indicator], next_obs))
-            agent_indicator += 10
+            agent_indicator += 1
         
         # Set the observation to communicate with the MDP.
         self.obs_queue.put(next_obs_dict)
