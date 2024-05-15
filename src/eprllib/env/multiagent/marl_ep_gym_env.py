@@ -10,6 +10,7 @@ from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
 # To specify the types of variables espected.
 from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
+from eprllib.tools import rewards
 # The EnergyPlus Runner.
 from gymnasium.spaces import Box
 
@@ -18,13 +19,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self,
         env_config: Dict[str, Any]
         ):
-        # super init of the base class gym.Env.
-        super().__init__()
         # asigning the configuration of the environment.
         self.env_config = env_config
         self.env_config['agent_ids'] = list(self.env_config['ep_actuators'].keys())
         # asignation of the agents ids for the environment.
-        self._agent_ids = env_config['agent_ids']
+        self._agent_ids = set(env_config['agent_ids'])
         # asignation of environment spaces.
         self.action_space = self.env_config['action_space']
         
@@ -41,6 +40,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
 
         self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
         
+        # super init of the base class gym.Env.
+        super().__init__()
+        
         # EnergyPlus Runner class.
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
         # queues for communication between MDP and EnergyPlus.
@@ -51,13 +53,16 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # ===CONTROLS=== #
         # variable for the registry of the episode number.
         self.episode = -1
+        self.timestep = 0
         # dict to save the last observation and infos in the environment.
         self.last_obs = {}
         self.last_infos = {}
         for agent in self.env_config['agent_ids']:
             self.last_obs[agent] = []
             self.last_infos[agent] = []
-            
+        # list to append, if is needed, the values of PPD and energy
+        self.ppd_list = []
+        self.energy_list = []
 
     def reset(
         self, *,
@@ -165,8 +170,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             raise Exception("Faulty episode")
         
         # Calculate the reward in the timestep
-        reward_function = self.env_config['reward_function']
-        reward = reward_function(self.env_config, obs, infos)
+        if self.env_config.get('reward_function', False):
+            reward_function = self.env_config['reward_function']
+        else:
+            reward_function = rewards.reward_function_T3_Energy
+        reward = reward_function(self, obs, infos)
         
         reward_dict = {}
         for agent in self.env_config['agent_ids']:
