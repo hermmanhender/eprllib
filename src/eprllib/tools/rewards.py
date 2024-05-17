@@ -1,5 +1,5 @@
 from typing import Any, Dict
-
+from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 
 def reward_function_T3(config: Dict[str, Any], obs: dict, infos: dict) -> float:
     """This function returns the reward calcualted as the absolute value of the cube in the 
@@ -156,3 +156,42 @@ def reward_function_ppd(config: Dict[str, Any], obs: dict, infos: dict) -> float
         else:
             reward = 0.
     return reward
+
+def normalize_reward_function(self:EnergyPlusEnv_v0, obs: dict, infos: dict) -> float:
+    """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+    amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
+    divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
+    of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
+    Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
+
+    Args:
+        self (Environment): RLlib environment.
+        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
+        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
+
+    Returns:
+        float: reward normalize value
+    """
+    # define the number of timesteps per episode
+    cut_episode_len = self.env_config.get('cut_episode_len', 7)
+    cut_episode_len_timesteps = cut_episode_len * 144
+    # define the beta reward
+    beta_reward = self.env_config.get('beta_reward', 0.5)
+    # get the values of the energy and PPD
+    agent_ids = self.env_config['agent_ids']
+    cooling_meter = infos[agent_ids[0]]['cooling']
+    heating_meter = infos[agent_ids[0]]['heating']
+    ppd = infos[agent_ids[0]]['ppd']
+    self.energy_list.append(cooling_meter+heating_meter)
+    self.ppd_list.append(ppd)
+    
+    if self.timestep % cut_episode_len_timesteps == 0:
+        reward = (-beta_reward*(sum(self.energy_list)/self.env_config['energy_ref']) \
+            -(1-beta_reward)*(sum(self.ppd_list)/100)) \
+                / cut_episode_len_timesteps
+        # emptly the lists
+        self.energy_list = []
+        self.ppd_list = []
+        return reward
+    else:
+        return 0
