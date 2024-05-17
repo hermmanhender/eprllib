@@ -54,6 +54,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # variable for the registry of the episode number.
         self.episode = -1
         self.timestep = 0
+        self.terminateds = False
+        self.truncateds = False
         # dict to save the last observation and infos in the environment.
         self.last_obs = {}
         self.last_infos = {}
@@ -73,34 +75,32 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.episode += 1
         # stablish the timestep counting in zero.
         self.timestep = 0
-
-        # Condition implemented to restart a new epsiode when simulation is completed and 
-        # EnergyPlus Runner is already inicialized.
-        if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
-            self.energyplus_runner.stop()
+        # Condition of truncated episode
+        if not self.truncateds:
+            # Condition implemented to restart a new epsiode when simulation is completed and 
+            # EnergyPlus Runner is already inicialized.
+            if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
+                self.energyplus_runner.stop()
+            # Define the queues for flow control between MDP and EnergyPlus threads in a max size 
+            # of 1 because EnergyPlus timestep will be processed at a time.
+            self.obs_queue = Queue(maxsize=1)
+            self.act_queue = Queue(maxsize=1)
+            self.infos_queue = Queue(maxsize=1)
+            # Define the RunPeriod of execution
+            dynamic_episode_longitude = self.env_config.get('episode_len_fn', None)
+            if dynamic_episode_longitude != None:
+                self.env_config['epjson'] = dynamic_episode_longitude(self.env_config)
+            # Start EnergyPlusRunner whith the following configuration.
+            self.energyplus_runner = EnergyPlusRunner(
+                episode=self.episode,
+                env_config=self.env_config,
+                obs_queue=self.obs_queue,
+                act_queue=self.act_queue,
+                infos_queue=self.infos_queue
+            )
+            # Divide the thread in two in this point.
+            self.energyplus_runner.start()
         
-        # Define the queues for flow control between MDP and EnergyPlus threads in a max size 
-        # of 1 because EnergyPlus timestep will be processed at a time.
-        self.obs_queue = Queue(maxsize=1)
-        self.act_queue = Queue(maxsize=1)
-        self.infos_queue = Queue(maxsize=1)
-        
-        # Define the RunPeriod of execution
-        dynamic_episode_longitude = self.env_config.get('episode_len_fn', None)
-        if dynamic_episode_longitude != None:
-            self.env_config['epjson'] = dynamic_episode_longitude(self.env_config)
-        
-        # Start EnergyPlusRunner whith the following configuration.
-        self.energyplus_runner = EnergyPlusRunner(
-            episode=self.episode,
-            env_config=self.env_config,
-            obs_queue=self.obs_queue,
-            act_queue=self.act_queue,
-            infos_queue=self.infos_queue
-        )
-        
-        # Divide the thread in two in this point.
-        self.energyplus_runner.start()
         # Wait untill an observation and an infos are made, and get the values.
         self.energyplus_runner.obs_event.wait()
         obs = self.obs_queue.get()
@@ -110,6 +110,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Save the observation as a last observation.
         self.last_obs = obs
         self.last_infos = infos
+        
+        self.terminateds = False
+        self.truncateds = False
             
         return obs, infos
 
@@ -120,10 +123,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # terminated variable is used to determine the end of a episode. Is stablished as False until the
         # environment present a terminal state.
         terminated = {}
-        terminateds = False
         truncated = {}
-        truncateds = False
-        
+        # Cut the anual simulation into shorter episodes. Default: 7 days
+        cut_episode_len = self.env_config.get('cut_episode_len', 7)
+        cut_episode_len_timesteps = cut_episode_len * 144
+        if self.timestep % cut_episode_len_timesteps == 0:
+            self.truncateds = True
         # timeout is set to 5s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config.get("timeout", 5)
@@ -136,7 +141,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 raise Exception("Faulty episode")
             
             # if the simulation is complete, the episode is ended.
-            terminateds = True
+            self.terminateds = True
             # we use the last observation as a observation for the timestep.
             obs = self.last_obs
             infos = self.last_infos
@@ -159,14 +164,14 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
 
             except (Full, Empty):
                 # Set the terminated variable into True to finish the episode.
-                terminateds = True
+                self.terminateds = True
                 # We use the last observation as a observation for the timestep.
                 obs = self.last_obs
                 infos = self.last_infos
         
         # Raise an exception if the episode is faulty.
         if self.energyplus_runner.failed():
-            truncateds = True
+            self.terminateds = True
             raise Exception("Faulty episode")
         
         # Calculate the reward in the timestep
@@ -180,8 +185,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         for agent in self.env_config['agent_ids']:
             reward_dict[agent] =  reward
         
-        terminated["__all__"] = terminateds
-        truncated["__all__"] = truncateds
+        terminated["__all__"] = self.terminateds
+        truncated["__all__"] = self.truncateds
         
         return obs, reward_dict, terminated, truncated, infos
 
