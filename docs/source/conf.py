@@ -9,7 +9,7 @@
 project = 'eprllib'
 copyright = '2024, Germán Rodolfo Henderson'
 author = 'Germán Rodolfo Henderson'
-release = '1.1.1'
+release = '1.1.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
