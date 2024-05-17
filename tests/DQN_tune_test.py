@@ -65,7 +65,8 @@ env_config={
     # === OPTIONAL === #
     "timeout": 10,
     "T_confort": 23.5,
-    "weather_prob_days": 2
+    "weather_prob_days": 2,
+    "cut_episode_len": 7,
 }
 
 
