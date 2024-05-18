@@ -1,5 +1,4 @@
 from typing import Any, Dict
-from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 
 def reward_function_T3(config: Dict[str, Any], obs: dict, infos: dict) -> float:
     """This function returns the reward calcualted as the absolute value of the cube in the 
@@ -157,7 +156,7 @@ def reward_function_ppd(config: Dict[str, Any], obs: dict, infos: dict) -> float
             reward = 0.
     return reward
 
-def normalize_reward_function(self:EnergyPlusEnv_v0, obs: dict, infos: dict) -> float:
+def normalize_reward_function(self, obs: dict, infos: dict) -> float:
     """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
     amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
     divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
