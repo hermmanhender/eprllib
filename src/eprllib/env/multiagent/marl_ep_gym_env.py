@@ -100,16 +100,15 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             )
             # Divide the thread in two in this point.
             self.energyplus_runner.start()
+            # Wait untill an observation and an infos are made, and get the values.
+            self.energyplus_runner.obs_event.wait()
+            self.last_obs = self.obs_queue.get()
+            self.energyplus_runner.infos_event.wait()
+            self.last_infos = self.infos_queue.get()
         
-        # Wait untill an observation and an infos are made, and get the values.
-        self.energyplus_runner.obs_event.wait()
-        obs = self.obs_queue.get()
-        self.energyplus_runner.infos_event.wait()
-        infos = self.infos_queue.get()
-        
-        # Save the observation as a last observation.
-        self.last_obs = obs
-        self.last_infos = infos
+        # Asign the obs and infos to the environment.
+        obs = self.last_obs
+        infos = self.last_infos
         
         self.terminateds = False
         self.truncateds = False
