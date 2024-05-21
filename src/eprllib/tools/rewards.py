@@ -172,8 +172,8 @@ def normalize_reward_function(self, obs: dict, infos: dict) -> float:
         float: reward normalize value
     """
     # define the number of timesteps per episode
-    cut_episode_len = self.env_config.get('cut_episode_len', 7)
-    cut_episode_len_timesteps = cut_episode_len * 144
+    cut_reward_len = self.env_config.get('cut_reward_len', 1)
+    cut_reward_len_timesteps = cut_reward_len * 144
     # define the beta reward
     beta_reward = self.env_config.get('beta_reward', 0.5)
     # get the values of the energy and PPD
@@ -184,10 +184,10 @@ def normalize_reward_function(self, obs: dict, infos: dict) -> float:
     self.energy_list.append(cooling_meter+heating_meter)
     self.ppd_list.append(ppd)
     
-    if self.timestep % cut_episode_len_timesteps == 0:
+    if self.timestep % cut_reward_len_timesteps == 0:
         reward = (-beta_reward*(sum(self.energy_list)/self.env_config['energy_ref']) \
             -(1-beta_reward)*(sum(self.ppd_list)/100)) \
-                / cut_episode_len_timesteps
+                / cut_reward_len_timesteps
         # emptly the lists
         self.energy_list = []
         self.ppd_list = []

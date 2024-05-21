@@ -124,10 +124,13 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         terminated = {}
         truncated = {}
         # Cut the anual simulation into shorter episodes. Default: 7 days
-        cut_episode_len = self.env_config.get('cut_episode_len', 7)
-        cut_episode_len_timesteps = cut_episode_len * 144
-        if self.timestep % cut_episode_len_timesteps == 0:
-            self.truncateds = True
+        cut_episode_len = self.env_config.get('cut_episode_len', None)
+        if not cut_episode_len == None:
+            cut_episode_len_timesteps = cut_episode_len * 144
+            if self.timestep % cut_episode_len_timesteps == 0:
+                self.truncateds = True
+        else:
+            self.truncateds = False
         # timeout is set to 5s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config.get("timeout", 5)
