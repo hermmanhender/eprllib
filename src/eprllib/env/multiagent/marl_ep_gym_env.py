@@ -62,9 +62,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         for agent in self.env_config['agent_ids']:
             self.last_obs[agent] = []
             self.last_infos[agent] = []
-        # list to append, if is needed, the values of PPD and energy
-        self.ppd_list = []
-        self.energy_list = []
 
     def reset(
         self, *,
@@ -181,7 +178,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             reward_function = self.env_config['reward_function']
         else:
             reward_function = rewards.reward_function_T3_Energy
-        reward = reward_function(self, obs, infos)
+        reward = reward_function(self, infos)
         
         reward_dict = {}
         for agent in self.env_config['agent_ids']:
