@@ -33,34 +33,6 @@ from typing import Dict
 from math import exp
 
 # Defining the reward functions
-
-def yang_2015(EnvObject, infos: Dict) -> float:
-    """This reward function is based on the work of Yang et al. 2015. It balance between exergy and
-    comfort. The reward is calculated for the operation of a heat pump and the internal temperatures
-    in the divece must to be known. The ecuation modeled here is:
-    
-    ```
-    r = 1/2*[beta*g(Delta T) + (1-beta)*f(Delta P)]
-    g(Delta T) = -C_T*|(Delta T) - (Delta T_optimal)|
-    f(Delta P) = 0 if (Delta P) >= 0 else (Delta P)/C_P
-    ```
-
-    The values of the constants $C_T$ and $C_P$ are obtained for the specific case (see the paper). The 
-    defauts are 0.5/°C and 2.5 kW, for $C_T$ and $C_P$ respectively. The beta value default is 0.5.
-    
-    All this parameters are configurable in the EnvObject config. If don't, the defaults values are used.
-
-    Args:
-        EnvObject: It is the set of properties contained in `self` of the environment used.
-        infos (Dict): This is the dictionary that is shared with the `reset()` and `step()` methods 
-        of the Gymnasium library along with the observation and, if applicable, the `terminated` and 
-        `truncated` values.
-
-    Returns:
-        float: reward value.
-    """
-    return 9999
-
 def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
     """El autor plantea una función de recompensa con tres térmicos ponderados. Cada uno de estos 
     términos corresponde a una penalidad por: disconfort, uso de energía, elevada consentración de CO2.
@@ -131,6 +103,7 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
                 # Nombres de las variables utilizadas en su configuración del entorno.
                 'occupancy_name': 'occupancy',
                 'ppd_name': 'ppd',
+                T_interior_name: 'Ti',
                 'cooling_name': 'cooling',
                 'heating_name': 'heating',
                 'co2_name': 'co2'
@@ -155,7 +128,7 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
         EnvObject.co2_list = []
     
     # define the number of timesteps per episode
-    cut_reward_len_timesteps = EnvObject.env_config['reward_function_config'].get('cut_reward_len_timesteps', 144)
+    cut_reward_len_timesteps = EnvObject.env_config['reward_function_config'].get('cut_reward_len_timesteps', 1)
     
     # define the ponderation parameters
     w1 = EnvObject.env_config['reward_function_config'].get('w1', 0.80)
@@ -166,10 +139,12 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
     agent_ids = EnvObject.env_config['agent_ids']
     if comfort_reward:
         ppd_name = EnvObject.env_config['reward_function_config'].get('ppd_name', False)
+        T_interior_name = EnvObject.env_config['reward_function_config'].get('T_interior_name', False)
         occupancy_name = EnvObject.env_config['reward_function_config'].get('occupancy_name', False)
-        if not ppd_name or not occupancy_name:
+        if not ppd_name or not occupancy_name or not T_interior_name:
             raise Exception('The names of the variables are not defined')
         ppd = infos[agent_ids[0]][ppd_name]
+        T_interior = infos[agent_ids[0]][T_interior_name]
         occupancy = infos[agent_ids[0]][occupancy_name]
         if occupancy == 0:
             ppd = 0
@@ -199,15 +174,22 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
     # if don't return 0.
     if EnvObject.timestep % cut_reward_len_timesteps == 0:
         if comfort_reward:
-            rew1 = (-w1*(sum(EnvObject.ppd_list)/100))/cut_reward_len_timesteps
+            rew1 = -w1*(sum(EnvObject.ppd_list)/cut_reward_len_timesteps/100)
+            # If there are not people, only the reward is calculated when the environment is far away
+            # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
+            # InputOutput Reference p.522
+            if T_interior > 29.4:
+                rew1 += -10
+            elif T_interior < 16.7:
+                rew1 += -10
         else:
             rew1 = 0
         if energy_reward:
-            rew2 = (-w2*(sum(EnvObject.energy_list)/energy_ref))/cut_reward_len_timesteps
+            rew2 = -w2*(sum(EnvObject.energy_list)/cut_reward_len_timesteps/energy_ref)
         else:
             rew2 = 0
         if co2_reward:
-            rew3 = (-w3*(sum(1/(1+exp(-0.06(co2-co2_ref))))))/cut_reward_len_timesteps
+            rew3 = -w3*(sum(1/(1+exp(-0.06(co2-co2_ref))))/cut_reward_len_timesteps)
         else:
             rew3 = 0
         reward = rew1 + rew2 + rew3
@@ -220,213 +202,6 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
         if co2_reward:
             EnvObject.co2_list = []
             
-        return reward
-    else:
-        return 0
-
-def reward_function_T3(EnvObject, infos: Dict) -> float:
-    """This function returns the reward calcualted as the absolute value of the cube in the 
-    difference between set point temperatur for comfort and the temperature measured in the 
-    thermal zone when there are people in the zone but zero when is not.
-
-    Args:
-        config (Dict[str, Any]): env_config dictionary. Optionaly you can configurate the 'T_confot' variable.
-        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
-        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-        agent_ids (list): list of agent acting in the environment.
-
-    Returns:
-        float: reward value
-    """
-    agent_ids = EnvObject.config['agent_ids']
-    T_confort = EnvObject.config.get('T_confort', 22)
-    occupancy = infos[agent_ids[0]]['occupancy']
-    T_zone = infos[agent_ids[0]]['Ti']
-    if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
-        reward = -(min(abs((T_confort - T_zone)**3),343.))
-    else:
-        # If there are not people, only the reward is calculated when the environment is far away
-        # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
-        # InputOutput Reference p.522
-        if T_zone > 29.4:
-            reward = -343.
-        elif T_zone < 16.7:
-            reward = -343.
-        else:
-            reward = 0.
-    return reward
-
-def reward_function_T2(EnvObject, infos: Dict) -> float:
-    """This function returns the reward calcualted as the absolute value of the square in the 
-    difference between set point temperatur for comfort and the temperature measured in the 
-    thermal zone when there are people in the zone but zero when is not.
-
-    Args:
-        config (Dict[str, Any]): env_config dictionary. Optionaly you can configurate the 'T_confot' variable.
-        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
-        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-        agent_ids (list): list of agent acting in the environment.
-
-    Returns:
-        float: reward value
-    """
-    agent_ids = EnvObject.config['agent_ids']
-    T_confort = EnvObject.config.get('T_confort', 22)
-    occupancy = infos[agent_ids[0]]['occupancy']
-    T_zone = infos[agent_ids[0]]['Ti']
-    if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
-        reward = -(min(abs((T_confort - T_zone)**2),49.))
-    else:
-        # If there are not people, only the reward is calculated when the environment is far away
-        # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
-        # InputOutput Reference p.522
-        if T_zone > 29.4:
-            reward = -49.
-        elif T_zone < 16.7:
-            reward = -49.
-        else:
-            reward = 0.
-    return reward
-
-def reward_function_T3_Energy(EnvObject, infos: Dict) -> float:
-    """This function returns the reward calcualted as the absolute value of the cube in the 
-    difference between set point temperatur for comfort and the temperature measured in the 
-    thermal zone when there are people in the zone but zero when is not.
-
-    Args:
-        config (Dict[str, Any]): env_config dictionary. Optionaly you can configurate the 'T_confot' variable.
-        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
-        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-        agent_ids (list): list of agent acting in the environment.
-
-    Returns:
-        float: reward value
-    """
-    agent_ids = EnvObject.config['agent_ids']
-    
-    beta_reward = EnvObject.config.get('beta_reward', 0.5)
-    T_confort = EnvObject.config.get('T_confort', 22)
-    occupancy = infos[agent_ids[0]]['occupancy']
-    T_zone = infos[agent_ids[0]]['Ti']
-    cooling_meter = infos[agent_ids[0]]['cooling_meter']
-    heating_meter = infos[agent_ids[0]]['heating_meter']
-    
-    if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
-        reward = -beta_reward*(cooling_meter+heating_meter) -(1-beta_reward)*(min(abs((T_confort - T_zone)**3),343.))
-    else:
-        # If there are not people, only the reward is calculated when the environment is far away
-        # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
-        # InputOutput Reference p.522
-        if T_zone > 29.4:
-            reward = -beta_reward*(cooling_meter+heating_meter) -(1-beta_reward)*343.
-        elif T_zone < 16.7:
-            reward = -beta_reward*(cooling_meter+heating_meter) -(1-beta_reward)*343.
-        else:
-            reward = -beta_reward*(cooling_meter+heating_meter)
-    return reward
-    
-def PPD_Energy_reward(EnvObject, infos: Dict) -> float:
-    """This function returns the reward calcualted as the absolute value of the cube in the 
-    difference between set point temperatur for comfort and the temperature measured in the 
-    thermal zone when there are people in the zone but zero when is not.
-
-    Args:
-        config (Dict[str, Any]): env_config dictionary. Optionaly you can configurate the 'T_confot' variable.
-        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
-        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-        agent_ids (list): list of agent acting in the environment.
-
-    Returns:
-        float: reward value
-    """
-    agent_ids = EnvObject.config['agent_ids']
-    
-    beta_reward = EnvObject.config.get('beta_reward', 0.5)
-    cooling_meter = infos[agent_ids[0]]['cooling_meter']
-    heating_meter = infos[agent_ids[0]]['heating_meter']
-    
-    occupancy = infos[agent_ids[0]]['occupancy']
-    if occupancy == 0:
-        ppd = 0
-    else:
-        ppd = infos[agent_ids[0]]['ppd']
-    
-    return -beta_reward*(cooling_meter + heating_meter) -(1-beta_reward)*ppd
-    
-def reward_function_ppd(EnvObject, infos: Dict) -> float:
-    """This function returns the reward calcualted as the absolute value of the cube in the 
-    difference between set point temperatur for comfort and the temperature measured in the 
-    thermal zone when there are people in the zone but zero when is not.
-
-    Args:
-        config (Dict[str, Any]): env_config dictionary. Optionaly you can configurate the 'T_confot' variable.
-        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
-        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-        agent_ids (list): list of agent acting in the environment.
-
-    Returns:
-        float: reward value
-    """
-    agent_ids = EnvObject.config['agent_ids']
-    occupancy = infos[agent_ids[0]]['occupancy']
-    T_zone = infos[agent_ids[0]]['Ti']
-    occupancy = infos[agent_ids[0]]['occupancy']
-    if occupancy == 0:
-        ppd = 0
-    else:
-        ppd = infos[agent_ids[0]]['ppd']
-    if occupancy > 0: # When there are people in the thermal zone, a reward is calculated.
-        reward = -ppd
-    else:
-        # If there are not people, only the reward is calculated when the environment is far away
-        # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
-        # InputOutput Reference p.522
-        if T_zone > 29.4:
-            reward = -150
-        elif T_zone < 16.7:
-            reward = -150
-        else:
-            reward = 0.
-    return reward
-
-def normalize_reward_function(EnvObject, infos: Dict) -> float:
-    """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
-    amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
-    divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
-    of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
-    Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
-
-    Args:
-        EnvObject: RLlib environment.
-        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-
-    Returns:
-        float: reward normalize value
-    """
-    # define the number of timesteps per episode
-    cut_reward_len = EnvObject.env_config.get('cut_reward_len', 1)
-    cut_reward_len_timesteps = cut_reward_len * 144
-    # define the beta reward
-    beta_reward = EnvObject.env_config.get('beta_reward', 0.5)
-    # get the values of the energy and PPD
-    agent_ids = EnvObject.env_config['agent_ids']
-    cooling_meter = infos[agent_ids[0]]['cooling']
-    heating_meter = infos[agent_ids[0]]['heating']
-    occupancy = infos[agent_ids[0]]['occupancy']
-    if occupancy == 0:
-        ppd = 0
-    else:
-        ppd = infos[agent_ids[0]]['ppd']
-    EnvObject.energy_list.append(cooling_meter+heating_meter)
-    EnvObject.ppd_list.append(ppd)
-    
-    if EnvObject.timestep % cut_reward_len_timesteps == 0:
-        reward = (-beta_reward*(sum(EnvObject.energy_list)/EnvObject.env_config['energy_ref']) \
-            -(1-beta_reward)*(sum(EnvObject.ppd_list)/100)) \
-                / cut_reward_len_timesteps
-        # emptly the lists
-        EnvObject.energy_list = []
-        EnvObject.ppd_list = []
         return reward
     else:
         return 0
