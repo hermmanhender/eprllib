@@ -31,6 +31,7 @@ the rewards function have this property, so it is not mandatory to define it.
 # Importing the neccesary libraries
 from typing import Dict
 from math import exp
+import numpy as np
 
 # Defining the reward functions
 def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
@@ -112,7 +113,7 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
         ```
     """
     if not EnvObject.env_config.get('reward_function_config', False):
-        raise Exception('The reward function configuration is not defined')
+        print('The reward function configuration is not defined. The default function will be use.')
     
     # define which rewards will be considered
     comfort_reward = EnvObject.env_config['reward_function_config'].get('comfort_reward', True)
@@ -202,6 +203,100 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
         if co2_reward:
             EnvObject.co2_list = []
             
+        return reward
+    else:
+        return 0
+    
+def normalize_reward_function(EnvObject, infos: Dict) -> float:
+    """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+    amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
+    divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
+    of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
+    Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
+
+    Args:
+        self (Environment): RLlib environment.
+        obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
+        infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
+
+    Returns:
+        float: reward normalize value
+    """
+    if not EnvObject.env_config.get('reward_function_config', False):
+        print('The reward function configuration is not defined. The default function will be use.')
+    
+    # define which rewards will be considered
+    comfort_reward = EnvObject.env_config['reward_function_config'].get('comfort_reward', True)
+    energy_reward = EnvObject.env_config['reward_function_config'].get('energy_reward', True)
+    
+    # if the EnvObject don't have the list to append the values here obtained, one list is created as a property of the EnvObject
+    if not hasattr(EnvObject, 'ppd_list') and comfort_reward:
+        EnvObject.ppd_list = []
+    if not hasattr(EnvObject, 'energy_list') and energy_reward:
+        EnvObject.energy_list = []
+        
+    # define the number of timesteps per episode
+    cut_reward_len_timesteps = EnvObject.env_config['reward_function_config'].get('cut_reward_len_timesteps', 1)
+    
+    # define the beta reward
+    beta_reward = EnvObject.env_config['reward_function_config'].get('beta_reward', 0.5)
+    
+    # get the values of the energy, PPD, and CO2 from the infos dict
+    agent_ids = EnvObject.env_config['agent_ids']
+    if comfort_reward:
+        ppd_name = EnvObject.env_config['reward_function_config'].get('ppd_name', False)
+        T_interior_name = EnvObject.env_config['reward_function_config'].get('T_interior_name', False)
+        occupancy_name = EnvObject.env_config['reward_function_config'].get('occupancy_name', False)
+        if not ppd_name or not occupancy_name or not T_interior_name:
+            raise Exception('The names of the variables are not defined')
+        ppd = infos[agent_ids[0]][ppd_name]
+        T_interior = infos[agent_ids[0]][T_interior_name]
+        occupancy = infos[agent_ids[0]][occupancy_name]
+        if occupancy > 0:
+            if infos[agent_ids[0]]['ppd'] < 5:
+                ppd = infos[agent_ids[0]]['ppd'] = 5
+            else:
+                ppd = infos[agent_ids[0]]['ppd']
+        else:
+            ppd = 0
+        # If there are not people, only the reward is calculated when the environment is far away
+        # from the comfort temperature ranges. This limits are recommended in EnergyPlus documentation:
+        # InputOutput Reference p.522
+        if T_interior > 29.4:
+            ppd = 100
+        elif T_interior < 16.7:
+            ppd = 100
+        EnvObject.ppd_list.append(ppd)
+    
+    if energy_reward:
+        energy_ref = EnvObject.env_config['reward_function_config'].get('energy_ref',False)
+        cooling_name = EnvObject.env_config['reward_function_config'].get('cooling_name', False)
+        heating_name = EnvObject.env_config['reward_function_config'].get('heating_name', False)
+        if not energy_ref or not cooling_name or not heating_name:
+            raise Exception('The names of the variables are not defined')
+        cooling_meter = infos[agent_ids[0]][cooling_name]
+        heating_meter = infos[agent_ids[0]][heating_name]
+        EnvObject.energy_list.append(cooling_meter+heating_meter)
+    
+    # calculate the reward if the timestep is divisible by the cut_reward_len_timesteps.
+    # if don't return 0.
+    if EnvObject.timestep % cut_reward_len_timesteps == 0:
+        if comfort_reward:
+            beta_avg = sum(EnvObject.ppd_list)/len(EnvObject.ppd_list)
+            rew1 = -(1-beta_reward)*(1/(1+np.exp(-0.1*(beta_avg-45))))
+        else:
+            rew1 = 0
+        if energy_reward:
+            rew2 = -beta_reward*(sum(EnvObject.energy_list)/len(EnvObject.energy_list)/energy_ref)
+        else:
+            rew2 = 0
+        reward = rew1 + rew2
+        
+        # emptly the lists
+        if comfort_reward:
+            EnvObject.ppd_list = []
+        if energy_reward:
+            EnvObject.energy_list = []
         return reward
     else:
         return 0
