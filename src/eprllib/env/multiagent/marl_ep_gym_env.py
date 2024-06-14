@@ -62,9 +62,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         for agent in self.env_config['agent_ids']:
             self.last_obs[agent] = []
             self.last_infos[agent] = []
-        # list to append, if is needed, the values of PPD and energy
-        self.ppd_list = []
-        self.energy_list = []
 
     def reset(
         self, *,
@@ -127,6 +124,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         cut_episode_len = self.env_config.get('cut_episode_len', None)
         if not cut_episode_len == None:
             cut_episode_len_timesteps = cut_episode_len * 144
+            # TODO: hacer que el corte se multiplique por los pasos de tiempo de un día, detectando
+            # la longitud desde el archivo de EP.
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
         else:
@@ -180,8 +179,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if self.env_config.get('reward_function', False):
             reward_function = self.env_config['reward_function']
         else:
-            reward_function = rewards.reward_function_T3_Energy
-        reward = reward_function(self, obs, infos)
+            reward_function = rewards.dalamagkidis_2007
+        reward = reward_function(self, infos)
         
         reward_dict = {}
         for agent in self.env_config['agent_ids']:

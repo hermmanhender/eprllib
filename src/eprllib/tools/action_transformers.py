@@ -12,7 +12,43 @@ def thermostat_dual(agent_id, action):
         transform_action = 23 + action
     elif agent_id == 'heating_setpoint':
         transform_action = 21 - action
+    elif agent_id == 'opening_window_1' or agent_id == 'opening_window_2':
+        transform_action = action/3
     else:
-        transform_action = -1
-        print('The agent id it is not in the list of agents for this action_transform_method. The agent allowed are cooling_setpoint and heating_setpoint. Please notice that.')
+        return action
+    
+    return transform_action
+
+def thermostat_dual_mass_flow_rate(agent_id, action):
+    """This method take a discret action in the range of [0,6) and transforms it
+    into a temperature of cooling or heating setpoints, depending the agent id 
+    involve.
+    """
+    if agent_id == 'cooling_setpoint':
+        transform_action = 23 + action
+    elif agent_id == 'heating_setpoint':
+        transform_action = 21 - action
+    elif agent_id == 'AirMassFlowRate':
+        transform_action = action/10
+    else:
+        return action
+    
+    return transform_action
+
+def thermostat_dual_mass_flow_rate_VN(agent_id, action):
+    """This method take a discret action in the range of [0,6) and transforms it
+    into a temperature of cooling or heating setpoints, depending the agent id 
+    involve.
+    """
+    if agent_id == 'cooling_setpoint':
+        transform_action = 23 + action
+    elif agent_id == 'heating_setpoint':
+        transform_action = 21 - action
+    elif agent_id == 'AirMassFlowRate':
+        transform_action = action/10
+    elif agent_id == 'opening_window_1' or agent_id == 'opening_window_2':
+        transform_action = action/5
+    else:
+        return action
+    
     return transform_action
