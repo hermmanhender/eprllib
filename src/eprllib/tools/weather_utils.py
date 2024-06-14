@@ -102,10 +102,10 @@ class Probabilities:
         """This method calculate the probabilies of six variables list bellow with a normal probability based on the desviation 
         of the variable.
         
-            Dry Bulb Temperature in °C with desviation of 1 °C, 
+            Dry Bulb Temperature in °C with desviation of 2.05 °C, 
             Relative Humidity in % with desviation of 10%, 
             Wind Direction in degree with desviation of 20°, 
-            Wind Speed in m/s with desviation of 0.5 m/s, 
+            Wind Speed in m/s with desviation of 3.41 m/s, 
             Total Sky in % Cover with desviation of 10%, 
             Liquid Precipitation Depth in mm with desviation of 0.2 mm.
 
@@ -128,16 +128,29 @@ class Probabilities:
             for v in data_list[e]:
                 single_shape_list.append(v)
                 # append each value of each day and hour in a consecutive way in the empty list.
-        desviation = [0, 0, 0, 0, 0, 0]
+        single_shape_list = np.array(single_shape_list)
         # Assignation of the desviation for each variable, in order with the epw variables consulted.
-        prob_index = 0
-        for e in range(len(single_shape_list)):
-            single_shape_list[e] = np.random.normal(single_shape_list[e], desviation[prob_index])
-            if prob_index == (len(desviation)-1):
-                prob_index = 0 
+        # See Hennon et al. (2022) https://journals.ametsoc.org/view/journals/wefo/37/10/WAF-D-22-0009.1.xml for the values.
+        # This list, mu, represent the mean absolute error        
+        sigma_max = np.array([1.43178211, 4.47213595, 6.32455532, 1.84661853, 6.32455532, 2.19909072])
+        # primeras 6 horas error de 0.
+        # luego, decae hasta cumplir las 24 horas al sigma máximo.
+        # segundo día, sigma máximo
+        sigma0 = np.array([0,0,0,0,0,0])
+        sigma = np.array([])
+        for t in range(len_days*24):
+            if t < 6:
+                sigma = np.concatenate((sigma, sigma0))
+            elif t < 24:
+                sigmaT = sigma_max*(t/24)
+                sigma = np.concatenate((sigma, sigmaT))
             else:
-                prob_index += 1
+                sigma = np.concatenate((sigma, sigma_max))
+
+        assert len(sigma) == len(single_shape_list)
+
+        for e in range(len(single_shape_list)):
+            value = np.random.normal(single_shape_list[e], sigma[e])
+            single_shape_list[e] = value if value >= 0 else 0
         
-        predictions = np.array(single_shape_list)
-        # The prediction list is transformed in a Numpy Array to concatenate after with the rest of the observation variables.
-        return predictions
+        return single_shape_list
