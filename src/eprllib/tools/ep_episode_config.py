@@ -5,6 +5,86 @@ import os
 import json
 from eprllib.tools.weather_utils import weather_file
 
+def random_building_config(env_config:dict):
+    """This method define the path to the epJSON file.
+
+    Args:
+        env_config (dict): Environment configuration.
+
+    Return:
+        dict: The method returns the env_config with modifications.
+        
+    Example:
+    
+        env_config = {
+            ...
+            'episode_config': {
+                'epjson_files_folder_path': 'path/to/epjson/files',
+                'id_epjson_file': None
+            }
+        }
+    """
+    if env_config.get('epjson', False) == False:
+        env_config['epjson'] = ''
+    
+    # Define the properties of the method
+    epjson_files_folder_path: str = None # This is mandatory
+    id_epjson_file: int = None # The default is a random int, but the user can indicated a diferent number
+    
+    # For each property, assign the default or the user input
+    epjson_files_folder_path = env_config['episode_config'].get('epjson_files_folder_path', None)
+    if epjson_files_folder_path is None:
+        ValueError('epjson_files_folder_path is not defined')
+    
+    id_epjson_file = env_config['episode_config'].get('id_epjson_file', None)
+    if id_epjson_file is None:
+        id_epjson_file = np.random.randint(0, len(os.listdir(epjson_files_folder_path)))
+    
+    # The path to the epjson file is defined
+    env_config['epjson'] = os.path.join(epjson_files_folder_path, os.listdir(epjson_files_folder_path)[id_epjson_file])
+    
+    return env_config
+
+def random_weather_config(env_config:dict):
+    """This method define the path to the epJSON file.
+
+    Args:
+        env_config (dict): Environment configuration.
+
+    Return:
+        dict: The method returns the env_config with modifications.
+        
+    Example:
+    
+        env_config = {
+            ...
+            'episode_config': {
+                'epjson_files_folder_path': 'path/to/epjson/files',
+                'id_epw_file': None
+            }
+        }
+    """
+    if env_config.get('epw', False) == False:
+        env_config['epw'] = ''
+    
+    # Define the properties of the method
+    epw_files_folder_path: str = None # This is mandatory
+    id_epw_file: int = None # The default is a random int, but the user can indicated a diferent number
+    
+    # For each property, assign the default or the user input
+    epw_files_folder_path = env_config['episode_config'].get('epw_files_folder_path', None)
+    if epw_files_folder_path is None:
+        ValueError('epw_files_folder_path is not defined')
+    
+    id_epw_file = env_config['episode_config'].get('id_epw_file', None)
+    if id_epw_file is None:
+        id_epw_file = np.random.randint(0, len(os.listdir(epw_files_folder_path)))
+    
+    # The path to the epjson file is defined
+    env_config['epw'] = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])
+    
+    return env_config
+
 
 def episode_epJSON(env_config: dict):
     """This method define the properties of the episode. Changing some properties as weather or 
