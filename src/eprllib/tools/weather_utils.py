@@ -78,7 +78,7 @@ class Probabilities:
 
 
     # Paso 1: Filtrar los datos para el día juliano dado y los próximos 9 días
-    def julian_day_filter(self, dia_juliano: int, len_days:int=10):
+    def julian_day_filter(self, dia_juliano: int, len_days:int=1):
         """This method implement a filter of the weather data based on the julian day `n` and create a NDarray with booleans with
         True values in the data filtered from `[n, n+10]` bouth inclusive.
 
@@ -98,7 +98,7 @@ class Probabilities:
         # Check if the Julian day is within the desired range and return
         return dias_julianos.isin(range(dia_juliano, dia_juliano + len_days))
 
-    def n_days_predictions(self, julian_day: int, len_days:int=10):
+    def n_days_predictions(self, julian_day: int, len_days:int=1):
         """This method calculate the probabilies of six variables list bellow with a normal probability based on the desviation 
         of the variable.
         
