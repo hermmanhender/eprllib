@@ -269,14 +269,15 @@ def normalize_reward_function(EnvObject, infos: Dict) -> float:
         EnvObject.ppd_list.append(ppd)
     
     if energy_reward:
-        energy_ref = EnvObject.env_config['reward_function_config'].get('energy_ref',False)
+        cooling_energy_ref = EnvObject.env_config['reward_function_config'].get('cooling_energy_ref', False)
+        heating_energy_ref = EnvObject.env_config['reward_function_config'].get('heating_energy_ref', False)
         cooling_name = EnvObject.env_config['reward_function_config'].get('cooling_name', False)
         heating_name = EnvObject.env_config['reward_function_config'].get('heating_name', False)
-        if not energy_ref or not cooling_name or not heating_name:
+        if not cooling_energy_ref or not heating_energy_ref or not cooling_name or not heating_name:
             raise Exception('The names of the variables are not defined')
         cooling_meter = infos[agent_ids[0]][cooling_name]
         heating_meter = infos[agent_ids[0]][heating_name]
-        EnvObject.energy_list.append(cooling_meter+heating_meter)
+        EnvObject.energy_list.append(cooling_meter/cooling_energy_ref+heating_meter/heating_energy_ref)
     
     # calculate the reward if the timestep is divisible by the cut_reward_len_timesteps.
     # if don't return 0.
@@ -287,7 +288,7 @@ def normalize_reward_function(EnvObject, infos: Dict) -> float:
         else:
             rew1 = 0
         if energy_reward:
-            rew2 = -beta_reward*(sum(EnvObject.energy_list)/len(EnvObject.energy_list)/energy_ref)
+            rew2 = -beta_reward*(sum(EnvObject.energy_list)/len(EnvObject.energy_list))
         else:
             rew2 = 0
         reward = rew1 + rew2
