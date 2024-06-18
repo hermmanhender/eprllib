@@ -49,6 +49,23 @@ env_config={
         "opening_window_1": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_NW_window"),
         "opening_window_2": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "living_E_window"),
     },
+    # Set the type of actuator that correspond to each agent.
+    # 1: Cooling set point
+    # 2: Heating set point
+    # 3: Acondicionated Air Flow Rate
+    # 4: North Window Opening
+    # 5: East Window Opening
+    # 6: South Window Opening
+    # 7: West Window Opening
+    # 8: North Window Shading
+    # 9: East Window Shading
+    # 10: South Window Shading
+    # 11: West Window Shading
+    # 12: Fan Flow Rate
+    "ep_actuators_type": {
+        "opening_window_1": 4,
+        "opening_window_2": 5,
+    },
     'time_variables': [
         'hour',
         'day_of_year',
