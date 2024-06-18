@@ -33,9 +33,10 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             len(self.env_config['ep_actuators']),
             len(self.env_config['time_variables']),
             len(self.env_config['weather_variables']),
-            self.env_config['weather_prob_days'] * 144,
             -len(self.env_config['no_observable_variables']),
-            1, # (agent_indicator)
+            24*6, # Weather prediction
+            2, # agent_indicator, agent type
+            10, # building general properties
         ])
 
         self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
@@ -83,10 +84,15 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             self.obs_queue = Queue(maxsize=1)
             self.act_queue = Queue(maxsize=1)
             self.infos_queue = Queue(maxsize=1)
-            # Define the RunPeriod of execution
-            dynamic_episode_longitude = self.env_config.get('episode_len_fn', None)
-            if dynamic_episode_longitude != None:
-                self.env_config['epjson'] = dynamic_episode_longitude(self.env_config)
+            # == Episode configuration == (Optional)
+            # If the configuration is not defined, the epjson config will be used.
+            
+            # episode_config_fn: Function that take the env_config as argument and upgrade the value
+            # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
+            episode_config_fn = self.env_config.get('episode_config_fn', None)
+            if episode_config_fn != None:
+                self.env_config = episode_config_fn(self.env_config)
+            
             # Start EnergyPlusRunner whith the following configuration.
             self.energyplus_runner = EnergyPlusRunner(
                 episode=self.episode,

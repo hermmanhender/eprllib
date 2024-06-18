@@ -10,7 +10,6 @@ import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional
-from eprllib.tools import weather_utils
 
 os_platform = sys.platform
 if os_platform == "linux":
@@ -106,9 +105,6 @@ class EnergyPlusRunner:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
         established and the thread is generated here.
         """
-        # Specify the weather statisitical file.        
-        self.weather_stats = weather_utils.Probabilities(self.env_config)
-        
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state = api.state_manager.new_state()
         
@@ -159,6 +155,9 @@ class EnergyPlusRunner:
         if self.simulation_complete:
             return
         
+        hour = api.exchange.hour(state_argument)
+        zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
+        
         # Variables, meters and actuatos conditions as observation.
         obs = {
             **{
@@ -177,6 +176,20 @@ class EnergyPlusRunner:
                 in self.actuator_handles.items()
             }
         }
+        # Upgrade the observation with the building general properties
+        building_properties = {
+            'building_area': self.env_config['episode_config']['building_area'],
+            'aspect_ratio': self.env_config['episode_config']['aspect_ratio'],
+            'window_area_relation_north': self.env_config['episode_config']['window_area_relation_north'],
+            'window_area_relation_east': self.env_config['episode_config']['window_area_relation_east'],
+            'window_area_relation_south': self.env_config['episode_config']['window_area_relation_south'],
+            'window_area_relation_west': self.env_config['episode_config']['window_area_relation_west'],
+            'inercial_mass': self.env_config['episode_config']['inercial_mass'],
+            'construction_u_factor': self.env_config['episode_config']['construction_u_factor'],
+            'E_cool_ref': self.env_config['episode_config']['E_cool_ref'],
+            'E_heat_ref': self.env_config['episode_config']['E_heat_ref'],
+        }
+        obs.update(building_properties)
         
         # Upgrade of the timestep observation with other variables.
         if self.env_config.get('time_variables', False):
@@ -205,9 +218,6 @@ class EnergyPlusRunner:
             obs.update(time_variables_dict)
             
         if self.env_config.get('weather_variables', False):
-            hour = api.exchange.hour(state_argument)
-            zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
-            
             weather_variables_methods = {
                 'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
                 'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
@@ -247,7 +257,42 @@ class EnergyPlusRunner:
                 weather_variables_dict[variable] = weather_variables_methods[variable]
             
             obs.update(weather_variables_dict)
-            
+        
+        # Weather prediction of 24 hours
+        weather_pred = {}
+        # The list sigma_max contains the standard deviation of the predictions in the following order:
+        #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
+        #   - Relative Humidity in % with squer desviation of 20%, 
+        #   - Wind Direction in degree with squer desviation of 40°, 
+        #   - Wind Speed in m/s with squer desviation of 3.41 m/s, 
+        #   - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
+        #   - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
+        sigma_max = np.array([1.43178211, 4.47213595, 6.32455532, 1.84661853, 31.62, 0.707107])
+        for h in range(24):
+            # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
+            sigma = sigma_max * (h/23)
+            prediction_hour = hour+1 + h
+            if prediction_hour < 24:
+                weather_pred.update({
+                    f'today_weather_liquid_precipitation_at_time_{prediction_hour}': np.random.normal(api.exchange.today_weather_liquid_precipitation_at_time(state_argument, prediction_hour, 0), sigma[5]),
+                    f'today_weather_outdoor_barometric_pressure_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour, 0), sigma[4]),
+                    f'today_weather_outdoor_dry_bulb_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour, 0), sigma[0]),
+                    f'today_weather_outdoor_relative_humidity_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour, 0), sigma[1]),
+                    f'today_weather_wind_direction_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_direction_at_time(state_argument, prediction_hour, 0), sigma[2]),
+                    f'today_weather_wind_speed_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_speed_at_time(state_argument, prediction_hour, 0), sigma[3]),
+                })
+            else:
+                prediction_hour_t = prediction_hour - 24
+                weather_pred.update({
+                    f'tomorrow_weather_liquid_precipitation_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, prediction_hour_t, 0), sigma[5]),
+                    f'tomorrow_weather_outdoor_barometric_pressure_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour_t, 0), sigma[4]),
+                    f'tomorrow_weather_outdoor_dry_bulb_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour_t, 0), sigma[0]),
+                    f'tomorrow_weather_outdoor_relative_humidity_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour_t, 0), sigma[1]),
+                    f'tomorrow_weather_wind_direction_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, prediction_hour_t, 0), sigma[2]),
+                    f'tomorrow_weather_wind_speed_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, prediction_hour_t, 0), sigma[3]),
+                })
+        obs.update(weather_pred)
+        
         # Set the variables in the infos dict before to delete from the obs dict.
         infos_dict = {}
         if self.env_config.get('infos_variables', False):
@@ -272,15 +317,10 @@ class EnergyPlusRunner:
         # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
         next_obs = np.array(list(obs.values()))
         
-        # Consult the stadistics of the weather to put into the obs array. This add 1440 elements 
-        # to the observation.
-        weather_prob = self.weather_stats.n_days_predictions(api.exchange.day_of_year(state_argument), self.env_config.get('weather_prob_days', 2))
-        next_obs = np.concatenate([next_obs, weather_prob])
-        
         next_obs_dict = {}
         agent_indicator = 1
         for agent in self.env_config['agent_ids']:
-            next_obs_dict[agent] = np.concatenate(([agent_indicator], next_obs))
+            next_obs_dict[agent] = np.concatenate(([agent_indicator], self.env_config['ep_actuators_type'][agent], next_obs))
             agent_indicator += 1
         
         # Set the observation to communicate with the MDP.
