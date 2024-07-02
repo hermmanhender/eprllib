@@ -10,6 +10,7 @@ import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional
+from eprllib.tools.ep_episode_config import inertial_mass_calculation, u_factor_calculation
 
 os_platform = sys.platform
 if os_platform == "linux":
@@ -55,6 +56,11 @@ class EnergyPlusRunner:
         
         # saving the episode in the env_config to use across functions.
         self.env_config['episode'] = self.episode
+        # autozise properties
+        if self.env_config['episode_config']['inercial_mass'] == 'auto':
+            self.env_config['episode_config']['inercial_mass'] = inertial_mass_calculation(self.env_config)
+        if self.env_config['episode_config']['u_factor'] == 'auto':
+            self.env_config['episode_config']['u_factor'] = u_factor_calculation(self.env_config)
         
         # The queue events are generated.
         self.obs_event = threading.Event()
@@ -315,7 +321,7 @@ class EnergyPlusRunner:
         self.infos = infos
         
         # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-        next_obs = np.array(list(obs.values()))
+        next_obs = np.array(list(obs.values()), dtype='float32')
         
         next_obs_dict = {}
         agent_indicator = 1
