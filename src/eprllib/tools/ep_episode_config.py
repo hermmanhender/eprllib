@@ -224,7 +224,42 @@ def episode_epJSON(env_config: dict):
     
     return env_config
 
-def inertial_mass(epJSON_object: dict[str,dict]):
+def inertial_mass_calculation(env_config: dict) -> float:
+    """The function reads the epjson file path from the env_config dictionary. If the epjson
+    key is not present, it raises a ValueError. Otherwise, it opens the specified epjson
+    file, loads its contents as a Python dictionary (epJSON_object), and then calls the 
+    inertial_mass function (not shown in the provided code) with epJSON_object
+    as an argument. The result of inertial_mass is returned as a float value.
+
+    Args:
+        env_config (dict): A dictionary containing the environment configuration, including the 
+            episode_config key, which should have an epjson key with the path to the 
+            EnergyPlus JSON file.
+
+    Returns:
+        float: The inertial mass calculated based on the contents of the epjson file.
+    
+    Example:
+        env_config = {
+            'episode_config': {
+                'epjson': 'path/to/epjson_file.json'
+            }
+        }
+
+        inertial_mass_value = inertial_mass_calculation(env_config)
+        print(f"Inertial mass: {inertial_mass_value}")
+
+    """
+    # If the path to epjson is not set, arraise a error.
+    if not env_config['episode_config'].get('epjson', False):
+        raise ValueError('epjson is not defined')
+    
+    with open(env_config['episode_config']['epjson']) as file:
+        epJSON_object: dict = json.load(file)
+
+    return inertial_mass(epJSON_object)
+
+def inertial_mass(epJSON_object: dict[str,dict]) -> float:
     """_summary_
 
     Args:
@@ -324,13 +359,45 @@ def inertial_mass(epJSON_object: dict[str,dict]):
         masas_termicas.append(m_surface)
     
     # Cálculo de la masa termica total
-    M_total = 0
+    M_total = 0.
     for m in range(0,len(masas_termicas)-1,1):
         M_total += masas_termicas[m]
     
     return M_total
-    
-def u_factor(epJSON_object: dict[str,dict]):
+
+def u_factor_calculation(env_config: dict) -> float:
+    """The u_factor_calculation function calculates the U-factor (a measure of heat 
+    transfer through a building element) based on the provided environment configuration 
+    (env_config).
+
+    Args:
+        env_config (dict): A dictionary containing the environment configuration, including 
+        the episode_config key, which should have an epjson key with the path to the 
+        EnergyPlus JSON file.
+
+    Returns:
+        float: The calculated U-factor value.
+        
+    Example:
+        env_config = {
+            'episode_config': {
+                'epjson': 'path/to/epjson_file.json'
+            }
+        }
+
+        u_factor_value = u_factor_calculation(env_config)
+        print(f"U-factor: {u_factor_value}")
+
+    """
+    # If the path to epjson is not set, arraise a error.
+    if not env_config['episode_config'].get('epjson', False):
+        raise ValueError('epjson is not defined')
+    with open(env_config['episode_config']['epjson']) as file:
+        epJSON_object: dict = json.load(file)
+    #  Calculate the u_factor
+    return u_factor(epJSON_object)
+
+def u_factor(epJSON_object: dict[str,dict]) -> float:
     """This function select all the building surfaces and fenestration surfaces and calculate the
     global U-factor of the building, like EnergyPlus does.
     """
@@ -444,7 +511,7 @@ def u_factor(epJSON_object: dict[str,dict]):
         resistences.append(r_surface)
 
     # Cálculo de U-Factor en W/°C
-    u_factor = 0
+    u_factor = 0.
     for n in range(0, len(areas)-1,1):
         u_factor =+ areas[n]/resistences[n]
     
