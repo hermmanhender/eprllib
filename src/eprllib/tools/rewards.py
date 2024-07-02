@@ -283,8 +283,8 @@ def normalize_reward_function(EnvObject, infos: Dict) -> float:
     # if don't return 0.
     if EnvObject.timestep % cut_reward_len_timesteps == 0:
         if comfort_reward:
-            beta_avg = sum(EnvObject.ppd_list)/len(EnvObject.ppd_list)
-            rew1 = -(1-beta_reward)*(1/(1+np.exp(-0.1*(beta_avg-45))))
+            ppd_avg = sum(EnvObject.ppd_list)/len(EnvObject.ppd_list)
+            rew1 = -(1-beta_reward)*(1/(1+np.exp(-0.1*(ppd_avg-45))))
         else:
             rew1 = 0
         if energy_reward:
