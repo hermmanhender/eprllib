@@ -8,12 +8,13 @@ import os
 import csv
 from ray.rllib.policy.policy import Policy
 from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
-
+import numpy as np
 
 def init_drl_evaluation(
     env_config: dict,
     checkpoint_path: str,
-    name: str
+    name: str,
+    use_RNN: bool = True,
 ) -> float:
     """This method restore a DRL Policy from `checkpoint_path` for `EnergyPlusEnv_v0` with 
     `env_config` configuration and save the results of an evaluation episode in 
@@ -78,11 +79,20 @@ def init_drl_evaluation(
     episode_reward = 0
     # se obtiene la observaión inicial del entorno para el episodio
     obs_dict, infos = env.reset()
+    
+    if use_RNN:
+        # range(2) b/c h- and c-states of the LSTM.
+        lstm_cell_size = env_config['RLlib']['model']['lstm_cell_size']
+        state = [np.zeros([lstm_cell_size], np.float32) for _ in range(2)]
+    
     while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
         # se calculan las acciones convencionales de cada elemento
         actions_dict = {}
         for agent in _agents_id:
-            action, _, _ = policy['shared_policy'].compute_single_action(obs_dict[agent])
+            if use_RNN:
+                action, state, _ = policy['shared_policy'].compute_single_action(obs_dict[agent], state)
+            else:
+                action, _, _ = policy['shared_policy'].compute_single_action(obs_dict[agent])
             actions_dict[agent] = action
         
         # se ejecuta un paso de tiempo
