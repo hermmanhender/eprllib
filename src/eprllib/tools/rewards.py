@@ -104,7 +104,7 @@ def dalamagkidis_2007(EnvObject, infos: Dict) -> float:
                 # Nombres de las variables utilizadas en su configuración del entorno.
                 'occupancy_name': 'occupancy',
                 'ppd_name': 'ppd',
-                T_interior_name: 'Ti',
+                'T_interior_name': 'Ti',
                 'cooling_name': 'cooling',
                 'heating_name': 'heating',
                 'co2_name': 'co2'
