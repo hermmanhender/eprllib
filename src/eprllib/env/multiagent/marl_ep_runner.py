@@ -59,8 +59,8 @@ class EnergyPlusRunner:
         # autozise properties
         if self.env_config['episode_config']['inercial_mass'] == 'auto':
             self.env_config['episode_config']['inercial_mass'] = inertial_mass_calculation(self.env_config)
-        if self.env_config['episode_config']['u_factor'] == 'auto':
-            self.env_config['episode_config']['u_factor'] = u_factor_calculation(self.env_config)
+        if self.env_config['episode_config']['construction_u_factor'] == 'auto':
+            self.env_config['episode_config']['construction_u_factor'] = u_factor_calculation(self.env_config)
         
         # The queue events are generated.
         self.obs_event = threading.Event()
@@ -326,7 +326,7 @@ class EnergyPlusRunner:
         next_obs_dict = {}
         agent_indicator = 1
         for agent in self.env_config['agent_ids']:
-            next_obs_dict[agent] = np.concatenate(([agent_indicator], self.env_config['ep_actuators_type'][agent], next_obs))
+            next_obs_dict[agent] = np.concatenate(([agent_indicator], [self.env_config['ep_actuators_type'][agent]], next_obs), dtype='float32')
             agent_indicator += 1
         
         # Set the observation to communicate with the MDP.
