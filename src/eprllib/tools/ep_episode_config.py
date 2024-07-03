@@ -241,8 +241,7 @@ def inertial_mass_calculation(env_config: dict) -> float:
     
     Example:
         env_config = {
-            'episode_config': {
-                'epjson': 'path/to/epjson_file.json'
+            'epjson': 'path/to/epjson_file.json'
             }
         }
 
@@ -251,29 +250,41 @@ def inertial_mass_calculation(env_config: dict) -> float:
 
     """
     # If the path to epjson is not set, arraise a error.
-    if not env_config['episode_config'].get('epjson', False):
+    if not env_config.get('epjson', False):
         raise ValueError('epjson is not defined')
     
-    with open(env_config['episode_config']['epjson']) as file:
+    with open(env_config['epjson']) as file:
         epJSON_object: dict = json.load(file)
 
     return inertial_mass(epJSON_object)
 
 def inertial_mass(epJSON_object: dict[str,dict]) -> float:
-    """_summary_
+    """The inertial_mass function calculates the total thermal mass of a building based 
+    on the construction materials and surface areas specified in an EnergyPlus JSON 
+    object.
 
     Args:
-        epJSON_object (dict[str,dict]): _description_
+        epJSON_object (dict[str,dict]): A dictionary containing information about the 
+        building surfaces, materials, and constructions in the EnergyPlus JSON format. 
+        The keys of the outer dictionary represent different object types (e.g., 
+        "BuildingSurface:Detailed", "Material", "Construction"), and the values are 
+        dictionaries containing the properties of each object instance.
 
     Returns:
-        _type_: _description_
+        float: The total thermal mass of the building in J/°C (Joules per degree Celsius). 
+        The thermal mass represents the amount of heat energy required to raise the 
+        temperature of the building's construction materials by one degree Celsius.
     """
     # se define una lista para almacenar
     masas_termicas = []
     
-    building_surfaces = [key for key in epJSON_object["BuildingSurface:Detailed"].keys()]
+    building_surfaces = []
+    if epJSON_object.get("BuildingSurface:Detailed", False):
+        building_surfaces = [key for key in epJSON_object["BuildingSurface:Detailed"].keys()]
     # se obtienen los nombres de las superficies de la envolvente
-    internal_mass_surfaces = [key for key in epJSON_object["InternalMass"].keys()]
+    internal_mass_surfaces = []
+    if epJSON_object.get("InternalMass", False):
+        internal_mass_surfaces = [key for key in epJSON_object["InternalMass"].keys()]
     
     all_building_keys = [key for key in epJSON_object.keys()]
     all_material_list = ['Material','Material:NoMass','Material:InfraredTransparent','Material:AirGap',
@@ -380,8 +391,7 @@ def u_factor_calculation(env_config: dict) -> float:
         
     Example:
         env_config = {
-            'episode_config': {
-                'epjson': 'path/to/epjson_file.json'
+            'epjson': 'path/to/epjson_file.json'
             }
         }
 
@@ -390,9 +400,9 @@ def u_factor_calculation(env_config: dict) -> float:
 
     """
     # If the path to epjson is not set, arraise a error.
-    if not env_config['episode_config'].get('epjson', False):
+    if not env_config.get('epjson', False):
         raise ValueError('epjson is not defined')
-    with open(env_config['episode_config']['epjson']) as file:
+    with open(env_config['epjson']) as file:
         epJSON_object: dict = json.load(file)
     #  Calculate the u_factor
     return u_factor(epJSON_object)
