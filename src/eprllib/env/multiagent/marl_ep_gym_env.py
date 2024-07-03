@@ -1,20 +1,48 @@
 """# ENERGYPLUS RLLIB ENVIRONMENT
 
-This script define the environment of EnergyPlus implemented in RLlib. To works need to define the
-EnergyPlus Runner.
+This script define the environment of EnergyPlus implemented in RLlib. To works 
+need to define the EnergyPlus Runner.
 """
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
-# Used to define the environment base and the size of action and observation spaces.
+from gymnasium.spaces import Box
 from queue import Empty, Full, Queue
-# Used to separate the execution in two threads and comunicate EnergyPlus with this environment.
 from typing import Any, Dict, Optional
-# To specify the types of variables espected.
 from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
 from eprllib.tools import rewards
-# The EnergyPlus Runner.
-from gymnasium.spaces import Box
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
+    """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
+    reinforcement learning tasks related to building energy simulation using 
+    EnergyPlus software. It inherits from the MultiAgentEnv class, which 
+    suggests that it supports multiple agents interacting with the environment.
+
+    The class initializes with an env_config dictionary that contains various 
+    configuration settings for the environment, such as the list of agent IDs, 
+    action spaces, observable variables, actuators, meters, and other 
+    EnergyPlus-related settings.
+    
+    The reset method is responsible for setting up a new episode of the environment. 
+    It increments the episode counter, initializes queues for communication between 
+    the environment and EnergyPlus, and starts an instance of the EnergyPlusRunner
+    class, which likely handles the EnergyPlus simulation.
+    
+    The step method is the core of the environment, where agents take actions, and 
+    the environment updates its state accordingly. It processes the provided actions, 
+    communicates with the EnergyPlus simulation through queues, retrieves 
+    observations and information from the simulation, calculates rewards based on a 
+    specified reward function, and determines if the episode should terminate or truncate.
+    
+    The close method is used to stop the EnergyPlus simulation when the environment is 
+    no longer needed.
+    
+    The render method is currently a placeholder and does not perform any rendering 
+    functionality.
+    
+    Overall, this class encapsulates the logic for running EnergyPlus simulations as 
+    part of a multi-agent reinforcement learning environment, allowing agents to 
+    interact with the building energy simulation and receive observations, rewards, 
+    and termination signals based on their actions.
+    """
     def __init__(
         self,
         env_config: Dict[str, Any]
@@ -126,7 +154,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # environment present a terminal state.
         terminated = {}
         truncated = {}
-        # Cut the anual simulation into shorter episodes. Default: 7 days
+        # Cut the anual simulation into shorter episodes. Default: None
         cut_episode_len = self.env_config.get('cut_episode_len', None)
         if not cut_episode_len == None:
             cut_episode_len_timesteps = cut_episode_len * 144
