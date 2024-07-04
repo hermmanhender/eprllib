@@ -47,6 +47,31 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self,
         env_config: Dict[str, Any]
         ):
+        """The __init__ method in the EnergyPlusEnv_v0 class is responsible for 
+        initializing the multi-agent environment for the EnergyPlus reinforcement 
+        learning task. Here's a summary of what it does:
+            * 1. It assigns the env_config dictionary, which contains various 
+            configuration settings for the environment, such as agent IDs, action 
+            spaces, observable variables, actuators, meters, and other EnergyPlus-related 
+            settings.
+            * 2. It sets the _agent_ids attribute as a set of agent IDs from the env_config.
+            * 3. It assigns the action_space attribute from the env_config.
+            * 4. It calculates the length of the observation space based on the number of 
+            observable variables, meters, actuators, time variables, weather variables, 
+            and other relevant information specified in the env_config. It then creates a 
+            Box space for the observation_space attribute.
+            * 5. It initializes the energyplus_runner, obs_queue, act_queue, and infos_queue
+            attributes to None. These will be used later for communication between the 
+            environment and the EnergyPlus simulation.
+            * 6. It sets up variables for tracking the episode number (episode), timestep 
+            (timestep), termination status (terminateds), and truncation status (truncateds).
+            * 7. It creates a dictionary last_obs and last_infos to store the last observation 
+            and information for each agent.
+        
+        Overall, the __init__ method sets up the necessary data structures and configurations 
+        for the EnergyPlus multi-agent environment, preparing it for running simulations 
+        and interacting with agents.
+        """
         # asigning the configuration of the environment.
         self.env_config = env_config
         self.env_config['agent_ids'] = list(self.env_config['ep_actuators'].keys())
