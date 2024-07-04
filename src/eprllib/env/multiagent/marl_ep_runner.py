@@ -3,7 +3,6 @@
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
 Python API in the version 23.2.0.
 """
-
 import sys
 import threading
 import numpy as np
@@ -11,13 +10,11 @@ from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional
 from eprllib.tools.ep_episode_config import inertial_mass_calculation, u_factor_calculation
-
 os_platform = sys.platform
 if os_platform == "linux":
     sys.path.insert(0, '/usr/local/EnergyPlus-23-2-0')
 else:
     sys.path.insert(0, 'C:/EnergyPlusV23-2-0')
-    
 from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
@@ -89,23 +86,6 @@ class EnergyPlusRunner:
         # Declaration of actuators this simulation will interact with.
         self.actuators: dict = self.env_config['ep_actuators']
         self.actuator_handles: Dict[str, int] = {}
-        """Example:
-        
-        >>> "opening_window": ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_name")
-        
-        Airflow Network Openings (EnergyPlus Documentation)
-        
-        An actuator called “AirFlow Network Window/Door Opening” is available with a control type
-        called “Venting Opening Factor.” It is available in models that have operable openings in the Airflow
-        Network model and that are entered by using either AirflowNetwork:MultiZone:Component:DetailedOpening,
-        AirflowNetwork:MultiZone:Component:SimpleOpening, or AirflowNetwork:MultiZone:Component:HorizontalOpening
-        input objects. This control allows you to use EMS to vary the size of the opening during the
-        airflow model calculations, such as for natural and hybrid ventilation.
-        The unique identifier is the name of the surface (window, door or air boundary), not the name of
-        the associated airflow network input objects. The actuator control involves setting the value of the
-        opening factor between 0.0 and 1.0. Use of this actuator with an air boundary surface is allowed,
-        but will generate a warning since air boundaries are typically always open.
-        """
         
     def start(self) -> None:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
