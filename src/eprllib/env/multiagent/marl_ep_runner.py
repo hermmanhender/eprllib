@@ -51,8 +51,6 @@ class EnergyPlusRunner:
         self.act_queue = act_queue
         self.infos_queue = infos_queue
         
-        # saving the episode in the env_config to use across functions.
-        self.env_config['episode'] = self.episode
         # autozise properties
         if self.env_config['episode_config']['inercial_mass'] == 'auto':
             self.env_config['episode_config']['inercial_mass'] = inertial_mass_calculation(self.env_config)
@@ -438,7 +436,7 @@ class EnergyPlusRunner:
         eplus_args = ["-r"] if self.env_config.get("csv", False) else []
         eplus_args += [
             "-w",
-            self.env_config["epw"] if self.env_config['is_test'] else self.env_config["epw_training"],
+            self.env_config["epw"],
             "-d",
             f"{self.env_config['output']}/episode-{self.episode:08}",
             self.env_config["epjson"]
