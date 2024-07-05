@@ -37,9 +37,6 @@ from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 env_config={
     # === ENERGYPLUS OPTIONS === #
     'epjson': "C:/Users/grhen/Documents/GitHub/eprllib_experiments/active_climatization/files/prot_3_ceiling_SetPointHVAC_PowerLimit.epJSON",
-    "epw_training": choice(["C:/Users/grhen/Documents/GitHub/eprllib_experiments/active_climatization/files/GEF_Lujan_de_cuyo-hour-H1.epw",
-                            "C:/Users/grhen/Documents/GitHub/eprllib_experiments/active_climatization/files/GEF_Lujan_de_cuyo-hour-H2.epw",
-                            "C:/Users/grhen/Documents/GitHub/eprllib_experiments/active_climatization/files/GEF_Lujan_de_cuyo-hour-H3.epw"]),
     "epw": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/active_climatization/files/GEF_Lujan_de_cuyo-hour-H4.epw",
     # Configure the output directory for the EnergyPlus simulation.
     'output': TemporaryDirectory("output","",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
