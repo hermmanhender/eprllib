@@ -124,6 +124,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
     ):
         # Increment the counting of episodes in 1.
         self.episode += 1
+        # saving the episode in the env_config to use across functions.
+        self.env_config['episode'] = self.episode
         # stablish the timestep counting in zero.
         self.timestep = 0
         # Condition of truncated episode
