@@ -8,8 +8,6 @@ env_config = {
     'epjson': 'path/to/epjson_file.json',
     # The path to the EnergyPlus weather file in the format of epw file.
     'epw': 'path/to/epw_file.epw',
-    # The path to the EnergyPlus weather file for training in the format of epw file.
-    'epw_training': 'path/to/epw_file.epw',
     # The path to the output directory for the EnergyPlus simulation.
     'output': 'path/to/output_directory',
     # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
