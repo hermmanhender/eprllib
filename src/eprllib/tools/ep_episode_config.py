@@ -4,6 +4,7 @@ import numpy as np
 import os
 import json
 from eprllib.tools.weather_utils import weather_file
+from typing import List
 
 def random_building_config(env_config:dict):
     """This method define the path to the epJSON file.
@@ -97,11 +98,11 @@ def episode_epJSON(env_config: dict):
         dict: The method returns the env_config with modifications.
     """
     # If the path to epjson is not set, arraise a error.
-    if not env_config['episode_config'].get('epjson', False):
+    if not env_config.get('epjson', False):
         raise ValueError('epjson is not defined')
     
     # Establish the epJSON Object, it will be manipulated to modify the building model.
-    with open(env_config['episode_config']['epjson']) as file:
+    with open(env_config['epjson']) as file:
         epJSON_object: dict = json.load(file)
     
     # == BUILDING ==
@@ -113,11 +114,19 @@ def episode_epJSON(env_config: dict):
     # Calculate the aspect relation
     env_config['episode_config']['building_area'] = w*l
     env_config['episode_config']['aspect_ratio'] = w/l
-    wall_area_north = wall_area_south = w*3
-    wall_area_east = wall_area_west = l*3
     
     # Change the dimension of the building
-    building_dimension(epJSON_object, h, w, l)
+    window_area_relation = []
+    env_config['episode_config']['window_area_relation_north'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    env_config['episode_config']['window_area_relation_east'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    env_config['episode_config']['window_area_relation_south'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    env_config['episode_config']['window_area_relation_west'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    window_area_relation.append(env_config['episode_config']['window_area_relation_north'])
+    window_area_relation.append(env_config['episode_config']['window_area_relation_east'])
+    window_area_relation.append(env_config['episode_config']['window_area_relation_south'])
+    window_area_relation.append(env_config['episode_config']['window_area_relation_west'])
+    window_area_relation = np.array(window_area_relation)
+    building_dimension(epJSON_object, h, w, l, window_area_relation)
     
     # Define the type of construction (construction properties for each three layers)
     # Walls
@@ -166,24 +175,6 @@ def episode_epJSON(env_config: dict):
     # Change the window thermal properties
     epJSON_object['WindowMaterial:SimpleGlazingSystem']['WindowMaterial']['u_factor'] = (4.32-0.9652) * np.random.random_sample() + 0.9652
     epJSON_object['WindowMaterial:SimpleGlazingSystem']['WindowMaterial']['solar_heat_gain_coefficient'] = (0.67-0.26) * np.random.random_sample() + 0.26
-    # Change the window areas for each orientation
-    
-    window_area_relation = []
-    window_area_relation[0] = env_config['episode_config']['window_area_relation_north'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    window_area_relation[1] = env_config['episode_config']['window_area_relation_east'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    window_area_relation[2] = env_config['episode_config']['window_area_relation_south'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    window_area_relation[3] = env_config['episode_config']['window_area_relation_west'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    
-    wall_areas = [wall_area_north, wall_area_east, wall_area_south, wall_area_west]
-    
-    window_names = ['window_north','window_east','window_south','window_west']
-    
-    for _ in range(4):
-        window_size_epJSON(
-            epJSON_object=epJSON_object,
-            window=window_names[_],
-            area_ventana=wall_areas[_]*window_area_relation[_]
-        )
     
     # The internal thermal mass is modified.
     for key in [key for key in epJSON_object["InternalMass"].keys()]:
@@ -204,13 +195,13 @@ def episode_epJSON(env_config: dict):
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = E_cool_ref
     if env_config.get('reward_function_config', False):
         if env_config['reward_function_config'].get('cooling_energy_ref', False):
-            env_config['reward_function_config']['cooling_energy_ref'] = E_cool_ref*epJSON_object['Timestep']['number_of_timesteps_per_hour']*3600
+            env_config['reward_function_config']['cooling_energy_ref'] = E_cool_ref*epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']*3600
         if env_config['reward_function_config'].get('heating_energy_ref', False):
-            env_config['reward_function_config']['heating_energy_ref'] = E_heat_ref*epJSON_object['Timestep']['number_of_timesteps_per_hour']*3600
+            env_config['reward_function_config']['heating_energy_ref'] = E_heat_ref*epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']*3600
       
             
     # Select the schedule file for loads
-    epJSON_object['epw'] = random_weather_config(env_config)
+    env_config['epw'] = random_weather_config(env_config)
     
     # The new modify epjson file is writed in the results folder created by RLlib
     # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']
@@ -484,6 +475,7 @@ def u_factor(epJSON_object: dict[str,dict]) -> float:
         s_construction = epJSON_object['FenestrationSurface:Detailed'][fenestration]['construction_name']
         # se establece un lazo para calcular la resistencia de cada capa
         r_surface = 0
+        u_factor_windows = 0
         layers = [key for key in epJSON_object['Construction'][s_construction].keys()]
         for layer in layers:
             material = epJSON_object['Construction'][s_construction][layer]
@@ -506,6 +498,8 @@ def u_factor(epJSON_object: dict[str,dict]) -> float:
                     conductividad_capa = 0.00576
                 elif epJSON_object[material_list][material]['gas_type'] == 'Krypton':
                     conductividad_capa = 0.00943
+                elif material_list == 'WindowMaterial:SimpleGlazingSystem':
+                    u_factor_window = epJSON_object[material_list][material]['u_factor']
                 else:
                     print('El nombre del gas no corresponde con los que pueden utilizarse: Air, Argon, Xenon, Krypton.')
                     NameError
@@ -517,6 +511,7 @@ def u_factor(epJSON_object: dict[str,dict]) -> float:
 
             # se suma la resistencia de la superficie
             r_surface += r_capa
+            u_factor_windows += u_factor_window
         # se guarda la resistencia de la superficie
         resistences.append(r_surface)
 
@@ -525,7 +520,7 @@ def u_factor(epJSON_object: dict[str,dict]) -> float:
     for n in range(0, len(areas)-1,1):
         u_factor =+ areas[n]/resistences[n]
     
-    return u_factor
+    return u_factor + u_factor_windows
 
 def material_area(epJSON_object, nombre_superficie):
     """_summary_
@@ -643,7 +638,7 @@ def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
         L.append([window_vertexs[vertex_x], window_vertexs[vertex_y], window_vertexs[vertex_z]])
 
     # Se calcula el factor de escala de la ventana
-    area_ventana_old = fenestration_area(ventana_escalada)
+    area_ventana_old = fenestration_area(epJSON_object, window)
     factor_escala = area_ventana/area_ventana_old
     centro = calcular_centro(L)
     ventana_escalada = []
@@ -670,7 +665,7 @@ def calcular_centro(ventana):
     return centro
 
 
-def building_dimension(epJSON_object, h:float, w:float, l:float):
+def building_dimension(epJSON_object, h:float, w:float, l:float, window_area_relation:List):
     """_summary_
 
     Args:
@@ -703,34 +698,34 @@ def building_dimension(epJSON_object, h:float, w:float, l:float):
     
     window_coordinates = {
         'window_north': [
-            [0+(w*north_window_proportion),0,h-(h*north_window_proportion)],
-            [0+(w*north_window_proportion),0,0+(h*north_window_proportion)],
-            [w-(w*north_window_proportion),0,0+(h*north_window_proportion)],
-            [w-(w*north_window_proportion),0,h-(h*north_window_proportion)]
+            [0+(w*north_window_proportion)/2,0,h*0.9],
+            [0+(w*north_window_proportion)/2,0,0.1],
+            [w-(w*north_window_proportion)/2,0,0.1],
+            [w-(w*north_window_proportion)/2,0,h*0.9]
         ],
         'window_east': [
-            [w,0+(l*east_window_proportion),h-(h*east_window_proportion)],
-            [w,0+(l*east_window_proportion),0+(h*east_window_proportion)],
-            [w,l-(l*east_window_proportion),0+(h*east_window_proportion)],
-            [w,l-(l*east_window_proportion),h-(h*east_window_proportion)]
+            [w,0+(l*east_window_proportion)/2,h*0.9],
+            [w,0+(l*east_window_proportion)/2,0.1],
+            [w,l-(l*east_window_proportion)/2,0.1],
+            [w,l-(l*east_window_proportion)/2,h*0.9]
         ],
         'window_south': [
-            [w-(w*south_window_proportion),l,h-(h*south_window_proportion)],
-            [w-(w*south_window_proportion),l,0+(h*south_window_proportion)],
-            [0+(w*south_window_proportion),l,0+(h*south_window_proportion)],
-            [0+(w*south_window_proportion),l,h-(h*south_window_proportion)]
+            [w-(w*south_window_proportion)/2,l,h*0.9],
+            [w-(w*south_window_proportion)/2,l,0.1],
+            [0+(w*south_window_proportion)/2,l,0.1],
+            [0+(w*south_window_proportion)/2,l,h*0.9]
         ],
         'window_west': [
-            [0,l-(l*west_window_proportion),h-(h*west_window_proportion)],
-            [0,l-(l*west_window_proportion),0+(h*west_window_proportion)],
-            [0,0+(l*west_window_proportion),0+(h*west_window_proportion)],
-            [0,0+(l*west_window_proportion),h-(h*west_window_proportion)]
+            [0,l-(l*west_window_proportion)/2,h*0.9],
+            [0,l-(l*west_window_proportion)/2,0.1],
+            [0,0+(l*west_window_proportion)/2,0.1],
+            [0,0+(l*west_window_proportion)/2,h*0.9]
         ],
     }
     
     for window_name in [key for key in window_coordinates.keys()]:
         # Iterate over the four vertices of the surface
-        for _ in range(4):
+        for _ in range(1,5,1):
             for xyz in range(3):
-                epJSON_object['FenestrationSurface:Detailed'][window_name]['vertex_'+str(_)+'_'+coordinate[xyz]+'_coordinate'] = window_coordinates[window_name][_][xyz]
+                epJSON_object['FenestrationSurface:Detailed'][window_name]['vertex_'+str(_)+'_'+coordinate[xyz]+'_coordinate'] = window_coordinates[window_name][_-1][xyz]
         
