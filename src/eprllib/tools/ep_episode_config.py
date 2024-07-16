@@ -3,8 +3,7 @@
 import numpy as np
 import os
 import json
-from eprllib.tools.weather_utils import weather_file
-from typing import List
+from typing import List, Dict
 
 def random_building_config(env_config:dict):
     """This method define the path to the epJSON file.
@@ -46,7 +45,7 @@ def random_building_config(env_config:dict):
     
     return env_config
 
-def random_weather_config(env_config:dict) -> str:
+def random_weather_config(env_config:Dict) -> str:
     """This method define the path to the epJSON file.
 
     Args:
@@ -87,7 +86,7 @@ def random_weather_config(env_config:dict) -> str:
     return epw_path
 
 
-def episode_epJSON(env_config: dict):
+def episode_epJSON(env_config:Dict) -> Dict:
     """This method define the properties of the episode. Changing some properties as weather or 
     Run Time Period, and defining others fix properties as volumen or window area relation.
     
@@ -98,11 +97,11 @@ def episode_epJSON(env_config: dict):
         dict: The method returns the env_config with modifications.
     """
     # If the path to epjson is not set, arraise a error.
-    if not env_config.get('epjson', False):
+    if not env_config['episode_config'].get('epjson', False):
         raise ValueError('epjson is not defined')
     
     # Establish the epJSON Object, it will be manipulated to modify the building model.
-    with open(env_config['epjson']) as file:
+    with open(env_config['episode_config']['epjson']) as file:
         epJSON_object: dict = json.load(file)
     
     # == BUILDING ==
@@ -115,7 +114,7 @@ def episode_epJSON(env_config: dict):
     env_config['episode_config']['building_area'] = w*l
     env_config['episode_config']['aspect_ratio'] = w/l
     
-    # Change the dimension of the building
+    # Change the dimension of the building and windows
     window_area_relation = []
     env_config['episode_config']['window_area_relation_north'] = (0.9-0.05) * np.random.random_sample() + 0.05
     env_config['episode_config']['window_area_relation_east'] = (0.9-0.05) * np.random.random_sample() + 0.05
@@ -126,7 +125,7 @@ def episode_epJSON(env_config: dict):
     window_area_relation.append(env_config['episode_config']['window_area_relation_south'])
     window_area_relation.append(env_config['episode_config']['window_area_relation_west'])
     window_area_relation = np.array(window_area_relation)
-    building_dimension(epJSON_object, h, w, l, window_area_relation)
+    building_dimension(epJSON_object, h, w, l,window_area_relation)
     
     # Define the type of construction (construction properties for each three layers)
     # Walls
@@ -190,14 +189,15 @@ def episode_epJSON(env_config: dict):
     E_cool_ref = env_config['episode_config']['E_cool_ref'] = (3000 - 100)*np.random.random_sample() + 100
     E_heat_ref = env_config['episode_config']['E_heat_ref'] = (3000 - 100)*np.random.random_sample() + 100
     HVAC_names = [key for key in epJSON_object["ZoneHVAC:IdealLoadsAirSystem"].keys()]
+    number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
     for hvac in range(len(HVAC_names)):
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_sensible_heating_capacity"] = E_heat_ref
         epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = E_cool_ref
     if env_config.get('reward_function_config', False):
         if env_config['reward_function_config'].get('cooling_energy_ref', False):
-            env_config['reward_function_config']['cooling_energy_ref'] = E_cool_ref*epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']*3600
+            env_config['reward_function_config']['cooling_energy_ref'] = E_cool_ref*number_of_timesteps_per_hour*3600
         if env_config['reward_function_config'].get('heating_energy_ref', False):
-            env_config['reward_function_config']['heating_energy_ref'] = E_heat_ref*epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']*3600
+            env_config['reward_function_config']['heating_energy_ref'] = E_heat_ref*number_of_timesteps_per_hour*3600
       
             
     # Select the schedule file for loads
@@ -215,7 +215,7 @@ def episode_epJSON(env_config: dict):
     
     return env_config
 
-def inertial_mass_calculation(env_config: dict) -> float:
+def inertial_mass_calculation(env_config:Dict) -> float:
     """The function reads the epjson file path from the env_config dictionary. If the epjson
     key is not present, it raises a ValueError. Otherwise, it opens the specified epjson
     file, loads its contents as a Python dictionary (epJSON_object), and then calls the 
@@ -232,7 +232,8 @@ def inertial_mass_calculation(env_config: dict) -> float:
     
     Example:
         env_config = {
-            'epjson': 'path/to/epjson_file.json'
+            'episode_config': {
+                'epjson': 'path/to/epjson_file.json'
             }
         }
 
@@ -249,7 +250,7 @@ def inertial_mass_calculation(env_config: dict) -> float:
 
     return inertial_mass(epJSON_object)
 
-def inertial_mass(epJSON_object: dict[str,dict]) -> float:
+def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
     """The inertial_mass function calculates the total thermal mass of a building based 
     on the construction materials and surface areas specified in an EnergyPlus JSON 
     object.
@@ -367,7 +368,7 @@ def inertial_mass(epJSON_object: dict[str,dict]) -> float:
     
     return M_total
 
-def u_factor_calculation(env_config: dict) -> float:
+def u_factor_calculation(env_config:Dict) -> float:
     """The u_factor_calculation function calculates the U-factor (a measure of heat 
     transfer through a building element) based on the provided environment configuration 
     (env_config).
@@ -382,7 +383,8 @@ def u_factor_calculation(env_config: dict) -> float:
         
     Example:
         env_config = {
-            'epjson': 'path/to/epjson_file.json'
+            'episode_config': {
+                'epjson': 'path/to/epjson_file.json'
             }
         }
 
@@ -398,7 +400,7 @@ def u_factor_calculation(env_config: dict) -> float:
     #  Calculate the u_factor
     return u_factor(epJSON_object)
 
-def u_factor(epJSON_object: dict[str,dict]) -> float:
+def u_factor(epJSON_object:Dict[str,Dict]) -> float:
     """This function select all the building surfaces and fenestration surfaces and calculate the
     global U-factor of the building, like EnergyPlus does.
     """
@@ -476,6 +478,7 @@ def u_factor(epJSON_object: dict[str,dict]) -> float:
         # se establece un lazo para calcular la resistencia de cada capa
         r_surface = 0
         u_factor_windows = 0
+        u_factor_window = 0
         layers = [key for key in epJSON_object['Construction'][s_construction].keys()]
         for layer in layers:
             material = epJSON_object['Construction'][s_construction][layer]
@@ -498,12 +501,12 @@ def u_factor(epJSON_object: dict[str,dict]) -> float:
                     conductividad_capa = 0.00576
                 elif epJSON_object[material_list][material]['gas_type'] == 'Krypton':
                     conductividad_capa = 0.00943
-                elif material_list == 'WindowMaterial:SimpleGlazingSystem':
-                    u_factor_window = epJSON_object[material_list][material]['u_factor']
                 else:
                     print('El nombre del gas no corresponde con los que pueden utilizarse: Air, Argon, Xenon, Krypton.')
                     NameError
                 r_capa = espesor_capa/conductividad_capa
+            elif material_list == 'WindowMaterial:SimpleGlazingSystem':
+                u_factor_window = epJSON_object[material_list][material]['u_factor']
             else:
                 espesor_capa = epJSON_object[material_list][material]['thickness']
                 conductividad_capa = epJSON_object[material_list][material]['conductivity']
@@ -649,10 +652,6 @@ def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
         ventana_escalada.append(nuevo_punto)
     
     for l in range(1,5,1):
-        vertex_x = 'v'+str(l)+'x'
-        vertex_y = 'v'+str(l)+'y'
-        vertex_z = 'v'+str(l)+'z'
-        
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_x_coordinate'] = ventana_escalada[l-1][0]
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_y_coordinate'] = ventana_escalada[l-1][1]
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_z_coordinate'] = ventana_escalada[l-1][2]
@@ -691,10 +690,10 @@ def building_dimension(epJSON_object, h:float, w:float, l:float, window_area_rel
             for xyz in range(3):
                 epJSON_object['BuildingSurface:Detailed'][surface_name]['vertices'][_]['vertex_'+coordinate[xyz]+'_coordinate'] = surface_coordenates[surface_name][_][xyz]
     
-    north_window_proportion = 0.18
-    east_window_proportion = 0.15
-    south_window_proportion = 0.1
-    west_window_proportion = 0.1
+    north_window_proportion = window_area_relation[0]
+    east_window_proportion = window_area_relation[1]
+    south_window_proportion = window_area_relation[2]
+    west_window_proportion = window_area_relation[3]
     
     window_coordinates = {
         'window_north': [
