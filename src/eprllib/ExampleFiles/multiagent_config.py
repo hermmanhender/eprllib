@@ -4,43 +4,36 @@ multi-agent environment approach.
 from eprllib.tools.rewards import dalamagkidis_2007
 
 env_config = {
+    # == FILES DIRECTORUES ==
     # The path to the EnergyPlus model in the format of epJSON file.
     'epjson': 'path/to/epjson_file.json',
     # The path to the EnergyPlus weather file in the format of epw file.
     'epw': 'path/to/epw_file.epw',
     # The path to the output directory for the EnergyPlus simulation.
     'output': 'path/to/output_directory',
-    # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
-    'ep_terminal_output': False,
-    # For evaluation process 'is_test=True' and for trainig False.
-    'is_test': False,
-    # The action space for all the agents.
-    'action_space': 'gym.spaces.Discrete() type',
-    # Dictionary of tuples with the EnergyPlus variables to observe and their corresponding names.
-    # The tuples has the format of (name_of_the_variable, Thermal_Zone_name). You can check the
-    # EnergyPlus output file to get the names of the variables.
-    'ep_variables': {
-        'Site Outdoor Air Drybulb Temperature': ('Site Outdoor Air Drybulb Temperature', 'Environment'),
-        'Zone Mean Air Temperature': ('Zone Mean Air Temperature', 'Thermal Zone: Living'),
-        'Zone Air Relative Humidity': ('Zone Air Relative Humidity', 'Thermal Zone: Living'),
-        'Zone Thermal Comfort Fanger Model PPD': ('Zone Thermal Comfort Fanger Model PPD', 'Living Occupancy'),
-    },
-    # Dictionary of names of meters from EnergyPlus to observe.
-    'ep_meters': {
-        'Electricity': 'Electricity:Zone:THERMAL ZONE: LIVING',
-        'NaturalGas': 'NaturalGas:Zone:THERMAL ZONE: LIVING',
-        'Heating': 'Heating:DistrictHeatingWater',
-        'Cooling': 'Cooling:DistrictCooling',
-    },
+    
+    # == ENVIRONMENT CONFIGURATION ==
     # Dictionary of tuples with the EnergyPlus actuators to control and their corresponding 
     # names.
     # The tuples has the format of (type_of_actuator, variable, name or zone). You can check
     # the documentation of EnergyPlus to get more information about the actuators.
+    # Note that each actuator is an agent in the environment.
     'ep_actuators': {
         'Heating Setpoint': ('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 19'),
         'Cooling Setpoint': ('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 25'),
         'Air Mass Flow Rate': ('Ideal Loads Air System', 'Air Mass Flow Rate', 'Thermal Zone: Living Ideal Loads Air System'),
     },
+    # The action space for all the agents.
+    'action_space': 'gym.spaces.Discrete() type',
+    # Definition of the observation space.
+    # define if the actuator state will be used as an observation for the agent.
+    'use_actuator_state': True,
+    # define if agent indicator will be used as an observation for the agent. This is recommended 
+    # True for muilti-agent usage and False for single agent case.
+    'use_agent_indicator': True,
+    # define if the agent/actuator type will be used. This is recommended for different types of 
+    # agents actuating in the same environment.
+    'use_agent_type': True,
     # Dictionary of the types of the EnergyPlus actuators to control.
     # The types has to be the same as the tuples in the 'ep_actuators' dictionary.
     # The classification of the actuators follow the next correspondency of names:
@@ -60,6 +53,56 @@ env_config = {
         'Heating Setpoint': 2,
         'Cooling Setpoint': 1,
         'Air Mass Flow Rate': 3,
+    },
+    # define if the building properties will be used as an observation for the agent. This is recommended
+    # if different buildings will be used with the same policy.
+    'use_building_properties': True,
+    # The episode config define important aspects about the building to be simulated
+    # in the episode. All this parameters are mandatory.
+    # TODO: Allow the user decide if this variables are or not mandatory.
+    # TODO: Change the name to building_properties.
+    'episode_config': {
+        # Net Conditioned Building Area [m2]
+        'building_area': 20.75,
+        'aspect_ratio': 1.35,
+        # Conditioned Window-Wall Ratio, Gross Window-Wall Ratio [%]
+        'window_area_relation_north': 56.67,
+        'window_area_relation_east': 18.19,
+        'window_area_relation_south': 2.59,
+        'window_area_relation_west': 0,
+        'inercial_mass': "auto",
+        'construction_u_factor': "auto",
+        # User-Specified Maximum Total Cooling Capacity [W]
+        'E_cool_ref': 2500,
+        # User-Specified Maximum Sensible Heating Capacity [W]
+        'E_heat_ref': 2500,
+    },
+    # We use the internal variables of EnergyPlus to provide with a prediction of the weather
+    # time ahead.
+    # The variables to predict are:
+    #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
+    #   - Relative Humidity in % with squer desviation of 20%, 
+    #   - Wind Direction in degree with squer desviation of 40°, 
+    #   - Wind Speed in m/s with squer desviation of 3.41 m/s, 
+    #   - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
+    #   - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
+    # This are predicted from the next hour into the 24 hours ahead defined.
+    'use_one_day_weather_prediction': True,
+    # Dictionary of tuples with the EnergyPlus variables to observe and their corresponding names.
+    # The tuples has the format of (name_of_the_variable, Thermal_Zone_name). You can check the
+    # EnergyPlus output file to get the names of the variables.
+    'ep_variables': {
+        'Site Outdoor Air Drybulb Temperature': ('Site Outdoor Air Drybulb Temperature', 'Environment'),
+        'Zone Mean Air Temperature': ('Zone Mean Air Temperature', 'Thermal Zone: Living'),
+        'Zone Air Relative Humidity': ('Zone Air Relative Humidity', 'Thermal Zone: Living'),
+        'Zone Thermal Comfort Fanger Model PPD': ('Zone Thermal Comfort Fanger Model PPD', 'Living Occupancy'),
+    },
+    # Dictionary of names of meters from EnergyPlus to observe.
+    'ep_meters': {
+        'Electricity': 'Electricity:Zone:THERMAL ZONE: LIVING',
+        'NaturalGas': 'NaturalGas:Zone:THERMAL ZONE: LIVING',
+        'Heating': 'Heating:DistrictHeatingWater',
+        'Cooling': 'Cooling:DistrictCooling',
     },
     # The time variables to observe in the EnergyPlus simulation. The format is a list of
     # the names described in the EnergyPlus epJSON format documentation 
@@ -162,36 +205,18 @@ env_config = {
     # but not in the observation space is to aggregate the PPD into the 'infos_variables' and
     # in the 'no_observable_variables' list.
     "no_observable_variables": [],
+    # This method define the properties of the episode, taking the env_config dict and returning it
+    # with modifications.
+    'episode_config_fn': None,
+    # Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, 
+    # an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len'
+    # in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
+    'cut_episode_len': None,
     # timeout define the time that the environment wait for an observation and the time that
     # the environment wait to apply an action in the EnergyPlus simulation. After that time,
     # the episode is finished. If your environment is time consuming, you can increase this
     # limit. By default the value is 10 seconds.
     "timeout": 10,
-    # Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, 
-    # an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len'
-    # in 1 you will truncate the, for example, annual simulation into 365 episodes.
-    # TODO: For now, this only works with 6 timestep per hour configuration.
-    'cut_episode_len': None,
-    # We use the internal variables of EnergyPlus to provide with a prediction of the weather
-    # time ahead.
-    # The variables to predict are:
-    #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
-    #   - Relative Humidity in % with squer desviation of 20%, 
-    #   - Wind Direction in degree with squer desviation of 40°, 
-    #   - Wind Speed in m/s with squer desviation of 3.41 m/s, 
-    #   - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
-    #   - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
-    # This are predicted from the next hour into the 24 hours ahead for each 'weather_prob_days'
-    # defined.
-    # TODO: Provide a way to enable the user select the types of variables to predict and the
-    # accuracy of the predictions.
-    "weather_prob_days": 2,
-    # In the definition of the action space, usualy is use the discrete form of the gym spaces.
-    # In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With
-    # the objective to transform appropiately the discret action into a value action for EP we
-    # define the action_transformer funtion. This function take the arguments agent_id and
-    # action. You can find examples in eprllib.tools.action_transformers .
-    'action_transformer': None,
     # The reward funtion take the arguments EnvObject (the GymEnv class) and the infos dictionary.
     # As a return, gives a float number as reward. See eprllib.tools.rewards
     'reward_function': dalamagkidis_2007,
@@ -213,23 +238,12 @@ env_config = {
         'heating_name': 'heating',
         'co2_name': 'co2'
     },
-    # The episode config define important aspects about the building to be simulated
-    # in the episode. All this parameters are mandatory.
-    # TODO: Allow the user decide if this variables are or not mandatory.
-    'episode_config': {
-        # Net Conditioned Building Area [m2]
-        'building_area': 20.75,
-        'aspect_ratio': 1.35,
-        # Conditioned Window-Wall Ratio, Gross Window-Wall Ratio [%]
-        'window_area_relation_north': 56.67,
-        'window_area_relation_east': 18.19,
-        'window_area_relation_south': 2.59,
-        'window_area_relation_west': 0,
-        'inercial_mass': "auto",
-        'construction_u_factor': "auto",
-        # User-Specified Maximum Total Cooling Capacity [W]
-        'E_cool_ref': 2500,
-        # User-Specified Maximum Sensible Heating Capacity [W]
-        'E_heat_ref': 2500,
-    },
+    # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
+    'ep_terminal_output': False,
+    # In the definition of the action space, usualy is use the discrete form of the gym spaces.
+    # In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With
+    # the objective to transform appropiately the discret action into a value action for EP we
+    # define the action_transformer funtion. This function take the arguments agent_id and
+    # action. You can find examples in eprllib.tools.action_transformers .
+    'action_transformer': None,
 }
