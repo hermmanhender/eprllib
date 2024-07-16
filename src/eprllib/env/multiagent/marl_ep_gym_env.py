@@ -74,30 +74,60 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         """
         # asigning the configuration of the environment.
         self.env_config = env_config
-        self.env_config['agent_ids'] = list(self.env_config['ep_actuators'].keys())
+        
         # asignation of the agents ids for the environment.
-        self._agent_ids = set(env_config['agent_ids'])
-        # asignation of environment spaces.
-        self.action_space = self.env_config['action_space']
-        
-        obs_space_len = sum([
-            len(self.env_config['ep_variables']),
-            len(self.env_config['ep_meters']),
-            len(self.env_config['ep_actuators']),
-            len(self.env_config['time_variables']),
-            len(self.env_config['weather_variables']),
-            -len(self.env_config['no_observable_variables']),
-            24*6, # Weather prediction
-            2, # agent_indicator, agent type
-            10, # building general properties
-        ])
+        if not self.env_config.get('ep_actuators', False):
+            ValueError("No actuators defined in the environment configuration. Set the dictionary in"\
+                "env_config['ep_actuators'] with the corresponded actuators.")
+        self.env_config['agent_ids'] = list(self.env_config['ep_actuators'].keys())
+        self._agent_ids = set(env_config['agent_ids']) # This is neccesary in the RLlib configuration of MultiAgnetEnv.
+        agents_str = ", ".join(self.env_config['agents_ids'])
+        print(f"The environment is defined with {len(env_config['agent_ids'])} agents: {agents_str}")
 
-        self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
+        # asignation of environment action space.
+        if not self.env_config.get('action_space', False):
+            ValueError("No action space defined in the environment configuration. Set the dictionary in"\
+                "env_config['action_space'] with the corresponded action space.")
+        self.action_space = self.env_config['action_space']
+        print(f"The action space is defined as {self.action_space}.")
         
-        # super init of the base class gym.Env.
+        # asignation of the environment observation space.
+        obs_space_len = 0
+        # actuator state.
+        if self.env_config.get('use_actuator_state', True):
+            obs_space_len += 1
+        # agent_indicator.
+        if self.env_config.get('use_agent_indicator', True):
+            obs_space_len += 1
+        # agent type.
+        if self.env_config.get('use_agent_type', True):
+            obs_space_len += 1
+        # building properties.
+        if self.env_config.get('use_building_properties', True):
+            obs_space_len += 10
+        # weather prediction.
+        if self.env_config.get('use_one_day_weather_prediction', True):
+            obs_space_len += 24*6
+        # variables and meters.
+        if self.env_config.get('ep_variables', False):
+            obs_space_len += len(self.env_config['ep_variables'])
+        if self.env_config.get('ep_meters', False):
+            obs_space_len += len(self.env_config['ep_meters'])
+        if self.env_config.get('time_variables', False):
+            obs_space_len += len(self.env_config['time_variables'])
+        if self.env_config.get('weather_variables', False):
+            obs_space_len += len(self.env_config['weather_variables'])
+        # discount the not observable variables.
+        if self.env_config.get('no_observable_variables', False):
+            obs_space_len -= len(self.env_config['no_observable_variables'])
+        # construct the observation space.
+        self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
+        print(f"The observation space is defined as {self.observation_space}.")
+        
+        # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
         
-        # EnergyPlus Runner class.
+        # EnergyPlusRunner class.
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
         # queues for communication between MDP and EnergyPlus.
         self.obs_queue: Optional[Queue] = None
@@ -110,6 +140,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.timestep = 0
         self.terminateds = False
         self.truncateds = False
+        self.env_config['num_time_steps_in_hour'] = 0
         # dict to save the last observation and infos in the environment.
         self.last_obs = {}
         self.last_infos = {}
@@ -139,8 +170,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             self.obs_queue = Queue(maxsize=1)
             self.act_queue = Queue(maxsize=1)
             self.infos_queue = Queue(maxsize=1)
-            # == Episode configuration == (Optional)
-            # If the configuration is not defined, the epjson config will be used.
             
             # episode_config_fn: Function that take the env_config as argument and upgrade the value
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
@@ -181,19 +210,17 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # environment present a terminal state.
         terminated = {}
         truncated = {}
-        # Cut the anual simulation into shorter episodes. Default: None
+        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: None
         cut_episode_len = self.env_config.get('cut_episode_len', None)
         if not cut_episode_len == None:
-            cut_episode_len_timesteps = cut_episode_len * 144
-            # TODO: hacer que el corte se multiplique por los pasos de tiempo de un día, detectando
-            # la longitud desde el archivo de EP.
+            cut_episode_len_timesteps = cut_episode_len * 24*self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
         else:
             self.truncateds = False
-        # timeout is set to 5s to handle the time of calculation of EnergyPlus simulation.
+        # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
-        timeout = self.env_config.get("timeout", 5)
+        timeout = self.env_config.get("timeout", 10)
         
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
