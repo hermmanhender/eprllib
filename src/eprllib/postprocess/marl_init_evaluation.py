@@ -9,6 +9,7 @@ import csv
 from ray.rllib.policy.policy import Policy
 from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
 import numpy as np
+import pandas as pd
 
 def init_drl_evaluation(
     env_config: dict,
@@ -73,7 +74,9 @@ def init_drl_evaluation(
     # open the file in the write mode
     data = open(env_config['output']+'/'+name+'.csv', 'w')
     # create the csv writer
-    writer = csv.writer(data)
+    # writer = csv.writer(data)
+    rows = []
+
     terminated = {}
     terminated["__all__"] = False # variable de control de lazo (es verdadera cuando termina un episodio)
     episode_reward = 0
@@ -117,10 +120,26 @@ def init_drl_evaluation(
         for _ in range(len(info_list)):
             row.append(info_list[_])
         
-        writer.writerow(row)
+        # writer.writerow(row)
+        rows.append(row)
         episode_reward += reward[_agents_id_list[0]]
     # close the file
-    data.close()
+    # data.close()
+    # create a DataFrame from the list of rows
+    df = pd.DataFrame(rows)
+    header = [
+        "Agent indicator",
+        "Actuator type",
+    ]
+    header.append(EnergyPlusEnv_v0.energyplus_runner.obs_keys)
+    header.append(list(EnergyPlusEnv_v0.env_config["ep_actuators"].keys()))
+    header.append("Reward")
+    header.append("Terminated")
+    header.append("Truncated")
+    header.append(EnergyPlusEnv_v0.env_config["infos_variables"])
+    # save the DataFrame to a CSV file
+    df.to_csv(env_config['output'] + '/' + name + '.csv', index=False, header=header)
+
     
     return episode_reward
 
