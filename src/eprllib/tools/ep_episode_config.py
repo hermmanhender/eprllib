@@ -111,19 +111,19 @@ def episode_epJSON(env_config:Dict) -> Dict:
     l = (10-3) * np.random.random_sample() + 3
     
     # Calculate the aspect relation
-    env_config['episode_config']['building_area'] = w*l
-    env_config['episode_config']['aspect_ratio'] = w/l
+    env_config['building_properties']['building_area'] = w*l
+    env_config['building_properties']['aspect_ratio'] = w/l
     
     # Change the dimension of the building and windows
     window_area_relation = []
-    env_config['episode_config']['window_area_relation_north'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    env_config['episode_config']['window_area_relation_east'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    env_config['episode_config']['window_area_relation_south'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    env_config['episode_config']['window_area_relation_west'] = (0.9-0.05) * np.random.random_sample() + 0.05
-    window_area_relation.append(env_config['episode_config']['window_area_relation_north'])
-    window_area_relation.append(env_config['episode_config']['window_area_relation_east'])
-    window_area_relation.append(env_config['episode_config']['window_area_relation_south'])
-    window_area_relation.append(env_config['episode_config']['window_area_relation_west'])
+    env_config['building_properties']['window_area_relation_north'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    env_config['building_properties']['window_area_relation_east'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    env_config['building_properties']['window_area_relation_south'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    env_config['building_properties']['window_area_relation_west'] = (0.9-0.05) * np.random.random_sample() + 0.05
+    window_area_relation.append(env_config['building_properties']['window_area_relation_north'])
+    window_area_relation.append(env_config['building_properties']['window_area_relation_east'])
+    window_area_relation.append(env_config['building_properties']['window_area_relation_south'])
+    window_area_relation.append(env_config['building_properties']['window_area_relation_west'])
     window_area_relation = np.array(window_area_relation)
     building_dimension(epJSON_object, h, w, l,window_area_relation)
     
@@ -180,14 +180,14 @@ def episode_epJSON(env_config:Dict) -> Dict:
         epJSON_object["InternalMass"][key]["surface_area"] = np.random.randint(10,40)
     
     # The total inertial thermal mass is calculated.
-    env_config['episode_config']['inercial_mass'] = inertial_mass(epJSON_object)
+    env_config['building_properties']['inercial_mass'] = inertial_mass(epJSON_object)
     
     # The global U factor is calculated.
-    env_config['episode_config']['construction_u_factor'] = u_factor(epJSON_object)
+    env_config['building_properties']['construction_u_factor'] = u_factor(epJSON_object)
     
     # The limit capacity of bouth cooling and heating are changed.
-    E_cool_ref = env_config['episode_config']['E_cool_ref'] = (3000 - 100)*np.random.random_sample() + 100
-    E_heat_ref = env_config['episode_config']['E_heat_ref'] = (3000 - 100)*np.random.random_sample() + 100
+    E_cool_ref = env_config['building_properties']['E_cool_ref'] = (3000 - 100)*np.random.random_sample() + 100
+    E_heat_ref = env_config['building_properties']['E_heat_ref'] = (3000 - 100)*np.random.random_sample() + 100
     HVAC_names = [key for key in epJSON_object["ZoneHVAC:IdealLoadsAirSystem"].keys()]
     number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
     for hvac in range(len(HVAC_names)):
