@@ -4,9 +4,9 @@ This script define the environment of EnergyPlus implemented in RLlib. To works
 need to define the EnergyPlus Runner.
 """
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
-from gymnasium.spaces import Box
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
+from eprllib.env.multiagent.EnvUtils import env_value_inspection, actuators_to_agents, obs_space
 from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
 from eprllib.tools import rewards
 
@@ -74,56 +74,24 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         """
         # asigning the configuration of the environment.
         self.env_config = env_config
-        
+        # inspection of info errors
+        env_value_inspection(self.env_config)
         # asignation of the agents ids for the environment.
-        if not self.env_config.get('ep_actuators', False):
-            ValueError("No actuators defined in the environment configuration. Set the dictionary in"\
-                "env_config['ep_actuators'] with the corresponded actuators.")
-        self.env_config['agent_ids'] = list(self.env_config['ep_actuators'].keys())
-        self._agent_ids = set(env_config['agent_ids']) # This is neccesary in the RLlib configuration of MultiAgnetEnv.
-        agents_str = ", ".join(self.env_config['agents_ids'])
-        print(f"The environment is defined with {len(env_config['agent_ids'])} agents: {agents_str}")
-
+        (
+            self.env_config['agent_ids'],
+            self.env_config['thermal_zone_ids'],
+            self.env_config['agents_actuators'], 
+            self.env_config['agents_thermal_zones'],
+            self.env_config['agents_types']
+        ) = actuators_to_agents(self.env_config['ep_actuators'])
+        # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
+        self._agent_ids = set(env_config['agent_ids'])
         # asignation of environment action space.
-        if not self.env_config.get('action_space', False):
-            ValueError("No action space defined in the environment configuration. Set the dictionary in"\
-                "env_config['action_space'] with the corresponded action space.")
         self.action_space = self.env_config['action_space']
-        print(f"The action space is defined as {self.action_space}.")
-        
         # asignation of the environment observation space.
-        obs_space_len = 0
-        # actuator state.
-        if self.env_config.get('use_actuator_state', True):
-            obs_space_len += 1
-        # agent_indicator.
-        if self.env_config.get('use_agent_indicator', True):
-            obs_space_len += 1
-        # agent type.
-        if self.env_config.get('use_agent_type', True):
-            obs_space_len += 1
-        # building properties.
-        if self.env_config.get('use_building_properties', True):
-            obs_space_len += 10
-        # weather prediction.
-        if self.env_config.get('use_one_day_weather_prediction', True):
-            obs_space_len += 24*6
-        # variables and meters.
-        if self.env_config.get('ep_variables', False):
-            obs_space_len += len(self.env_config['ep_variables'])
-        if self.env_config.get('ep_meters', False):
-            obs_space_len += len(self.env_config['ep_meters'])
-        if self.env_config.get('time_variables', False):
-            obs_space_len += len(self.env_config['time_variables'])
-        if self.env_config.get('weather_variables', False):
-            obs_space_len += len(self.env_config['weather_variables'])
-        # discount the not observable variables.
-        if self.env_config.get('no_observable_variables', False):
-            obs_space_len -= len(self.env_config['no_observable_variables'])
-        # construct the observation space.
-        self.observation_space = Box(float("-inf"), float("inf"), (obs_space_len,))
+        self.observation_space = obs_space(self.env_config)
+        print(f"The action space is defined as {self.action_space}.")
         print(f"The observation space is defined as {self.observation_space}.")
-        
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
         
@@ -268,11 +236,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             reward_function = self.env_config['reward_function']
         else:
             reward_function = rewards.dalamagkidis_2007
-        reward = reward_function(self, infos)
-        
-        reward_dict = {}
-        for agent in self.env_config['agent_ids']:
-            reward_dict[agent] =  reward
+        reward_dict = reward_function(self, infos)
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
