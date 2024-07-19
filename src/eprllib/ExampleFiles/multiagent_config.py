@@ -13,15 +13,37 @@ env_config = {
     'output': 'path/to/output_directory',
     
     # == ENVIRONMENT CONFIGURATION ==
-    # Dictionary of tuples with the EnergyPlus actuators to control and their corresponding 
-    # names.
-    # The tuples has the format of (type_of_actuator, variable, name or zone). You can check
-    # the documentation of EnergyPlus to get more information about the actuators.
-    # Note that each actuator is an agent in the environment.
+    # Dictionary of tuples to define the Agents. The Dict has the following format: 
+    #   Dict[str, Tuple[Tuple[str, str, str], str, int]]
+    # In terms of meaning of each variable of the agent definition, we can say:
+    #   Dict['agent_name', Tuple[Tuple['EP_type_of_actuator', 'EP_variable', 'EP_name or EP_zone'], 'EP_zone', 'eprllib_type']].
+    # where:
+    #   'agent_name'(str): The unique name assign to the agent by the user.
+    #   'EP_type_of_actuator'(str): EnergyPlus provide with some actuators in her Python API. Here goes the name of the type 
+    # of actuator to control.
+    #   'EP_variable'(str): EnergyPlus provide with some actuators in her Python API. Here goes the name of the variable to modify.
+    #   'EP_name or EP_zone'(str): EnergyPlus provide with some actuators in her Python API. Some of them use an unique name to 
+    # work and others the thermal zone. Here goes this idetifying name.
+    #   'EP_zone'(str): The thermal zone where the agent is acting. For now, each agent only is capable to act in one thermal zone.
+    # Note that each actuator is an agent in the environment. You can check the documentation of EnergyPlus to get more 
+    # information about the actuators.
+    #   'eprllib_type'(int): The eprllib_type(s) of the actuators follow the next correspondency of names:
+    #       1: Cooling set point
+    #       2: Heating set point
+    #       3: Acondicionated Air Flow Rate
+    #       4: North Window Opening
+    #       5: East Window Opening
+    #       6: South Window Opening
+    #       7: West Window Opening
+    #       8: North Window Shading
+    #       9: East Window Shading
+    #       10: South Window Shading
+    #       11: West Window Shading
+    #       12: Fan Flow Rate
     'ep_actuators': {
-        'Heating Setpoint': ('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 19'),
-        'Cooling Setpoint': ('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 25'),
-        'Air Mass Flow Rate': ('Ideal Loads Air System', 'Air Mass Flow Rate', 'Thermal Zone: Living Ideal Loads Air System'),
+        'Heating Setpoint': (('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 19'), 'Thermal Zone', 2),
+        'Cooling Setpoint': (('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 25'), 'Thermal Zone', 1),
+        'Air Mass Flow Rate': (('Ideal Loads Air System', 'Air Mass Flow Rate', 'Thermal Zone: Living Ideal Loads Air System'), 'Thermal Zone', 3),
     },
     # The action space for all the agents.
     'action_space': 'gym.spaces.Discrete() type',
@@ -34,48 +56,28 @@ env_config = {
     # define if the agent/actuator type will be used. This is recommended for different types of 
     # agents actuating in the same environment.
     'use_agent_type': True,
-    # Dictionary of the types of the EnergyPlus actuators to control.
-    # The types has to be the same as the tuples in the 'ep_actuators' dictionary.
-    # The classification of the actuators follow the next correspondency of names:
-    #   1: Cooling set point
-    #   2: Heating set point
-    #   3: Acondicionated Air Flow Rate
-    #   4: North Window Opening
-    #   5: East Window Opening
-    #   6: South Window Opening
-    #   7: West Window Opening
-    #   8: North Window Shading
-    #   9: East Window Shading
-    #   10: South Window Shading
-    #   11: West Window Shading
-    #   12: Fan Flow Rate
-    'ep_actuators_type': {
-        'Heating Setpoint': 2,
-        'Cooling Setpoint': 1,
-        'Air Mass Flow Rate': 3,
-    },
     # define if the building properties will be used as an observation for the agent. This is recommended
     # if different buildings will be used with the same policy.
     'use_building_properties': True,
     # The episode config define important aspects about the building to be simulated
     # in the episode. All this parameters are mandatory.
-    # TODO: Allow the user decide if this variables are or not mandatory.
-    # TODO: Change the name to building_properties.
-    'episode_config': {
-        # Net Conditioned Building Area [m2]
-        'building_area': 20.75,
-        'aspect_ratio': 1.35,
-        # Conditioned Window-Wall Ratio, Gross Window-Wall Ratio [%]
-        'window_area_relation_north': 56.67,
-        'window_area_relation_east': 18.19,
-        'window_area_relation_south': 2.59,
-        'window_area_relation_west': 0,
-        'inercial_mass': "auto",
-        'construction_u_factor': "auto",
-        # User-Specified Maximum Total Cooling Capacity [W]
-        'E_cool_ref': 2500,
-        # User-Specified Maximum Sensible Heating Capacity [W]
-        'E_heat_ref': 2500,
+    'building_properties': {
+        'ThermalZone': {
+            # Net Conditioned Building Area [m2]
+            'building_area': 20.75,
+            'aspect_ratio': 1.35,
+            # Conditioned Window-Wall Ratio, Gross Window-Wall Ratio [%]
+            'window_area_relation_north': 56.67,
+            'window_area_relation_east': 18.19,
+            'window_area_relation_south': 2.59,
+            'window_area_relation_west': 0,
+            'inercial_mass': "auto",
+            'construction_u_factor': "auto",
+            # User-Specified Maximum Total Cooling Capacity [W]
+            'E_cool_ref': 2500,
+            # User-Specified Maximum Sensible Heating Capacity [W]
+            'E_heat_ref': 2500,
+        },
     },
     # We use the internal variables of EnergyPlus to provide with a prediction of the weather
     # time ahead.
@@ -91,19 +93,23 @@ env_config = {
     # Dictionary of tuples with the EnergyPlus variables to observe and their corresponding names.
     # The tuples has the format of (name_of_the_variable, Thermal_Zone_name). You can check the
     # EnergyPlus output file to get the names of the variables.
-    'ep_variables': {
-        'Site Outdoor Air Drybulb Temperature': ('Site Outdoor Air Drybulb Temperature', 'Environment'),
-        'Zone Mean Air Temperature': ('Zone Mean Air Temperature', 'Thermal Zone: Living'),
-        'Zone Air Relative Humidity': ('Zone Air Relative Humidity', 'Thermal Zone: Living'),
-        'Zone Thermal Comfort Fanger Model PPD': ('Zone Thermal Comfort Fanger Model PPD', 'Living Occupancy'),
-    },
+    'ep_environment_variables': [
+        'Site Outdoor Air Drybulb Temperature',
+    ],
+    'ep_thermal_zones_variables': [
+        'Zone Mean Air Temperature',
+        'Zone Air Relative Humidity',
+    ],
+    'ep_object_variables': [
+        ('Zone Thermal Comfort Fanger Model PPD', 'Living Occupancy'),
+    ],
     # Dictionary of names of meters from EnergyPlus to observe.
-    'ep_meters': {
-        'Electricity': 'Electricity:Zone:THERMAL ZONE: LIVING',
-        'NaturalGas': 'NaturalGas:Zone:THERMAL ZONE: LIVING',
-        'Heating': 'Heating:DistrictHeatingWater',
-        'Cooling': 'Cooling:DistrictCooling',
-    },
+    'ep_meters': [
+        'Electricity:Zone:THERMAL ZONE: LIVING',
+        'NaturalGas:Zone:THERMAL ZONE: LIVING',
+        'Heating:DistrictHeatingWater',
+        'Cooling:DistrictCooling',
+    ],
     # The time variables to observe in the EnergyPlus simulation. The format is a list of
     # the names described in the EnergyPlus epJSON format documentation 
     # (https://energyplus.readthedocs.io/en/latest/schema.html) related with
@@ -198,7 +204,11 @@ env_config = {
     # with the key name. All the variables used in the reward function must to be in
     # the infos_variables list. The name of the variables must to corresponde with the
     # names defined in the earlier lists. 
-    'infos_variables': [],
+    'infos_variables': {
+        'Thermal Zone': [
+            'variable name',
+        ],
+    },
     # There are occasions where some variables are consulted to use in training but are
     # not part of the observation space. For that variables, you can use the following 
     # list. An strategy, for example, to use the Fanger PPD value in the reward function
@@ -208,6 +218,7 @@ env_config = {
     # This method define the properties of the episode, taking the env_config dict and returning it
     # with modifications.
     'episode_config_fn': None,
+    'episode_config': None,
     # Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, 
     # an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len'
     # in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
@@ -222,21 +233,23 @@ env_config = {
     'reward_function': dalamagkidis_2007,
     # Reward function config dictionary
     'reward_function_config': {
-        'cut_reward_len_timesteps': 1,
-        'comfort_reward': True,
-        'energy_reward': True,
-        'co2_reward': True,
-        'w1': 0.80,
-        'w2': 0.01,
-        'w3': 0.20,
-        'energy_ref': 6805274,
-        'co2_ref': 870,
-        'occupancy_name': 'occupancy',
-        'ppd_name': 'ppd',
-        'T_interior_name': 'Ti',
-        'cooling_name': 'cooling',
-        'heating_name': 'heating',
-        'co2_name': 'co2'
+        'Thermal zone': {
+            'cut_reward_len_timesteps': 1,
+            'comfort_reward': True,
+            'energy_reward': True,
+            'co2_reward': True,
+            'w1': 0.80,
+            'w2': 0.01,
+            'w3': 0.20,
+            'energy_ref': 6805274,
+            'co2_ref': 870,
+            'occupancy_name': 'occupancy',
+            'ppd_name': 'ppd',
+            'T_interior_name': 'Ti',
+            'cooling_name': 'cooling',
+            'heating_name': 'heating',
+            'co2_name': 'co2',
+        },
     },
     # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
     'ep_terminal_output': False,
