@@ -9,7 +9,7 @@ import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional
-from eprllib.tools.ep_episode_config import inertial_mass_calculation, u_factor_calculation
+from eprllib.env.multiagent.EnvUtils import runner_value_inspection
 os_platform = sys.platform
 if os_platform == "linux":
     sys.path.insert(0, '/usr/local/EnergyPlus-23-2-0')
@@ -44,18 +44,14 @@ class EnergyPlusRunner:
         Return:
             None.
         """
+        self.env_config = env_config
+        runner_value_inspection(self.env_config)
+        
         # Asignation of variables.
         self.episode = episode
-        self.env_config = env_config
         self.obs_queue = obs_queue
         self.act_queue = act_queue
         self.infos_queue = infos_queue
-        
-        # autozise properties
-        if self.env_config['episode_config']['inercial_mass'] == 'auto':
-            self.env_config['episode_config']['inercial_mass'] = inertial_mass_calculation(self.env_config)
-        if self.env_config['episode_config']['construction_u_factor'] == 'auto':
-            self.env_config['episode_config']['construction_u_factor'] = u_factor_calculation(self.env_config)
         
         # The queue events are generated.
         self.obs_event = threading.Event()
@@ -77,19 +73,34 @@ class EnergyPlusRunner:
         self.agent_action = {}
         
         # Declaration of variables this simulation will interact with.
-        if self.env_config.get('ep_variables', False):
-            self.variables: dict = self.env_config['ep_variables']
+        self.variables = {}
+        if self.env_config.get('ep_environment_variables', False):
+            for variable in self.env_config['ep_environment_variables']:
+                self.variables[variable] = (variable, 'Environment')
         self.var_handles: Dict[str, int] = {}
         
+        self.thermal_zone_variables = {}
+        if self.env_config.get('ep_thermal_zones_variables', False):
+            for thermal_zone in self.env_config['thermal_zone_ids']:
+                for variable in self.env_config['ep_environment_variables']:
+                    self.thermal_zone_variables[thermal_zone][variable] = (variable, thermal_zone)
+        self.thermal_zone_var_handles: Dict[Dict[str, int]] = {}
+        
+        self.object_variables = {}
+        if self.env_config.get('ep_object_variables', False):
+            for variable in self.env_config['ep_object_variables']:
+                self.object_variables[variable[1]][variable[0][0]+'_'+variable[0][1]] = variable[0]
+        self.object_var_handles: Dict[Dict[str, int]] = {}
         # Declaration of meters this simulation will interact with.
+        self.meters = {}
         if self.env_config.get('ep_meters', False):
-            self.meters: dict = self.env_config['ep_meters']
+            for meter in self.env_config['ep_meters']:
+                self.meters[meter] = meter
         self.meter_handles: Dict[str, int] = {}
         
-        # Declaration of actuators this simulation will interact with.
-        if not env_config.get('ep_actuators', False):
-            ValueError("Actuators must be declared in the environment configuration.")
-        self.actuators: dict = self.env_config['ep_actuators']
+        # Declaration of actuators this simulation will interact with. Here the existency is verify and
+        # the agents, thermal zone of application, and actuator type are identify.
+        self.actuators: Dict = self.env_config['agents_actuators']
         self.actuator_handles: Dict[str, int] = {}
         
     def start(self) -> None:
@@ -98,25 +109,8 @@ class EnergyPlusRunner:
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state = api.state_manager.new_state()
-        
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
-        """Execute the actions in the environment and to collect the first observation when the episode begin.
-        The calling point called “BeginZoneTimestepAfterInitHeatBalance” occurs at the beginning of each
-        timestep after “InitHeatBalance” executes and before “ManageSurfaceHeatBalance”. “InitHeatBalance” refers to the step in EnergyPlus modeling when the solar shading and daylighting coefficients
-        are calculated. This calling point is useful for controlling components that affect the building envelope including surface constructions and window shades. Programs called from this point might
-        actuate the building envelope or internal gains based on current weather or on the results from the
-        previous timestep. Demand management routines might use this calling point to operate window
-        shades, change active window constructions, etc. This calling point would be an appropriate place
-        to modify weather data values."""
-        
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
-        """Collect the observations after the action executions and use them to provide new actions.
-        The calling point called “EndOfZoneTimestepAfterZoneReporting” occurs at the end of a zone
-        timestep after output variable reporting is finalized. It is useful for preparing calculations that
-        will go into effect the next timestep. Its capabilities are similar to BeginTimestepBeforePredictor,
-        except that input data for current time, date, and weather data align with different timesteps."""
-        
-        # Control of the console printing process.
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config.get('ep_terminal_output', False))
         
         def _run_energyplus():
@@ -149,231 +143,223 @@ class EnergyPlusRunner:
         hour = api.exchange.hour(state_argument)
         zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
         
-        # Variables, meters and actuatos conditions as observation.
+        # Register the state of the actuators
+        self.agent_actions = {
+            key: api.exchange.get_actuator_value(state_argument, handle)
+            for key, handle
+            in self.actuator_handles.items()
+        }
+        
+        # Loop for each Thermal Zone conditioned.
         obs = {}
-        # add the variables if any.
-        if self.env_config.get('ep_variables', False):
-            obs.update(
-                {
-                    key: api.exchange.get_variable_value(state_argument, handle)
-                    for key, handle
-                    in self.var_handles.items()
-                }
-            )
-        # add the maters if any.
-        if self.env_config.get('ep_meters', False):
-            obs.update(
-                {
-                    key: api.exchange.get_meter_value(state_argument, handle)
-                    for key, handle
-                    in self.meter_handles.items()
-                }
-            )
-        #  add actuators. This is mandatory.
-        obs.update(
-            {
-                key: api.exchange.get_actuator_value(state_argument, handle)
-                for key, handle
-                in self.actuator_handles.items()
-            }
-        )
-        # Upgrade the observation with the building general properties
-        if self.env_config.get('use_building_properties', True):
-            # a loop control the existency of the building_properties
-            for key in self.env_config['episode_config'].keys():
-                if key in [
-                    'building_area', 'aspect_ratio', 'window_area_relation_north', 
-                    'window_area_relation_east', 'window_area_relation_south', 
-                    'window_area_relation_west', 'inercial_mass', 
-                    'construction_u_factor', 'E_cool_ref', 'E_heat_ref',
-                ]:
-                    pass
-                else:
-                    ValueError(f'Building property {key} not found.')
-            building_properties = {
-                'building_area': self.env_config['episode_config']['building_area'],
-                'aspect_ratio': self.env_config['episode_config']['aspect_ratio'],
-                'window_area_relation_north': self.env_config['episode_config']['window_area_relation_north'],
-                'window_area_relation_east': self.env_config['episode_config']['window_area_relation_east'],
-                'window_area_relation_south': self.env_config['episode_config']['window_area_relation_south'],
-                'window_area_relation_west': self.env_config['episode_config']['window_area_relation_west'],
-                'inercial_mass': self.env_config['episode_config']['inercial_mass'],
-                'construction_u_factor': self.env_config['episode_config']['construction_u_factor'],
-                'E_cool_ref': self.env_config['episode_config']['E_cool_ref'],
-                'E_heat_ref': self.env_config['episode_config']['E_heat_ref'],
-            }
-            obs.update(building_properties)
-        
-        # Upgrade of the timestep observation with other variables.
-        if self.env_config.get('time_variables', False):
-            time_variables_methods = {
-                'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
-                'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
-                'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
-                'day_of_month': api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
-                'day_of_week': api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
-                'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
-                'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
-                'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
-                'minutes': api.exchange.minutes(state_argument), # Get the current minutes into the hour (1-60)
-                'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
-                'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
-                'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
-                'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
-                'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
-                'zone_time_step_number': api.exchange.zone_time_step_number(state_argument) # The current zone time step index, from 1 to the number of zone time steps per hour
-            }
-            time_variables_list = self.env_config['time_variables']
-            time_variables_dict = {}
-            for variable in time_variables_list:
-                time_variables_dict[variable] = time_variables_methods[variable]
-            
-            obs.update(time_variables_dict)
-            
-        if self.env_config.get('weather_variables', False):
-            weather_variables_methods = {
-                'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
-                'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
-                # Gets the specified weather data at the specified hour and time step index within that hour
-                'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
-                'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
-                'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number)
-            }
-            weather_variables_list = self.env_config['weather_variables']
-            weather_variables_dict = {}
-            for variable in weather_variables_list:
-                weather_variables_dict[variable] = weather_variables_methods[variable]
-            
-            obs.update(weather_variables_dict)
-        
-        # Weather prediction of 24 hours
-        if self.env_config.get('use_one_day_weather_prediction', True):
-            weather_pred = {}
-            # The list sigma_max contains the standard deviation of the predictions in the following order:
-            #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
-            #   - Relative Humidity in % with squer desviation of 20%, 
-            #   - Wind Direction in degree with squer desviation of 40°, 
-            #   - Wind Speed in m/s with squer desviation of 3.41 m/s, 
-            #   - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
-            #   - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
-            sigma_max = np.array([1.43178211, 4.47213595, 6.32455532, 1.84661853, 31.62, 0.707107])
-            for h in range(24):
-                # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
-                sigma = sigma_max * (h/23)
-                prediction_hour = hour+1 + h
-                if prediction_hour < 24:
-                    weather_pred.update({
-                        f'today_weather_liquid_precipitation_at_time_{prediction_hour}': np.random.normal(api.exchange.today_weather_liquid_precipitation_at_time(state_argument, prediction_hour, 0), sigma[5]),
-                        f'today_weather_outdoor_barometric_pressure_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour, 0), sigma[4]),
-                        f'today_weather_outdoor_dry_bulb_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour, 0), sigma[0]),
-                        f'today_weather_outdoor_relative_humidity_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour, 0), sigma[1]),
-                        f'today_weather_wind_direction_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_direction_at_time(state_argument, prediction_hour, 0), sigma[2]),
-                        f'today_weather_wind_speed_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_speed_at_time(state_argument, prediction_hour, 0), sigma[3]),
-                    })
-                else:
-                    prediction_hour_t = prediction_hour - 24
-                    weather_pred.update({
-                        f'tomorrow_weather_liquid_precipitation_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, prediction_hour_t, 0), sigma[5]),
-                        f'tomorrow_weather_outdoor_barometric_pressure_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour_t, 0), sigma[4]),
-                        f'tomorrow_weather_outdoor_dry_bulb_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour_t, 0), sigma[0]),
-                        f'tomorrow_weather_outdoor_relative_humidity_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour_t, 0), sigma[1]),
-                        f'tomorrow_weather_wind_direction_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, prediction_hour_t, 0), sigma[2]),
-                        f'tomorrow_weather_wind_speed_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, prediction_hour_t, 0), sigma[3]),
-                    })
-            obs.update(weather_pred)
-        
-        # Set the variables in the infos dict before to delete from the obs dict.
-        infos_dict = {}
-        if self.env_config.get('infos_variables', False):
-            for variable in self.env_config['infos_variables']:
-                infos_dict[variable] = obs[variable]
-        
         infos = {}
+        for ThermalZone in self.env_config['thermal_zone_ids']:
+            # Variables, meters and actuatos conditions as observation.
+            # add the variables if any.
+            obs.update({ThermalZone:{}})
+            infos.update({ThermalZone:{}})
+            if self.env_config.get('ep_environment_variables', False):
+                # Transform the list of names in Tuples
+                obs[ThermalZone].update(
+                    {
+                        key: api.exchange.get_variable_value(state_argument, handle)
+                        for key, handle
+                        in self.var_handles.items()
+                    }
+                )
+            if self.env_config.get('ep_thermal_zones_variables', False):
+                # Transform the list of names in Tuples
+                obs[ThermalZone].update(
+                    {
+                        key: api.exchange.get_variable_value(state_argument, handle)
+                        for key, handle
+                        in self.thermal_zone_var_handles[ThermalZone].items()
+                    }
+                )
+            if self.env_config.get('ep_object_variables', False):
+                # Transform the list of names in Tuples
+                obs[ThermalZone].update(
+                    {
+                        key: api.exchange.get_variable_value(state_argument, handle)
+                        for key, handle
+                        in self.object_var_handles[ThermalZone].items()
+                    }
+                )
+            # add the meters if any.
+            if self.env_config.get('ep_meters', False):
+                obs[ThermalZone].update(
+                    {
+                        key: api.exchange.get_meter_value(state_argument, handle)
+                        for key, handle
+                        in self.meter_handles.items()
+                    }
+                )
+            # Upgrade the observation with the building general properties
+            if self.env_config.get('use_building_properties', True):
+                building_properties = self.env_config['building_properties'][ThermalZone]
+                obs[ThermalZone].update(building_properties)
+        
+            # Upgrade of the timestep observation with other variables.
+            if self.env_config.get('time_variables', False):
+                time_variables_methods = {
+                    'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
+                    'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
+                    'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
+                    'day_of_month': api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
+                    'day_of_week': api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
+                    'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
+                    'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
+                    'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
+                    'minutes': api.exchange.minutes(state_argument), # Get the current minutes into the hour (1-60)
+                    'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
+                    'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
+                    'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
+                    'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
+                    'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
+                    'zone_time_step_number': api.exchange.zone_time_step_number(state_argument) # The current zone time step index, from 1 to the number of zone time steps per hour
+                }
+                time_variables_list = self.env_config['time_variables']
+                time_variables_dict = {}
+                for variable in time_variables_list:
+                    time_variables_dict[variable] = time_variables_methods[variable]
+                
+                obs[ThermalZone].update(time_variables_dict)
+                
+            if self.env_config.get('weather_variables', False):
+                weather_variables_methods = {
+                    'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
+                    'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
+                    # Gets the specified weather data at the specified hour and time step index within that hour
+                    'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
+                    'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
+                    'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number)
+                }
+                weather_variables_list = self.env_config['weather_variables']
+                weather_variables_dict = {}
+                for variable in weather_variables_list:
+                    weather_variables_dict[variable] = weather_variables_methods[variable]
+                
+                obs[ThermalZone].update(weather_variables_dict)
+            
+            # Weather prediction of 24 hours
+            if self.env_config.get('use_one_day_weather_prediction', True):
+                weather_pred = {}
+                # The list sigma_max contains the standard deviation of the predictions in the following order:
+                #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
+                #   - Relative Humidity in % with squer desviation of 20%, 
+                #   - Wind Direction in degree with squer desviation of 40°, 
+                #   - Wind Speed in m/s with squer desviation of 3.41 m/s, 
+                #   - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
+                #   - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
+                sigma_max = np.array([1.43178211, 4.47213595, 6.32455532, 1.84661853, 31.62, 0.707107])
+                for h in range(24):
+                    # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
+                    sigma = sigma_max * (h/23)
+                    prediction_hour = hour+1 + h
+                    if prediction_hour < 24:
+                        weather_pred.update({
+                            f'today_weather_liquid_precipitation_at_time_{prediction_hour}': np.random.normal(api.exchange.today_weather_liquid_precipitation_at_time(state_argument, prediction_hour, 0), sigma[5]),
+                            f'today_weather_outdoor_barometric_pressure_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour, 0), sigma[4]),
+                            f'today_weather_outdoor_dry_bulb_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour, 0), sigma[0]),
+                            f'today_weather_outdoor_relative_humidity_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour, 0), sigma[1]),
+                            f'today_weather_wind_direction_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_direction_at_time(state_argument, prediction_hour, 0), sigma[2]),
+                            f'today_weather_wind_speed_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_speed_at_time(state_argument, prediction_hour, 0), sigma[3]),
+                        })
+                    else:
+                        prediction_hour_t = prediction_hour - 24
+                        weather_pred.update({
+                            f'tomorrow_weather_liquid_precipitation_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, prediction_hour_t, 0), sigma[5]),
+                            f'tomorrow_weather_outdoor_barometric_pressure_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour_t, 0), sigma[4]),
+                            f'tomorrow_weather_outdoor_dry_bulb_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour_t, 0), sigma[0]),
+                            f'tomorrow_weather_outdoor_relative_humidity_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour_t, 0), sigma[1]),
+                            f'tomorrow_weather_wind_direction_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, prediction_hour_t, 0), sigma[2]),
+                            f'tomorrow_weather_wind_speed_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, prediction_hour_t, 0), sigma[3]),
+                        })
+                obs[ThermalZone].update(weather_pred)
+                
+                # Set the variables in the infos dict before to delete from the obs dict.
+                if self.env_config.get('infos_variables', False):
+                    for variable in self.env_config['infos_variables'][ThermalZone]:
+                        infos[ThermalZone][variable] = obs[ThermalZone][variable]
+                if self.env_config.get('no_observable_variables', False):
+                    for variable in self.env_config['no_observable_variables']:
+                        del obs[ThermalZone][variable]
+        # ==FIN DEL LOOP DE OBSERVACIONES==
+        # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
+        
+        # Se asignan observaciones y infos a cada agente.
+        agents_obs = {}
+        agents_infos = {}
+        agent_indicator = 1
         for agent in self.env_config['agent_ids']:
-            infos[agent] = infos_dict
-        
-        self.infos_queue.put(infos)
-        self.infos_event.set()
-        
-        if self.env_config.get('no_observable_variables', False):
-            for variable in self.env_config['no_observable_variables']:
-                del obs[variable]
-        
-        # save the last obs and infos dicts.
-        self.obs = obs
-        self.infos = infos
-        
-        # before transform the observation to an array, save and delete the actuators from the obs dict
-        if self.env_config.get('ep_actuators', False):
-            for agent in self.env_config['ep_actuators']:
-                self.agent_action[agent] = obs[agent]
-                del obs[agent]
-        
-        # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-        if self.first_observation:
-            self.obs_keys = list(obs.keys())
-        next_obs = np.array(list(obs.values()), dtype='float32')
-        
-        next_obs_dict = {}
-        # if apply, add the actuator state.
-        if self.env_config.get('use_actuator_state', True):
-            for agent in self.env_config['agent_ids']:
-                next_obs_dict[agent] = np.concatenate(
+            # Agent properties
+            agent_thermal_zone = self.env_config['agents_thermal_zones'][agent]
+            agent_type = self.env_config['agents_types'][agent]
+            # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+            agents_obs[agent] = np.array(list(obs[agent_thermal_zone].values()), dtype='float32')
+            # if apply, add the actuator state.
+            if self.env_config.get('use_actuator_state', True):
+                agents_obs[agent] = np.concatenate(
                     (
-                        next_obs,
+                        agents_obs[agent],
                         self.agent_action[agent],
                     ),
                     dtype='float32'
                 )
-        # if apply, add the agent indicator.
-        if self.env_config.get('use_agent_indicator', True):
-            agent_indicator = 1
-            for agent in self.env_config['agent_ids']:
-                next_obs_dict[agent] = np.concatenate(
+            # if apply, add the agent indicator.
+            if self.env_config.get('use_agent_indicator', True):
+                agents_obs[agent] = np.concatenate(
                     (
-                        next_obs,
+                        agents_obs[agent],
                         [agent_indicator],
                     ),
                     dtype='float32'
                 )
                 agent_indicator += 1
-        # if apply, add the agent type.
-        if self.env_config.get('use_agent_type', True):
-            for agent in self.env_config['agent_ids']:
-                next_obs_dict[agent] = np.concatenate(
+            # if apply, add the agent type.
+            if self.env_config.get('use_agent_type', True):
+                agents_obs[agent] = np.concatenate(
                     (
-                        next_obs,
-                        [self.env_config['ep_actuators_type'][agent]],
+                        agents_obs[agent],
+                        [agent_type],
                     ),
                     dtype='float32'
                 )
-        # Set the observation to communicate with the MDP.
-        self.obs_queue.put(next_obs_dict)
+            if self.first_observation:
+                self.obs_keys = list(agents_obs[agent].keys())
+                self.first_observation = False
+            # Agent infos asignation
+            agents_infos[agent] = infos[agent_thermal_zone]
+        
+        # Set the agents observation and infos to communicate with the EPEnv.
+        self.infos_queue.put(agents_infos)
+        self.infos_event.set()
+        self.obs_queue.put(agents_obs)
         self.obs_event.set()
 
     def _collect_first_obs(self, state_argument):
@@ -445,11 +431,27 @@ class EnergyPlusRunner:
             if not api.exchange.api_data_fully_ready(state_argument):
                 return False
             
-            if self.env_config.get('ep_variables', False):
+            if self.env_config.get('ep_environment_variables', False):
                 self.var_handles = {
                     key: api.exchange.get_variable_handle(state_argument, *var)
                     for key, var in self.variables.items()
                 }
+            if self.env_config.get('ep_thermal_zones_variables', False):
+                for thermal_zone in self.env_config['thermal_zone_ids']:    
+                    self.thermal_zone_var_handles = {
+                        thermal_zone: {
+                            key: api.exchange.get_variable_handle(state_argument, *var)
+                            for key, var in self.thermal_zone_variables[thermal_zone].items()
+                        },
+                    }
+            if self.env_config.get('ep_object_variables', False):
+                for thermal_zone in self.env_config['thermal_zone_ids']:    
+                    self.object_var_handles = {
+                        thermal_zone: {
+                            key: api.exchange.get_variable_handle(state_argument, *var)
+                            for key, var in self.object_variables[thermal_zone].items()
+                        },
+                    }
             if self.env_config.get('ep_meters', False):
                 self.meter_handles = {
                     key: api.exchange.get_meter_handle(state_argument, meter)
@@ -469,6 +471,7 @@ class EnergyPlusRunner:
                     print(
                         f"got -1 handle, check your var/meter/actuator names:\n"
                         f"> variables: {self.var_handles}\n"
+                        f"> thermal zone variables: {self.thermal_zone_var_handles}\n"
                         f"> meters: {self.meter_handles}\n"
                         f"> actuators: {self.actuator_handles}\n"
                         f"> available EnergyPlus API data: {available_data}"
