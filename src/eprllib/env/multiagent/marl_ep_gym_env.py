@@ -76,20 +76,15 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.env_config = env_config
         # inspection of info errors
         env_value_inspection(self.env_config)
-        # asignation of the agents ids for the environment.
-        (
-            self.env_config['agent_ids'],
-            self.env_config['thermal_zone_ids'],
-            self.env_config['agents_actuators'], 
-            self.env_config['agents_thermal_zones'],
-            self.env_config['agents_types']
-        ) = actuators_to_agents(self.env_config['ep_actuators'])
+        
         # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
-        self._agent_ids = set(env_config['agent_ids'])
+        self._agent_ids = set([key for key in env_config['agents_config'].keys()])
+        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
+        
         # asignation of environment action space.
         self.action_space = self.env_config['action_space']
         # asignation of the environment observation space.
-        self.observation_space = obs_space(self.env_config)
+        self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
         print(f"The action space is defined as {self.action_space}.")
         print(f"The observation space is defined as {self.observation_space}.")
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
@@ -110,11 +105,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.truncateds = False
         self.env_config['num_time_steps_in_hour'] = 0
         # dict to save the last observation and infos in the environment.
-        self.last_obs = {}
-        self.last_infos = {}
-        for agent in self.env_config['agent_ids']:
-            self.last_obs[agent] = []
-            self.last_infos[agent] = []
+        self.last_obs = {agent: [] for agent in self._agent_ids}
+        self.last_infos = {agent: [] for agent in self._agent_ids}
 
     def reset(
         self, *,
@@ -151,7 +143,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 env_config=self.env_config,
                 obs_queue=self.obs_queue,
                 act_queue=self.act_queue,
-                infos_queue=self.infos_queue
+                infos_queue=self.infos_queue,
+                _agent_ids=self._agent_ids,
+                _thermal_zone_ids=self._thermal_zone_ids,
             )
             # Divide the thread in two in this point.
             self.energyplus_runner.start()
@@ -195,7 +189,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if self.energyplus_runner.simulation_complete:
             # check for simulation errors.
             if self.energyplus_runner.failed():
-                raise Exception("Faulty episode")
+                raise Exception(self.reset())
+                
             
             # if the simulation is complete, the episode is ended.
             self.terminateds = True
@@ -229,7 +224,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Raise an exception if the episode is faulty.
         if self.energyplus_runner.failed():
             self.terminateds = True
-            raise Exception("Faulty episode")
+            raise Exception(self.reset())
         
         # Calculate the reward in the timestep
         if self.env_config.get('reward_function', False):

@@ -8,14 +8,40 @@ def thermostat_dual(agent_id, action):
     into a temperature of cooling or heating setpoints, depending the agent id 
     involve.
     """
-    if agent_id == 'cooling_setpoint':
+    heating_agents = [
+        'PB BUFETE Thermal Zone Heating Setpoint',
+        'PB SALA DE REUNION N Thermal Zone Heating Setpoint',
+        'PB SALA DE REUNION NW Thermal Zone Heating Setpoint',
+        '1P CALL CENTER Thermal Zone Heating Setpoint',
+        '1P PLANTA LIBRE Thermal Zone Heating Setpoint',
+        '1P BOX B W Thermal Zone Heating Setpoint',
+        '1P BOX A NW Thermal Zone Heating Setpoint',
+        '2P BOX A NW Thermal Zone Heating Setpoint',
+        '2P PLANTA LIBRE Thermal Zone Heating Setpoint',
+        '3P LIVING Thermal Zone Heating Setpoint',
+        '3P ESPARCIMIENTO Thermal Zone Heating Setpoint',
+    ]
+    
+    cooling_agents = [
+        'PB BUFETE Thermal Zone Cooling Setpoint',
+        'PB SALA DE REUNION N Thermal Zone Cooling Setpoint',
+        'PB SALA DE REUNION NW Thermal Zone Cooling Setpoint',
+        '1P CALL CENTER Thermal Zone Cooling Setpoint',
+        '1P PLANTA LIBRE Thermal Zone Cooling Setpoint',
+        '1P BOX B W Thermal Zone Cooling Setpoint',
+        '1P BOX A NW Thermal Zone Cooling Setpoint',
+        '2P BOX A NW Thermal Zone Cooling Setpoint',
+        '2P PLANTA LIBRE Thermal Zone Cooling Setpoint',
+        '3P LIVING Thermal Zone Cooling Setpoint',
+        '3P ESPARCIMIENTO Thermal Zone Cooling Setpoint',
+    ]
+    
+    if agent_id in cooling_agents:
         transform_action = 23 + action
-    elif agent_id == 'heating_setpoint':
+    elif agent_id in heating_agents:
         transform_action = 21 - action
-    elif agent_id == 'opening_window_1' or agent_id == 'opening_window_2':
-        transform_action = action/3
     else:
-        return action
+        ValueError('Agent id not valid.')
     
     return transform_action
 

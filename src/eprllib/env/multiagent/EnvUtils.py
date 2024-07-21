@@ -5,6 +5,7 @@ from typing import Tuple, Dict, Any, List, Set
 from gymnasium.spaces import Box
 
 def env_value_inspection(env_config:Dict):
+    
     """Examine that all the neccesary arguments to use in the MDP env definition exist.
 
     Args:
@@ -18,24 +19,27 @@ def env_value_inspection(env_config:Dict):
                 "env_config['action_space'] with the corresponded action space.")
 
 def runner_value_inspection(env_config:Dict):
-    if not env_config.get('ep_actuators', False):
-        ValueError("No actuators defined in the environment configuration. Set the dictionary in"\
-            "env_config['ep_actuators'] with the corresponded actuators.")
+    if isinstance(env_config, str):
+        ValueError("env_config is a string.")
+    else:
+        if not env_config.get('ep_actuators', False):
+            ValueError("No actuators defined in the environment configuration. Set the dictionary in"\
+                "env_config['ep_actuators'] with the corresponded actuators.")
     
-    if env_config.get('use_building_properties', True):
-            # a loop control the existency of the building_properties
-            for key in env_config['episode_config'].keys():
-                if key in [
-                    'building_area', 'aspect_ratio', 'window_area_relation_north', 
-                    'window_area_relation_east', 'window_area_relation_south', 
-                    'window_area_relation_west', 'inercial_mass', 
-                    'construction_u_factor', 'E_cool_ref', 'E_heat_ref',
-                ]:
-                    pass
-                else:
-                    ValueError(f'Building property {key} not found.')
+        if env_config.get('use_building_properties', True):
+                # a loop control the existency of the building_properties
+                for key in env_config['episode_config'].keys():
+                    if key in [
+                        'building_area', 'aspect_ratio', 'window_area_relation_north', 
+                        'window_area_relation_east', 'window_area_relation_south', 
+                        'window_area_relation_west', 'inercial_mass', 
+                        'construction_u_factor', 'E_cool_ref', 'E_heat_ref',
+                    ]:
+                        pass
+                    else:
+                        ValueError(f'Building property {key} not found.')
     
-def actuators_to_agents(agent_config:Dict) -> Tuple[List,Set,Dict,Dict]:
+def actuators_to_agents(agent_config:Dict[str, List]) -> Tuple[List,List,Dict,Dict]:
     """Take the ep_actuator dict and transform it to the agent, thermal zone, and actuator type dict.
 
     Args:
@@ -44,40 +48,52 @@ def actuators_to_agents(agent_config:Dict) -> Tuple[List,Set,Dict,Dict]:
     Returns:
         Tuple[Dict,Dict,Dict,Dict]: agent, thermal zone, and actuator type.
     """
+    # get the keys and values from the ep_actuator definitions
     keys = agent_ids = list(agent_config.keys())
     values = list(agent_config.values())
-
-    assert len(keys) == len(values)
+    
+    # Verify that all the agents have the same quantity of attributes
     for i in range(len(values)):
         assert len(values[0])==len(values[i])
-        
-    act = []
+    
+    # compose the actuators for EnergyPlus handle
+    actuator = []
     for i in range(len(keys)):
-        act.append(values[i][0])
-    actuators = {}
+        actuator_tuple = (values[i][0], values[i][1], values[i][2])
+        actuator.append(actuator_tuple)
+    # asign the actuator handle config to the agent
+    agents_actuators = {}
     for i in range(len(keys)):
-        actuators[keys[i]] = act[i]
+        agents_actuators[keys[i]] = actuator[i]
 
-    lth = []
+    # identify the thermal zones where there are agents
+    agent_thermal_zone_names = []
     for i in range(len(keys)):
-        lth.append(values[i][1])
-    thermal_zones = {}
+        agent_thermal_zone_names.append(values[i][3])
+    # asign the thermal zone to each agent
+    agents_thermal_zones = {}
     for i in range(len(keys)):
-        thermal_zones[keys[i]] = lth[i]
-    thermal_zone_ids = set(lth)
+        agents_thermal_zones[keys[i]] = agent_thermal_zone_names[i]
+    # a list with the thermal zones with agents (without repeat)
+    thermal_zone_ids = []
+    for zone in agent_thermal_zone_names:
+        if not zone in  thermal_zone_ids:
+            thermal_zone_ids.append(zone)
+    
+    # agent type
     typ = []
     for i in range(len(keys)):
-        typ.append(values[i][2])
-    actuator_type = {}
+        typ.append(values[i][4])
+    agents_types = {}
     for i in range(len(keys)):
-        actuator_type[keys[i]] = typ[i]
+        agents_types[keys[i]] = typ[i]
     
     agents_str = ", ".join(agent_ids)
     print(f"The environment is defined with {len(agent_ids)} agents: {agents_str}")
     
-    return agent_ids, thermal_zone_ids, actuators, thermal_zones, actuator_type
+    return agent_ids, thermal_zone_ids, agents_actuators, agents_thermal_zones, agents_types
 
-def obs_space(env_config:Dict):
+def obs_space(env_config:Dict, _thermal_none_ids:Set):
     """This method construct the observation space of the environment.
 
     Args:
@@ -86,33 +102,60 @@ def obs_space(env_config:Dict):
     Returns:
         space.Box: The observation space of the environment.
     """
+    
     obs_space_len = 0
+    
     # actuator state.
     if env_config.get('use_actuator_state', True):
         obs_space_len += 1
+        
     # agent_indicator.
     if env_config.get('use_agent_indicator', True):
         obs_space_len += 1
+        
     # agent type.
     if env_config.get('use_agent_type', True):
         obs_space_len += 1
+        
     # building properties.
     if env_config.get('use_building_properties', True):
-        obs_space_len += len(list(env_config['building_properties'].keys())[0].values())
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len += len([key for key in env_config['building_properties'][thermal_zone_name].keys()])
+        
     # weather prediction.
     if env_config.get('use_one_day_weather_prediction', True):
         obs_space_len += 24*6
+        
     # variables and meters.
-    if env_config.get('ep_variables', False):
-        obs_space_len += len(env_config['ep_variables'])
+    if env_config.get('ep_environment_variables', False):
+        obs_space_len += len(env_config['ep_environment_variables'])
+    
+    if env_config.get('ep_thermal_zones_variables', False):
+        obs_space_len += len(env_config['ep_thermal_zones_variables'])
+    
+    if env_config.get('ep_object_variables', False):
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len += len([key for key in env_config['ep_object_variables'][thermal_zone_name].keys()])
+        
     if env_config.get('ep_meters', False):
         obs_space_len += len(env_config['ep_meters'])
+        
     if env_config.get('time_variables', False):
         obs_space_len += len(env_config['time_variables'])
+        
     if env_config.get('weather_variables', False):
         obs_space_len += len(env_config['weather_variables'])
+        
     # discount the not observable variables.
     if env_config.get('no_observable_variables', False):
-        obs_space_len -= len(env_config['no_observable_variables'])
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len -= len(env_config['no_observable_variables'][thermal_zone_name])
+        
     # construct the observation space.
     return Box(float("-inf"), float("inf"), (obs_space_len,))

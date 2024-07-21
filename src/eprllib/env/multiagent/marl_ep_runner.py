@@ -28,7 +28,9 @@ class EnergyPlusRunner:
         env_config: Dict[str, Any],
         obs_queue: Queue,
         act_queue: Queue,
-        infos_queue: Queue
+        infos_queue: Queue,
+        _agent_ids: set,
+        _thermal_zone_ids: set,
         ) -> None:
         """The object has an intensive interaction with EnergyPlus Environment script, exchange information
         between two threads. For a good coordination queue events are stablished and different canals of
@@ -57,7 +59,8 @@ class EnergyPlusRunner:
         self.obs_event = threading.Event()
         self.act_event = threading.Event()
         self.infos_event = threading.Event()
-        
+        self._agent_ids = _agent_ids
+        self._thermal_zone_ids = _thermal_zone_ids
         # Variables to be used in this thread.
         self.energyplus_exec_thread: Optional[threading.Thread] = None
         self.energyplus_state: Any = None
@@ -70,37 +73,32 @@ class EnergyPlusRunner:
         self.infos = {}
         # create a variable to save the obs dict key to use in posprocess
         self.obs_keys = None
-        self.agent_action = {}
+        self.agent_actions = {}
         
         # Declaration of variables this simulation will interact with.
-        self.variables = {}
+        
         if self.env_config.get('ep_environment_variables', False):
-            for variable in self.env_config['ep_environment_variables']:
-                self.variables[variable] = (variable, 'Environment')
+            self.variables = {variable: (variable, 'Environment') for variable in self.env_config['ep_environment_variables']}
         self.var_handles: Dict[str, int] = {}
         
-        self.thermal_zone_variables = {}
         if self.env_config.get('ep_thermal_zones_variables', False):
-            for thermal_zone in self.env_config['thermal_zone_ids']:
-                for variable in self.env_config['ep_environment_variables']:
-                    self.thermal_zone_variables[thermal_zone][variable] = (variable, thermal_zone)
-        self.thermal_zone_var_handles: Dict[Dict[str, int]] = {}
+            self.thermal_zone_variables = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
+            for thermal_zone in self._thermal_zone_ids:
+                self.thermal_zone_variables[thermal_zone].update({variable: (variable, thermal_zone) for variable in self.env_config['ep_thermal_zones_variables']})
+        self.thermal_zone_var_handles = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         
-        self.object_variables = {}
         if self.env_config.get('ep_object_variables', False):
-            for variable in self.env_config['ep_object_variables']:
-                self.object_variables[variable[1]][variable[0][0]+'_'+variable[0][1]] = variable[0]
-        self.object_var_handles: Dict[Dict[str, int]] = {}
+            self.object_variables = self.env_config['ep_object_variables']
+        self.object_var_handles = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
+        
         # Declaration of meters this simulation will interact with.
-        self.meters = {}
         if self.env_config.get('ep_meters', False):
-            for meter in self.env_config['ep_meters']:
-                self.meters[meter] = meter
+            self.meters = {key: key for key in self.env_config['ep_meters']}
         self.meter_handles: Dict[str, int] = {}
         
         # Declaration of actuators this simulation will interact with. Here the existency is verify and
         # the agents, thermal zone of application, and actuator type are identify.
-        self.actuators: Dict = self.env_config['agents_actuators']
+        self.actuators = {agent: self.env_config['agents_config'][agent]['ep_actuator_config'] for agent in self._agent_ids}
         self.actuator_handles: Dict[str, int] = {}
         
     def start(self) -> None:
@@ -150,17 +148,16 @@ class EnergyPlusRunner:
             in self.actuator_handles.items()
         }
         
-        # Loop for each Thermal Zone conditioned.
-        obs = {}
-        infos = {}
-        for ThermalZone in self.env_config['thermal_zone_ids']:
-            # Variables, meters and actuatos conditions as observation.
-            # add the variables if any.
-            obs.update({ThermalZone:{}})
-            infos.update({ThermalZone:{}})
+        # thermal zone obs and infos dicts
+        obs_tz = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
+        infos_tz = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
+        
+        # Loop for each Thermal Zone conditioned.   
+        for thermal_zone in self._thermal_zone_ids:
+            
             if self.env_config.get('ep_environment_variables', False):
                 # Transform the list of names in Tuples
-                obs[ThermalZone].update(
+                obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_variable_value(state_argument, handle)
                         for key, handle
@@ -169,25 +166,27 @@ class EnergyPlusRunner:
                 )
             if self.env_config.get('ep_thermal_zones_variables', False):
                 # Transform the list of names in Tuples
-                obs[ThermalZone].update(
+                thermal_zone_thermal_zone_var_handles:Dict = self.thermal_zone_var_handles[thermal_zone]
+                obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_variable_value(state_argument, handle)
                         for key, handle
-                        in self.thermal_zone_var_handles[ThermalZone].items()
+                        in thermal_zone_thermal_zone_var_handles.items()
                     }
                 )
             if self.env_config.get('ep_object_variables', False):
                 # Transform the list of names in Tuples
-                obs[ThermalZone].update(
+                thermal_zone_object_var_handles:Dict = self.object_var_handles[thermal_zone]
+                obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_variable_value(state_argument, handle)
                         for key, handle
-                        in self.object_var_handles[ThermalZone].items()
+                        in thermal_zone_object_var_handles.items()
                     }
                 )
             # add the meters if any.
             if self.env_config.get('ep_meters', False):
-                obs[ThermalZone].update(
+                obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_meter_value(state_argument, handle)
                         for key, handle
@@ -196,8 +195,8 @@ class EnergyPlusRunner:
                 )
             # Upgrade the observation with the building general properties
             if self.env_config.get('use_building_properties', True):
-                building_properties = self.env_config['building_properties'][ThermalZone]
-                obs[ThermalZone].update(building_properties)
+                building_properties:Dict = self.env_config['building_properties'][thermal_zone]
+                obs_tz[thermal_zone].update(building_properties)
         
             # Upgrade of the timestep observation with other variables.
             if self.env_config.get('time_variables', False):
@@ -218,12 +217,8 @@ class EnergyPlusRunner:
                     'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
                     'zone_time_step_number': api.exchange.zone_time_step_number(state_argument) # The current zone time step index, from 1 to the number of zone time steps per hour
                 }
-                time_variables_list = self.env_config['time_variables']
-                time_variables_dict = {}
-                for variable in time_variables_list:
-                    time_variables_dict[variable] = time_variables_methods[variable]
-                
-                obs[ThermalZone].update(time_variables_dict)
+                time_variables_dict = {variable: time_variables_methods[variable] for variable in self.env_config['time_variables']}
+                obs_tz[thermal_zone].update(time_variables_dict)
                 
             if self.env_config.get('weather_variables', False):
                 weather_variables_methods = {
@@ -259,12 +254,8 @@ class EnergyPlusRunner:
                     'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
                     'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number)
                 }
-                weather_variables_list = self.env_config['weather_variables']
-                weather_variables_dict = {}
-                for variable in weather_variables_list:
-                    weather_variables_dict[variable] = weather_variables_methods[variable]
-                
-                obs[ThermalZone].update(weather_variables_dict)
+                weather_variables_dict = {variable: weather_variables_methods[variable] for variable in self.env_config['weather_variables']}
+                obs_tz[thermal_zone].update(weather_variables_dict)
             
             # Weather prediction of 24 hours
             if self.env_config.get('use_one_day_weather_prediction', True):
@@ -300,34 +291,40 @@ class EnergyPlusRunner:
                             f'tomorrow_weather_wind_direction_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, prediction_hour_t, 0), sigma[2]),
                             f'tomorrow_weather_wind_speed_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, prediction_hour_t, 0), sigma[3]),
                         })
-                obs[ThermalZone].update(weather_pred)
+                obs_tz[thermal_zone].update(weather_pred)
                 
                 # Set the variables in the infos dict before to delete from the obs dict.
                 if self.env_config.get('infos_variables', False):
-                    for variable in self.env_config['infos_variables'][ThermalZone]:
-                        infos[ThermalZone][variable] = obs[ThermalZone][variable]
+                    infos_tz[thermal_zone] = {variable: obs_tz[thermal_zone][variable] for variable in self.env_config['infos_variables'][thermal_zone]}
+                # after infos assignation, delete not observable variables
                 if self.env_config.get('no_observable_variables', False):
-                    for variable in self.env_config['no_observable_variables']:
-                        del obs[ThermalZone][variable]
+                    for variable in self.env_config['no_observable_variables'][thermal_zone]:
+                        del obs_tz[thermal_zone][variable]
         # ==FIN DEL LOOP DE OBSERVACIONES==
         # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
         
         # Se asignan observaciones y infos a cada agente.
-        agents_obs = {}
-        agents_infos = {}
-        agent_indicator = 1
-        for agent in self.env_config['agent_ids']:
+        agents_obs = {agent: {} for agent in self._agent_ids}
+        agents_infos = {agent: {} for agent in self._agent_ids}
+        
+        for agent in self._agent_ids:
             # Agent properties
-            agent_thermal_zone = self.env_config['agents_thermal_zones'][agent]
-            agent_type = self.env_config['agents_types'][agent]
+            agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+            agent_type = self.env_config['agents_config'][agent]['actuator_type']
+            agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+            
+            if self.first_observation:
+                self.obs_keys = [key for key in agents_obs[agent].keys()]
+                self.first_observation = False
+                
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            agents_obs[agent] = np.array(list(obs[agent_thermal_zone].values()), dtype='float32')
+            agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
             # if apply, add the actuator state.
             if self.env_config.get('use_actuator_state', True):
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],
-                        self.agent_action[agent],
+                        [self.agent_actions[agent]],
                     ),
                     dtype='float32'
                 )
@@ -340,7 +337,6 @@ class EnergyPlusRunner:
                     ),
                     dtype='float32'
                 )
-                agent_indicator += 1
             # if apply, add the agent type.
             if self.env_config.get('use_agent_type', True):
                 agents_obs[agent] = np.concatenate(
@@ -350,11 +346,9 @@ class EnergyPlusRunner:
                     ),
                     dtype='float32'
                 )
-            if self.first_observation:
-                self.obs_keys = list(agents_obs[agent].keys())
-                self.first_observation = False
+            
             # Agent infos asignation
-            agents_infos[agent] = infos[agent_thermal_zone]
+            agents_infos[agent] = infos_tz[agent_thermal_zone]
         
         # Set the agents observation and infos to communicate with the EPEnv.
         self.infos_queue.put(agents_infos)
@@ -406,12 +400,12 @@ class EnergyPlusRunner:
             action_transformer = self.env_config['action_transformer']
             dict_action_transformed = {}
             # Transform all the actions
-            for agent in self.env_config['agent_ids']:
+            for agent in self._agent_ids:
                 dict_action_transformed[agent] = action_transformer(agent, dict_action[agent])
             dict_action = dict_action_transformed
         
         # Perform the actions in EnergyPlus simulation.       
-        for agent in self.env_config['agent_ids']:
+        for agent in self._agent_ids:
             api.exchange.set_actuator_value(
                 state=state_argument,
                 actuator_handle=self.actuator_handles[agent],
@@ -437,21 +431,17 @@ class EnergyPlusRunner:
                     for key, var in self.variables.items()
                 }
             if self.env_config.get('ep_thermal_zones_variables', False):
-                for thermal_zone in self.env_config['thermal_zone_ids']:    
-                    self.thermal_zone_var_handles = {
-                        thermal_zone: {
-                            key: api.exchange.get_variable_handle(state_argument, *var)
-                            for key, var in self.thermal_zone_variables[thermal_zone].items()
-                        },
-                    }
+                for thermal_zone in self._thermal_zone_ids:
+                    self.thermal_zone_var_handles[thermal_zone].update({
+                        key: api.exchange.get_variable_handle(state_argument, *var)
+                        for key, var in self.thermal_zone_variables[thermal_zone].items()
+                    }),
             if self.env_config.get('ep_object_variables', False):
-                for thermal_zone in self.env_config['thermal_zone_ids']:    
-                    self.object_var_handles = {
-                        thermal_zone: {
-                            key: api.exchange.get_variable_handle(state_argument, *var)
-                            for key, var in self.object_variables[thermal_zone].items()
-                        },
-                    }
+                for thermal_zone in self._thermal_zone_ids:
+                    self.object_var_handles[thermal_zone].update({
+                        key: api.exchange.get_variable_handle(state_argument, *var)
+                        for key, var in self.object_variables[thermal_zone].items()
+                    }),
             if self.env_config.get('ep_meters', False):
                 self.meter_handles = {
                     key: api.exchange.get_meter_handle(state_argument, meter)
@@ -461,22 +451,27 @@ class EnergyPlusRunner:
                 key: api.exchange.get_actuator_handle(state_argument, *actuator)
                 for key, actuator in self.actuators.items()
             }
-            for handles in [
-                self.var_handles,
-                self.meter_handles,
-                self.actuator_handles
-            ]:
-                if any([v == -1 for v in handles.values()]):
-                    available_data = api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
-                    print(
-                        f"got -1 handle, check your var/meter/actuator names:\n"
-                        f"> variables: {self.var_handles}\n"
-                        f"> thermal zone variables: {self.thermal_zone_var_handles}\n"
-                        f"> meters: {self.meter_handles}\n"
-                        f"> actuators: {self.actuator_handles}\n"
-                        f"> available EnergyPlus API data: {available_data}"
-                    )
-                
+            for thermal_zone in self._thermal_zone_ids:
+                for handles in [
+                    self.var_handles,
+                    self.thermal_zone_var_handles[thermal_zone],
+                    self.object_var_handles[thermal_zone],
+                    self.meter_handles,
+                    self.actuator_handles
+                ]:
+                    if any([v == -1 for v in handles.values()]):
+                        available_data = api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
+                        ValueError(
+                            f"got -1 handle, check your var/meter/actuator names:\n"
+                            f"> variables: {self.var_handles}\n"
+                            f"> thermal zone variables: {self.thermal_zone_var_handles}\n"
+                            f"> object variables: {self.object_var_handles}\n"
+                            f"> meters: {self.meter_handles}\n"
+                            f"> actuators: {self.actuator_handles}\n"
+                            f"> available EnergyPlus API data: {available_data}"
+                        )
+                        return False
+            
             self.init_handles = True
         return True
 

@@ -45,14 +45,14 @@ def random_building_config(env_config:dict):
     
     return env_config
 
-def random_weather_config(env_config:Dict) -> str:
+def random_weather_config(env_config:Dict) -> Dict:
     """This method define the path to the epJSON file.
 
     Args:
         env_config (dict): Environment configuration.
 
     Return:
-        str: The method returns the epw path.
+        Dict: The method returns the epw path.
         
     Example:
     
@@ -81,9 +81,9 @@ def random_weather_config(env_config:Dict) -> str:
         id_epw_file = np.random.randint(0, len(os.listdir(epw_files_folder_path)))
     
     # The path to the epjson file is defined
-    epw_path = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])
+    env_config['epw'] = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])
     
-    return epw_path
+    return env_config
 
 
 def episode_epJSON(env_config:Dict) -> Dict:
