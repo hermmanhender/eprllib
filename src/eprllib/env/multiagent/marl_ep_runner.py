@@ -9,7 +9,7 @@ import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional
-from eprllib.env.multiagent.EnvUtils import runner_value_inspection
+from eprllib.env.multiagent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
 os_platform = sys.platform
 if os_platform == "linux":
     sys.path.insert(0, '/usr/local/EnergyPlus-23-2-0')
@@ -75,31 +75,13 @@ class EnergyPlusRunner:
         self.obs_keys = None
         self.agent_actions = {}
         
-        # Declaration of variables this simulation will interact with.
-        
-        if self.env_config.get('ep_environment_variables', False):
-            self.variables = {variable: (variable, 'Environment') for variable in self.env_config['ep_environment_variables']}
-        self.var_handles: Dict[str, int] = {}
-        
-        if self.env_config.get('ep_thermal_zones_variables', False):
-            self.thermal_zone_variables = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-            for thermal_zone in self._thermal_zone_ids:
-                self.thermal_zone_variables[thermal_zone].update({variable: (variable, thermal_zone) for variable in self.env_config['ep_thermal_zones_variables']})
-        self.thermal_zone_var_handles = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        
-        if self.env_config.get('ep_object_variables', False):
-            self.object_variables = self.env_config['ep_object_variables']
-        self.object_var_handles = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        
-        # Declaration of meters this simulation will interact with.
-        if self.env_config.get('ep_meters', False):
-            self.meters = {key: key for key in self.env_config['ep_meters']}
-        self.meter_handles: Dict[str, int] = {}
-        
-        # Declaration of actuators this simulation will interact with. Here the existency is verify and
-        # the agents, thermal zone of application, and actuator type are identify.
-        self.actuators = {agent: self.env_config['agents_config'][agent]['ep_actuator_config'] for agent in self._agent_ids}
-        self.actuator_handles: Dict[str, int] = {}
+        # Declaration of variables, meters and actuators to use in the simulation. Handles
+        # are used in _init_handle method.
+        self.variables, self.var_handles = environment_variables(self.env_config)
+        self.thermal_zone_variables, self.thermal_zone_var_handles = thermal_zone_variables(self.env_config, self._thermal_zone_ids)
+        self.object_variables, self.object_var_handles = object_variables(self.env_config, self._thermal_zone_ids)
+        self.meters, self.meter_handles = meters(self.env_config)
+        self.actuators, self.actuator_handles = actuators(self.env_config, self._agent_ids)
         
     def start(self) -> None:
         """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
@@ -132,10 +114,7 @@ class EnergyPlusRunner:
         """
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
-        if not self._init_callback(state_argument):
-            return
-        # To not perform observations when the episode is ended
-        if self.simulation_complete:
+        if not self._init_callback(state_argument) or self.simulation_complete:
             return
         
         hour = api.exchange.hour(state_argument)
