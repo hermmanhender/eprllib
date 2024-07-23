@@ -189,7 +189,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if self.energyplus_runner.simulation_complete:
             # check for simulation errors.
             if self.energyplus_runner.failed():
-                raise Exception(self.reset())
+                raise Exception('Simulation in EnergyPlus fallied.')
                 
             
             # if the simulation is complete, the episode is ended.
@@ -224,7 +224,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Raise an exception if the episode is faulty.
         if self.energyplus_runner.failed():
             self.terminateds = True
-            raise Exception(self.reset())
+            raise Exception('Simulation in EnergyPlus fallied.')
         
         # Calculate the reward in the timestep
         if self.env_config.get('reward_function', False):
