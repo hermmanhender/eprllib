@@ -159,3 +159,45 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
         
     # construct the observation space.
     return Box(float("-inf"), float("inf"), (obs_space_len,))
+
+def environment_variables(env_config: Dict[str, Any]) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
+    
+    variables:Dict[str, Tuple [str, str]] = {}
+    if env_config.get('ep_environment_variables', False):
+        variables = {variable: (variable, 'Environment') for variable in env_config['ep_environment_variables']}
+    
+    var_handles: Dict[str, int] = {}
+    
+    return variables, var_handles
+
+def thermal_zone_variables(env_config: Dict[str, Any], _thermal_zone_ids:Set) -> Tuple[Dict[str, Dict[str, Tuple[str,str]]],Dict[str,int]]:
+    thermal_zone_variables: Dict[str, Tuple [str, str]] = {thermal_zone: {} for thermal_zone in _thermal_zone_ids}
+    if env_config.get('ep_thermal_zones_variables', False):
+        for thermal_zone in _thermal_zone_ids:
+            thermal_zone_variables[thermal_zone].update({variable: (variable, thermal_zone) for variable in env_config['ep_thermal_zones_variables']})
+    thermal_zone_var_handles: Dict[str, int] = {thermal_zone: {} for thermal_zone in _thermal_zone_ids}
+    
+    return thermal_zone_variables, thermal_zone_var_handles
+
+def object_variables(env_config: Dict[str, Any], _thermal_zone_ids: Set) -> Tuple[Dict[str, Dict[str, Tuple[str,str]]],Dict[str,int]]:
+    object_variables: Dict[str, Dict[str, Tuple [str, str]]] = {}
+    if env_config.get('ep_object_variables', False):
+        object_variables = env_config['ep_object_variables']
+    object_var_handles = {thermal_zone: {} for thermal_zone in _thermal_zone_ids}
+    
+    return object_variables, object_var_handles
+
+def meters(env_config: Dict[str, Any]) -> Tuple[Dict[str, str], Dict[str,int]]:
+    meters: Dict[str,str] = {}
+    if env_config.get('ep_meters', False):
+        meters = {key: key for key in env_config['ep_meters']}
+    meter_handles: Dict[str, int] = {}
+    
+    return meters, meter_handles
+
+def actuators(env_config: Dict[str, Any], _agent_ids:Set) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]:
+    
+    actuators: Dict[str,Tuple[str,str,str]] = {agent: env_config['agents_config'][agent]['ep_actuator_config'] for agent in _agent_ids}
+    actuator_handles: Dict[str, int] = {}
+    
+    return actuators, actuator_handles
