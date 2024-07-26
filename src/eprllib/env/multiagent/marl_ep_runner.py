@@ -8,7 +8,7 @@ import threading
 import numpy as np
 from queue import Queue
 from time import sleep
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 from eprllib.env.multiagent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
 os_platform = sys.platform
 if os_platform == "linux":
@@ -29,8 +29,8 @@ class EnergyPlusRunner:
         obs_queue: Queue,
         act_queue: Queue,
         infos_queue: Queue,
-        _agent_ids: set,
-        _thermal_zone_ids: set,
+        _agent_ids: Set,
+        _thermal_zone_ids: Set,
         ) -> None:
         """The object has an intensive interaction with EnergyPlus Environment script, exchange information
         between two threads. For a good coordination queue events are stablished and different canals of
@@ -72,7 +72,8 @@ class EnergyPlusRunner:
         self.obs = {}
         self.infos = {}
         # create a variable to save the obs dict key to use in posprocess
-        self.obs_keys = None
+        self.obs_keys = []
+        self.infos_keys = []
         self.agent_actions = {}
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
@@ -279,7 +280,18 @@ class EnergyPlusRunner:
                 if self.env_config.get('no_observable_variables', False):
                     for variable in self.env_config['no_observable_variables'][thermal_zone]:
                         del obs_tz[thermal_zone][variable]
-        # ==FIN DEL LOOP DE OBSERVACIONES==
+                
+                if self.first_observation:
+                    self.obs_keys = [key for key in obs_tz[thermal_zone].keys()]
+                    self.infos_keys = [key for key in infos_tz[thermal_zone].keys()]
+                    if self.env_config.get('use_actuator_state', True):
+                        self.obs_keys.append('actuator_state')
+                    if self.env_config.get('use_agent_indicator', True):
+                        self.obs_keys.append('agent_indicator')
+                    if self.env_config.get('use_agent_type', True):
+                        self.obs_keys.append('agent_type')
+                # ==FIN DEL LOOP DE OBSERVACIONES==
+                
         # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
         
         # Se asignan observaciones y infos a cada agente.
@@ -292,9 +304,8 @@ class EnergyPlusRunner:
             agent_type = self.env_config['agents_config'][agent]['actuator_type']
             agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
             
-            if self.first_observation:
-                self.obs_keys = [key for key in agents_obs[agent].keys()]
-                self.first_observation = False
+            # Agent infos asignation
+            agents_infos[agent] = infos_tz[agent_thermal_zone]
                 
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
             agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
@@ -325,9 +336,6 @@ class EnergyPlusRunner:
                     ),
                     dtype='float32'
                 )
-            
-            # Agent infos asignation
-            agents_infos[agent] = infos_tz[agent_thermal_zone]
         
         # Set the agents observation and infos to communicate with the EPEnv.
         self.infos_queue.put(agents_infos)
