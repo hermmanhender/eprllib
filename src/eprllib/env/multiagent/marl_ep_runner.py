@@ -254,22 +254,22 @@ class EnergyPlusRunner:
                     prediction_hour = hour+1 + h
                     if prediction_hour < 24:
                         weather_pred.update({
-                            f'today_weather_liquid_precipitation_at_time_{prediction_hour}': np.random.normal(api.exchange.today_weather_liquid_precipitation_at_time(state_argument, prediction_hour, 0), sigma[5]),
-                            f'today_weather_outdoor_barometric_pressure_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour, 0), sigma[4]),
-                            f'today_weather_outdoor_dry_bulb_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour, 0), sigma[0]),
-                            f'today_weather_outdoor_relative_humidity_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour, 0), sigma[1]),
-                            f'today_weather_wind_direction_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_direction_at_time(state_argument, prediction_hour, 0), sigma[2]),
-                            f'today_weather_wind_speed_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_speed_at_time(state_argument, prediction_hour, 0), sigma[3]),
+                            f'today_weather_liquid_precipitation_at_time_{prediction_hour}': np.random.normal(api.exchange.today_weather_liquid_precipitation_at_time(state_argument, prediction_hour, 1), sigma[5]),
+                            f'today_weather_outdoor_barometric_pressure_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour, 1), sigma[4]),
+                            f'today_weather_outdoor_dry_bulb_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour, 1), sigma[0]),
+                            f'today_weather_outdoor_relative_humidity_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour, 1), sigma[1]),
+                            f'today_weather_wind_direction_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_direction_at_time(state_argument, prediction_hour, 1), sigma[2]),
+                            f'today_weather_wind_speed_at_time{prediction_hour}': np.random.normal(api.exchange.today_weather_wind_speed_at_time(state_argument, prediction_hour, 1), sigma[3]),
                         })
                     else:
                         prediction_hour_t = prediction_hour - 24
                         weather_pred.update({
-                            f'tomorrow_weather_liquid_precipitation_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, prediction_hour_t, 0), sigma[5]),
-                            f'tomorrow_weather_outdoor_barometric_pressure_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour_t, 0), sigma[4]),
-                            f'tomorrow_weather_outdoor_dry_bulb_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour_t, 0), sigma[0]),
-                            f'tomorrow_weather_outdoor_relative_humidity_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour_t, 0), sigma[1]),
-                            f'tomorrow_weather_wind_direction_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, prediction_hour_t, 0), sigma[2]),
-                            f'tomorrow_weather_wind_speed_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, prediction_hour_t, 0), sigma[3]),
+                            f'tomorrow_weather_liquid_precipitation_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, prediction_hour_t, 1), sigma[5]),
+                            f'tomorrow_weather_outdoor_barometric_pressure_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, prediction_hour_t, 1), sigma[4]),
+                            f'tomorrow_weather_outdoor_dry_bulb_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, prediction_hour_t, 1), sigma[0]),
+                            f'tomorrow_weather_outdoor_relative_humidity_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, prediction_hour_t, 1), sigma[1]),
+                            f'tomorrow_weather_wind_direction_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, prediction_hour_t, 1), sigma[2]),
+                            f'tomorrow_weather_wind_speed_at_time{prediction_hour_t}': np.random.normal(api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, prediction_hour_t, 1), sigma[3]),
                         })
                 obs_tz[thermal_zone].update(weather_pred)
                 
