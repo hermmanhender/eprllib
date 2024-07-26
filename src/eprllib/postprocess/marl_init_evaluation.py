@@ -83,8 +83,12 @@ def init_drl_evaluation(
         if timestep % 1000 == 0:
             print(f"Step {timestep}")
     
-    # save the list of rows as JSON
-    with open(env_config['output'] + '/' + name + '.csv', 'w') as f:
-        obs_df.to_csv(f, index=False)
+            # save the list of rows as JSON
+            with open(f"{env_config['output']}/{name}_{timestep}.csv", 'w') as f:
+                obs_df.to_csv(f, index=False)
+                print(f"File {name}_{timestep}.csv saved.")
+            obs_df = pd.DataFrame(
+                columns=['agent_id']+['timestep']+obs_keys+['Action']+['Reward']+['Terminated']+['Truncated']+infos_keys
+            )
     
     return episode_reward
