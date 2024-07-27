@@ -32,7 +32,6 @@ class drl_evaluation:
         self.terminated = {}
         self.terminated["__all__"] = False
         self.data_queue: Optional[Queue] = None
-        self.flag_queue: Optional[Queue] = None
         self.data_processing: Optional[step_processing] = None
         self.timestep = 0
         
@@ -41,10 +40,8 @@ class drl_evaluation:
     
     def start_simulation(self) -> None:
         self.data_queue = Queue()
-        self.flag_queue = Queue()
         self.data_processing = step_processing(
             self.data_queue,
-            self.flag_queue,
             f"{self.env_config['output']}/{self.name}.csv",
         )
         self.data_processing.run()
@@ -81,41 +78,33 @@ class drl_evaluation:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
                 # coloca los datos en una cola
                 self.data_queue.put(data)
-        
-        self.flag_queue.put(True)
                 
-            
 
 class step_processing:
     def __init__(
         self, 
         data_queue: Queue,
-        flag_queue: Queue,
         output_path: str,
     ) -> None:
         
         self.data_queue = data_queue
         self.output_path = output_path
-        self.flag_queue = flag_queue
     
     def save_data(self) -> None:
         # Función que consume los datos de la cola y los agrega al DataFrame
         data_df = pd.DataFrame()
         
         while True:
-            datos = self.data_queue.get()
-            data_df = pd.concat([data_df, pd.DataFrame([datos])], ignore_index=True)
-            # Guarda el DataFrame periódicamente o al final del episodio
-            if len(data_df) >= 1000:
-                with open(self.output_path, 'a') as f:
-                    data_df.to_csv(f, index=False)
-                data_df = pd.DataFrame()
             try:
-                flag = self.flag_queue.get_nowait()
-                if flag:
-                    break
+                datos = self.data_queue.get(timeout=10)
+                data_df = pd.concat([data_df, pd.DataFrame([datos])], ignore_index=True)
+                # Guarda el DataFrame periódicamente o al final del episodio
+                if len(data_df) >= 1000:
+                    with open(self.output_path, 'a') as f:
+                        data_df.to_csv(f, index=False)
+                    data_df = pd.DataFrame()
             except (Empty):
-                    pass
+                break
         # join the Thread back to the main thread, otherwise the program will close
         self.data_queue.task_done()
         self.stop()
