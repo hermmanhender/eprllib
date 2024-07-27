@@ -9,7 +9,7 @@ from ray import air, tune
 from ray.tune import register_env
 from ray.rllib.algorithms.dqn.dqn import DQNConfig
 from ray.rllib.policy.policy import PolicySpec
-from eprllib.env.multiagent.marl_ep_gym_env import EnergyPlusEnv_v0
+from eprllib.env.multiagent.EnergyPlusEnvironment import EnergyPlusEnv_v0
 from eprllib.tools import rewards, utils
 from numpy.random import choice
 

@@ -5,9 +5,9 @@ This script execute the conventional controls and generate experiences in batch 
 import sys
 sys.path.insert(0,'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 from tempfile import TemporaryDirectory
-from eprllib.env.VENT_ep_gym_env import EnergyPlusEnv_v0
-from eprllib.agents.conventional import Conventional
-from eprllib.tools.devices_space_action import natural_ventilation_central_action
+from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
+from eprllib.Agents.ConventionalPolicy import ConventionalPolicy
+from eprllib.Tools.ActionSpaces import natural_ventilation_central_action
 
 import gymnasium as gym
 import numpy as np
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         'rotation': 0,
     }
     # se importan las políticas convencionales para la configuracion especificada
-    policy = Conventional(policy_config)
+    policy = ConventionalPolicy(policy_config)
     # se inicia el entorno con la configuración especificada
     env = EnergyPlusEnv_v0(env_config)
 
