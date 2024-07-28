@@ -9,7 +9,8 @@ import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional, Set
-from eprllib.env.multiagent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
+from eprllib.Env.MultiAgent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
+
 os_platform = sys.platform
 if os_platform == "linux":
     sys.path.insert(0, '/usr/local/EnergyPlus-23-2-0')

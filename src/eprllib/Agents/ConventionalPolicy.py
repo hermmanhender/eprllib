@@ -3,11 +3,11 @@ presents actions to do in different devices.
 """
 from typing import Dict, Any
 
-class Conventional:
+class ConventionalPolicy:
     
     def __init__(
         self,
-        config: Dict[str,Any] = {'SP_temp': 24, 'dT_up': 2, 'dT_dn':2}
+        config: Dict[str,Any],
     ):
         """This agent perform conventional actions in an EnergyPlus model based on fixed rules
         that take into account the basics variables as temperature, radiation, humidity and others.
@@ -26,8 +26,20 @@ class Conventional:
         ```
         """
         self.config = config
+    
+    def compute_single_action(self, infos:Dict, **kargs):
+        """Implement here your own function."""
+        raise NotImplementedError
+
+
+class WindowShadeControl(ConventionalPolicy):
+    def __init__(
+        self,
+        config: Dict[str, Any],
+    ):
+        super().__init__(config)
         
-    def window_shade(self, Ti: float, Bw:float,action_p:int):
+    def compute_single_action(self, infos:Dict, prev_action):
         """Esta función permite la operación binaria (completamente cerrada [On] o completamente
         abierta [Off]) de una persiana a partir de reglas fijas.
 
@@ -47,6 +59,9 @@ class Conventional:
         dT_up = self.config['dT_up']
         dT_dn = self.config['dT_dn']
         
+        Ti = infos['Ti']
+        Bw = infos['Bw']
+        
         #Control de la persiana
         if Ti >= (SP_temp + dT_up) and Bw == 0:
             action_p = 0 #Abrir la persiana
@@ -59,7 +74,7 @@ class Conventional:
             action_p = 0
             
         elif Ti < (SP_temp + dT_up) and Ti > (SP_temp - dT_dn):
-            action_p = action_p
+            action_p = prev_action
 
         else:
             print("Control de la persiana fallido")
@@ -67,7 +82,14 @@ class Conventional:
         
         return action_p
 
-    def air_conditioner(self, Ti:float, action_aa:int):
+class AirConditionerControl(ConventionalPolicy):
+    def __init__(
+        self,
+        config: Dict[str, Any],
+    ):
+        super().__init__(config)
+        
+    def compute_single_action(self, infos:Dict, prev_action):
         """Esta función permite la operación binaria (encendido [On] o apagado [Off]) de un equipo
         de aire acondicionado a partir de reglas fijas.
 
@@ -81,10 +103,13 @@ class Conventional:
             int: Regresa la acción a ser aplicada al elemento en EnergyPlus (0 si apaga y 1 si prende). 
             Devuelve -1 si hay un error.
         """
+        
         # Se obtiene la configuración
         SP_temp = self.config['SP_temp']
         dT_up = self.config['dT_up']
         dT_dn = self.config['dT_dn']
+        
+        Ti = infos['Ti']
         
         if Ti >= (SP_temp + dT_up):
             action_aa = 1
@@ -93,7 +118,7 @@ class Conventional:
             action_aa = 0
 
         elif Ti < (SP_temp + dT_up) and Ti > (SP_temp - dT_dn):
-            action_aa = action_aa
+            action_aa = prev_action
 
         else:
             print("Control de Aire Acondicionado Fallido")
@@ -101,7 +126,14 @@ class Conventional:
         
         return action_aa
 
-    def window_opening(self, Ti: float, To: float, action_v: int):
+class WindowOpeningControl(ConventionalPolicy):
+    def __init__(
+        self,
+        config: Dict[str, Any],
+    ):
+        super().__init__(config)
+        
+    def compute_single_action(self, infos:Dict, prev_action):
         """Esta función permite la operación binaria (encendido [On] o apagado [Off]) de 
         una ventana a partir de reglas fijas.
 
@@ -121,6 +153,9 @@ class Conventional:
         dT_up = self.config['dT_up']
         dT_dn = self.config['dT_dn']
         
+        Ti = infos['Ti']
+        To = infos['To']
+        
         if Ti >= (SP_temp + dT_up):
             if Ti > To:
                 action_v = 1
@@ -134,7 +169,7 @@ class Conventional:
                 action_v = 1
 
         elif Ti < (SP_temp + dT_up) and Ti > (SP_temp - dT_dn):
-            action_v = action_v
+            action_v = prev_action
 
         else:
             print("Control de Ventana Fallido")

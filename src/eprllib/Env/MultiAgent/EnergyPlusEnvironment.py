@@ -6,9 +6,9 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.env.multiagent.EnvUtils import env_value_inspection, actuators_to_agents, obs_space
-from eprllib.env.multiagent.marl_ep_runner import EnergyPlusRunner
-from eprllib.tools import rewards
+from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space
+from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
+from eprllib.tools import Rewards
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -230,7 +230,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if self.env_config.get('reward_function', False):
             reward_function = self.env_config['reward_function']
         else:
-            reward_function = rewards.dalamagkidis_2007
+            reward_function = Rewards.dalamagkidis_2007
         reward_dict = reward_function(self, infos)
         
         terminated["__all__"] = self.terminateds
