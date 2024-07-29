@@ -6,9 +6,10 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space
+from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space, continuous_action_space
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
-from eprllib.tools import Rewards
+from eprllib.Tools import Rewards
+from eprllib.Tools.ActionTransformers import ActionTransformer
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -82,7 +83,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # asignation of environment action space.
-        self.action_space = self.env_config['action_space']
+        self.action_space = continuous_action_space()
         # asignation of the environment observation space.
         self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
         print(f"The action space is defined as {self.action_space}.")
@@ -202,8 +203,17 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # dedicated callback) and then wait to get next observation.
         else:
             try:
-                # Send the action to the EnergyPlus Runner flow.
-                self.act_queue.put(action,timeout=timeout)
+                # Validate if the action must be transformed
+                if self.env_config.get('action_transformer', False):
+                    action_transformer:ActionTransformer = self.env_config['action_transformer']
+                    # Transform all the actions
+                    action_transformed = action_transformer.transform_action(action)
+                    # Send the action to the EnergyPlus Runner flow.
+                    self.act_queue.put(action_transformed,timeout=timeout)
+                else:
+                    # Send the action to the EnergyPlus Runner flow.
+                    self.act_queue.put(action,timeout=timeout)
+                
                 self.energyplus_runner.act_event.set()
                 # Get the return observation and infos after the action is applied.
                 self.energyplus_runner.obs_event.wait(timeout=timeout)

@@ -3,6 +3,7 @@
 
 from typing import Tuple, Dict, Any, List, Set
 from gymnasium.spaces import Box
+import numpy as np
 
 def env_value_inspection(env_config:Dict):
     
@@ -159,6 +160,14 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
         
     # construct the observation space.
     return Box(float("-inf"), float("inf"), (obs_space_len,))
+
+def continuous_action_space():
+    """This method construct the action space of the environment.
+    
+    Returns:
+        gym.Box: Continuous action space with limits between [0,1].
+    """
+    return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
 
 def environment_variables(env_config: Dict[str, Any]) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
     
