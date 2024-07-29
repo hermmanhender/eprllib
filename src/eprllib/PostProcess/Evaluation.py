@@ -29,8 +29,7 @@ class drl_evaluation:
         self.policy = Policy.from_checkpoint(checkpoint_path)
         self.env = EnergyPlusEnv_v0(env_config)
         self._agent_ids = self.env.get_agent_ids()
-        self.terminated = {}
-        self.terminated["__all__"] = False
+        self.terminated = False
         self.data_queue: Optional[Queue] = None
         self.data_processing: Optional[step_processing] = None
         self.timestep = 0
@@ -61,7 +60,7 @@ class drl_evaluation:
         self.data_queue.put(data)
         
         self.timestep += 1
-        while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
+        while not self.terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
             actions_dict = {}
             for agent in self._agent_ids:
@@ -78,7 +77,7 @@ class drl_evaluation:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
                 # coloca los datos en una cola
                 self.data_queue.put(data)
-                
+            self.terminated = terminated["__all__"]
 
 class step_processing:
     def __init__(
@@ -96,7 +95,7 @@ class step_processing:
         
         while True:
             try:
-                datos = self.data_queue.get(timeout=10)
+                datos = self.data_queue.get(timeout=100)
                 data_df = pd.concat([data_df, pd.DataFrame([datos])], ignore_index=True)
                 # Guarda el DataFrame periódicamente o al final del episodio
                 if len(data_df) >= 1000:
@@ -104,6 +103,8 @@ class step_processing:
                         data_df.to_csv(f, index=False)
                     data_df = pd.DataFrame()
             except (Empty):
+                with open(self.output_path, 'a') as f:
+                        data_df.to_csv(f, index=False)
                 break
         # join the Thread back to the main thread, otherwise the program will close
         self.data_queue.task_done()
@@ -111,9 +112,9 @@ class step_processing:
         
     def run(self) -> None:
         # Inicia un hilo para guardar los datos
-        self.thread = threading.Thread(target=self.save_data, args=self)
+        self.thread = threading.Thread(target=self.save_data)
         self.thread.start()
         
     def stop(self) -> None:
         # Detiene el hilo
-        self.thread.join()
+        print("Stopping data processing.")
