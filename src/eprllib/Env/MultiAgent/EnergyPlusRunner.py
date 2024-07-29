@@ -10,6 +10,7 @@ from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional, Set
 from eprllib.Env.MultiAgent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
+from eprllib.Tools.ActionTransformers import ActionTransformer
 
 os_platform = sys.platform
 if os_platform == "linux":
@@ -383,6 +384,12 @@ class EnergyPlusRunner:
         # In the case of simple agent a int value and for multiagents a dictionary.
         dict_action = self.act_queue.get()
         
+        if self.env_config.get('action_transformer', False):
+            action_transformer:ActionTransformer = self.env_config['action_transformer']
+            action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
+            # Transform all the actions
+            dict_action = action_transformer.transform_action(dict_action)
+            
         # Perform the actions in EnergyPlus simulation.       
         for agent in self._agent_ids:
             api.exchange.set_actuator_value(
