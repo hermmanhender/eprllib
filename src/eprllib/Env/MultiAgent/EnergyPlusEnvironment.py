@@ -85,8 +85,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.action_space = discrete_action_space()
         # asignation of the environment observation space.
         self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
-        print(f"The action space is defined as {self.action_space}.")
-        print(f"The observation space is defined as {self.observation_space}.")
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
         
