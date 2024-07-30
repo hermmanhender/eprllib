@@ -201,7 +201,7 @@ def episode_epJSON(env_config:Dict) -> Dict:
       
             
     # Select the schedule file for loads
-    env_config['epw'] = random_weather_config(env_config)
+    env_config = random_weather_config(env_config)
     
     # The new modify epjson file is writed in the results folder created by RLlib
     # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']
