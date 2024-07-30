@@ -2,7 +2,7 @@
 """
 
 from typing import Tuple, Dict, Any, List, Set
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Discrete
 import numpy as np
 
 def env_value_inspection(env_config:Dict):
@@ -168,6 +168,14 @@ def continuous_action_space():
         gym.Box: Continuous action space with limits between [0,1].
     """
     return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+
+def discrete_action_space():
+    """This method construct the action space of the environment.
+    
+    Returns:
+        gym.Discrete: Discrete action space with limits between [0,10] and a step of 1.
+    """
+    return Discrete(11)
 
 def environment_variables(env_config: Dict[str, Any]) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
     
