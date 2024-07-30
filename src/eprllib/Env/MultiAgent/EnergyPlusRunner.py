@@ -466,7 +466,7 @@ class EnergyPlusRunner:
         """
         if not self.simulation_complete:
             self.simulation_complete = True
-        sleep(3)
+        sleep(10)
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None
