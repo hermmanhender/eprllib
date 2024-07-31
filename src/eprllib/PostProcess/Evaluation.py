@@ -107,7 +107,6 @@ class step_processing:
                         data_df.to_csv(f, index=False)
                 break
         # join the Thread back to the main thread, otherwise the program will close
-        self.data_queue.task_done()
         self.stop()
         
     def run(self) -> None:
@@ -118,3 +117,4 @@ class step_processing:
     def stop(self) -> None:
         # Detiene el hilo
         print("Stopping data processing.")
+        self.thread.join()
