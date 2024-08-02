@@ -1,9 +1,35 @@
 """This module contain the utils used in the Multi-agent definition files.
 """
 
-from typing import Tuple, Dict, Any, List, Set
+from typing import Tuple, Dict, Any, List, Set, Optional
 from gymnasium.spaces import Box, Discrete
 import numpy as np
+
+def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
+    """This method add the EnergyPlus Python API to the system path. This allow to use the 
+    EnergyPlus program in Python. The minimal version of EnergyPlus is 9.3.0 and the default
+    version (and the stable one) for eprllib is 23-2-0.
+
+    Args:
+        version (str, optional): Numeric version of EnergyPlus. Defaults to "23-2-0".
+        path (Optional[str], optional): Complete path to the EnergyPlus installation directory 
+        if this is different that the default installation. Defaults to None.
+
+    Returns:
+        None: Print the EnergyPlus API path added to the system path.
+    """
+    import sys
+    
+    if path is not None:
+        sys.path.insert(0, f"{path}")
+    else:  
+        os_platform = sys.platform
+        if os_platform == "linux":    
+            sys.path.insert(0, f"/usr/local/EnergyPlus-{version}")
+        else:
+            sys.path.insert(0, f"C:/EnergyPlusV{version}")
+    
+    return print(f"EnergyPlus API path added: {sys.path[0]}")
 
 def env_value_inspection(env_config:Dict):
     
