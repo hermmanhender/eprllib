@@ -3,20 +3,24 @@
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
 Python API in the version 23.2.0.
 """
-import sys
 import threading
 import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional, Set
-from eprllib.Env.MultiAgent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
-from eprllib.Tools.ActionTransformers import ActionTransformer
 
-os_platform = sys.platform
-if os_platform == "linux":
-    sys.path.insert(0, '/usr/local/EnergyPlus-23-2-0')
-else:
-    sys.path.insert(0, 'C:/EnergyPlusV23-2-0')
+from eprllib.Tools.ActionTransformers import ActionTransformer
+from eprllib.Env.MultiAgent.EnvUtils import (
+    runner_value_inspection, 
+    environment_variables, 
+    thermal_zone_variables, 
+    object_variables, 
+    meters, 
+    actuators, 
+    EP_API_add_path,
+)
+# EnergyPlus Python API path adding
+EP_API_add_path()
 from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
