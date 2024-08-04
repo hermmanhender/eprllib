@@ -58,9 +58,9 @@ class rb_evaluation:
         prev_action = {agent: 0 for agent in self._agent_ids}
         while not self.terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
-            actions_dict = {}
+            actions_dict = {agent: 0 for agent in self._agent_ids}
             for agent in self._agent_ids:
-                action, _, _ = self.policy[agent].compute_single_action(infos[agent], prev_action[agent])
+                action = self.policy[agent].compute_single_action(infos[agent], prev_action[agent])
                 actions_dict[agent] = action
                 prev_action[agent] = action
             
