@@ -301,7 +301,7 @@ class EnergyPlusRunner:
         # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
         
         # Se asignan observaciones y infos a cada agente.
-        agents_obs = {agent: np.array() for agent in self._agent_ids}
+        agents_obs = {agent: [] for agent in self._agent_ids}
         agents_infos = {agent: {} for agent in self._agent_ids}
         
         for agent in self._agent_ids:
