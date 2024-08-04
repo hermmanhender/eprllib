@@ -6,9 +6,9 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space
+from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space, continuous_action_space, discrete_action_space
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
-from eprllib.tools import Rewards
+from eprllib.Tools import Rewards
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -82,7 +82,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # asignation of environment action space.
-        self.action_space = self.env_config['action_space']
+        self.action_space = discrete_action_space()
         # asignation of the environment observation space.
         self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
@@ -202,6 +202,16 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             try:
                 # Send the action to the EnergyPlus Runner flow.
                 self.act_queue.put(action,timeout=timeout)
+                self.energyplus_runner.act_event.set()
+                # Get the return observation and infos after the action is applied.
+                self.energyplus_runner.obs_event.wait(timeout=timeout)
+                obs = self.obs_queue.get(timeout=timeout)
+                self.energyplus_runner.infos_event.wait(timeout=timeout)
+                infos = self.infos_queue.get(timeout=timeout)
+                # Upgrade last observation and infos dicts.
+                self.last_obs = obs
+                self.last_infos = infos
+                
                 self.energyplus_runner.act_event.set()
                 # Get the return observation and infos after the action is applied.
                 self.energyplus_runner.obs_event.wait(timeout=timeout)

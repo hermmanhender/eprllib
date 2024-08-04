@@ -3,19 +3,24 @@
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
 Python API in the version 23.2.0.
 """
-import sys
 import threading
 import numpy as np
 from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional, Set
-from eprllib.Env.MultiAgent.EnvUtils import runner_value_inspection, environment_variables, thermal_zone_variables, object_variables, meters, actuators
 
-os_platform = sys.platform
-if os_platform == "linux":
-    sys.path.insert(0, '/usr/local/EnergyPlus-23-2-0')
-else:
-    sys.path.insert(0, 'C:/EnergyPlusV23-2-0')
+from eprllib.Tools.ActionTransformers import ActionTransformer
+from eprllib.Env.MultiAgent.EnvUtils import (
+    runner_value_inspection, 
+    environment_variables, 
+    thermal_zone_variables, 
+    object_variables, 
+    meters, 
+    actuators, 
+    EP_API_add_path,
+)
+# EnergyPlus Python API path adding
+EP_API_add_path()
 from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
@@ -383,15 +388,12 @@ class EnergyPlusRunner:
         # In the case of simple agent a int value and for multiagents a dictionary.
         dict_action = self.act_queue.get()
         
-        # Validate if the action must be transformed
         if self.env_config.get('action_transformer', False):
-            action_transformer = self.env_config['action_transformer']
-            dict_action_transformed = {}
+            action_transformer:ActionTransformer = self.env_config['action_transformer']
+            action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
             # Transform all the actions
-            for agent in self._agent_ids:
-                dict_action_transformed[agent] = action_transformer(agent, dict_action[agent])
-            dict_action = dict_action_transformed
-        
+            dict_action = action_transformer.transform_action(dict_action)
+            
         # Perform the actions in EnergyPlus simulation.       
         for agent in self._agent_ids:
             api.exchange.set_actuator_value(
@@ -468,7 +470,7 @@ class EnergyPlusRunner:
         """
         if not self.simulation_complete:
             self.simulation_complete = True
-        sleep(3)
+        sleep(10)
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None

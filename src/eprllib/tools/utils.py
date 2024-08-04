@@ -1,4 +1,5 @@
 
+from typing import Set, Dict
 import pandas as pd
 import numpy as np
 
@@ -15,7 +16,7 @@ def trial_str_creator(trial, name:str='eprllib'):
     """
     return "{}_{}_{}".format(name, trial.trainable_name, trial.trial_id)
 
-def len_episode(env_config:dict) -> str:
+def len_episode(env_config:Dict) -> str:
     """This function is used to modify the RunPeriod longitude of a epJSON file.
     
     Args:
@@ -77,3 +78,16 @@ def from_julian_day(julian_day:int):
         if day <= days_in_month:
             return (day, month + 1)
         day -= days_in_month
+        
+def variable_checking(
+    epJSON_file:str,
+) -> Set:
+    """This function check if the epJSON file has the required variables.
+
+    Args:
+        epJSON_file(str): path to the epJSON file.
+
+    Return:
+        set: list of missing variables.
+    """
+    

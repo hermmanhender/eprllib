@@ -95,9 +95,8 @@ class step_processing:
         data_df = pd.DataFrame()
         
         while True:
-            
             try:
-                datos = self.data_queue.get(timeout=10)
+                datos = self.data_queue.get(timeout=100)
                 data_df = pd.concat([data_df, pd.DataFrame([datos])], ignore_index=True)
                 # Guarda el DataFrame periódicamente o al final del episodio
                 if len(data_df) >= 1000:
@@ -106,7 +105,7 @@ class step_processing:
                     data_df = pd.DataFrame()
             except (Empty):
                 with open(self.output_path, 'a') as f:
-                        data_df.to_csv(f, index=False, header=False)
+                    data_df.to_csv(f, index=False, header=False)
                 break
         # join the Thread back to the main thread, otherwise the program will close
         self.stop()
