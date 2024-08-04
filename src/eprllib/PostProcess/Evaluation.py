@@ -62,7 +62,7 @@ class drl_evaluation:
         
         while not self.terminated # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
-            actions_dict = {}
+            actions_dict = {agent: 0 for agent in self._agent_ids}
             for agent in self._agent_ids:
                 if self.use_RNN:
                     action, state, _ = self.policy['shared_policy'].compute_single_action(obs_dict[agent], state)
