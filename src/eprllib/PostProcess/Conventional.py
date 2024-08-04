@@ -6,6 +6,7 @@ import os
 import csv
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
 from eprllib.Agents.ConventionalPolicy import ConventionalPolicy
+from eprllib.Tools.ActionTransformers import ActionTransformer
 import pandas as pd
 import threading
 from queue import Queue, Empty
@@ -26,7 +27,7 @@ class rb_evaluation:
         self.env = EnergyPlusEnv_v0(env_config)
         self._agent_ids = self.env.get_agent_ids()
         self.terminated = {}
-        self.terminated["__all__"] = False
+        self.terminated = False
         self.data_queue: Optional[Queue] = None
         self.data_processing: Optional[step_processing] = None
         self.timestep = 0
@@ -54,9 +55,8 @@ class rb_evaluation:
         # coloca los datos en una cola
         self.data_queue.put(data)
         
-        self.timestep += 1
         prev_action = {agent: 0 for agent in self._agent_ids}
-        while not terminated["__all__"]: # se ejecuta un paso de tiempo hasta terminar el episodio
+        while not self.terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
             actions_dict = {}
             for agent in self._agent_ids:
@@ -67,10 +67,18 @@ class rb_evaluation:
             # Get the values of the variables for a timestep
             obs_dict, reward, terminated, truncated, infos = self.env.step(actions_dict)
             
+            if self.env_config.get('action_transformer', False):
+                action_transformer:ActionTransformer = self.env_config['action_transformer']
+                action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
+                # Transform all the actions
+                dict_action = action_transformer.transform_action(dict_action)
+            
             for agent in self._agent_ids:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
                 # coloca los datos en una cola
                 self.data_queue.put(data)
+            self.timestep += 1
+            self.terminated = terminated["__all__"]
 
 class step_processing:
     def __init__(
@@ -94,12 +102,13 @@ class step_processing:
                 # Guarda el DataFrame periódicamente o al final del episodio
                 if len(data_df) >= 1000:
                     with open(self.output_path, 'a') as f:
-                        data_df.to_csv(f, index=False)
+                        data_df.to_csv(f, index=False, header=False)
                     data_df = pd.DataFrame()
             except (Empty):
-                    break
+                with open(self.output_path, 'a') as f:
+                        data_df.to_csv(f, index=False, header=False)
+                break
         # join the Thread back to the main thread, otherwise the program will close
-        self.data_queue.task_done()
         self.stop()
         
     def run(self) -> None:
@@ -109,4 +118,5 @@ class step_processing:
         
     def stop(self) -> None:
         # Detiene el hilo
+        print("Stopping data processing.")
         self.thread.join()
