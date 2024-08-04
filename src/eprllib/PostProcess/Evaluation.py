@@ -60,7 +60,7 @@ class drl_evaluation:
         # coloca los datos en una cola
         self.data_queue.put(data)
         
-        while not self.terminated # se ejecuta un paso de tiempo hasta terminar el episodio
+        while not self.terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
             actions_dict = {agent: 0 for agent in self._agent_ids}
             for agent in self._agent_ids:
