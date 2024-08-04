@@ -211,16 +211,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 # Upgrade last observation and infos dicts.
                 self.last_obs = obs
                 self.last_infos = infos
-                
-                self.energyplus_runner.act_event.set()
-                # Get the return observation and infos after the action is applied.
-                self.energyplus_runner.obs_event.wait(timeout=timeout)
-                obs = self.obs_queue.get(timeout=timeout)
-                self.energyplus_runner.infos_event.wait(timeout=timeout)
-                infos = self.infos_queue.get(timeout=timeout)
-                # Upgrade last observation and infos dicts.
-                self.last_obs = obs
-                self.last_infos = infos
 
             except (Full, Empty):
                 # Set the terminated variable into True to finish the episode.
