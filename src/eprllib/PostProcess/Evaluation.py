@@ -28,6 +28,7 @@ class drl_evaluation:
         self.use_RNN = use_RNN
         self.lstm_cell_size = lstm_cell_size
         self.policy = Policy.from_checkpoint(checkpoint_path)
+        print(f"Checkpoint path restore: {checkpoint_path}")
         self.env = EnergyPlusEnv_v0(env_config)
         self._agent_ids = self.env.get_agent_ids()
         self.terminated = False
@@ -77,7 +78,7 @@ class drl_evaluation:
                 action_transformer:ActionTransformer = self.env_config['action_transformer']
                 action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
                 # Transform all the actions
-                dict_action = action_transformer.transform_action(dict_action)
+                actions_dict = action_transformer.transform_action(actions_dict)
                 
             for agent in self._agent_ids:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
@@ -100,19 +101,24 @@ class step_processing:
     def save_data(self) -> None:
         # Función que consume los datos de la cola y los agrega al DataFrame
         data_df = pd.DataFrame()
-        
+        data_saved_len = 0
         while True:
             try:
                 datos = self.data_queue.get(timeout=100)
                 data_df = pd.concat([data_df, pd.DataFrame([datos])], ignore_index=True)
                 # Guarda el DataFrame periódicamente o al final del episodio
                 if len(data_df) >= 1000:
+                    data_saved_len += len(data_df)
+                    print(f"Saving {len(data_df)} and the total amount of timestep saved are: {data_saved_len}.")
                     with open(self.output_path, 'a') as f:
                         data_df.to_csv(f, index=False, header=False)
                     data_df = pd.DataFrame()
             except (Empty):
-                with open(self.output_path, 'a') as f:
-                    data_df.to_csv(f, index=False, header=False)
+                if len(data_df) != 0:
+                    data_saved_len += len(data_df)
+                    print(f"Saving {len(data_df)} and the total amount of timestep saved are: {data_saved_len}.")
+                    with open(self.output_path, 'a') as f:
+                        data_df.to_csv(f, index=False, header=False)
                 break
         # join the Thread back to the main thread, otherwise the program will close
         self.stop()
@@ -126,3 +132,4 @@ class step_processing:
         # Detiene el hilo
         print("Stopping data processing.")
         self.thread.join()
+        
