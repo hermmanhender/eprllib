@@ -19,17 +19,32 @@ def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
         None: Print the EnergyPlus API path added to the system path.
     """
     import sys
-    
+    # get the path list
+    path_list = sys.path.copy()
+    # verify if the path exist in the path list. If don't, add it.
+    if path is not None and path in path_list:
+        return
     if path is not None:
         sys.path.insert(0, f"{path}")
-    else:  
-        os_platform = sys.platform
-        if os_platform == "linux":    
-            sys.path.insert(0, f"/usr/local/EnergyPlus-{version}")
-        else:
-            sys.path.insert(0, f"C:/EnergyPlusV{version}")
+        return print(f"EnergyPlus API path added: {sys.path[0]}")
     
-    return print(f"EnergyPlus API path added: {sys.path[0]}")
+    # verify if the verioning path is in the path list. If don't, add it.
+    os_platform = sys.platform
+    if os_platform == "linux":
+        version_path = f"/usr/local/EnergyPlus-{version}"
+        if version_path in path_list:
+            return
+        else:
+            sys.path.insert(0, version_path)
+            return print(f"EnergyPlus API path added: {sys.path[0]}")
+    else:
+        version_path = f"C:/EnergyPlusV{version}"
+        if version_path in path_list:
+            return
+        else:
+            sys.path.insert(0, version_path)
+            return print(f"EnergyPlus API path added: {sys.path[0]}")
+    
 
 def env_value_inspection(env_config:Dict):
     
