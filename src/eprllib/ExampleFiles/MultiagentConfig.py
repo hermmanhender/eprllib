@@ -40,11 +40,13 @@ env_config = {
     #       10: South Window Shading
     #       11: West Window Shading
     #       12: Fan Flow Rate
-    'ep_actuators': {
-        'Heating Setpoint': (('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 19'), 'Thermal Zone', 2),
-        'Cooling Setpoint': (('Schedule:Compact', 'Schedule Value', 'HVACTemplate-Always 25'), 'Thermal Zone', 1),
-        'Air Mass Flow Rate': (('Ideal Loads Air System', 'Air Mass Flow Rate', 'Thermal Zone: Living Ideal Loads Air System'), 'Thermal Zone', 3),
-    },
+    'agents_config': {
+        'AirMassFlowRate Living': {
+            'ep_actuator_config': ("Ideal Loads Air System", "Air Mass Flow Rate", "Thermal Zone: Living Ideal Loads Air System"),
+            'thermal_zone': 'Thermal Zone: Living',
+            'actuator_type': 3,
+            'agent_indicator': 1,
+        },
     # The action space for all the agents.
     'action_space': 'gym.spaces.Discrete() type',
     # Definition of the observation space.
@@ -253,10 +255,10 @@ env_config = {
     },
     # For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
     'ep_terminal_output': False,
-    # In the definition of the action space, usualy is use the discrete form of the gym spaces.
-    # In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With
-    # the objective to transform appropiately the discret action into a value action for EP we
-    # define the action_transformer funtion. This function take the arguments agent_id and
-    # action. You can find examples in eprllib.tools.action_transformers .
+    # The action space is defined as a continuous space between 0 and 1.
+    # In general, EnergyPlus actuator need to be feed with a diferent scale of numbers, e.g. temperature between
+    # 16 and 27 °C for the thermostat. In this way, we don't use actions from 0 to n directly in the EnergyPlus simulation. With
+    # the objective to transform appropiately the continuous action into a value for the actuator, we
+    # define the eprllib.Tools.ActionTransformers.ActionTransformer class.
     'action_transformer': None,
 }

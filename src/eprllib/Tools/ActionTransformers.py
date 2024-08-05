@@ -2,79 +2,39 @@
 eprllib. Most of them are applied in the test section where examples to test the 
 library are developed.
 """
+from typing import Dict, Set, Any
 
-def thermostat_dual(agent_id, action):
-    """This method take a discret action in the range of [0,4) and transforms it
-    into a temperature of cooling or heating setpoints, depending the agent id 
-    involve.
-    """
-    heating_agents = [
-        'PB BUFETE Thermal Zone Heating Setpoint',
-        'PB SALA DE REUNION N Thermal Zone Heating Setpoint',
-        'PB SALA DE REUNION NW Thermal Zone Heating Setpoint',
-        '1P CALL CENTER Thermal Zone Heating Setpoint',
-        '1P PLANTA LIBRE Thermal Zone Heating Setpoint',
-        '1P BOX B W Thermal Zone Heating Setpoint',
-        '1P BOX A NW Thermal Zone Heating Setpoint',
-        '2P BOX A NW Thermal Zone Heating Setpoint',
-        '2P PLANTA LIBRE Thermal Zone Heating Setpoint',
-        '3P LIVING Thermal Zone Heating Setpoint',
-        '3P ESPARCIMIENTO Thermal Zone Heating Setpoint',
-    ]
+class ActionTransformer:
+    def __init__(
+        self,
+        agents_config: Dict,
+        _agent_ids: Set,
+    ):
+        self.agents_config = agents_config
+        self._agent_ids = _agent_ids
     
-    cooling_agents = [
-        'PB BUFETE Thermal Zone Cooling Setpoint',
-        'PB SALA DE REUNION N Thermal Zone Cooling Setpoint',
-        'PB SALA DE REUNION NW Thermal Zone Cooling Setpoint',
-        '1P CALL CENTER Thermal Zone Cooling Setpoint',
-        '1P PLANTA LIBRE Thermal Zone Cooling Setpoint',
-        '1P BOX B W Thermal Zone Cooling Setpoint',
-        '1P BOX A NW Thermal Zone Cooling Setpoint',
-        '2P BOX A NW Thermal Zone Cooling Setpoint',
-        '2P PLANTA LIBRE Thermal Zone Cooling Setpoint',
-        '3P LIVING Thermal Zone Cooling Setpoint',
-        '3P ESPARCIMIENTO Thermal Zone Cooling Setpoint',
-    ]
-    
-    if agent_id in cooling_agents:
-        transform_action = 23 + action
-    elif agent_id in heating_agents:
-        transform_action = 21 - action
-    else:
-        ValueError('Agent id not valid.')
-    
-    return transform_action
+    def transform_action(self, action:Dict[str,float]) -> Dict[str, Any]:
+        raise NotImplementedError
 
-def thermostat_dual_mass_flow_rate(agent_id, action):
-    """This method take a discret action in the range of [0,6) and transforms it
-    into a temperature of cooling or heating setpoints, depending the agent id 
-    involve.
-    """
-    if agent_id == 'cooling_setpoint':
-        transform_action = 23 + action
-    elif agent_id == 'heating_setpoint':
-        transform_action = 21 - action
-    elif agent_id == 'AirMassFlowRate':
-        transform_action = action/10
-    else:
-        return action
-    
-    return transform_action
+"""Example"""
 
-def thermostat_dual_mass_flow_rate_VN(agent_id, action):
-    """This method take a discret action in the range of [0,6) and transforms it
-    into a temperature of cooling or heating setpoints, depending the agent id 
-    involve.
-    """
-    if agent_id == 'cooling_setpoint':
-        transform_action = 23 + action
-    elif agent_id == 'heating_setpoint':
-        transform_action = 21 - action
-    elif agent_id == 'AirMassFlowRate':
-        transform_action = action/10
-    elif agent_id == 'opening_window_1' or agent_id == 'opening_window_2':
-        transform_action = action/5
-    else:
-        return action
+class DualSetPointThermostat(ActionTransformer):
+    def __init__(self, agents_config:Dict, _agent_ids:Set):
+        super().__init__(agents_config, _agent_ids)
     
-    return transform_action
+    def transform_action(self, action:Dict[str,int]) -> Dict[str, float|int]:
+        action_transformed = {agent: 0. for agent in self._agent_ids}
+        for agent in self._agent_ids:
+            actuator_type = self.agents_config[agent]['actuator_type']
+            if actuator_type == 1: # Cooling
+                # transfort value between [0,1] to [23,27]
+                action_transformed[agent] = 23 + (action[agent]/10)*(27-23)
+            elif actuator_type == 2: # Heating
+                # transfort value between [0,1] to [18,22]
+                action_transformed[agent] = 18 + (action[agent]/10)*(22-18)
+            elif actuator_type == 3: # Flow Rate
+                action_transformed[agent] = action[agent]/20
+            else:
+                raise ValueError('Actuator type not valid.')
+        
+        return action_transformed

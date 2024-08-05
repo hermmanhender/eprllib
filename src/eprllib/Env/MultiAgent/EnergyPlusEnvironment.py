@@ -6,9 +6,9 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space
+from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space, continuous_action_space, discrete_action_space
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
-from eprllib.tools import Rewards
+from eprllib.Tools import Rewards
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -82,7 +82,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # asignation of environment action space.
-        self.action_space = self.env_config['action_space']
+        self.action_space = discrete_action_space()
         # asignation of the environment observation space.
         self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
@@ -121,7 +121,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if not self.truncateds:
             # Condition implemented to restart a new epsiode when simulation is completed and 
             # EnergyPlus Runner is already inicialized.
-            if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
+            if self.energyplus_runner is not None:
                 self.energyplus_runner.stop()
             # Define the queues for flow control between MDP and EnergyPlus threads in a max size 
             # of 1 because EnergyPlus timestep will be processed at a time.
