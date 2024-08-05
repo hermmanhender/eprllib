@@ -121,7 +121,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if not self.truncateds:
             # Condition implemented to restart a new epsiode when simulation is completed and 
             # EnergyPlus Runner is already inicialized.
-            if self.energyplus_runner is not None and self.energyplus_runner.simulation_complete:
+            if self.energyplus_runner is not None:
                 self.energyplus_runner.stop()
             # Define the queues for flow control between MDP and EnergyPlus threads in a max size 
             # of 1 because EnergyPlus timestep will be processed at a time.
