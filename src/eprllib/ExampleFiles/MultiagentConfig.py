@@ -47,6 +47,7 @@ env_config = {
             'actuator_type': 3,
             'agent_indicator': 1,
         },
+    },
     # The action space for all the agents.
     'action_space': 'gym.spaces.Discrete() type',
     # Definition of the observation space.
