@@ -1,9 +1,13 @@
 """This module is used to define the basic configuration
 of an environment.
 """
-from typing import Optional, List, Dict, Set, Any
-from tempfile import TemporaryDirectory
-import time
+from typing import Optional, List, Dict, Set, Tuple, Any
+
+def env_config_to_dict(EnvConfig) -> Dict:
+    """Convert an EnvConfig object into a dict before to be used
+    in the env_config parameter of RLlib environment config.
+    """
+    return vars(EnvConfig)
 
 class EnvConfig:
     def __init__(self):
@@ -12,13 +16,15 @@ class EnvConfig:
 
         """
         # directories
-        self.epjson_path = NotImplemented
-        self.epw_path = NotImplemented
-        date = time.asctime()
-        self.output_path = TemporaryDirectory(prefix=f"{date}_eprllib_")
+        self.epjson_path:str = None
+        self.epw_path:str = None
+        self.output_path:str = None
+        self.ep_terminal_output: bool = True
 
         # agents
-        self.agents_config: Dict[str,Dict[str,Any]] = NotImplementedError(
+        self.agents_config: Dict[str,Dict[str,Any]] = None
+        
+        NotImplementedError(
             """The agents must to be configured. For example:
 
             OfficeModel = EnvConfig().agents({
@@ -32,7 +38,17 @@ class EnvConfig:
             )
             """
         )
+
+        # observaton_options
+        self.use_one_day_weather_prediction: bool = False
+        self.ep_environment_variables: List = None
+        self.ep_thermal_zones_variables: List = None
+        self.ep_object_variables: Dict[str,Dict[str,Tuple[str,str]]] = None
+        self.ep_meters: List = None
+
+
         # functionalities
+        self.cut_episode_len: int = None
         self.episode_fn = None
         self.episode_config: Dict = None
     
@@ -266,7 +282,8 @@ class EnvConfig:
         use_agent_indicator: bool = None,
         use_agent_type: bool = None,
         use_building_properties: bool = None,
-        buildig_properties: Dict[str,Dict[str,float]] = None
+        buildig_properties: Dict[str,Dict[str,float]] = None,
+        use_one_day_weather_prediction: bool = None
     ) -> None:
         """_description_
 
@@ -315,6 +332,8 @@ class EnvConfig:
                 )
             else:
                 self.buildig_properties = buildig_properties
+        if use_one_day_weather_prediction != None:
+            self.use_one_day_weather_prediction = use_one_day_weather_prediction
 
     def functionalities(
         self,
