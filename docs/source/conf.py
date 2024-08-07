@@ -9,6 +9,7 @@
 project = 'eprllib'
 copyright = '2024, Germán Rodolfo Henderson'
 author = 'Germán Rodolfo Henderson'
+version =  'v1.3.3'
 release = 'v1.3.3'
 
 # -- General configuration ---------------------------------------------------
