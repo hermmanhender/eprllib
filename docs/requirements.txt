@@ -1,2 +1,4 @@
+sphinx
+sphinx-rtd-theme
 gymnasium>=0.28.1
 ray>=2.20.0
