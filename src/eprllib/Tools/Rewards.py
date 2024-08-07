@@ -33,6 +33,19 @@ from typing import Dict
 from math import exp
 import numpy as np
 
+class RewardFunction:
+    def __init__(
+        self,
+        EnvObject
+    ):
+        self.EnvObject = EnvObject
+    
+    def calculate_reward(
+        self,
+        infos: Dict[str,Dict[str,Any]] = None
+        ) -> Dict[str,float]:
+        return NotImplemented
+
 # Defining the reward functions
 def dalamagkidis_2007(EnvObject, infos: Dict) -> Dict[str,float]:
     """El autor plantea una función de recompensa con tres térmicos ponderados. Cada uno de estos 
