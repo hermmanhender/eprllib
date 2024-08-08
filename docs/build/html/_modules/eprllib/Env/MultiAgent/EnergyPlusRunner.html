@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eprllib.Env.MultiAgent.EnergyPlusRunner &#8212; eprllib v1.3.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../../_static/documentation_options.js?v=18ec1c5b"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for eprllib.Env.MultiAgent.EnergyPlusRunner</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;# ENERGYPLUS RUNNER</span>
+
+<span class="sd">This script contain the EnergyPlus Runner that execute EnergyPlus from its </span>
+<span class="sd">Python API in the version 23.2.0.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">eprllib.Tools.ActionTransformers</span> <span class="kn">import</span> <span class="n">ActionTransformer</span>
+<span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgent.EnvUtils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">runner_value_inspection</span><span class="p">,</span> 
+    <span class="n">environment_variables</span><span class="p">,</span> 
+    <span class="n">thermal_zone_variables</span><span class="p">,</span> 
+    <span class="n">object_variables</span><span class="p">,</span> 
+    <span class="n">meters</span><span class="p">,</span> 
+    <span class="n">actuators</span><span class="p">,</span> 
+    <span class="n">EP_API_add_path</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># EnergyPlus Python API path adding</span>
+<span class="n">EP_API_add_path</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">pyenergyplus.api</span> <span class="kn">import</span> <span class="n">EnergyPlusAPI</span>
+<span class="n">api</span> <span class="o">=</span> <span class="n">EnergyPlusAPI</span><span class="p">()</span>
+
+<div class="viewcode-block" id="EnergyPlusRunner">
+<a class="viewcode-back" href="../../../../eprllib.Env.MultiAgent.html#eprllib.Env.MultiAgent.EnergyPlusRunner.EnergyPlusRunner">[docs]</a>
+<span class="k">class</span> <span class="nc">EnergyPlusRunner</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to</span>
+<span class="sd">    send it trhougt queue to the EnergyPlus Environment thread.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">env_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">obs_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
+        <span class="n">act_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
+        <span class="n">infos_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">,</span>
+        <span class="n">_agent_ids</span><span class="p">:</span> <span class="n">Set</span><span class="p">,</span>
+        <span class="n">_thermal_zone_ids</span><span class="p">:</span> <span class="n">Set</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The object has an intensive interaction with EnergyPlus Environment script, exchange information</span>
+<span class="sd">        between two threads. For a good coordination queue events are stablished and different canals of</span>
+<span class="sd">        information are defined.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            episode (int): Episode number.</span>
+<span class="sd">            env_config (Dict[str, Any]): Environment configuration defined in the call to the EnergyPlus Environment.</span>
+<span class="sd">            obs_queue (Queue): Queue object definition.</span>
+<span class="sd">            act_queue (Queue): Queue object definition.</span>
+<span class="sd">            infos_queue (Queue): Queue object definition.</span>
+<span class="sd">        </span>
+<span class="sd">        Return:</span>
+<span class="sd">            None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span> <span class="o">=</span> <span class="n">env_config</span>
+        <span class="n">runner_value_inspection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">)</span>
+        
+        <span class="c1"># Asignation of variables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode</span> <span class="o">=</span> <span class="n">episode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_queue</span> <span class="o">=</span> <span class="n">obs_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">act_queue</span> <span class="o">=</span> <span class="n">act_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infos_queue</span> <span class="o">=</span> <span class="n">infos_queue</span>
+        
+        <span class="c1"># The queue events are generated.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">act_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infos_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span> <span class="o">=</span> <span class="n">_agent_ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span> <span class="o">=</span> <span class="n">_thermal_zone_ids</span>
+        <span class="c1"># Variables to be used in this thread.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_exec_thread</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_handles</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_complete</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_observation</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infos</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># create a variable to save the obs dict key to use in posprocess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infos_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent_actions</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Declaration of variables, meters and actuators to use in the simulation. Handles</span>
+        <span class="c1"># are used in _init_handle method.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_handles</span> <span class="o">=</span> <span class="n">environment_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_var_handles</span> <span class="o">=</span> <span class="n">thermal_zone_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_var_handles</span> <span class="o">=</span> <span class="n">object_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meter_handles</span> <span class="o">=</span> <span class="n">meters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actuators</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actuator_handles</span> <span class="o">=</span> <span class="n">actuators</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="EnergyPlusRunner.start">
+<a class="viewcode-back" href="../../../../eprllib.Env.MultiAgent.html#eprllib.Env.MultiAgent.EnergyPlusRunner.EnergyPlusRunner.start">[docs]</a>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method inicialize EnergyPlus. First the episode is configurate, the calling functions</span>
+<span class="sd">        established and the thread is generated here.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Start a new EnergyPlus state (condition for execute EnergyPlus Python API).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">new_state</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">callback_begin_zone_timestep_after_init_heat_balance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_actions</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">callback_end_zone_timestep_after_zone_reporting</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_obs</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">set_console_output_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_terminal_output&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+        
+        <span class="k">def</span> <span class="nf">_run_energyplus</span><span class="p">():</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Run EnergyPlus in a non-blocking way with Threads.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">cmd_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_eplus_args</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;running EnergyPlus with args: </span><span class="si">{</span><span class="n">cmd_args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sim_results</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">run_energyplus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span><span class="p">,</span> <span class="n">cmd_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulation_complete</span> <span class="o">=</span> <span class="kc">True</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_exec_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">_run_energyplus</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># Here the thread is divide in two.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_exec_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_collect_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_argument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;EnergyPlus callback that collects output variables, meters and actuator actions</span>
+<span class="sd">        values and enqueue them to the EnergyPlus Environment thread.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># To not perform observations when the callbacks and the </span>
+        <span class="c1"># warming period are not complete.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_callback</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_complete</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="n">hour</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">hour</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+        <span class="n">zone_time_step_number</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">zone_time_step_number</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+        
+        <span class="c1"># Register the state of the actuators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent_actions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_actuator_value</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">handle</span>
+            <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actuator_handles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        
+        <span class="c1"># thermal zone obs and infos dicts</span>
+        <span class="n">obs_tz</span> <span class="o">=</span> <span class="p">{</span><span class="n">thermal_zone</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">thermal_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">}</span>
+        <span class="n">infos_tz</span> <span class="o">=</span> <span class="p">{</span><span class="n">thermal_zone</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">thermal_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">}</span>
+        
+        <span class="c1"># Loop for each Thermal Zone conditioned.   </span>
+        <span class="k">for</span> <span class="n">thermal_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_environment_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="c1"># Transform the list of names in Tuples</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_variable_value</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">handle</span>
+                        <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_handles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_thermal_zones_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="c1"># Transform the list of names in Tuples</span>
+                <span class="n">thermal_zone_thermal_zone_var_handles</span><span class="p">:</span><span class="n">Dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_var_handles</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_variable_value</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">handle</span>
+                        <span class="ow">in</span> <span class="n">thermal_zone_thermal_zone_var_handles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_object_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="c1"># Transform the list of names in Tuples</span>
+                <span class="n">thermal_zone_object_var_handles</span><span class="p">:</span><span class="n">Dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_var_handles</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_variable_value</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">handle</span>
+                        <span class="ow">in</span> <span class="n">thermal_zone_object_var_handles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="c1"># add the meters if any.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_meters&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_meter_value</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">handle</span>
+                        <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meter_handles</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="c1"># Upgrade the observation with the building general properties</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_building_properties&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">building_properties</span><span class="p">:</span><span class="n">Dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;building_properties&#39;</span><span class="p">][</span><span class="n">thermal_zone</span><span class="p">]</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">building_properties</span><span class="p">)</span>
+        
+            <span class="c1"># Upgrade of the timestep observation with other variables.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;time_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">time_variables_methods</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;actual_date_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">actual_date_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets a simple sum of the values of the date/time function. Could be used in random seeding.</span>
+                    <span class="s1">&#39;actual_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">actual_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.</span>
+                    <span class="s1">&#39;current_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">current_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current time of day in hours, where current time represents the end time of the current time step.</span>
+                    <span class="s1">&#39;day_of_month&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">day_of_month</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current day of month (1-31)</span>
+                    <span class="s1">&#39;day_of_week&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">day_of_week</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current day of the week (1-7)</span>
+                    <span class="s1">&#39;day_of_year&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">day_of_year</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current day of the year (1-366)</span>
+                    <span class="s1">&#39;holiday_index&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">holiday_index</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.</span>
+                    <span class="s1">&#39;hour&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">hour</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current hour of the simulation (0-23)</span>
+                    <span class="s1">&#39;minutes&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">minutes</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current minutes into the hour (1-60)</span>
+                    <span class="s1">&#39;month&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">month</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the current month of the simulation (1-12)</span>
+                    <span class="s1">&#39;num_time_steps_in_hour&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">num_time_steps_in_hour</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.</span>
+                    <span class="s1">&#39;system_time_step&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">system_time_step</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.</span>
+                    <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">year</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).</span>
+                    <span class="s1">&#39;zone_time_step&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">zone_time_step</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.</span>
+                    <span class="s1">&#39;zone_time_step_number&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">zone_time_step_number</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span> <span class="c1"># The current zone time step index, from 1 to the number of zone time steps per hour</span>
+                <span class="p">}</span>
+                <span class="n">time_variables_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">variable</span><span class="p">:</span> <span class="n">time_variables_methods</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;time_variables&#39;</span><span class="p">]}</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time_variables_dict</span><span class="p">)</span>
+                
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weather_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">weather_variables_methods</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;is_raining&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">is_raining</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.</span>
+                    <span class="s1">&#39;sun_is_up&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">sun_is_up</span><span class="p">(</span><span class="n">state_argument</span><span class="p">),</span> <span class="c1"># Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.</span>
+                    <span class="c1"># Gets the specified weather data at the specified hour and time step index within that hour</span>
+                    <span class="s1">&#39;today_weather_albedo_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_albedo_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_beam_solar_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_beam_solar_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_diffuse_solar_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_diffuse_solar_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_horizontal_ir_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_horizontal_ir_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_is_raining_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_is_raining_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_is_snowing_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_is_snowing_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_liquid_precipitation_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_liquid_precipitation_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_outdoor_barometric_pressure_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_barometric_pressure_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_outdoor_dew_point_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_dew_point_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_outdoor_dry_bulb_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_dry_bulb_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_outdoor_relative_humidity_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_relative_humidity_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_sky_temperature_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_sky_temperature_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_wind_direction_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_wind_direction_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;today_weather_wind_speed_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_wind_speed_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_albedo_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_albedo_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_beam_solar_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_beam_solar_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_diffuse_solar_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_diffuse_solar_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_horizontal_ir_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_horizontal_ir_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_is_raining_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_is_raining_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_is_snowing_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_is_snowing_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_liquid_precipitation_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_liquid_precipitation_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_outdoor_barometric_pressure_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_barometric_pressure_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_outdoor_dew_point_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_dew_point_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_outdoor_dry_bulb_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_dry_bulb_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_outdoor_relative_humidity_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_relative_humidity_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_sky_temperature_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_sky_temperature_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_wind_direction_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_wind_direction_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span>
+                    <span class="s1">&#39;tomorrow_weather_wind_speed_at_time&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_wind_speed_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">)</span>
+                <span class="p">}</span>
+                <span class="n">weather_variables_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">variable</span><span class="p">:</span> <span class="n">weather_variables_methods</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;weather_variables&#39;</span><span class="p">]}</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">weather_variables_dict</span><span class="p">)</span>
+            
+            <span class="c1"># Weather prediction of 24 hours</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_one_day_weather_prediction&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">weather_pred</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="c1"># The list sigma_max contains the standard deviation of the predictions in the following order:</span>
+                <span class="c1">#   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, </span>
+                <span class="c1">#   - Relative Humidity in % with squer desviation of 20%, </span>
+                <span class="c1">#   - Wind Direction in degree with squer desviation of 40°, </span>
+                <span class="c1">#   - Wind Speed in m/s with squer desviation of 3.41 m/s, </span>
+                <span class="c1">#   - Barometric pressure in Pa with a standart deviation of 1000 Pa, </span>
+                <span class="c1">#   - Liquid Precipitation Depth in mm with desviation of 0.5 mm.</span>
+                <span class="n">sigma_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.43178211</span><span class="p">,</span> <span class="mf">4.47213595</span><span class="p">,</span> <span class="mf">6.32455532</span><span class="p">,</span> <span class="mf">1.84661853</span><span class="p">,</span> <span class="mf">31.62</span><span class="p">,</span> <span class="mf">0.707107</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">24</span><span class="p">):</span>
+                    <span class="c1"># For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:</span>
+                    <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma_max</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span><span class="o">/</span><span class="mi">23</span><span class="p">)</span>
+                    <span class="n">prediction_hour</span> <span class="o">=</span> <span class="n">hour</span><span class="o">+</span><span class="mi">1</span> <span class="o">+</span> <span class="n">h</span>
+                    <span class="k">if</span> <span class="n">prediction_hour</span> <span class="o">&lt;</span> <span class="mi">24</span><span class="p">:</span>
+                        <span class="n">weather_pred</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                            <span class="sa">f</span><span class="s1">&#39;today_weather_liquid_precipitation_at_time_</span><span class="si">{</span><span class="n">prediction_hour</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_liquid_precipitation_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">5</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;today_weather_outdoor_barometric_pressure_at_time</span><span class="si">{</span><span class="n">prediction_hour</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_barometric_pressure_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">4</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;today_weather_outdoor_dry_bulb_at_time</span><span class="si">{</span><span class="n">prediction_hour</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_dry_bulb_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                            <span class="sa">f</span><span class="s1">&#39;today_weather_outdoor_relative_humidity_at_time</span><span class="si">{</span><span class="n">prediction_hour</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_outdoor_relative_humidity_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;today_weather_wind_direction_at_time</span><span class="si">{</span><span class="n">prediction_hour</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_wind_direction_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">2</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;today_weather_wind_speed_at_time</span><span class="si">{</span><span class="n">prediction_hour</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">today_weather_wind_speed_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">3</span><span class="p">])),</span>
+                        <span class="p">})</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">prediction_hour_t</span> <span class="o">=</span> <span class="n">prediction_hour</span> <span class="o">-</span> <span class="mi">24</span>
+                        <span class="n">weather_pred</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                            <span class="sa">f</span><span class="s1">&#39;tomorrow_weather_liquid_precipitation_at_time</span><span class="si">{</span><span class="n">prediction_hour_t</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_liquid_precipitation_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour_t</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">5</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;tomorrow_weather_outdoor_barometric_pressure_at_time</span><span class="si">{</span><span class="n">prediction_hour_t</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_barometric_pressure_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour_t</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">4</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;tomorrow_weather_outdoor_dry_bulb_at_time</span><span class="si">{</span><span class="n">prediction_hour_t</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_dry_bulb_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour_t</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                            <span class="sa">f</span><span class="s1">&#39;tomorrow_weather_outdoor_relative_humidity_at_time</span><span class="si">{</span><span class="n">prediction_hour_t</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_outdoor_relative_humidity_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour_t</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;tomorrow_weather_wind_direction_at_time</span><span class="si">{</span><span class="n">prediction_hour_t</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_wind_direction_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour_t</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">2</span><span class="p">])),</span>
+                            <span class="sa">f</span><span class="s1">&#39;tomorrow_weather_wind_speed_at_time</span><span class="si">{</span><span class="n">prediction_hour_t</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">tomorrow_weather_wind_speed_at_time</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">prediction_hour_t</span><span class="p">,</span> <span class="n">zone_time_step_number</span><span class="p">),</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">3</span><span class="p">])),</span>
+                        <span class="p">})</span>
+                <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">weather_pred</span><span class="p">)</span>
+                
+                <span class="c1"># Set the variables in the infos dict before to delete from the obs dict.</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;infos_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="n">infos_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">variable</span><span class="p">:</span> <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">][</span><span class="n">variable</span><span class="p">]</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;infos_variables&#39;</span><span class="p">][</span><span class="n">thermal_zone</span><span class="p">]}</span>
+                <span class="c1"># after infos assignation, delete not observable variables</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;no_observable_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;no_observable_variables&#39;</span><span class="p">][</span><span class="n">thermal_zone</span><span class="p">]:</span>
+                        <span class="k">del</span> <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">][</span><span class="n">variable</span><span class="p">]</span>
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_observation</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">obs_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">obs_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">infos_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">infos_tz</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_actuator_state&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">obs_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;actuator_state&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_agent_indicator&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">obs_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;agent_indicator&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_agent_type&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">obs_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;agent_type&#39;</span><span class="p">)</span>
+                <span class="c1"># ==FIN DEL LOOP DE OBSERVACIONES==</span>
+                
+        <span class="c1"># Ahora se tienen todas las observaciones e infos, una por cada zona térmica.</span>
+        
+        <span class="c1"># Se asignan observaciones y infos a cada agente.</span>
+        <span class="n">agents_obs</span> <span class="o">=</span> <span class="p">{</span><span class="n">agent</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span><span class="p">}</span>
+        <span class="n">agents_infos</span> <span class="o">=</span> <span class="p">{</span><span class="n">agent</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span><span class="p">}</span>
+        
+        <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span><span class="p">:</span>
+            <span class="c1"># Agent properties</span>
+            <span class="n">agent_thermal_zone</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;agents_config&#39;</span><span class="p">][</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;thermal_zone&#39;</span><span class="p">]</span>
+            <span class="n">agent_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;agents_config&#39;</span><span class="p">][</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;actuator_type&#39;</span><span class="p">]</span>
+            <span class="n">agent_indicator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;agents_config&#39;</span><span class="p">][</span><span class="n">agent</span><span class="p">][</span><span class="s1">&#39;agent_indicator&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># Agent infos asignation</span>
+            <span class="n">agents_infos</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">=</span> <span class="n">infos_tz</span><span class="p">[</span><span class="n">agent_thermal_zone</span><span class="p">]</span>
+                
+            <span class="c1"># Transform the observation in a numpy array to meet the condition expected in a RLlib Environment</span>
+            <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">obs_tz</span><span class="p">[</span><span class="n">agent_thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+            <span class="c1"># if apply, add the actuator state.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_actuator_state&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">],</span>
+                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_actions</span><span class="p">[</span><span class="n">agent</span><span class="p">]],</span>
+                    <span class="p">),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span>
+                <span class="p">)</span>
+            <span class="c1"># if apply, add the agent indicator.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_agent_indicator&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">],</span>
+                        <span class="p">[</span><span class="n">agent_indicator</span><span class="p">],</span>
+                    <span class="p">),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span>
+                <span class="p">)</span>
+            <span class="c1"># if apply, add the agent type.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_agent_type&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+                <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">agents_obs</span><span class="p">[</span><span class="n">agent</span><span class="p">],</span>
+                        <span class="p">[</span><span class="n">agent_type</span><span class="p">],</span>
+                    <span class="p">),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span>
+                <span class="p">)</span>
+        
+        <span class="c1"># Set the agents observation and infos to communicate with the EPEnv.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infos_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">agents_infos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infos_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">agents_obs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_collect_first_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_argument</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method is used to collect only the first observation of the environment when the episode beggins.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_observation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_collect_obs</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">first_observation</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_send_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_argument</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;EnergyPlus callback that sets actuator value from last decided action</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+          
+        <span class="c1"># To not perform actions if the callbacks and the warming period are not complete.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_callback</span><span class="p">(</span><span class="n">state_argument</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="c1"># To not perform actions when the episode is ended or is the first timestep</span>
+        <span class="c1"># and there are not observations.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_complete</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="c1"># If is the first timestep, obtain the first observation before to consult for an action</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_observation</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;num_time_steps_in_hour&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">num_time_steps_in_hour</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_collect_first_obs</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+            
+        <span class="c1"># Wait for an action.</span>
+        <span class="n">event_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_event</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">120</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event_flag</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The time waiting an action was over.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="c1"># Get the central action from the EnergyPlus Environment `step` method.</span>
+        <span class="c1"># In the case of simple agent a int value and for multiagents a dictionary.</span>
+        <span class="n">dict_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action_transformer&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">action_transformer</span><span class="p">:</span><span class="n">ActionTransformer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;action_transformer&#39;</span><span class="p">]</span>
+            <span class="n">action_transformer</span> <span class="o">=</span> <span class="n">action_transformer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;agents_config&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span><span class="p">)</span>
+            <span class="c1"># Transform all the actions</span>
+            <span class="n">dict_action</span> <span class="o">=</span> <span class="n">action_transformer</span><span class="o">.</span><span class="n">transform_action</span><span class="p">(</span><span class="n">dict_action</span><span class="p">)</span>
+            
+        <span class="c1"># Perform the actions in EnergyPlus simulation.       </span>
+        <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_agent_ids</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">set_actuator_value</span><span class="p">(</span>
+                <span class="n">state</span><span class="o">=</span><span class="n">state_argument</span><span class="p">,</span>
+                <span class="n">actuator_handle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">actuator_handles</span><span class="p">[</span><span class="n">agent</span><span class="p">],</span>
+                <span class="n">actuator_value</span><span class="o">=</span><span class="n">dict_action</span><span class="p">[</span><span class="n">agent</span><span class="p">]</span>
+            <span class="p">)</span>
+       
+    <span class="k">def</span> <span class="nf">_init_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_argument</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize EnergyPlus handles and checks if simulation runtime is ready&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_handles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_handles</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_handles</span> \
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">warmup_flag</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span>
+
+    <span class="k">def</span> <span class="nf">_init_handles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_argument</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize sensors/actuators handles to interact with during simulation&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_handles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">api_data_fully_ready</span><span class="p">(</span><span class="n">state_argument</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_environment_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">var_handles</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_variable_handle</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="o">*</span><span class="n">var</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_thermal_zones_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">thermal_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_var_handles</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_variable_handle</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="o">*</span><span class="n">var</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_variables</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}),</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_object_variables&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">thermal_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">object_var_handles</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_variable_handle</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="o">*</span><span class="n">var</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_variables</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">}),</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ep_meters&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">meter_handles</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_meter_handle</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="n">meter</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">meter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actuator_handles</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">get_actuator_handle</span><span class="p">(</span><span class="n">state_argument</span><span class="p">,</span> <span class="o">*</span><span class="n">actuator</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">actuator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actuators</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">thermal_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thermal_zone_ids</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">handles</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var_handles</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_var_handles</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">object_var_handles</span><span class="p">[</span><span class="n">thermal_zone</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">meter_handles</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">actuator_handles</span>
+                <span class="p">]:</span>
+                    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">v</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">handles</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+                        <span class="n">available_data</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">exchange</span><span class="o">.</span><span class="n">list_available_api_data_csv</span><span class="p">(</span><span class="n">state_argument</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                        <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;got -1 handle, check your var/meter/actuator names:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&gt; variables: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var_handles</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&gt; thermal zone variables: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">thermal_zone_var_handles</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&gt; object variables: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">object_var_handles</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&gt; meters: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">meter_handles</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&gt; actuators: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">actuator_handles</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&gt; available EnergyPlus API data: </span><span class="si">{</span><span class="n">available_data</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_handles</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="EnergyPlusRunner.stop">
+<a class="viewcode-back" href="../../../../eprllib.Env.MultiAgent.html#eprllib.Env.MultiAgent.EnergyPlusRunner.EnergyPlusRunner.stop">[docs]</a>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to stop EnergyPlus simulation and joint the threads.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_complete</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulation_complete</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flush_queues</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_exec_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyplus_exec_thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_observation</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">clear_callbacks</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">state_manager</span><span class="o">.</span><span class="n">delete_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energyplus_state</span><span class="p">)</span>  </div>
+
+
+<div class="viewcode-block" id="EnergyPlusRunner.failed">
+<a class="viewcode-back" href="../../../../eprllib.Env.MultiAgent.html#eprllib.Env.MultiAgent.EnergyPlusRunner.EnergyPlusRunner.failed">[docs]</a>
+    <span class="k">def</span> <span class="nf">failed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method tells if a EnergyPlus simulations was finished successfully or not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Boolean value of the success of the simulation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_results</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="EnergyPlusRunner.make_eplus_args">
+<a class="viewcode-back" href="../../../../eprllib.Env.MultiAgent.html#eprllib.Env.MultiAgent.EnergyPlusRunner.EnergyPlusRunner.make_eplus_args">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_eplus_args</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make command line arguments to pass to EnergyPlus</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eplus_args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-r&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">eplus_args</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="s2">&quot;-w&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s2">&quot;epw&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;-d&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">/episode-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">episode</span><span class="si">:</span><span class="s2">08</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env_config</span><span class="p">[</span><span class="s2">&quot;epjson&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">eplus_args</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">_flush_queues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to liberate the space in the different queue objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">obs_queue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_queue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">infos_queue</span><span class="p">]:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">q</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+                <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">eprllib</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Germán Rodolfo Henderson.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

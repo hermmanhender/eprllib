@@ -1,8 +1,5 @@
 sphinx
 sphinx-rtd-theme
 myst_parser
-sphinx.ext.autodoc
-sphinx.ext.napoleon
-sphinx.ext.viewcode
 gymnasium>=0.28.1
 ray>=2.20.0
