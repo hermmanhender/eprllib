@@ -15,7 +15,13 @@ release = 'v1.3.4'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser"]
+extensions = [
+    "myst_parser",
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',  # To support Google and NumPy style docstrings
+    'sphinx.ext.viewcode',  # Adds links to highlighted source code
+]
+
 
 templates_path = ['_templates']
 exclude_patterns = []
