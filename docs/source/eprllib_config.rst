@@ -40,7 +40,6 @@ Example configuration
     import eprllib
     from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
     from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
-
     # Configure eprllib.
     BuildingModel = EnvConfig()
     BuildingModel.generals(
@@ -60,13 +59,10 @@ Example configuration
             }
         }
     )
-
     # Start a Ray server.
     ray.init()
-
     # Register the environment.
     register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
-
     # Configure the algorith and assign the environment registred.
     algo = PPOConfig ( )
     algo.environment(
@@ -74,7 +70,6 @@ Example configuration
         env_config = env_config_to_dict(BuildingModel)
     )
     algo.build()
-
     # Train the policy with Tune.
     tune.Tuner(
         'PPO',
