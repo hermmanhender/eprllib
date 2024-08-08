@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eprllib.Env.EnvConfig &#8212; eprllib v1.3.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=bc949842"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for eprllib.Env.EnvConfig</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module is used to define the basic configuration</span>
+<span class="sd">of an environment.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">eprllib.Tools.ActionTransformers</span> <span class="kn">import</span> <span class="n">ActionTransformer</span>
+<span class="kn">from</span> <span class="nn">eprllib.Tools.Rewards</span> <span class="kn">import</span> <span class="n">RewardFunction</span>
+
+<div class="viewcode-block" id="env_config_to_dict">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.env_config_to_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">env_config_to_dict</span><span class="p">(</span><span class="n">EnvConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an EnvConfig object into a dict before to be used</span>
+<span class="sd">    in the env_config parameter of RLlib environment config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">vars</span><span class="p">(</span><span class="n">EnvConfig</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EnvConfig">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig">[docs]</a>
+<span class="k">class</span> <span class="nc">EnvConfig</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        _description_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># generals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epjson_path</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epw_path</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_terminal_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span>
+
+        <span class="c1"># agents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agents_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># observations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_actuator_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_agent_indicator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_agent_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_building_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildig_properties</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_one_day_weather_prediction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_environment_variables</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_thermal_zones_variables</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_object_variables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ep_meters</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># actions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_transformer</span><span class="p">:</span> <span class="n">ActionTransformer</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># rewards</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="p">:</span> <span class="n">RewardFunction</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># functionalities</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cut_episode_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_fn</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_config</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="EnvConfig.generals">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig.generals">[docs]</a>
+    <span class="k">def</span> <span class="nf">generals</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">epjson_path</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">epw_path</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="p">:</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_description_</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epjson_path (str): The path to the EnergyPlus model in the format of epJSON file.</span>
+<span class="sd">            epw_path (str): The path to the EnergyPlus weather file in the format of epw file.</span>
+<span class="sd">            output_path (str): The path to the output directory for the EnergyPlus simulation.</span>
+<span class="sd">            ep_terminal_output (bool): For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.</span>
+<span class="sd">            timeout (float): timeout define the time that the environment wait for an observation and the time that the environment wait to apply an action in the EnergyPlus simulation. After that time, the episode is finished. If your environment is time consuming, you can increase this limit. By default the value is 10 seconds.</span>
+<span class="sd">    </span>
+<span class="sd">        </span>
+<span class="sd">        Return: The EnvConfig modified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">epjson_path</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epjson_path</span> <span class="o">=</span> <span class="n">epjson_path</span>
+        <span class="k">if</span> <span class="n">epw_path</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epw_path</span> <span class="o">=</span> <span class="n">epw_path</span>
+        <span class="k">if</span> <span class="n">output_path</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span>
+        <span class="k">if</span> <span class="n">ep_terminal_output</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ep_terminal_output</span> <span class="o">=</span> <span class="n">ep_terminal_output</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span></div>
+
+        
+<div class="viewcode-block" id="EnvConfig.agents">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig.agents">[docs]</a>
+    <span class="k">def</span> <span class="nf">agents</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">agents_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_description_</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of</span>
+<span class="sd">            the agents involved in the environment. The mandatory components of the agent</span>
+<span class="sd">            are: ep_actuator_configuration, thermal_zone, actuator_type, agent_indicator.</span>
+<span class="sd">        </span>
+<span class="sd">        Example:</span>
+<span class="sd">            OfficeModel = EnvConfig().agents(</span>
+<span class="sd">                agents_config={</span>
+<span class="sd">                    &#39;Agent 1 in Room 1&#39;: {</span>
+<span class="sd">                        &#39;ep_actuator_config&#39;: (&quot;Schedule:Compact&quot;, &quot;Schedule Value&quot;, &quot;HVACHeatingLiving&quot;),</span>
+<span class="sd">                        &#39;thermal_zone&#39;: &#39;Thermal Zone: Living&#39;,</span>
+<span class="sd">                        &#39;actuator_type&#39;: 2,</span>
+<span class="sd">                        &#39;agent_indicator&#39;: 2,</span>
+<span class="sd">                    }</span>
+<span class="sd">                }</span>
+<span class="sd">            )</span>
+<span class="sd">        </span>
+<span class="sd">        Return:</span>
+<span class="sd">            EnvConfig: The environment with modifications.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">agents_config</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agents_config</span> <span class="o">=</span> <span class="n">agents_config</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="ne">NotImplementedError</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;The agents must to be configured.</span>
+<span class="sd">            </span>
+<span class="sd">            Example:</span>
+<span class="sd">                OfficeModel = EnvConfig().agents({</span>
+<span class="sd">                        &#39;Agent 1 in Room 1&#39;: {</span>
+<span class="sd">                            &#39;ep_actuator_config&#39;: (&quot;Ideal Loads Air System&quot;, &quot;Air Mass Flow Rate&quot;, &quot;Thermal Zone: Living Ideal Loads Air System&quot;),</span>
+<span class="sd">                            &#39;thermal_zone&#39;: &#39;Thermal Zone: Living&#39;,</span>
+<span class="sd">                            &#39;actuator_type&#39;: 3,</span>
+<span class="sd">                            &#39;agent_indicator&#39;: 1,</span>
+<span class="sd">                        },</span>
+<span class="sd">                    }</span>
+<span class="sd">                )</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="EnvConfig.observations">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig.observations">[docs]</a>
+    <span class="k">def</span> <span class="nf">observations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">use_actuator_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_agent_indicator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_agent_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_building_properties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">buildig_properties</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_one_day_weather_prediction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ep_environment_variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ep_thermal_zones_variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ep_object_variables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ep_meters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">time_variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">weather_variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">infos_variables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">no_observable_variables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_description_</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.</span>
+<span class="sd">            use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. This is recommended True for muilti-agent usage and False for single agent case.</span>
+<span class="sd">            use_agent_type (bool): define if the agent/actuator type will be used. This is recommended for different types of agents actuating in the same environment.</span>
+<span class="sd">            use_building_properties (bool): # define if the building properties will be used as an observation for the agent. This is recommended if different buildings/thermal zones will be used with the same policy.</span>
+<span class="sd">            buildig_properties (Dict[str,Dict[str,float]]): # The episode config define important aspects about the building to be simulated in the episode.</span>
+<span class="sd">            use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a prediction of the weather</span>
+<span class="sd">            time ahead. The variables to predict are:</span>
+<span class="sd">               - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, </span>
+<span class="sd">               - Relative Humidity in % with squer desviation of 20%, </span>
+<span class="sd">               - Wind Direction in degree with squer desviation of 40°, </span>
+<span class="sd">               - Wind Speed in m/s with squer desviation of 3.41 m/s, </span>
+<span class="sd">               - Barometric pressure in Pa with a standart deviation of 1000 Pa, </span>
+<span class="sd">               - Liquid Precipitation Depth in mm with desviation of 0.5 mm.</span>
+<span class="sd">            This are predicted from the next hour into the 24 hours ahead defined.</span>
+<span class="sd">            ep_environment_variables (List[str]):</span>
+<span class="sd">            ep_thermal_zones_variables (List[str]): </span>
+<span class="sd">            ep_object_variables (Dict[str,Dict[str,Tuple[str,str]]]): </span>
+<span class="sd">            ep_meters (List[str]): names of meters from EnergyPlus to observe.</span>
+<span class="sd">            time_variables (List[str]): The time variables to observe in the EnergyPlus simulation. The format is a list of the names described in the EnergyPlus epJSON format documentation (https://energyplus.readthedocs.io/en/latest/schema.html) related with temporal variables. All the options are listed bellow.</span>
+<span class="sd">            weather_variables (List[str]): The weather variables are related with weather values in the present timestep for the agent. The following list provide all the options avialable. To weather predictions see the &#39;weather_prob_days&#39; config that is follow in this file.</span>
+<span class="sd">            infos_variables (Dict[str,List[str]]): The information variables are important to provide information for the reward function. The observation is pass trough the agent as a NDArray but the info is a dictionary. In this way, we can identify clearly the value of a variable with the key name. All the variables used in the reward function must to be in the infos_variables list. The name of the variables must to corresponde with the names defined in the earlier lists.</span>
+<span class="sd">            no_observable_variables (Dict[str,List[str]]): There are occasions where some variables are consulted to use in training but are not part of the observation space. For that variables, you can use the following  list. An strategy, for example, to use the Fanger PPD value in the reward function but not in the observation space is to aggregate the PPD into the &#39;infos_variables&#39; and in the &#39;no_observable_variables&#39; list.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            OfficeModel = EnvConfig().observation_options(</span>
+<span class="sd">                use_building_properties = True,</span>
+<span class="sd">                buildig_properties = {</span>
+<span class="sd">                    {</span>
+<span class="sd">                    &#39;Thermal Zone: Living&#39;: {</span>
+<span class="sd">                        &#39;building_area&#39;: 20.75,</span>
+<span class="sd">                        &#39;aspect_ratio&#39;: 1.102564103,</span>
+<span class="sd">                        &#39;window_area_relation_north&#39;: 0.52173913,</span>
+<span class="sd">                        &#39;window_area_relation_east&#39;: 0.181267806,</span>
+<span class="sd">                        &#39;window_area_relation_south&#39;: 0,</span>
+<span class="sd">                        &#39;window_area_relation_west&#39;: 0.,</span>
+<span class="sd">                        &#39;E_cool_ref&#39;: 1500000.,</span>
+<span class="sd">                        &#39;E_heat_ref&#39;: 1500000.,</span>
+<span class="sd">                    }</span>
+<span class="sd">                }</span>
+<span class="sd">            )</span>
+<span class="sd">        </span>
+<span class="sd">        Return:</span>
+<span class="sd">            EnvConfig: The environment with modifications.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">use_actuator_state</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_actuator_state</span> <span class="o">=</span> <span class="n">use_actuator_state</span>
+        <span class="k">if</span> <span class="n">use_agent_indicator</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_agent_indicator</span> <span class="o">=</span> <span class="n">use_agent_indicator</span>
+        <span class="k">if</span> <span class="n">use_agent_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_agent_type</span> <span class="o">=</span> <span class="n">use_agent_type</span>
+        <span class="k">if</span> <span class="n">use_building_properties</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_building_properties</span> <span class="o">=</span> <span class="n">use_building_properties</span>
+            <span class="k">if</span> <span class="n">buildig_properties</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="ne">NotImplementedError</span><span class="p">(</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;The implmentation of building_properties is mandatory</span>
+<span class="sd">                    when you set &#39;use_building_properties=True&#39;. Set this to False or </span>
+<span class="sd">                    proporcionate a Dict[str,Dict[str,float]].</span>
+<span class="sd">                    &quot;&quot;&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">buildig_properties</span> <span class="o">=</span> <span class="n">buildig_properties</span>
+        <span class="k">if</span> <span class="n">use_one_day_weather_prediction</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_one_day_weather_prediction</span> <span class="o">=</span> <span class="n">use_one_day_weather_prediction</span>
+
+        <span class="k">if</span> <span class="n">ep_environment_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ep_environment_variables</span> <span class="o">=</span> <span class="n">ep_environment_variables</span>
+        <span class="k">if</span> <span class="n">ep_thermal_zones_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ep_thermal_zones_variables</span> <span class="o">=</span> <span class="n">ep_thermal_zones_variables</span>
+        <span class="k">if</span> <span class="n">ep_object_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ep_object_variables</span> <span class="o">=</span> <span class="n">ep_object_variables</span>
+        <span class="k">if</span> <span class="n">ep_meters</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ep_meters</span> <span class="o">=</span> <span class="n">ep_meters</span>
+        <span class="k">if</span> <span class="n">time_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_variables</span> <span class="o">=</span> <span class="n">time_variables</span>
+        <span class="k">if</span> <span class="n">weather_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weather_variables</span> <span class="o">=</span> <span class="n">weather_variables</span>
+        <span class="k">if</span> <span class="n">infos_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">infos_variables</span> <span class="o">=</span> <span class="n">infos_variables</span>
+        <span class="k">if</span> <span class="n">no_observable_variables</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">no_observable_variables</span> <span class="o">=</span> <span class="n">no_observable_variables</span></div>
+
+    
+<div class="viewcode-block" id="EnvConfig.actions">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig.actions">[docs]</a>
+    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">action_transformer</span><span class="p">:</span> <span class="n">ActionTransformer</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_description_</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            action_transformer (ActionTransformer): In the definition of the action space, usualy is use the discrete form of the gym spaces. In general, we don&#39;t use actions from 0 to n directly in the EnergyPlus simulation. With the objective to transform appropiately the discret action into a value action for EP we define the action_transformer funtion. This function take the arguments agent_id and action. You can find examples in eprllib.Tools.ActionTransformers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">action_transformer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_transformer</span> <span class="o">=</span> <span class="n">action_transformer</span></div>
+
+
+<div class="viewcode-block" id="EnvConfig.rewards">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig.rewards">[docs]</a>
+    <span class="k">def</span> <span class="nf">rewards</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">reward_fn</span><span class="p">:</span> <span class="n">RewardFunction</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reward_fn_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_description_</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos dictionary. As a return, gives a float number as reward. See eprllib.tools.rewards</span>
+<span class="sd">            reward_fn_config (Dict[str,Dict[str,Any]]): </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">reward_fn</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span> <span class="o">=</span> <span class="n">reward_fn</span>
+
+            <span class="k">if</span> <span class="n">reward_fn_config</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="ne">NotImplementedError</span><span class="p">(</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;If you set a reward_fn you need to specify the reward_fn_config. If the function don&#39;t use a config, set this parameter to False.</span>
+<span class="sd">                    &quot;&quot;&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn_config</span> <span class="o">=</span> <span class="n">reward_fn_config</span></div>
+
+
+<div class="viewcode-block" id="EnvConfig.functionalities">
+<a class="viewcode-back" href="../../../eprllib.Env.html#eprllib.Env.EnvConfig.EnvConfig.functionalities">[docs]</a>
+    <span class="k">def</span> <span class="nf">functionalities</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">episode_fn</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">episode_config</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cut_episode_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_description_</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it with modifications.</span>
+<span class="sd">            episode_config (Dict): </span>
+<span class="sd">            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the &#39;cut_episode_len&#39; in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.</span>
+<span class="sd">        </span>
+<span class="sd">        Example:</span>
+<span class="sd">            OfficeModel = EnvConfig().observation_options(</span>
+<span class="sd">                &#39;episode_config_fn&#39;: random_weather_config,</span>
+<span class="sd">                &#39;episode_config&#39;:{</span>
+<span class="sd">                    &#39;epw_files_folder_path&#39;: &#39;C:/Users/grhen/Documents/GitHub/eprllib_experiments/AJEA2024/archivos/epw&#39;,</span>
+<span class="sd">                }</span>
+<span class="sd">            )</span>
+<span class="sd">        </span>
+<span class="sd">        Return:</span>
+<span class="sd">            EnvConfig: The environment with modifications.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">episode_fn</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">episode_fn</span> <span class="o">=</span> <span class="n">episode_fn</span>
+
+            <span class="k">if</span> <span class="n">episode_config</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="ne">NotImplementedError</span><span class="p">(</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;If you set a episode_fn you need to specify the episode_fn_config. If the function don&#39;t use a config, set this parameter to False.</span>
+<span class="sd">                    &quot;&quot;&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_config</span> <span class="o">=</span> <span class="n">episode_config</span>
+        <span class="k">if</span> <span class="n">cut_episode_len</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cut_episode_len</span> <span class="o">=</span> <span class="n">cut_episode_len</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">eprllib</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Germán Rodolfo Henderson.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

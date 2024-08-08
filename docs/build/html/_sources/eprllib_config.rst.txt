@@ -38,7 +38,7 @@ Example configuration
     from ray.tune import register_env
     from ray.rllib.algorithms.ppo.ppo import PPOConfig
     import eprllib
-    from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
+    from eprllib.Env.EnvConfig import EnvConfig, env_config_to_dic
     from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
     # Configure eprllib.
     BuildingModel = EnvConfig()

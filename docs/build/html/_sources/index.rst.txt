@@ -102,12 +102,12 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-    C:\Users\grhen\Documents\GitHub\natural_ventilation_EP_RLlib\docs\source\eprllib_config
-    C:\Users\grhen\Documents\GitHub\natural_ventilation_EP_RLlib\docs\source\modules
-    C:\Users\grhen\Documents\GitHub\natural_ventilation_EP_RLlib\docs\Tutorials\Introduction_to_tutorials
-    C:\Users\grhen\Documents\GitHub\natural_ventilation_EP_RLlib\docs\How-To Guides\Introduction_to_guides
-    C:\Users\grhen\Documents\GitHub\natural_ventilation_EP_RLlib\docs\References\Introduction_to_references
-    C:\Users\grhen\Documents\GitHub\natural_ventilation_EP_RLlib\docs\Explanations\Introduction_to_explanations
+    source/eprllib_config
+    source/modules
+    Tutorials/Introduction_to_tutorials
+    How-To Guides/Introduction_to_guides
+    References/Introduction_to_references
+    Explanations/Introduction_to_explanations
 
 
 Indices and tables
