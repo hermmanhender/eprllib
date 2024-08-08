@@ -103,11 +103,11 @@ tune.Tuner(
    :maxdepth: 2
    :caption: Contents:
 
-    source/eprllib_config
-    Tutorials/Introduction_to_tutorials
-    How-To Guides/Introduction_to_guides
-    References/Introduction_to_references
-    Explanations/Introduction_to_explanations
+        source/eprllib_config
+        Tutorials/Introduction_to_tutorials
+        How-To Guides/Introduction_to_guides
+        References/Introduction_to_references
+        Explanations/Introduction_to_explanations
 
 
 Indices and tables

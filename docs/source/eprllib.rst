@@ -9,7 +9,6 @@ Subpackages
 
    eprllib.Agents
    eprllib.Env
-   eprllib.ExampleFiles
    eprllib.PreProcess
 
 Module contents
