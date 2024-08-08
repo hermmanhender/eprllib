@@ -38,10 +38,10 @@ Example configuration
     from ray.tune import register_env
     from ray.rllib.algorithms.ppo.ppo import PPOConfig
     import eprllib
-    from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
+    from eprllib.Env.EnvConfig import EnvConfig, env_config_to_dic
     from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 
-2. Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).
+1. Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).
 
 .. code-block:: python
 
@@ -102,12 +102,12 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-    docs/source/eprllib_config
-    docs/source/modules
-    docs/Tutorials/Introduction_to_tutorials
-    docs/How-To Guides/Introduction_to_guides
-    docs/References/Introduction_to_references
-    docs/Explanations/Introduction_to_explanations
+    C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/docs/source/eprllib_config
+    C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/docs/source/modules
+    C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/docs/Tutorials/Introduction_to_tutorials
+    C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/docs/How-To Guides/Introduction_to_guides
+    C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/docs/References/Introduction_to_references
+    C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/docs/Explanations/Introduction_to_explanations
 
 
 Indices and tables
