@@ -1,8 +1,3 @@
-.. eprllib documentation master file, created by
-   sphinx-quickstart on Fri Mar 22 15:18:05 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to eprllib's documentation!
 ===================================
 
@@ -56,15 +51,16 @@ BuildingModel.generals(
     output_path=‘path_to_output_folder’,
 )
 BuildingModel.agents(
-   agents_config = {
-       ‘Thermal Zone: Room1’:{
-           ‘Agent 1 in Room 1’: {
-               ‘ep_actuator_config’: (),
-               ‘thermal_zone’: ‘Thermal Zone: Room 1’,
-               ‘actuator_type’: 3 ,
-               ‘agent_id’: 1,
-       },
-   }
+    agents_config = {
+        ‘Thermal Zone: Room1’:{
+            ‘Agent 1 in Room 1’: {
+                ‘ep_actuator_config’: (),
+                ‘thermal_zone’: ‘Thermal Zone: Room 1’,
+                ‘actuator_type’: 3 ,
+                ‘agent_id’: 1,
+            },
+        }
+    }
 )
 ```
 

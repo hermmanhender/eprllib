@@ -51,8 +51,9 @@ BuildingModel.agents(
                ‘thermal_zone’: ‘Thermal Zone: Room 1’,
                ‘actuator_type’: 3 ,
                ‘agent_id’: 1,
-       },
-   }
+            },
+        }
+    }
 )
 
 # Start a Ray server.
