@@ -102,12 +102,12 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-    source/eprllib_config
-    source/modules
-    Tutorials/Introduction_to_tutorials
-    How-To Guides/Introduction_to_guides
-    References/Introduction_to_references
-    Explanations/Introduction_to_explanations
+    source/eprllib_config.md
+    source/modules.md
+    Tutorials/Introduction_to_tutorials.md
+    How-To Guides/Introduction_to_guides.md
+    References/Introduction_to_references.md
+    Explanations/Introduction_to_explanations.md
 
 
 Indices and tables
