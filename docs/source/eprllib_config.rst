@@ -1,6 +1,7 @@
 <img src="docs/images/eprllib_logo.jpeg" alt="logo" width="200"/>
 
-# eprllib: use EnergyPlus as an environment for RLlib 
+eprllib: use EnergyPlus as an environment for RLlib
+===================================================
 
 This repository provides a set of methods to establish the computational loop of EnergyPlus within a Markov Decision Process (MDP), treating it as a multi-agent environment compatible with RLlib. The main goal is to offer a simple configuration of EnergyPlus as a standard environment for experimentation with Deep Reinforcement Learning.
 
@@ -8,87 +9,93 @@ This repository provides a set of methods to establish the computational loop of
 
 To install EnergyPlusRL, simply use pip:
 
-```
-pip install eprllib
-```
+.. code-block:: python
 
-## Key Features
+    pip install eprllib
+
+Key Features
+------------
 
 * Integration of EnergyPlus and RLlib: This package facilitates setting up a Reinforcement Learning environment using EnergyPlus as the base, allowing for experimentation with energy control policies in buildings.
 * Simplified Configuration: To use this environment, you simply need to provide a configuration in the form of a dictionary that includes state variables, metrics, actuators (which will also serve as agents in the environment), and other optional features.
 * Flexibility and Compatibility: EnergyPlusRL easily integrates with RLlib, a popular framework for Reinforcement Learning, enabling smooth setup and training of control policies for actionable elements in buildings.
 
-## Usage
+Usage
+-----
 
 1. Import eprllib.
 2. Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).
 3. Configure RLlib algorithm to train the policy.
 4. Execute the training using RLlib or Tune.
 
-## Example configuration
+Example configuration
+---------------------
 
-```
-# Import the libraries needed.
-import ray
-from ray.tune import register_env
-from ray.rllib.algorithms.ppo.ppo import PPOConfig
-import eprllib
-from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
-from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
+.. code-block:: python
 
-# Configure eprllib.
-BuildingModel = EnvConfig()
-BuildingModel.generals(
-    epjson_path=‘path_to_epJSON_file’,
-    epw_path=‘path_to_EPW_file’,
-    output_path=‘path_to_output_folder’,
-)
-BuildingModel.agents(
-   agents_config = {
-       ‘Thermal Zone: Room1’:{
-           ‘Agent 1 in Room 1’: {
-               ‘ep_actuator_config’: (),
-               ‘thermal_zone’: ‘Thermal Zone: Room 1’,
-               ‘actuator_type’: 3 ,
-               ‘agent_id’: 1,
-            },
+    # Import the libraries needed.
+    import ray
+    from ray.tune import register_env
+    from ray.rllib.algorithms.ppo.ppo import PPOConfig
+    import eprllib
+    from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
+    from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
+
+    # Configure eprllib.
+    BuildingModel = EnvConfig()
+    BuildingModel.generals(
+        epjson_path=‘path_to_epJSON_file’,
+        epw_path=‘path_to_EPW_file’,
+        output_path=‘path_to_output_folder’,
+    )
+    BuildingModel.agents(
+    agents_config = {
+        ‘Thermal Zone: Room1’:{
+            ‘Agent 1 in Room 1’: {
+                ‘ep_actuator_config’: (),
+                ‘thermal_zone’: ‘Thermal Zone: Room 1’,
+                ‘actuator_type’: 3 ,
+                ‘agent_id’: 1,
+                },
+            }
         }
-    }
-)
+    )
 
-# Start a Ray server.
-ray.init()
+    # Start a Ray server.
+    ray.init()
 
-# Register the environment.
-register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
+    # Register the environment.
+    register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
 
-# Configure the algorith and assign the environment registred.
-algo = PPOConfig ( )
-algo.environment(
-    env = "EPEnv",
-    env_config = env_config_to_dict(BuildingModel)
-)
-algo.build()
+    # Configure the algorith and assign the environment registred.
+    algo = PPOConfig ( )
+    algo.environment(
+        env = "EPEnv",
+        env_config = env_config_to_dict(BuildingModel)
+    )
+    algo.build()
 
-# Train the policy with Tune.
-tune.Tuner(
-    'PPO',
-    tune_config=tune.TuneConfig(
-        mode="max",
-        metric="episode_reward_mean",
-    ),
-    run_config=air.RunConfig(
-        stop={"episodes_total": 10},
-    ),
-    param_space=algo.to_dict(),
-).fit()
-```
+    # Train the policy with Tune.
+    tune.Tuner(
+        'PPO',
+        tune_config=tune.TuneConfig(
+            mode="max",
+            metric="episode_reward_mean",
+        ),
+        run_config=air.RunConfig(
+            stop={"episodes_total": 10},
+        ),
+        param_space=algo.to_dict(),
+    ).fit()
 
-## Contribution
+
+Contribution
+------------
 
 Contributions are welcome! If you wish to improve this project or add new features, feel free to submit a pull request.
 
-## Licency
+Licency
+-------
 
 MIT License
 

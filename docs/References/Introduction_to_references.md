@@ -1,3 +1,0 @@
-# References
-
-This module...

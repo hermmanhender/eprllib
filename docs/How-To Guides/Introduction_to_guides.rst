@@ -1,3 +1,4 @@
-# Guides
+Guides
+======
 
 This module...

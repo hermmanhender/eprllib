@@ -1,3 +1,4 @@
-# Explanations
+Explanations
+============
 
 This module...

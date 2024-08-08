@@ -71,7 +71,8 @@ class EnvConfig:
             that time, the episode is finished. If your environment is time consuming, you can increase 
             this limit. By default the value is 10 seconds.
         
-        Return: The EnvConfig modified.
+        Return:
+            The EnvConfig modified.
         """
         if epjson_path != None:
             self.epjson_path = epjson_path
@@ -254,14 +255,6 @@ class EnvConfig:
             cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. 
             By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' 
             in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
-        
-        Example:
-            OfficeModel = EnvConfig().observation_options(
-                'episode_config_fn': random_weather_config,
-                'episode_config':{
-                    'epw_files_folder_path': 'C:/Users/grhen/Documents/GitHub/eprllib_experiments/AJEA2024/archivos/epw',
-                }
-            )
         
         Return:
             EnvConfig: The environment with modifications.
