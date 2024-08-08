@@ -69,18 +69,18 @@
 <span class="c1"># Configure eprllib.</span>
 <span class="n">BuildingModel</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
 <span class="n">BuildingModel</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
-    <span class="n">epjson_path</span><span class="o">=</span><span class="err">‘</span><span class="n">path_to_epJSON_file</span><span class="err">’</span><span class="p">,</span>
-    <span class="n">epw_path</span><span class="o">=</span><span class="err">‘</span><span class="n">path_to_EPW_file</span><span class="err">’</span><span class="p">,</span>
-    <span class="n">output_path</span><span class="o">=</span><span class="err">‘</span><span class="n">path_to_output_folder</span><span class="err">’</span><span class="p">,</span>
+    <span class="n">epjson_path</span><span class="o">=</span><span class="s1">&#39;path_to_epJSON_file&#39;</span><span class="p">,</span>
+    <span class="n">epw_path</span><span class="o">=</span><span class="s1">&#39;path_to_EPW_file&#39;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;path_to_output_folder&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">BuildingModel</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
 <span class="n">agents_config</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="err">‘</span><span class="n">Thermal</span> <span class="n">Zone</span><span class="p">:</span> <span class="n">Room1</span><span class="err">’</span><span class="p">:{</span>
-        <span class="err">‘</span><span class="n">Agent</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">Room</span> <span class="mi">1</span><span class="err">’</span><span class="p">:</span> <span class="p">{</span>
-            <span class="err">‘</span><span class="n">ep_actuator_config</span><span class="err">’</span><span class="p">:</span> <span class="p">(),</span>
-            <span class="err">‘</span><span class="n">thermal_zone</span><span class="err">’</span><span class="p">:</span> <span class="err">‘</span><span class="n">Thermal</span> <span class="n">Zone</span><span class="p">:</span> <span class="n">Room</span> <span class="mi">1</span><span class="err">’</span><span class="p">,</span>
-            <span class="err">‘</span><span class="n">actuator_type</span><span class="err">’</span><span class="p">:</span> <span class="mi">3</span> <span class="p">,</span>
-            <span class="err">‘</span><span class="n">agent_id</span><span class="err">’</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;Thermal Zone: Room1&#39;</span><span class="p">:{</span>
+        <span class="s1">&#39;Agent 1 in Room 1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;ep_actuator_config&#39;</span><span class="p">:</span> <span class="p">(),</span>
+            <span class="s1">&#39;thermal_zone&#39;</span><span class="p">:</span> <span class="s1">&#39;Thermal Zone: Room 1&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;actuator_type&#39;</span><span class="p">:</span> <span class="mi">3</span> <span class="p">,</span>
+            <span class="s1">&#39;agent_id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">}</span>
     <span class="p">}</span>
