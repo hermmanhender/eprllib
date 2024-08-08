@@ -70,9 +70,6 @@ class EnvConfig:
             the time that the environment wait to apply an action in the EnergyPlus simulation. After 
             that time, the episode is finished. If your environment is time consuming, you can increase 
             this limit. By default the value is 10 seconds.
-        
-        Return:
-            The EnvConfig modified.
         """
         if epjson_path != None:
             self.epjson_path = epjson_path
@@ -93,9 +90,6 @@ class EnvConfig:
 
         Args:
             agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents involved in the environment. The mandatory components of the agent are: ep_actuator_configuration, thermal_zone, actuator_type, agent_indicator.
-        
-        Return:
-            EnvConfig: The environment with modifications.
         """
         if agents_config == None:
             raise NotImplementedError(
@@ -145,12 +139,12 @@ class EnvConfig:
             use_building_properties (bool): # define if the building properties will be used as an observation for the agent. This is recommended if different buildings/thermal zones will be used with the same policy.
             buildig_properties (Dict[str,Dict[str,float]]): # The episode config define important aspects about the building to be simulated in the episode.
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a prediction of the weathertime ahead. The variables to predict are:
-               - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
-               - Relative Humidity in % with squer desviation of 20%, 
-               - Wind Direction in degree with squer desviation of 40°, 
-               - Wind Speed in m/s with squer desviation of 3.41 m/s, 
-               - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
-               - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
+            - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
+            - Relative Humidity in % with squer desviation of 20%, 
+            - Wind Direction in degree with squer desviation of 40°, 
+            - Wind Speed in m/s with squer desviation of 3.41 m/s, 
+            - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
+            - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
             This are predicted from the next hour into the 24 hours ahead defined.
             ep_environment_variables (List[str]):
             ep_thermal_zones_variables (List[str]): 
@@ -160,9 +154,6 @@ class EnvConfig:
             weather_variables (List[str]): The weather variables are related with weather values in the present timestep for the agent. The following list provide all the options avialable. To weather predictions see the 'weather_prob_days' config that is follow in this file.
             infos_variables (Dict[str,List[str]]): The information variables are important to provide information for the reward function. The observation is pass trough the agent as a NDArray but the info is a dictionary. In this way, we can identify clearly the value of a variable with the key name. All the variables used in the reward function must to be in the infos_variables list. The name of the variables must to corresponde with the names defined in the earlier lists.
             no_observable_variables (Dict[str,List[str]]): There are occasions where some variables are consulted to use in training but are not part of the observation space. For that variables, you can use the following  list. An strategy, for example, to use the Fanger PPD value in the reward function but not in the observation space is to aggregate the PPD into the 'infos_variables' and in the 'no_observable_variables' list.
-        
-        Return:
-            EnvConfig: The environment with modifications.
         """
         if use_actuator_state != None:
             self.use_actuator_state = use_actuator_state
@@ -255,9 +246,6 @@ class EnvConfig:
             cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. 
             By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' 
             in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
-        
-        Return:
-            EnvConfig: The environment with modifications.
         """
         if episode_fn != None:
             self.episode_fn = episode_fn

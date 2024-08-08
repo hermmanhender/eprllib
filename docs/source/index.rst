@@ -102,8 +102,8 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-    eprllib_config
-    modules
+    source/eprllib_config
+    source/modules
     Tutorials/Introduction_to_tutorials
     How-To Guides/Introduction_to_guides
     References/Introduction_to_references
