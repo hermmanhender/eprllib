@@ -29,7 +29,7 @@ This property is used to define the value of the beta parameter of the reward fu
 the rewards function have this property, so it is not mandatory to define it.
 """
 # Importing the neccesary libraries
-from typing import Dict
+from typing import Dict, List, Set, Any, Optional
 from math import exp
 import numpy as np
 

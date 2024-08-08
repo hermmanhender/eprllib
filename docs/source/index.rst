@@ -44,14 +44,13 @@ from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 2. Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).
 
 .. code-block:: python
-    BuildingModel = EnvConfig()
 
+    BuildingModel = EnvConfig()
     BuildingModel.generals(
         epjson_path=‘path_to_epJSON_file’,
         epw_path=‘path_to_EPW_file’,
         output_path=‘path_to_output_folder’,
     )
-
     BuildingModel.agents(
         agents_config = {
             ‘Thermal Zone: Room1’:{
@@ -69,12 +68,11 @@ from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 3. Configure RLlib algorithm to train the policy.
 
 .. code-block:: python
+
     # Start a Ray server.
     ray.init()
-
     # Register the environment.
     register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
-
     # Configure the algorith and assign the environment registred.
     algo = PPOConfig ( )
     algo.environment(
@@ -86,6 +84,7 @@ from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 4. Execute the training using RLlib or Tune.
 
 .. code-block:: python
+
     # Train the policy with Tune.
     tune.Tuner(
         'PPO',
@@ -98,8 +97,6 @@ from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
         ),
         param_space=algo.to_dict(),
     ).fit()
-
-
 
 .. toctree::
    :maxdepth: 2
