@@ -20,13 +20,6 @@ eprllib.PreProcess.InternalGainsSchedules module
    :undoc-members:
    :show-inheritance:
 
-eprllib.PreProcess.OfflineTraining module
------------------------------------------
-
-.. automodule:: eprllib.PreProcess.OfflineTraining
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 Module contents
 ---------------

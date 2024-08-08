@@ -19,7 +19,6 @@ needed to comfigurate properly the environment.
 .. code-block:: python
     
     from eprllib.Env.EnvConfig import EnvConfig
-
     my_model = EnvConfig()
     my_model.generals(
         epjson_path = '',

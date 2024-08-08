@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Welcome to eprllib’s documentation! &#8212; eprllib v1.3.4 documentation</title>
+    <title>Welcome to eprllib’s documentation! &#8212; eprllib v1.3.5 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=c058f7c8" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
-    <script src="_static/documentation_options.js?v=18ec1c5b"></script>
+    <script src="_static/documentation_options.js?v=bc949842"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -37,9 +37,9 @@
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
 <p>To install EnergyPlusRL, simply use pip:</p>
-<p><code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">eprllib</span>
-<span class="pre">`</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">eprllib</span>
+</pre></div>
+</div>
 </section>
 <section id="key-features">
 <h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading">¶</a></h2>
@@ -63,88 +63,71 @@
 <ol class="arabic simple">
 <li><p>Import eprllib (and the libraries that you need).</p></li>
 </ol>
-<p><code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">import</span> <span class="pre">ray</span>
-<span class="pre">from</span> <span class="pre">ray.tune</span> <span class="pre">import</span> <span class="pre">register_env</span>
-<span class="pre">from</span> <span class="pre">ray.rllib.algorithms.ppo.ppo</span> <span class="pre">import</span> <span class="pre">PPOConfig</span>
-<span class="pre">import</span> <span class="pre">eprllib</span>
-<span class="pre">from</span> <span class="pre">eprllib.Env.MultiAgen.EnvConfig</span> <span class="pre">import</span> <span class="pre">EnvConfig,</span> <span class="pre">env_config_to_dic</span>
-<span class="pre">from</span> <span class="pre">eprllib.Env.MultiAgent.EnergyPlusEnv</span> <span class="pre">import</span> <span class="pre">EnergyPlusEnv_v0</span>
-<span class="pre">`</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ray</span>
+<span class="kn">from</span> <span class="nn">ray.tune</span> <span class="kn">import</span> <span class="n">register_env</span>
+<span class="kn">from</span> <span class="nn">ray.rllib.algorithms.ppo.ppo</span> <span class="kn">import</span> <span class="n">PPOConfig</span>
+<span class="kn">import</span> <span class="nn">eprllib</span>
+<span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgen.EnvConfig</span> <span class="kn">import</span> <span class="n">EnvConfig</span><span class="p">,</span> <span class="n">env_config_to_dic</span>
+<span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgent.EnergyPlusEnv</span> <span class="kn">import</span> <span class="n">EnergyPlusEnv_v0</span>
+</pre></div>
+</div>
 <ol class="arabic simple" start="2">
 <li><p>Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).</p></li>
 </ol>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-BuildingModel = EnvConfig()
-BuildingModel.generals(</p>
-<blockquote>
-<div><p>epjson_path=‘path_to_epJSON_file’,
-epw_path=‘path_to_EPW_file’,
-output_path=‘path_to_output_folder’,</p>
-</div></blockquote>
-<p>)
-BuildingModel.agents(</p>
-<blockquote>
-<div><dl>
-<dt>agents_config = {</dt><dd><dl class="simple">
-<dt>‘Thermal Zone: Room1’:{</dt><dd><dl class="simple">
-<dt>‘Agent 1 in Room 1’: {</dt><dd><p>‘ep_actuator_config’: (),
-‘thermal_zone’: ‘Thermal Zone: Room 1’,
-‘actuator_type’: 3 ,
-‘agent_id’: 1,</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p>},</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<section id="id3">
-<h3>)<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">BuildingModel</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
+<span class="n">BuildingModel</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
+    <span class="n">epjson_path</span><span class="o">=</span><span class="s1">&#39;path_to_epJSON_file&#39;</span><span class="p">,</span>
+    <span class="n">epw_path</span><span class="o">=</span><span class="s1">&#39;path_to_EPW_file&#39;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;path_to_output_folder&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">BuildingModel</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
+    <span class="n">agents_config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;Thermal Zone: Room1&#39;</span><span class="p">:{</span>
+            <span class="s1">&#39;Agent 1 in Room 1&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;ep_actuator_config&#39;</span><span class="p">:</span> <span class="p">(),</span>
+                <span class="s1">&#39;thermal_zone&#39;</span><span class="p">:</span> <span class="s1">&#39;Thermal Zone: Room 1&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;actuator_type’: 3 ,</span>
+                <span class="s1">&#39;agent_id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <ol class="arabic simple" start="3">
 <li><p>Configure RLlib algorithm to train the policy.</p></li>
 </ol>
-<p><a href="#id4"><span class="problematic" id="id5">``</span></a>`
-# Start a Ray server.
-ray.init()</p>
-<p># Register the environment.
-register_env(name=”EPEnv”, env_creator=lambda args: EnergyPlusEnv_v0(args))</p>
-<p># Configure the algorith and assign the environment registred.
-algo = PPOConfig ( )
-algo.environment(</p>
-<blockquote>
-<div><p>env = “EPEnv”,
-env_config = env_config_to_dict(BuildingModel)</p>
-</div></blockquote>
-</section>
-<section id="id6">
-<h3>)<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start a Ray server.</span>
+<span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="c1"># Register the environment.</span>
+<span class="n">register_env</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">EnergyPlusEnv_v0</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+<span class="c1"># Configure the algorith and assign the environment registred.</span>
+<span class="n">algo</span> <span class="o">=</span> <span class="n">PPOConfig</span> <span class="p">(</span> <span class="p">)</span>
+<span class="n">algo</span><span class="o">.</span><span class="n">environment</span><span class="p">(</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span>
+    <span class="n">env_config</span> <span class="o">=</span> <span class="n">env_config_to_dict</span><span class="p">(</span><span class="n">BuildingModel</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <ol class="arabic simple" start="4">
 <li><p>Execute the training using RLlib or Tune.</p></li>
 </ol>
-<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
-# Train the policy with Tune.
-tune.Tuner(</p>
-<blockquote>
-<div><p>‘PPO’,
-tune_config=tune.TuneConfig(</p>
-<blockquote>
-<div><p>mode=”max”,
-metric=”episode_reward_mean”,</p>
-</div></blockquote>
-<p>),
-run_config=air.RunConfig(</p>
-<blockquote>
-<div><p>stop={“episodes_total”: 10},</p>
-</div></blockquote>
-<p>),
-param_space=algo.to_dict(),</p>
-</div></blockquote>
-<p>).fit()
-<a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
-</section>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the policy with Tune.</span>
+<span class="n">tune</span><span class="o">.</span><span class="n">Tuner</span><span class="p">(</span>
+    <span class="s1">&#39;PPO&#39;</span><span class="p">,</span>
+    <span class="n">tune_config</span><span class="o">=</span><span class="n">tune</span><span class="o">.</span><span class="n">TuneConfig</span><span class="p">(</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;episode_reward_mean&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">run_config</span><span class="o">=</span><span class="n">air</span><span class="o">.</span><span class="n">RunConfig</span><span class="p">(</span>
+        <span class="n">stop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;episodes_total&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="p">),</span>
+    <span class="n">param_space</span><span class="o">=</span><span class="n">algo</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 </section>
 <section id="indices-and-tables">

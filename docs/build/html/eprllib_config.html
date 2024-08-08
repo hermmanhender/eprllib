@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>eprllib: use EnergyPlus as an environment for RLlib &#8212; eprllib v1.3.4 documentation</title>
+    <title>eprllib: use EnergyPlus as an environment for RLlib &#8212; eprllib v1.3.5 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=c058f7c8" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
-    <script src="_static/documentation_options.js?v=18ec1c5b"></script>
+    <script src="_static/documentation_options.js?v=bc949842"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -31,17 +31,15 @@
 
           <div class="body" role="main">
             
-  <img src="docs/images/eprllib_logo.jpeg" alt="logo" width="200"/>
+  <p>&lt;img src=”docs/images/eprllib_logo.jpeg” alt=”logo” width=”200”/&gt;</p>
 <section id="eprllib-use-energyplus-as-an-environment-for-rllib">
 <h1>eprllib: use EnergyPlus as an environment for RLlib<a class="headerlink" href="#eprllib-use-energyplus-as-an-environment-for-rllib" title="Link to this heading">¶</a></h1>
 <p>This repository provides a set of methods to establish the computational loop of EnergyPlus within a Markov Decision Process (MDP), treating it as a multi-agent environment compatible with RLlib. The main goal is to offer a simple configuration of EnergyPlus as a standard environment for experimentation with Deep Reinforcement Learning.</p>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>## Installation</p>
 <p>To install EnergyPlusRL, simply use pip:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">eprllib</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">eprllib</span>
 </pre></div>
 </div>
-</section>
 <section id="key-features">
 <h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -61,59 +59,55 @@
 </section>
 <section id="example-configuration">
 <h2>Example configuration<a class="headerlink" href="#example-configuration" title="Link to this heading">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Import the libraries needed.
-import ray
-from ray.tune import register_env
-from ray.rllib.algorithms.ppo.ppo import PPOConfig
-import eprllib
-from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
-from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
-
-# Configure eprllib.
-BuildingModel = EnvConfig()
-BuildingModel.generals(
-    epjson_path=‘path_to_epJSON_file’,
-    epw_path=‘path_to_EPW_file’,
-    output_path=‘path_to_output_folder’,
-)
-BuildingModel.agents(
-   agents_config = {
-       ‘Thermal Zone: Room1’:{
-           ‘Agent 1 in Room 1’: {
-               ‘ep_actuator_config’: (),
-               ‘thermal_zone’: ‘Thermal Zone: Room 1’,
-               ‘actuator_type’: 3 ,
-               ‘agent_id’: 1,
-       },
-   }
-)
-
-# Start a Ray server.
-ray.init()
-
-# Register the environment.
-register_env(name=&quot;EPEnv&quot;, env_creator=lambda args: EnergyPlusEnv_v0(args))
-
-# Configure the algorith and assign the environment registred.
-algo = PPOConfig ( )
-algo.environment(
-    env = &quot;EPEnv&quot;,
-    env_config = env_config_to_dict(BuildingModel)
-)
-algo.build()
-
-# Train the policy with Tune.
-tune.Tuner(
-    &#39;PPO&#39;,
-    tune_config=tune.TuneConfig(
-        mode=&quot;max&quot;,
-        metric=&quot;episode_reward_mean&quot;,
-    ),
-    run_config=air.RunConfig(
-        stop={&quot;episodes_total&quot;: 10},
-    ),
-    param_space=algo.to_dict(),
-).fit()
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the libraries needed.</span>
+<span class="kn">import</span> <span class="nn">ray</span>
+<span class="kn">from</span> <span class="nn">ray.tune</span> <span class="kn">import</span> <span class="n">register_env</span>
+<span class="kn">from</span> <span class="nn">ray.rllib.algorithms.ppo.ppo</span> <span class="kn">import</span> <span class="n">PPOConfig</span>
+<span class="kn">import</span> <span class="nn">eprllib</span>
+<span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgen.EnvConfig</span> <span class="kn">import</span> <span class="n">EnvConfig</span><span class="p">,</span> <span class="n">env_config_to_dic</span>
+<span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgent.EnergyPlusEnv</span> <span class="kn">import</span> <span class="n">EnergyPlusEnv_v0</span>
+<span class="c1"># Configure eprllib.</span>
+<span class="n">BuildingModel</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
+<span class="n">BuildingModel</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
+    <span class="n">epjson_path</span><span class="o">=</span><span class="err">‘</span><span class="n">path_to_epJSON_file</span><span class="err">’</span><span class="p">,</span>
+    <span class="n">epw_path</span><span class="o">=</span><span class="err">‘</span><span class="n">path_to_EPW_file</span><span class="err">’</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="err">‘</span><span class="n">path_to_output_folder</span><span class="err">’</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">BuildingModel</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
+<span class="n">agents_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="err">‘</span><span class="n">Thermal</span> <span class="n">Zone</span><span class="p">:</span> <span class="n">Room1</span><span class="err">’</span><span class="p">:{</span>
+        <span class="err">‘</span><span class="n">Agent</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">Room</span> <span class="mi">1</span><span class="err">’</span><span class="p">:</span> <span class="p">{</span>
+            <span class="err">‘</span><span class="n">ep_actuator_config</span><span class="err">’</span><span class="p">:</span> <span class="p">(),</span>
+            <span class="err">‘</span><span class="n">thermal_zone</span><span class="err">’</span><span class="p">:</span> <span class="err">‘</span><span class="n">Thermal</span> <span class="n">Zone</span><span class="p">:</span> <span class="n">Room</span> <span class="mi">1</span><span class="err">’</span><span class="p">,</span>
+            <span class="err">‘</span><span class="n">actuator_type</span><span class="err">’</span><span class="p">:</span> <span class="mi">3</span> <span class="p">,</span>
+            <span class="err">‘</span><span class="n">agent_id</span><span class="err">’</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="c1"># Start a Ray server.</span>
+<span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="c1"># Register the environment.</span>
+<span class="n">register_env</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">EnergyPlusEnv_v0</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+<span class="c1"># Configure the algorith and assign the environment registred.</span>
+<span class="n">algo</span> <span class="o">=</span> <span class="n">PPOConfig</span> <span class="p">(</span> <span class="p">)</span>
+<span class="n">algo</span><span class="o">.</span><span class="n">environment</span><span class="p">(</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span>
+    <span class="n">env_config</span> <span class="o">=</span> <span class="n">env_config_to_dict</span><span class="p">(</span><span class="n">BuildingModel</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">algo</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># Train the policy with Tune.</span>
+<span class="n">tune</span><span class="o">.</span><span class="n">Tuner</span><span class="p">(</span>
+    <span class="s1">&#39;PPO&#39;</span><span class="p">,</span>
+    <span class="n">tune_config</span><span class="o">=</span><span class="n">tune</span><span class="o">.</span><span class="n">TuneConfig</span><span class="p">(</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;episode_reward_mean&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">run_config</span><span class="o">=</span><span class="n">air</span><span class="o">.</span><span class="n">RunConfig</span><span class="p">(</span>
+        <span class="n">stop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;episodes_total&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="p">),</span>
+    <span class="n">param_space</span><span class="o">=</span><span class="n">algo</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -140,23 +134,26 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</p>
-<hr class="docutils" />
+</section>
+<section id="ray-license">
+<h2>Ray License<a class="headerlink" href="#ray-license" title="Link to this heading">¶</a></h2>
 <p>Copyright 2023 Ray Authors</p>
 <p>Licensed under the Apache License, Version 2.0 (the “License”);
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>http://www.apache.org/licenses/LICENSE-2.0
-</pre></div>
-</div>
+<blockquote>
+<div><p><a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+</div></blockquote>
 <p>Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an “AS IS” BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.</p>
-<hr class="docutils" />
+</section>
+<section id="energyplus-license">
+<h2>EnergyPlus License<a class="headerlink" href="#energyplus-license" title="Link to this heading">¶</a></h2>
 <p>EnergyPlus, Copyright (c) 1996-2024, The Board of Trustees of the University of Illinois, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy), Oak Ridge National Laboratory, managed by UT-Battelle, Alliance for Sustainable Energy, LLC, and other contributors. All rights reserved.</p>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<hr class="docutils" />
 </section>
 </section>
 
@@ -214,7 +211,7 @@ limitations under the License.</p>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
-      <a href="_sources/eprllib_config.md.txt"
+      <a href="_sources/eprllib_config.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
