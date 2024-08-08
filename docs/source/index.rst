@@ -106,10 +106,11 @@ tune.Tuner(
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   Tutorials/Introduction_to_tutorials
-   How-To Guides/Introduction_to_guides
-   References/Introduction_to_references
-   Explanations/Introduction_to_explanations
+
+    Tutorials/Introduction_to_tutorials
+    How-To Guides/Introduction_to_guides
+    References/Introduction_to_references
+    Explanations/Introduction_to_explanations
 
 
 Indices and tables
