@@ -8,9 +8,9 @@ Installation
 
 To install EnergyPlusRL, simply use pip:
 
-```
-pip install eprllib
-```
+.. code-block:: python
+    
+    pip install eprllib
 
 Key Features
 ------------
@@ -32,14 +32,14 @@ Example configuration
 
 1. Import eprllib (and the libraries that you need).
 
-```
-import ray
-from ray.tune import register_env
-from ray.rllib.algorithms.ppo.ppo import PPOConfig
-import eprllib
-from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
-from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
-```
+.. code-block:: python
+
+    import ray
+    from ray.tune import register_env
+    from ray.rllib.algorithms.ppo.ppo import PPOConfig
+    import eprllib
+    from eprllib.Env.MultiAgen.EnvConfig import EnvConfig, env_config_to_dic
+    from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 
 2. Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).
 
@@ -47,18 +47,18 @@ from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 
     BuildingModel = EnvConfig()
     BuildingModel.generals(
-        epjson_path=‘path_to_epJSON_file’,
-        epw_path=‘path_to_EPW_file’,
-        output_path=‘path_to_output_folder’,
+        epjson_path='path_to_epJSON_file',
+        epw_path='path_to_EPW_file',
+        output_path='path_to_output_folder',
     )
     BuildingModel.agents(
         agents_config = {
-            ‘Thermal Zone: Room1’:{
-                ‘Agent 1 in Room 1’: {
-                    ‘ep_actuator_config’: (),
-                    ‘thermal_zone’: ‘Thermal Zone: Room 1’,
-                    ‘actuator_type’: 3 ,
-                    ‘agent_id’: 1,
+            'Thermal Zone: Room1':{
+                'Agent 1 in Room 1': {
+                    'ep_actuator_config': (),
+                    'thermal_zone': 'Thermal Zone: Room 1',
+                    'actuator_type’: 3 ,
+                    'agent_id': 1,
                 },
             }
         }
