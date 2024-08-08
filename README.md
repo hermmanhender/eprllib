@@ -1,4 +1,4 @@
-<img src="docs/image0.jpeg" alt="logo" width="200"/>
+<img src="docs/images/eprllib_logo.jpeg" alt="logo" width="200"/>
 
 [![Documentation Status](https://readthedocs.org/projects/eprllib/badge/?version=latest)](https://eprllib.readthedocs.io/latest/?badge=latest)
 
