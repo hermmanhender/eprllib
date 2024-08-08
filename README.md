@@ -88,6 +88,7 @@ tune.Tuner(
 ## Contribution
 
 Contributions are welcome! If you wish to improve this project or add new features, feel free to submit a pull request.
+Checkout our *Code of Conduct* and *How to Contribute* documentation.
 
 ## Licency
 
