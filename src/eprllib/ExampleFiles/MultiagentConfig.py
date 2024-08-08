@@ -1,7 +1,7 @@
 """This file provide the entire parameters configuration of the 
 multi-agent environment approach.
 """
-from eprllib.tools.rewards import dalamagkidis_2007
+from eprllib.Tools.Rewards import dalamagkidis_2007
 
 env_config = {
     # == FILES DIRECTORUES ==

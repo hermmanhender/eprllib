@@ -2,8 +2,6 @@
 
 This script execute the conventional controls and generate experiences in batch format.
 """
-import sys
-sys.path.insert(0,'C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib')
 from tempfile import TemporaryDirectory
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
 from eprllib.Agents.ConventionalPolicy import ConventionalPolicy

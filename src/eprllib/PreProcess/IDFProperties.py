@@ -30,7 +30,7 @@ class EnergyPlusInputFile:
 
     def start(self):
         # Se establece un estado para E+ API
-        self.state_argument = api.state_managment.init()
+        # self.state_argument = api.state_managment.init()
         # Se establece un punto de llamado para detener la simulacion en el primer paso de tiempo
 
         # Se establece la salida de la consola como False
@@ -39,3 +39,4 @@ class EnergyPlusInputFile:
         # Aqui se establece una propiedad de la clase que almacena la ubicacion de los archivos generados por E+
         
         # se inicia la simulacion
+        pass
