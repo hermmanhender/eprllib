@@ -6,15 +6,15 @@ from eprllib.Tools.ActionTransformers import ActionTransformer
 from eprllib.Tools.Rewards import RewardFunction
 
 def env_config_to_dict(EnvConfig) -> Dict:
-    """Convert an EnvConfig object into a dict before to be used
-    in the env_config parameter of RLlib environment config.
+    """
+    Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
     """
     return vars(EnvConfig)
 
 class EnvConfig:
     def __init__(self):
-        """The EnvConfig class is used to define the basic configuration
-        of an environment.
+        """
+        The EnvConfig class is used to define the basic configuration of an environment.
         """
         # generals
         self.epjson_path:str = None
@@ -58,18 +58,15 @@ class EnvConfig:
         ep_terminal_output:bool = None,
         timeout: float = None,
     ) -> None:
-        """This method is used to modify the general configuration of the environment.
+        """
+        This method is used to modify the general configuration of the environment.
 
         Args:
             epjson_path (str): The path to the EnergyPlus model in the format of epJSON file.
             epw_path (str): The path to the EnergyPlus weather file in the format of epw file.
             output_path (str): The path to the output directory for the EnergyPlus simulation.
-            ep_terminal_output (bool): For dubugging is better to print in the terminal the outputs 
-            of the EnergyPlus simulation process.
-            timeout (float): timeout define the time that the environment wait for an observation and 
-            the time that the environment wait to apply an action in the EnergyPlus simulation. After 
-            that time, the episode is finished. If your environment is time consuming, you can increase 
-            this limit. By default the value is 10 seconds.
+            ep_terminal_output (bool): For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
+            timeout (float): timeout define the time that the environment wait for an observation and the time that the environment wait to apply an action in the EnergyPlus simulation. After that time, the episode is finished. If your environment is time consuming, you can increase this limit. By default the value is 10 seconds.
         """
         if epjson_path != None:
             self.epjson_path = epjson_path
@@ -86,7 +83,8 @@ class EnvConfig:
         self,
         agents_config: Dict[str,Dict[str,Any]] = None,
     ) -> None:
-        """This method is used to modify the agents configuration of the environment.
+        """
+        This method is used to modify the agents configuration of the environment.
 
         Args:
             agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents involved in the environment. The mandatory components of the agent are: ep_actuator_configuration, thermal_zone, actuator_type, agent_indicator.
@@ -130,7 +128,8 @@ class EnvConfig:
         infos_variables: Dict[str,List[str]] = None,
         no_observable_variables: Dict[str,List[str]] = None
     ) -> None:
-        """This method is used to modify the observations configuration of the environment.
+        """
+        This method is used to modify the observations configuration of the environment.
 
         Args:
             use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
@@ -196,14 +195,11 @@ class EnvConfig:
         self,
         action_transformer: ActionTransformer = None
     ) -> None:
-        """This method is used to modify the actions configuration of the environment.
+        """
+        This method is used to modify the actions configuration of the environment.
         
         Args:
-            action_transformer (ActionTransformer): In the definition of the action space, usualy is use 
-            the discrete form of the gym spaces. In general, we don't use actions from 0 to n directly in 
-            the EnergyPlus simulation. With the objective to transform appropiately the discret action 
-            into a value action for EP we define the action_transformer funtion. This function take the 
-            arguments agent_id and action. You can find examples in eprllib.Tools.ActionTransformers.
+            action_transformer (ActionTransformer): In the definition of the action space, usualy is use the discrete form of the gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the objective to transform appropiately the discret action into a value action for EP we define the action_transformer funtion. This function take the arguments agent_id and action. You can find examples in eprllib.Tools.ActionTransformers.
         """
         if action_transformer != None:
             self.action_transformer = action_transformer
@@ -213,12 +209,12 @@ class EnvConfig:
         reward_fn: RewardFunction = None,
         reward_fn_config: Dict[str,Dict[str,Any]] = None
     ) -> None:
-        """This method is used to modify the rewards configuration of the environment.
+        """
+        This method is used to modify the rewards configuration of the environment.
 
         Args:
-            reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) 
-            and the infos dictionary. As a return, gives a float number as reward. See eprllib.tools.rewards
-            reward_fn_config (Dict[str,Dict[str,Any]]): 
+            reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos dictionary. As a return, gives a float number as reward. See eprllib.tools.rewards
+            reward_fn_config (Dict[str,Dict[str,Any]]): NotDescribed
         """
         if reward_fn != None:
             self.reward_fn = reward_fn
@@ -237,15 +233,13 @@ class EnvConfig:
         episode_config: Dict = None,
         cut_episode_len: int = None,
     ) -> None:
-        """This method configure special functions to improve the use of eprllib.
+        """
+        This method configure special functions to improve the use of eprllib.
 
         Args:
-            episode_fn (): This method define the properties of the episode, taking the env_config dict and 
-            returning it with modifications.
-            episode_config (Dict): 
-            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. 
-            By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' 
-            in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
+            episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it with modifications.
+            episode_config (Dict): NotDescribed
+            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
         """
         if episode_fn != None:
             self.episode_fn = episode_fn
