@@ -1,4 +1,5 @@
 sphinx
 sphinx-rtd-theme
+myst_parser
 gymnasium>=0.28.1
 ray>=2.20.0
