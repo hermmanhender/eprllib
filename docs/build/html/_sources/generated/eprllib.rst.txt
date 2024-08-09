@@ -10,7 +10,9 @@
    :toctree:
    :recursive:
 
+   ActionFunctions
    Agents
    Env
-   ExampleFiles
-   PreProcess
+   EpisodeFunctions
+   PostProcess
+   RewardFunctions

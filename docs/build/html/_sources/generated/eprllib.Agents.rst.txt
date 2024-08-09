@@ -10,4 +10,7 @@ eprllib.Agents
    :toctree:
    :recursive:
 
-   ConventionalPolicy
+   ConventionalAgent
+   OnOffAirConditionerControl
+   WindowOpeningControl
+   WindowShadeControl

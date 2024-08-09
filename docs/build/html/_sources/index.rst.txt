@@ -102,7 +102,31 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-   generated/modules
+   generated/eprllib.ActionFunctions.ActionFunctions
+   generated/eprllib.ActionFunctions.DualSetPointThermostat
+   generated/eprllib.ActionFunctions
+   generated/eprllib.Agents.ConventionalAgent
+   generated/eprllib.Agents.OnOffAirConditionerControl
+   generated/eprllib.Agents
+   generated/eprllib.Agents.WindowOpeningControl
+   generated/eprllib.Agents.WindowShadeControl
+   generated/eprllib.Env.EnvConfig
+   generated/eprllib.Env.MultiAgent.EnergyPlusEnvironment
+   generated/eprllib.Env.MultiAgent.EnergyPlusRunner
+   generated/eprllib.Env.MultiAgent.EnvUtils
+   generated/eprllib.Env.MultiAgent
+   generated/eprllib.Env
+   generated/eprllib.EpisodeFunctions.EpisodeFunctions
+   generated/eprllib.EpisodeFunctions.GeneralBuilding
+   generated/eprllib.EpisodeFunctions
+   generated/eprllib.PostProcess.Conventional
+   generated/eprllib.PostProcess.Evaluation
+   generated/eprllib.PostProcess.Plots
+   generated/eprllib.PostProcess
+   generated/eprllib.RewardFunctions.henderson_2024
+   generated/eprllib.RewardFunctions.RewardFunctions
+   generated/eprllib.RewardFunctions
+   generated/eprllib
 
 .. autosummary::
    :toctree: generated
