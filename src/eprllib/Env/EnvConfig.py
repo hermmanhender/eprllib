@@ -131,12 +131,14 @@ class EnvConfig:
             building to be simulated in the episode.
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a 
             prediction of the weathertime ahead. The variables to predict are:
-            - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
-            - Relative Humidity in % with squer desviation of 20%, 
-            - Wind Direction in degree with squer desviation of 40°, 
-            - Wind Speed in m/s with squer desviation of 3.41 m/s, 
-            - Barometric pressure in Pa with a standart deviation of 1000 Pa, 
-            - Liquid Precipitation Depth in mm with desviation of 0.5 mm.
+            
+            * Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
+            * Relative Humidity in % with squer desviation of 20%, 
+            * Wind Direction in degree with squer desviation of 40°, 
+            * Wind Speed in m/s with squer desviation of 3.41 m/s, 
+            * Barometric pressure in Pa with a standart deviation of 1000 Pa, 
+            * Liquid Precipitation Depth in mm with desviation of 0.5 mm.
+            
             This are predicted from the next hour into the 24 hours ahead defined.
             ep_environment_variables (List[str]):
             ep_thermal_zones_variables (List[str]): 
@@ -206,7 +208,7 @@ class EnvConfig:
         self,
         episode_fn: EpisodeFunction = EpisodeFunction,
         cut_episode_len: int = 0,
-        ) -> None:
+        ):
         """
         This method configure special functions to improve the use of eprllib.
 
