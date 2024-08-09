@@ -1,4 +1,8 @@
-"""This module contain the utils used in the Multi-agent definition files.
+"""
+Environment Utilities
+=====================
+
+This module contain the methods used in the environment process.
 """
 
 from typing import Tuple, Dict, Any, List, Set, Optional
@@ -6,7 +10,8 @@ from gymnasium.spaces import Box, Discrete
 import numpy as np
 
 def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
-    """This method add the EnergyPlus Python API to the system path. This allow to use the 
+    """
+    This method add the EnergyPlus Python API to the system path. This allow to use the 
     EnergyPlus program in Python. The minimal version of EnergyPlus is 9.3.0 and the default
     version (and the stable one) for eprllib is 23-2-0.
 
@@ -14,9 +19,6 @@ def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
         version (str, optional): Numeric version of EnergyPlus. Defaults to "23-2-0".
         path (Optional[str], optional): Complete path to the EnergyPlus installation directory 
         if this is different that the default installation. Defaults to None.
-
-    Returns:
-        None: Print the EnergyPlus API path added to the system path.
     """
     import sys
     
@@ -30,44 +32,10 @@ def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
             sys.path.insert(0, f"C:/EnergyPlusV{version}")
     
     return print(f"EnergyPlus API path added: {sys.path[0]}")
-
-def env_value_inspection(env_config:Dict):
-    
-    """Examine that all the neccesary arguments to use in the MDP env definition exist.
-
-    Args:
-        env_config (Dict): env_config main dict.
-    """
-    if not env_config.get('ep_actuators', False):
-        ValueError("No actuators defined in the environment configuration. Set the dictionary in"\
-            "env_config['ep_actuators'] with the corresponded actuators.")
-    if not env_config.get('action_space', False):
-            ValueError("No action space defined in the environment configuration. Set the dictionary in"\
-                "env_config['action_space'] with the corresponded action space.")
-
-def runner_value_inspection(env_config:Dict):
-    if isinstance(env_config, str):
-        ValueError("env_config is a string.")
-    else:
-        if not env_config.get('ep_actuators', False):
-            ValueError("No actuators defined in the environment configuration. Set the dictionary in"\
-                "env_config['ep_actuators'] with the corresponded actuators.")
-    
-        if env_config.get('use_building_properties', True):
-                # a loop control the existency of the building_properties
-                for key in env_config['episode_config'].keys():
-                    if key in [
-                        'building_area', 'aspect_ratio', 'window_area_relation_north', 
-                        'window_area_relation_east', 'window_area_relation_south', 
-                        'window_area_relation_west', 'inercial_mass', 
-                        'construction_u_factor', 'E_cool_ref', 'E_heat_ref',
-                    ]:
-                        pass
-                    else:
-                        ValueError(f'Building property {key} not found.')
     
 def actuators_to_agents(agent_config:Dict[str, List]) -> Tuple[List,List,Dict,Dict]:
-    """Take the ep_actuator dict and transform it to the agent, thermal zone, and actuator type dict.
+    """
+    Take the ep_actuator dict and transform it to the agent, thermal zone, and actuator type dict.
 
     Args:
         agent_config (Dict): ep_actuator dict in the env_config.
@@ -121,7 +89,8 @@ def actuators_to_agents(agent_config:Dict[str, List]) -> Tuple[List,List,Dict,Di
     return agent_ids, thermal_zone_ids, agents_actuators, agents_thermal_zones, agents_types
 
 def obs_space(env_config:Dict, _thermal_none_ids:Set):
-    """This method construct the observation space of the environment.
+    """
+    This method construct the observation space of the environment.
 
     Args:
         env_config (Dict): The environment configuration dictionary.
@@ -133,52 +102,52 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
     obs_space_len = 0
     
     # actuator state.
-    if env_config.get('use_actuator_state', True):
+    if env_config['use_actuator_state']:
         obs_space_len += 1
         
     # agent_indicator.
-    if env_config.get('use_agent_indicator', True):
+    if env_config['use_agent_indicator']:
         obs_space_len += 1
         
     # agent type.
-    if env_config.get('use_agent_type', True):
+    if env_config['use_agent_type']:
         obs_space_len += 1
         
     # building properties.
-    if env_config.get('use_building_properties', True):
+    if env_config['use_building_properties']:
         for thermal_zone in _thermal_none_ids:
             thermal_zone_name = thermal_zone
             break
         obs_space_len += len([key for key in env_config['building_properties'][thermal_zone_name].keys()])
         
     # weather prediction.
-    if env_config.get('use_one_day_weather_prediction', True):
+    if env_config['use_one_day_weather_prediction']:
         obs_space_len += 24*6
         
     # variables and meters.
-    if env_config.get('ep_environment_variables', False):
+    if env_config['ep_environment_variables']:
         obs_space_len += len(env_config['ep_environment_variables'])
     
-    if env_config.get('ep_thermal_zones_variables', False):
+    if env_config['ep_thermal_zones_variables']:
         obs_space_len += len(env_config['ep_thermal_zones_variables'])
     
-    if env_config.get('ep_object_variables', False):
+    if env_config['ep_object_variables']:
         for thermal_zone in _thermal_none_ids:
             thermal_zone_name = thermal_zone
             break
         obs_space_len += len([key for key in env_config['ep_object_variables'][thermal_zone_name].keys()])
         
-    if env_config.get('ep_meters', False):
+    if env_config['ep_meters']:
         obs_space_len += len(env_config['ep_meters'])
         
-    if env_config.get('time_variables', False):
+    if env_config['time_variables']:
         obs_space_len += len(env_config['time_variables'])
         
-    if env_config.get('weather_variables', False):
+    if env_config['weather_variables']:
         obs_space_len += len(env_config['weather_variables'])
         
     # discount the not observable variables.
-    if env_config.get('no_observable_variables', False):
+    if env_config['no_observable_variables']:
         for thermal_zone in _thermal_none_ids:
             thermal_zone_name = thermal_zone
             break
@@ -188,7 +157,8 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
     return Box(float("-inf"), float("inf"), (obs_space_len,))
 
 def continuous_action_space():
-    """This method construct the action space of the environment.
+    """
+    This method construct the action space of the environment.
     
     Returns:
         gym.Box: Continuous action space with limits between [0,1].
@@ -196,7 +166,8 @@ def continuous_action_space():
     return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
 
 def discrete_action_space():
-    """This method construct the action space of the environment.
+    """
+    This method construct the action space of the environment.
     
     Returns:
         gym.Discrete: Discrete action space with limits between [0,10] and a step of 1.
@@ -204,9 +175,17 @@ def discrete_action_space():
     return Discrete(11)
 
 def environment_variables(env_config: Dict[str, Any]) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
-    
+    """
+    The EnergyPlus outdoor environment variables are defined in the environment configuration.
+
+    Args:
+        env_config (Dict[str, Any]): The EnvConfig dictionary.
+
+    Returns:
+        Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
+    """
     variables:Dict[str, Tuple [str, str]] = {}
-    if env_config.get('ep_environment_variables', False):
+    if env_config['ep_environment_variables']:
         variables = {variable: (variable, 'Environment') for variable in env_config['ep_environment_variables']}
     
     var_handles: Dict[str, int] = {}
@@ -214,8 +193,17 @@ def environment_variables(env_config: Dict[str, Any]) -> Tuple[Dict[str, Tuple [
     return variables, var_handles
 
 def thermal_zone_variables(env_config: Dict[str, Any], _thermal_zone_ids:Set) -> Tuple[Dict[str, Dict[str, Tuple[str,str]]],Dict[str,int]]:
+    """
+    The EnergyPlus thermal zone variables are defined in the environment configuration.
+
+    Args:
+        env_config (Dict[str, Any]): The EnvConfig dictionary.
+
+    Returns:
+        Tuple[Dict[str, Dict[str, Tuple [str, str]]],Dict[str,int]]: The thermal zone variables and their handles.
+    """
     thermal_zone_variables: Dict[str, Tuple [str, str]] = {thermal_zone: {} for thermal_zone in _thermal_zone_ids}
-    if env_config.get('ep_thermal_zones_variables', False):
+    if env_config['ep_thermal_zones_variables']:
         for thermal_zone in _thermal_zone_ids:
             thermal_zone_variables[thermal_zone].update({variable: (variable, thermal_zone) for variable in env_config['ep_thermal_zones_variables']})
     thermal_zone_var_handles: Dict[str, int] = {thermal_zone: {} for thermal_zone in _thermal_zone_ids}
@@ -223,23 +211,47 @@ def thermal_zone_variables(env_config: Dict[str, Any], _thermal_zone_ids:Set) ->
     return thermal_zone_variables, thermal_zone_var_handles
 
 def object_variables(env_config: Dict[str, Any], _thermal_zone_ids: Set) -> Tuple[Dict[str, Dict[str, Tuple[str,str]]],Dict[str,int]]:
+    """
+    The EnergyPlus object variables are defined in the environment configuration.
+
+    Args:
+        env_config (Dict[str, Any]): The EnvConfig dictionary.
+
+    Returns:
+        Tuple[Dict[str, Dict[str, Tuple [str, str]]],Dict[str,int]]: The object variables and their handles.
+    """
     object_variables: Dict[str, Dict[str, Tuple [str, str]]] = {}
-    if env_config.get('ep_object_variables', False):
+    if env_config['ep_object_variables']:
         object_variables = env_config['ep_object_variables']
     object_var_handles = {thermal_zone: {} for thermal_zone in _thermal_zone_ids}
     
     return object_variables, object_var_handles
 
 def meters(env_config: Dict[str, Any]) -> Tuple[Dict[str, str], Dict[str,int]]:
+    """The EnergyPlus meters are defined in the environment configuration.
+    
+    Args:
+        env_config (Dict[str, Any]): The EnvConfig dictionary.
+
+    Returns:
+        Tuple[Dict[str, str], Dict[str,int]]: The meters and their handles.
+    """
     meters: Dict[str,str] = {}
-    if env_config.get('ep_meters', False):
+    if env_config['ep_meters']:
         meters = {key: key for key in env_config['ep_meters']}
     meter_handles: Dict[str, int] = {}
     
     return meters, meter_handles
 
 def actuators(env_config: Dict[str, Any], _agent_ids:Set) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]:
-    
+    """The EnergyPlus actuators are defined in the environment configuration.
+
+    Args:
+        env_config (Dict[str, Any]): The EnvConfig dictionary.
+
+    Returns:
+        Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
+    """
     actuators: Dict[str,Tuple[str,str,str]] = {agent: env_config['agents_config'][agent]['ep_actuator_config'] for agent in _agent_ids}
     actuator_handles: Dict[str, int] = {}
     

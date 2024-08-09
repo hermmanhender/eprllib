@@ -5,7 +5,7 @@ This script execute the conventional controls in the evaluation scenario.
 import os
 from ray.rllib.policy.policy import Policy
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
-from eprllib.Tools.ActionTransformers import ActionTransformer
+from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 import numpy as np
 import pandas as pd
 import threading
@@ -36,14 +36,18 @@ class drl_evaluation:
         self.data_processing: Optional[step_processing] = None
         self.timestep = 0
         
-        if not os.path.exists(env_config['output']):
-            os.makedirs(env_config['output'])
+        
+        action_transformer:ActionFunction = self.env_config['action_transformer']
+        self.action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
+        
+        if not os.path.exists(env_config['output_path']):
+            os.makedirs(env_config['output_path'])
     
     def start_simulation(self) -> None:
         self.data_queue = Queue()
         self.data_processing = step_processing(
             self.data_queue,
-            f"{self.env_config['output']}/{self.name}.csv",
+            f"{self.env_config['output_path']}/{self.name}.csv",
         )
         self.data_processing.run()
         # se obtiene la observaión inicial del entorno para el episodio
@@ -74,11 +78,8 @@ class drl_evaluation:
             # Get the values of the variables for a timestep
             obs_dict, reward, terminated, truncated, infos = self.env.step(actions_dict)
             
-            if self.env_config.get('action_transformer', False):
-                action_transformer:ActionTransformer = self.env_config['action_transformer']
-                action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
-                # Transform all the actions
-                actions_dict = action_transformer.transform_action(actions_dict)
+            # The action is transformer inside the step method, but here is transformed to save the correct value
+            actions_dict = self.action_transformer.transform_action(actions_dict)
                 
             for agent in self._agent_ids:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]

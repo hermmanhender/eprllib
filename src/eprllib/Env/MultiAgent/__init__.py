@@ -1,7 +1,11 @@
-"""The multi-agent aproach allow to run multiples agents in the environment, but also
+"""
+Multi-Agent Environment
+=======================
+
+The multi-agent aproach allow to run multiples agents in the environment, but also
 a single agent.
+
 The standard configuration use a policy with fully shared parameters.
 
-You can check the entire configuration of the multi-agent approach in the
-`multiagent_config.py` file on ExampleFiles folder.
+You can configure the environment with the :class:`~eprllib.Env.EnvConfig.EnvConfig` class .
 """

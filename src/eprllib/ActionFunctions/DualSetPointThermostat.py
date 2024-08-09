@@ -1,24 +1,17 @@
-"""This script will be contain some action transformer methods to implement in
-eprllib. Most of them are applied in the test section where examples to test the 
-library are developed.
 """
-from typing import Dict, Set, Any
+Dual Set Point Thermostat
+=========================
 
-class ActionTransformer:
-    def __init__(
-        self,
-        agents_config: Dict,
-        _agent_ids: Set,
-    ):
-        self.agents_config = agents_config
-        self._agent_ids = _agent_ids
-    
-    def transform_action(self, action:Dict[str,float]) -> Dict[str, Any]:
-        raise NotImplementedError
+This module contains the implementation of the Dual Set Point Thermostat action function.
+The action function transforms the action values from [0,1] to the appropriate range for the
+actuator type (cooling, heating, or flow rate). The transformation is linear for cooling and
+heating, and linear for flow rate.
+"""
 
-"""Example"""
+from typing import Dict, Set
+from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 
-class DualSetPointThermostat(ActionTransformer):
+class DualSetPointThermostat(ActionFunction):
     def __init__(self, agents_config:Dict, _agent_ids:Set):
         super().__init__(agents_config, _agent_ids)
     

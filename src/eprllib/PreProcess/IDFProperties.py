@@ -1,4 +1,5 @@
-"""This module is used to load an IDF file and recognize the content
+"""
+This module is used to load an IDF file and recognize the content
 of the file related with the agents that would be used in the eprllib
 library.
 """

@@ -1,11 +1,12 @@
-"""# Converting conventional experiences to batch format
+"""
+Converting conventional experiences to batch format
+===================================================
 
 This script execute the conventional controls and generate experiences in batch format.
 """
 from tempfile import TemporaryDirectory
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
-from eprllib.Agents.ConventionalPolicy import ConventionalPolicy
-from eprllib.Tools.ActionSpaces import natural_ventilation_central_action
+from eprllib.Agents.ConventionalAgent import ConventionalAgent
 
 import gymnasium as gym
 import numpy as np
@@ -78,7 +79,7 @@ if __name__ == "__main__":
         'rotation': 0,
     }
     # se importan las políticas convencionales para la configuracion especificada
-    policy = ConventionalPolicy(policy_config)
+    policy = ConventionalAgent(policy_config)
     # se inicia el entorno con la configuración especificada
     env = EnergyPlusEnv_v0(env_config)
 
@@ -112,7 +113,7 @@ if __name__ == "__main__":
             
             action_1 = policy.window_opening(Ti, To, action_w1)
             action_2 = policy.window_opening(Ti, To, action_w2)
-            action = natural_ventilation_central_action(action_1, action_2)
+            action = ConventionalAgent.compute_single_action(action_1, action_2)
             
             new_obs, rew, terminated, truncated, info = env.step(action)
             

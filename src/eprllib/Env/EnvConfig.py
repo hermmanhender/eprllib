@@ -1,9 +1,14 @@
-"""This module is used to define the basic configuration
-of an environment.
 """
-from typing import Optional, List, Dict, Set, Tuple, Any
-from eprllib.Tools.ActionTransformers import ActionTransformer
-from eprllib.Tools.Rewards import RewardFunction
+Environment Configuration
+=========================
+
+This module contain the class and methods used to configure the environment.
+"""
+
+from typing import Optional, List, Dict, Tuple, Any
+from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.RewardFunctions.RewardFunctions import RewardFunction
+from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 
 def env_config_to_dict(EnvConfig) -> Dict:
     """
@@ -14,50 +19,54 @@ def env_config_to_dict(EnvConfig) -> Dict:
 class EnvConfig:
     def __init__(self):
         """
-        The EnvConfig class is used to define the basic configuration of an environment.
+        This is the main object that it is used to relate the EnergyPlus model and the RLlib policy training execution.
         """
         # generals
-        self.epjson_path:str = None
-        self.epw_path:str = None
-        self.output_path:str = None
+        self.epjson_path: str = ''
+        self.epw_path: str = ''
+        self.output_path: str = ''
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
 
         # agents
-        self.agents_config: Dict[str,Dict[str,Any]] = None
+        self.agents_config: Dict[str,Dict[str,Any]] = {}
 
         # observations
-        self.use_actuator_state: bool = None
-        self.use_agent_indicator: bool = None
-        self.use_agent_type: bool = None
-        self.use_building_properties: bool = None
-        self.buildig_properties: Dict[str,Dict[str,float]] = None
+        self.ep_environment_variables: List|bool = False
+        self.ep_thermal_zones_variables: List|bool = False
+        self.ep_object_variables: Dict[str,Dict[str,Tuple[str,str]]]|bool = False
+        self.ep_meters: List|bool = False
+        self.time_variables: List|bool = False
+        self.weather_variables: List|bool = False
+        self.infos_variables: Dict[str,List]|bool = False
+        self.no_observable_variables: Dict[str,List]|bool = False
+        self.use_actuator_state: bool = False
+        self.use_agent_indicator: bool = False
+        self.use_agent_type: bool = False
+        self.use_building_properties: bool = False
+        self.buildig_properties: Dict[str,Dict[str,float]] = {}
         self.use_one_day_weather_prediction: bool = False
-        self.ep_environment_variables: List = None
-        self.ep_thermal_zones_variables: List = None
-        self.ep_object_variables: Dict[str,Dict[str,Tuple[str,str]]] = None
-        self.ep_meters: List = None
 
         # actions
-        self.action_transformer: ActionTransformer = None
+        self.action_transformer: ActionFunction = ActionFunction
 
         # rewards
-        self.reward_fn: RewardFunction = None
-        self.reward_fn_config: Dict[str,Dict[str,Any]] = None
+        self.reward_fn: RewardFunction = RewardFunction
+        self.reward_fn_config: Dict[str,Dict[str,Any]] = {}
 
         # functionalities
-        self.cut_episode_len: int = None
-        self.episode_fn = None
-        self.episode_config: Dict = None
+        self.cut_episode_len: int = 1
+        self.episode_fn: EpisodeFunction = EpisodeFunction
+        self.episode_fn_config: Dict = {}
     
     def generals(
-        self,
-        epjson_path:Optional[str] = None,
-        epw_path:Optional[str] = None,
-        output_path:Optional[str] = None,
-        ep_terminal_output:bool = None,
-        timeout: float = None,
-    ) -> None:
+        self, 
+        epjson_path:str,
+        epw_path:str,
+        output_path:str,
+        ep_terminal_output:Optional[bool] = True,
+        timeout:Optional[float] = 10.0
+        ):
         """
         This method is used to modify the general configuration of the environment.
 
@@ -68,66 +77,41 @@ class EnvConfig:
             ep_terminal_output (bool): For dubugging is better to print in the terminal the outputs of the EnergyPlus simulation process.
             timeout (float): timeout define the time that the environment wait for an observation and the time that the environment wait to apply an action in the EnergyPlus simulation. After that time, the episode is finished. If your environment is time consuming, you can increase this limit. By default the value is 10 seconds.
         """
-        if epjson_path != None:
-            self.epjson_path = epjson_path
-        if epw_path != None:
-            self.epw_path = epw_path
-        if output_path != None:
-            self.output_path = output_path
-        if ep_terminal_output != None:
-            self.ep_terminal_output = ep_terminal_output
-        if timeout != None:
-            self.timeout = timeout
+        self.epjson_path = epjson_path
+        self.epw_path = epw_path
+        self.output_path = output_path
+        self.ep_terminal_output = ep_terminal_output
+        self.timeout = timeout
         
     def agents(
-        self,
-        agents_config: Dict[str,Dict[str,Any]] = None,
-    ) -> None:
+        self, 
+        agents_config:Dict[str,Dict[str,Any]]
+        ):
         """
         This method is used to modify the agents configuration of the environment.
 
         Args:
             agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents involved in the environment. The mandatory components of the agent are: ep_actuator_configuration, thermal_zone, actuator_type, agent_indicator.
         """
-        if agents_config == None:
-            raise NotImplementedError(
-                """The agents must to be configured.
-
-                Example:
-                    OfficeModel = EnvConfig().agents({
-                            'Agent 1 in Room 1': {
-                                'ep_actuator_config': (
-                                    "Ideal Loads Air System", 
-                                    "Air Mass Flow Rate", 
-                                    "Thermal Zone: Living Ideal Loads Air System"
-                                ),
-                                'thermal_zone': 'Thermal Zone: Living',
-                                'actuator_type': 3,
-                                'agent_indicator': 1,
-                            },
-                        }
-                    )
-                """
-            )
         self.agents_config = agents_config
     
     def observations(
         self,
-        use_actuator_state: bool = None,
-        use_agent_indicator: bool = None,
-        use_agent_type: bool = None,
-        use_building_properties: bool = None,
-        buildig_properties: Dict[str,Dict[str,float]] = None,
-        use_one_day_weather_prediction: bool = None,
-        ep_environment_variables: List[str] = None,
-        ep_thermal_zones_variables: List[str] = None,
-        ep_object_variables: Dict[str,Dict[str,Tuple[str,str]]] = None,
-        ep_meters: List[str] = None,
-        time_variables: List[str] = None,
-        weather_variables: List[str] = None,
-        infos_variables: Dict[str,List[str]] = None,
-        no_observable_variables: Dict[str,List[str]] = None
-    ) -> None:
+        ep_environment_variables: List[str]|bool = False,
+        ep_thermal_zones_variables: List[str]|bool = False,
+        ep_object_variables: Dict[str,Dict[str,Tuple[str,str]]]|bool = False,
+        ep_meters: List[str]|bool = False,
+        time_variables: List[str]|bool = False,
+        weather_variables: List[str]|bool = False,
+        infos_variables: Dict[str,List[str]]|bool = False,
+        no_observable_variables: Dict[str,List[str]]|bool = False,
+        use_actuator_state: Optional[bool] = False,
+        use_agent_indicator: Optional[bool] = False,
+        use_agent_type: Optional[bool] = False,
+        use_building_properties: Optional[bool] = False,
+        buildig_properties: Optional[Dict[str,Dict[str,float]]] = {},
+        use_one_day_weather_prediction: Optional[bool] = False,
+        ):
         """
         This method is used to modify the observations configuration of the environment.
 
@@ -154,61 +138,39 @@ class EnvConfig:
             infos_variables (Dict[str,List[str]]): The information variables are important to provide information for the reward function. The observation is pass trough the agent as a NDArray but the info is a dictionary. In this way, we can identify clearly the value of a variable with the key name. All the variables used in the reward function must to be in the infos_variables list. The name of the variables must to corresponde with the names defined in the earlier lists.
             no_observable_variables (Dict[str,List[str]]): There are occasions where some variables are consulted to use in training but are not part of the observation space. For that variables, you can use the following  list. An strategy, for example, to use the Fanger PPD value in the reward function but not in the observation space is to aggregate the PPD into the 'infos_variables' and in the 'no_observable_variables' list.
         """
-        if use_actuator_state != None:
-            self.use_actuator_state = use_actuator_state
-        if use_agent_indicator != None:
-            self.use_agent_indicator = use_agent_indicator
-        if use_agent_type != None:
-            self.use_agent_type = use_agent_type
-        if use_building_properties != None:
-            self.use_building_properties = use_building_properties
-            if buildig_properties == None:
-                raise NotImplementedError(
-                    """The implmentation of building_properties is mandatory
-                    when you set 'use_building_properties=True'. Set this to False or 
-                    proporcionate a Dict[str,Dict[str,float]].
-                    """
-                )
-            else:
-                self.buildig_properties = buildig_properties
-        if use_one_day_weather_prediction != None:
-            self.use_one_day_weather_prediction = use_one_day_weather_prediction
-
-        if ep_environment_variables != None:
-            self.ep_environment_variables = ep_environment_variables
-        if ep_thermal_zones_variables != None:
-            self.ep_thermal_zones_variables = ep_thermal_zones_variables
-        if ep_object_variables != None:
-            self.ep_object_variables = ep_object_variables
-        if ep_meters != None:
-            self.ep_meters = ep_meters
-        if time_variables != None:
-            self.time_variables = time_variables
-        if weather_variables != None:
-            self.weather_variables = weather_variables
-        if infos_variables != None:
-            self.infos_variables = infos_variables
-        if no_observable_variables != None:
-            self.no_observable_variables = no_observable_variables
+        # TODO: Al least one variable must to be defined.
+        self.use_actuator_state = use_actuator_state
+        self.use_agent_indicator = use_agent_indicator
+        self.use_agent_type = use_agent_type
+        self.use_building_properties = use_building_properties
+        self.buildig_properties = buildig_properties
+        self.use_one_day_weather_prediction = use_one_day_weather_prediction
+        self.ep_environment_variables = ep_environment_variables
+        self.ep_thermal_zones_variables = ep_thermal_zones_variables
+        self.ep_object_variables = ep_object_variables
+        self.ep_meters = ep_meters
+        self.time_variables = time_variables
+        self.weather_variables = weather_variables
+        self.infos_variables = infos_variables
+        self.no_observable_variables = no_observable_variables
     
     def actions(
         self,
-        action_transformer: ActionTransformer = None
-    ) -> None:
+        action_transformer: ActionFunction = ActionFunction
+        ):
         """
         This method is used to modify the actions configuration of the environment.
         
         Args:
             action_transformer (ActionTransformer): In the definition of the action space, usualy is use the discrete form of the gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the objective to transform appropiately the discret action into a value action for EP we define the action_transformer funtion. This function take the arguments agent_id and action. You can find examples in eprllib.Tools.ActionTransformers.
         """
-        if action_transformer != None:
-            self.action_transformer = action_transformer
+        self.action_transformer = action_transformer
 
     def rewards(
         self,
-        reward_fn: RewardFunction = None,
-        reward_fn_config: Dict[str,Dict[str,Any]] = None
-    ) -> None:
+        reward_fn: RewardFunction = RewardFunction,
+        reward_fn_config: Dict[str,Dict[str,Any]] = {}
+        ):
         """
         This method is used to modify the rewards configuration of the environment.
 
@@ -216,41 +178,23 @@ class EnvConfig:
             reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos dictionary. As a return, gives a float number as reward. See eprllib.tools.rewards
             reward_fn_config (Dict[str,Dict[str,Any]]): NotDescribed
         """
-        if reward_fn != None:
-            self.reward_fn = reward_fn
-
-            if reward_fn_config == None:
-                raise NotImplementedError(
-                    """If you set a reward_fn you need to specify the reward_fn_config. If the function don't 
-                    use a config, set this parameter to False."""
-                )
-            else:
-                self.reward_fn_config = reward_fn_config
+        self.reward_fn = reward_fn
+        self.reward_fn_config = reward_fn_config
 
     def functionalities(
         self,
-        episode_fn = None,
-        episode_config: Dict = None,
-        cut_episode_len: int = None,
-    ) -> None:
+        episode_fn: EpisodeFunction = EpisodeFunction,
+        episode_fn_config: Dict = {},
+        cut_episode_len: int = 0,
+        ) -> None:
         """
         This method configure special functions to improve the use of eprllib.
 
         Args:
             episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it with modifications.
             episode_config (Dict): NotDescribed
-            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will truncate the, for example, annual simulation into 365 episodes.
+            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will truncate the, for example, annual simulation into 365 episodes. If ypu set to 0, no cut will be apply.
         """
-        if episode_fn != None:
-            self.episode_fn = episode_fn
-
-            if episode_config == None:
-                raise NotImplementedError(
-                    """If you set a episode_fn you need to specify the episode_fn_config. If the 
-                    function don't use a config, set this parameter to False.
-                    """
-                )
-            else:
-                self.episode_config = episode_config
-        if cut_episode_len != None:
-            self.cut_episode_len = cut_episode_len
+        self.episode_fn = episode_fn
+        self.episode_fn_config = episode_fn_config
+        self.cut_episode_len = cut_episode_len

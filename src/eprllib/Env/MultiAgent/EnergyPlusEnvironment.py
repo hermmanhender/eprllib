@@ -6,9 +6,10 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import env_value_inspection, obs_space, discrete_action_space
+from eprllib.Env.MultiAgent.EnvUtils import obs_space, discrete_action_space
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
-from eprllib.Tools import Rewards
+from eprllib.RewardFunctions.RewardFunctions import RewardFunction
+from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -74,8 +75,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         """
         # asigning the configuration of the environment.
         self.env_config = env_config
-        # inspection of info errors
-        env_value_inspection(self.env_config)
         
         # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
         self._agent_ids = set([key for key in env_config['agents_config'].keys()])
@@ -131,9 +130,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             
             # episode_config_fn: Function that take the env_config as argument and upgrade the value
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
-            episode_config_fn = self.env_config.get('episode_config_fn', None)
-            if episode_config_fn != None:
-                self.env_config = episode_config_fn(self.env_config)
+            episode_config_fn: EpisodeFunction = self.env_config['episode_fn_config']
+            self.env_config = episode_config_fn.get_episode_config()
+            
+            # Define the reward function for the episode
+            self.reward_function: RewardFunction = self.env_config['reward_fn']
+            self.reward_function = self.reward_function(self)
             
             # Start EnergyPlusRunner whith the following configuration.
             self.energyplus_runner = EnergyPlusRunner(
@@ -171,16 +173,16 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         terminated = {}
         truncated = {}
         # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: None
-        cut_episode_len = self.env_config.get('cut_episode_len', None)
-        if not cut_episode_len == None:
+        cut_episode_len: int = self.env_config['cut_episode_len']
+        if cut_episode_len == 0:
+            self.truncateds = False
+        else:
             cut_episode_len_timesteps = cut_episode_len * 24*self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
-        else:
-            self.truncateds = False
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
-        timeout = self.env_config.get("timeout", 10)
+        timeout = self.env_config["timeout"]
         
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
@@ -225,11 +227,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             raise Exception('Simulation in EnergyPlus fallied.')
         
         # Calculate the reward in the timestep
-        if self.env_config.get('reward_function', False):
-            reward_function = self.env_config['reward_function']
-        else:
-            reward_function = Rewards.dalamagkidis_2007
-        reward_dict = reward_function(self, infos)
+        
+        reward_dict = self.reward_function.calculate_reward(infos)
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds

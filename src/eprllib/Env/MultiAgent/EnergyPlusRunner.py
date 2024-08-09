@@ -9,9 +9,8 @@ from queue import Queue
 from time import sleep
 from typing import Any, Dict, List, Optional, Set
 
-from eprllib.Tools.ActionTransformers import ActionTransformer
+from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.Env.MultiAgent.EnvUtils import (
-    runner_value_inspection, 
     environment_variables, 
     thermal_zone_variables, 
     object_variables, 
@@ -25,7 +24,8 @@ from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
 class EnergyPlusRunner:
-    """This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
+    """
+    This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
     """
     def __init__(
@@ -38,7 +38,8 @@ class EnergyPlusRunner:
         _agent_ids: Set,
         _thermal_zone_ids: Set,
         ) -> None:
-        """The object has an intensive interaction with EnergyPlus Environment script, exchange information
+        """
+        The object has an intensive interaction with EnergyPlus Environment script, exchange information
         between two threads. For a good coordination queue events are stablished and different canals of
         information are defined.
 
@@ -53,7 +54,6 @@ class EnergyPlusRunner:
             None.
         """
         self.env_config = env_config
-        runner_value_inspection(self.env_config)
         
         # Asignation of variables.
         self.episode = episode
@@ -82,6 +82,10 @@ class EnergyPlusRunner:
         self.infos_keys = []
         self.agent_actions = {}
         
+        # Define the action transformer function
+        action_transformer:ActionFunction = self.env_config['action_transformer']
+        self.action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
+        
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
         self.variables, self.var_handles = environment_variables(self.env_config)
@@ -91,17 +95,19 @@ class EnergyPlusRunner:
         self.actuators, self.actuator_handles = actuators(self.env_config, self._agent_ids)
         
     def start(self) -> None:
-        """This method inicialize EnergyPlus. First the episode is configurate, the calling functions
+        """
+        This method inicialize EnergyPlus. First the episode is configurate, the calling functions
         established and the thread is generated here.
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state = api.state_manager.new_state()
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
-        api.runtime.set_console_output_status(self.energyplus_state, self.env_config.get('ep_terminal_output', False))
+        api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
         
         def _run_energyplus():
-            """Run EnergyPlus in a non-blocking way with Threads.
+            """
+            Run EnergyPlus in a non-blocking way with Threads.
             """
             cmd_args = self.make_eplus_args()
             print(f"running EnergyPlus with args: {cmd_args}")
@@ -116,7 +122,8 @@ class EnergyPlusRunner:
         self.energyplus_exec_thread.start()
 
     def _collect_obs(self, state_argument) -> None:
-        """EnergyPlus callback that collects output variables, meters and actuator actions
+        """
+        EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
         # To not perform observations when the callbacks and the 
@@ -141,7 +148,7 @@ class EnergyPlusRunner:
         # Loop for each Thermal Zone conditioned.   
         for thermal_zone in self._thermal_zone_ids:
             
-            if self.env_config.get('ep_environment_variables', False):
+            if self.env_config['ep_environment_variables']:
                 # Transform the list of names in Tuples
                 obs_tz[thermal_zone].update(
                     {
@@ -150,7 +157,7 @@ class EnergyPlusRunner:
                         in self.var_handles.items()
                     }
                 )
-            if self.env_config.get('ep_thermal_zones_variables', False):
+            if self.env_config['ep_thermal_zones_variables']:
                 # Transform the list of names in Tuples
                 thermal_zone_thermal_zone_var_handles:Dict = self.thermal_zone_var_handles[thermal_zone]
                 obs_tz[thermal_zone].update(
@@ -160,7 +167,7 @@ class EnergyPlusRunner:
                         in thermal_zone_thermal_zone_var_handles.items()
                     }
                 )
-            if self.env_config.get('ep_object_variables', False):
+            if self.env_config['ep_object_variables']:
                 # Transform the list of names in Tuples
                 thermal_zone_object_var_handles:Dict = self.object_var_handles[thermal_zone]
                 obs_tz[thermal_zone].update(
@@ -171,7 +178,7 @@ class EnergyPlusRunner:
                     }
                 )
             # add the meters if any.
-            if self.env_config.get('ep_meters', False):
+            if self.env_config['ep_meters']:
                 obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_meter_value(state_argument, handle)
@@ -180,12 +187,12 @@ class EnergyPlusRunner:
                     }
                 )
             # Upgrade the observation with the building general properties
-            if self.env_config.get('use_building_properties', True):
+            if self.env_config['use_building_properties']:
                 building_properties:Dict = self.env_config['building_properties'][thermal_zone]
                 obs_tz[thermal_zone].update(building_properties)
         
             # Upgrade of the timestep observation with other variables.
-            if self.env_config.get('time_variables', False):
+            if self.env_config['time_variables']:
                 time_variables_methods = {
                     'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
                     'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
@@ -206,7 +213,7 @@ class EnergyPlusRunner:
                 time_variables_dict = {variable: time_variables_methods[variable] for variable in self.env_config['time_variables']}
                 obs_tz[thermal_zone].update(time_variables_dict)
                 
-            if self.env_config.get('weather_variables', False):
+            if self.env_config['weather_variables']:
                 weather_variables_methods = {
                     'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
                     'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
@@ -244,7 +251,7 @@ class EnergyPlusRunner:
                 obs_tz[thermal_zone].update(weather_variables_dict)
             
             # Weather prediction of 24 hours
-            if self.env_config.get('use_one_day_weather_prediction', True):
+            if self.env_config['use_one_day_weather_prediction']:
                 weather_pred = {}
                 # The list sigma_max contains the standard deviation of the predictions in the following order:
                 #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
@@ -280,21 +287,21 @@ class EnergyPlusRunner:
                 obs_tz[thermal_zone].update(weather_pred)
                 
                 # Set the variables in the infos dict before to delete from the obs dict.
-                if self.env_config.get('infos_variables', False):
+                if self.env_config['infos_variables']:
                     infos_tz[thermal_zone] = {variable: obs_tz[thermal_zone][variable] for variable in self.env_config['infos_variables'][thermal_zone]}
                 # after infos assignation, delete not observable variables
-                if self.env_config.get('no_observable_variables', False):
+                if self.env_config['no_observable_variables']:
                     for variable in self.env_config['no_observable_variables'][thermal_zone]:
                         del obs_tz[thermal_zone][variable]
                 
                 if self.first_observation:
                     self.obs_keys = [key for key in obs_tz[thermal_zone].keys()]
                     self.infos_keys = [key for key in infos_tz[thermal_zone].keys()]
-                    if self.env_config.get('use_actuator_state', True):
+                    if self.env_config['use_actuator_state']:
                         self.obs_keys.append('actuator_state')
-                    if self.env_config.get('use_agent_indicator', True):
+                    if self.env_config['use_agent_indicator']:
                         self.obs_keys.append('agent_indicator')
-                    if self.env_config.get('use_agent_type', True):
+                    if self.env_config['use_agent_type']:
                         self.obs_keys.append('agent_type')
                 # ==FIN DEL LOOP DE OBSERVACIONES==
                 
@@ -316,7 +323,7 @@ class EnergyPlusRunner:
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
             agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
             # if apply, add the actuator state.
-            if self.env_config.get('use_actuator_state', True):
+            if self.env_config['use_actuator_state']:
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],
@@ -325,7 +332,7 @@ class EnergyPlusRunner:
                     dtype='float32'
                 )
             # if apply, add the agent indicator.
-            if self.env_config.get('use_agent_indicator', True):
+            if self.env_config['use_agent_indicator']:
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],
@@ -334,7 +341,7 @@ class EnergyPlusRunner:
                     dtype='float32'
                 )
             # if apply, add the agent type.
-            if self.env_config.get('use_agent_type', True):
+            if self.env_config['use_agent_type']:
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],
@@ -350,7 +357,8 @@ class EnergyPlusRunner:
         self.obs_event.set()
 
     def _collect_first_obs(self, state_argument):
-        """This method is used to collect only the first observation of the environment when the episode beggins.
+        """
+        This method is used to collect only the first observation of the environment when the episode beggins.
 
         Args:
             state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
@@ -386,13 +394,7 @@ class EnergyPlusRunner:
         
         # Get the central action from the EnergyPlus Environment `step` method.
         # In the case of simple agent a int value and for multiagents a dictionary.
-        dict_action = self.act_queue.get()
-        
-        if self.env_config.get('action_transformer', False):
-            action_transformer:ActionTransformer = self.env_config['action_transformer']
-            action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
-            # Transform all the actions
-            dict_action = action_transformer.transform_action(dict_action)
+        dict_action = self.action_transformer.transform_action(self.act_queue.get())
             
         # Perform the actions in EnergyPlus simulation.       
         for agent in self._agent_ids:
@@ -403,36 +405,52 @@ class EnergyPlusRunner:
             )
        
     def _init_callback(self, state_argument) -> bool:
-        """Initialize EnergyPlus handles and checks if simulation runtime is ready"""
+        """
+        Initialize EnergyPlus handles and checks if simulation runtime is ready.
+        
+        Args:
+            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+
+        Returns:
+            bool: True if the simulation is ready to perform actions.
+        """
         self.init_handles = self._init_handles(state_argument)
         self.initialized = self.init_handles \
             and not api.exchange.warmup_flag(state_argument)
         return self.initialized
 
     def _init_handles(self, state_argument):
-        """Initialize sensors/actuators handles to interact with during simulation"""
+        """
+        Initialize sensors/actuators handles to interact with during simulation.
+        
+        Args:
+            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+
+        Returns:
+            bool: True if all handles were initialized successfully.
+        """
         if not self.init_handles:
             if not api.exchange.api_data_fully_ready(state_argument):
                 return False
             
-            if self.env_config.get('ep_environment_variables', False):
+            if self.env_config['ep_environment_variables']:
                 self.var_handles = {
                     key: api.exchange.get_variable_handle(state_argument, *var)
                     for key, var in self.variables.items()
                 }
-            if self.env_config.get('ep_thermal_zones_variables', False):
+            if self.env_config['ep_thermal_zones_variables']:
                 for thermal_zone in self._thermal_zone_ids:
                     self.thermal_zone_var_handles[thermal_zone].update({
                         key: api.exchange.get_variable_handle(state_argument, *var)
                         for key, var in self.thermal_zone_variables[thermal_zone].items()
                     }),
-            if self.env_config.get('ep_object_variables', False):
+            if self.env_config['ep_object_variables']:
                 for thermal_zone in self._thermal_zone_ids:
                     self.object_var_handles[thermal_zone].update({
                         key: api.exchange.get_variable_handle(state_argument, *var)
                         for key, var in self.object_variables[thermal_zone].items()
                     }),
-            if self.env_config.get('ep_meters', False):
+            if self.env_config['ep_meters']:
                 self.meter_handles = {
                     key: api.exchange.get_meter_handle(state_argument, meter)
                     for key, meter in self.meters.items()
@@ -466,20 +484,22 @@ class EnergyPlusRunner:
         return True
 
     def stop(self) -> None:
-        """Method to stop EnergyPlus simulation and joint the threads.
+        """
+        Method to stop EnergyPlus simulation and joint the threads.
         """
         if not self.simulation_complete:
             self.simulation_complete = True
-        sleep(10)
+        sleep(130)
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None
         self.first_observation = True
         api.runtime.clear_callbacks()
-        api.state_manager.delete_state(self.energyplus_state)  
+        api.state_manager.delete_state(self.energyplus_state)
 
     def failed(self) -> bool:
-        """This method tells if a EnergyPlus simulations was finished successfully or not.
+        """
+        This method tells if a EnergyPlus simulations was finished successfully or not.
 
         Returns:
             bool: Boolean value of the success of the simulation.
@@ -487,20 +507,25 @@ class EnergyPlusRunner:
         return self.sim_results != 0
 
     def make_eplus_args(self) -> List[str]:
-        """Make command line arguments to pass to EnergyPlus
+        """
+        Make command line arguments to pass to EnergyPlus.
+        
+        Return:
+            List[str]: List of arguments to pass to EnergyPlusEnv.
         """
         eplus_args = ["-r"] if self.env_config.get("csv", False) else []
         eplus_args += [
             "-w",
-            self.env_config["epw"],
+            self.env_config["epw_path"],
             "-d",
-            f"{self.env_config['output']}/episode-{self.episode:08}",
-            self.env_config["epjson"]
+            f"{self.env_config['output_path']}/episode-{self.episode:08}",
+            self.env_config["epjson_path"]
         ]
         return eplus_args
     
     def _flush_queues(self):
-        """Method to liberate the space in the different queue objects.
+        """
+        Method to liberate the space in the different queue objects.
         """
         for q in [self.obs_queue, self.act_queue, self.infos_queue]:
             while not q.empty():

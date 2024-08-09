@@ -1,4 +1,5 @@
-"""This module contains the InternalGains generator file for EnergyPlus. It considers the
+"""
+This module contains the InternalGains generator file for EnergyPlus. It considers the
 People, Light, Electricity or plugin Loads, and GasEquipment for Cooking objects in the model.
 """
 import pandas as pd
