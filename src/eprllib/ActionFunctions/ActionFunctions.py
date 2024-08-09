@@ -14,8 +14,7 @@ class ActionFunction:
     """
     def __init__(
         self,
-        agents_config: Dict,
-        _agent_ids: Set,
+        action_fn_config: Dict[str,Any] = {}
     ):
         """
         This class is used to transform the actions of the agents before applying
@@ -25,8 +24,7 @@ class ActionFunction:
             agents_config (Dict): This tale the configuration of the agents in the EnvConfig class.
             _agent_ids (Set): Agent ids in the environment.
         """
-        self.agents_config = agents_config
-        self._agent_ids = _agent_ids
+        self.action_fn_config = action_fn_config
     
     def transform_action(self, action:Dict[str,float]) -> Dict[str, Any]:
         """

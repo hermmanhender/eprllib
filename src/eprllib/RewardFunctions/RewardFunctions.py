@@ -10,17 +10,28 @@ and indexing a arrangement may change.
 """
 
 from typing import Dict, Any
-from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
 
 class RewardFunction:
+    """
+    This class is the base class for the reward function.
+    """
     def __init__(
         self,
-        EnvObject: EnergyPlusEnv_v0
+        reward_fn_config: Dict[str,Any]
     ):
-        self.EnvObject = EnvObject
+        self.reward_config = reward_fn_config
     
     def calculate_reward(
         self,
         infos: Dict[str,Dict[str,Any]]
         ) -> Dict[str,float]:
+        """
+        This method must be implemented in the subclass.
+
+        Args:
+            infos (Dict[str,Dict[str,Any]]): The infos dictionary containing the necessary information for calculating the reward.
+
+        Returns:
+            Dict[str,float]: The calculated reward as a dictionary with the keys 'agent'.
+        """
         return NotImplementedError("This method must be implemented in the subclass.")

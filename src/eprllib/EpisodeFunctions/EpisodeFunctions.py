@@ -5,7 +5,7 @@ Episode Functions Base Class
 This module contains the base class for the episode functions. This class is used to define the episode configuration
 for the EnergyPlus environment.
 """
-from typing import Dict
+from typing import Dict, Any
 
 class EpisodeFunction:
     """
@@ -13,16 +13,15 @@ class EpisodeFunction:
     """
     def __init__(
         self,
-        env_config: Dict,
-        **kargs
+        episode_fn_config: Dict[str,Any] = {}
         ):
-        self.env_config = env_config
+        self.episode_fn_config = episode_fn_config
 
-    def get_episode_config(self) -> Dict:
+    def get_episode_config(self, env_config: Dict[str,Any]) -> Dict[str,Any]:
         """
         This method returns the episode configuration for the EnergyPlus environment.
 
         Returns:
             Dict: The episode configuration.
         """
-        return self.env_config
+        return env_config

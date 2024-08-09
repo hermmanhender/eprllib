@@ -83,8 +83,7 @@ class EnergyPlusRunner:
         self.agent_actions = {}
         
         # Define the action transformer function
-        action_transformer:ActionFunction = self.env_config['action_transformer']
-        self.action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
+        self.action_fn: ActionFunction = self.env_config['action_fn']
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
@@ -394,7 +393,7 @@ class EnergyPlusRunner:
         
         # Get the central action from the EnergyPlus Environment `step` method.
         # In the case of simple agent a int value and for multiagents a dictionary.
-        dict_action = self.action_transformer.transform_action(self.act_queue.get())
+        dict_action = self.action_fn.transform_action(self.act_queue.get())
             
         # Perform the actions in EnergyPlus simulation.       
         for agent in self._agent_ids:

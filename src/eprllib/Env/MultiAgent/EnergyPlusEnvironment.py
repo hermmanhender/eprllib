@@ -94,6 +94,10 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.act_queue: Optional[Queue] = None
         self.infos_queue: Optional[Queue] = None
         
+        # functionalities and reward
+        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
+        self.reward_fn: RewardFunction = self.env_config['reward_fn']
+        
         # ===CONTROLS=== #
         # variable for the registry of the episode number.
         self.episode = -1
@@ -130,12 +134,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             
             # episode_config_fn: Function that take the env_config as argument and upgrade the value
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
-            episode_config_fn: EpisodeFunction = self.env_config['episode_fn_config']
-            self.env_config = episode_config_fn.get_episode_config()
-            
-            # Define the reward function for the episode
-            self.reward_function: RewardFunction = self.env_config['reward_fn']
-            self.reward_function = self.reward_function(self)
+            self.env_config = self.episode_fn.get_episode_config(self.env_config)
             
             # Start EnergyPlusRunner whith the following configuration.
             self.energyplus_runner = EnergyPlusRunner(
@@ -228,7 +227,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # Calculate the reward in the timestep
         
-        reward_dict = self.reward_function.calculate_reward(infos)
+        reward_dict = self.reward_fn.calculate_reward(infos)
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds

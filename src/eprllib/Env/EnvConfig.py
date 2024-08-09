@@ -48,16 +48,14 @@ class EnvConfig:
         self.use_one_day_weather_prediction: bool = False
 
         # actions
-        self.action_transformer: ActionFunction = ActionFunction
+        self.action_fn: ActionFunction = ActionFunction
 
         # rewards
         self.reward_fn: RewardFunction = RewardFunction
-        self.reward_fn_config: Dict[str,Dict[str,Any]] = {}
 
         # functionalities
         self.cut_episode_len: int = 1
         self.episode_fn: EpisodeFunction = EpisodeFunction
-        self.episode_fn_config: Dict = {}
     
     def generals(
         self, 
@@ -156,20 +154,19 @@ class EnvConfig:
     
     def actions(
         self,
-        action_transformer: ActionFunction = ActionFunction
+        action_fn: ActionFunction = ActionFunction
         ):
         """
         This method is used to modify the actions configuration of the environment.
         
         Args:
-            action_transformer (ActionTransformer): In the definition of the action space, usualy is use the discrete form of the gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the objective to transform appropiately the discret action into a value action for EP we define the action_transformer funtion. This function take the arguments agent_id and action. You can find examples in eprllib.Tools.ActionTransformers.
+            action_fn (ActionFunction): In the definition of the action space, usualy is use the discrete form of the gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the objective to transform appropiately the discret action into a value action for EP we define the action_transformer funtion. This function take the arguments agent_id and action. You can find examples in eprllib.Tools.ActionTransformers.
         """
-        self.action_transformer = action_transformer
+        self.action_fn = action_fn
 
     def rewards(
         self,
         reward_fn: RewardFunction = RewardFunction,
-        reward_fn_config: Dict[str,Dict[str,Any]] = {}
         ):
         """
         This method is used to modify the rewards configuration of the environment.
@@ -179,12 +176,10 @@ class EnvConfig:
             reward_fn_config (Dict[str,Dict[str,Any]]): NotDescribed
         """
         self.reward_fn = reward_fn
-        self.reward_fn_config = reward_fn_config
 
     def functionalities(
         self,
         episode_fn: EpisodeFunction = EpisodeFunction,
-        episode_fn_config: Dict = {},
         cut_episode_len: int = 0,
         ) -> None:
         """
@@ -196,5 +191,4 @@ class EnvConfig:
             cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will truncate the, for example, annual simulation into 365 episodes. If ypu set to 0, no cut will be apply.
         """
         self.episode_fn = episode_fn
-        self.episode_fn_config = episode_fn_config
         self.cut_episode_len = cut_episode_len

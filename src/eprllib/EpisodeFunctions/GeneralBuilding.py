@@ -8,17 +8,18 @@ the control of different devices in a building.
 import os
 import json
 import numpy as np
-from typing import Dict
+from typing import Dict, Any
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.Tools.Utils import building_dimension, inertial_mass, u_factor, random_weather_config
 
 class GeneralBuilding(EpisodeFunction):
     def __init__(
-        self, env_config:Dict
+        self, episode_fn_config:Dict[str,Any]
     ):
-        super().__init__(env_config)
+        super().__init__(episode_fn_config)
+        self.epjson_files_folder_path = episode_fn_config['epjson_files_folder_path']
     
-    def get_episode_config(self) -> Dict:
+    def get_episode_config(self, env_config:Dict[str,Any]) -> Dict[str,Any]:
         """
         This method define the properties of the episode. Changing some properties as weather or 
         Run Time Period, and defining others fix properties as volumen or window area relation.
@@ -26,12 +27,9 @@ class GeneralBuilding(EpisodeFunction):
         Return:
             dict: The method returns the env_config with modifications.
         """
-        # If the path to epjson is not set, arraise a error.
-        if not env_config['episode_fn_config'].get('epjson_path', False):
-            raise ValueError('epjson_path is not defined')
-        
+        epjson_path: str = env_config['epjson_path']
         # Establish the epJSON Object, it will be manipulated to modify the building model.
-        with open(env_config['episode_fn_config']['epjson']) as file:
+        with open(epjson_path) as file:
             epJSON_object: dict = json.load(file)
         
         # == BUILDING ==
@@ -135,10 +133,10 @@ class GeneralBuilding(EpisodeFunction):
         
         # The new modify epjson file is writed in the results folder created by RLlib
         # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']
-        if not os.path.exists(f"{env_config['episode_fn_config']['epjson_files_folder_path']}/models"):
-            os.makedirs(f"{env_config['episode_fn_config']['epjson_files_folder_path']}/models")
+        if not os.path.exists(f"{self.epjson_files_folder_path}/models"):
+            os.makedirs(f"{self.epjson_files_folder_path}/models")
         
-        env_config["epjson_path"] = f"{env_config['episode_fn_config']['epjson_files_folder_path']}/models/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
+        env_config["epjson_path"] = f"{self.epjson_files_folder_path}/models/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
         with open(env_config["epjson_path"], 'w') as fp:
             json.dump(epJSON_object, fp, sort_keys=False, indent=4)
             # The new modify epjson file is writed.

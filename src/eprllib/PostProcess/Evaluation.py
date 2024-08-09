@@ -37,8 +37,7 @@ class drl_evaluation:
         self.timestep = 0
         
         
-        action_transformer:ActionFunction = self.env_config['action_transformer']
-        self.action_transformer = action_transformer(self.env_config['agents_config'], self._agent_ids)
+        self.action_fn: ActionFunction = self.env_config['action_fn']
         
         if not os.path.exists(env_config['output_path']):
             os.makedirs(env_config['output_path'])
@@ -79,7 +78,7 @@ class drl_evaluation:
             obs_dict, reward, terminated, truncated, infos = self.env.step(actions_dict)
             
             # The action is transformer inside the step method, but here is transformed to save the correct value
-            actions_dict = self.action_transformer.transform_action(actions_dict)
+            actions_dict = self.action_fn.transform_action(actions_dict)
                 
             for agent in self._agent_ids:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
