@@ -102,4 +102,3 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-
