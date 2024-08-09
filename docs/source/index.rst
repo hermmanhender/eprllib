@@ -102,3 +102,7 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
+   eprllib
+
+.. automodule:: eprllib
+   :members:
