@@ -102,7 +102,10 @@ Example configuration
    :maxdepth: 2
    :caption: Contents:
 
-   eprllib
+   generated/modules
 
-.. automodule:: eprllib
-   :members:
+.. autosummary::
+   :toctree: generated
+   :recursive:
+
+   eprllib
