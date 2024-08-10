@@ -660,7 +660,7 @@ def random_building_config(env_config:Dict):
     
     return env_config
 
-def random_weather_config(env_config:Dict) -> Dict:
+def random_weather_config(env_config:Dict, epw_files_folder_path:str) -> Dict:
     """
     This method define the path to the epJSON file.
 
@@ -683,18 +683,11 @@ def random_weather_config(env_config:Dict) -> Dict:
     if env_config.get('epw_path', False) == False:
         env_config['epw_path'] = ''
     
-    # Define the properties of the method
-    epw_files_folder_path: str = None # This is mandatory
-    id_epw_file: int = None # The default is a random int, but the user can indicated a diferent number
-    
     # For each property, assign the default or the user input
-    epw_files_folder_path = env_config['episode_fn_config'].get('epw_files_folder_path', None)
-    if epw_files_folder_path is None:
-        ValueError('epw_files_folder_path is not defined')
-    
-    id_epw_file = env_config['episode_fn_config'].get('id_epw_file', None)
-    if id_epw_file is None:
-        id_epw_file = np.random.randint(0, len(os.listdir(epw_files_folder_path)))
+    # TODO: Change the 'episode_fn_config'.
+    # id_epw_file = env_config['episode_fn_config'].get('id_epw_file', None)
+    # if id_epw_file is None:
+    id_epw_file = np.random.randint(0, len(os.listdir(epw_files_folder_path)))
     
     # The path to the epjson file is defined
     env_config['epw_path'] = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])

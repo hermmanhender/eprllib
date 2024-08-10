@@ -44,7 +44,7 @@ class EnvConfig:
         self.use_agent_indicator: bool = False
         self.use_agent_type: bool = False
         self.use_building_properties: bool = False
-        self.buildig_properties: Dict[str,Dict[str,float]] = {}
+        self.building_properties: Dict[str,Dict[str,float]] = {}
         self.use_one_day_weather_prediction: bool = False
 
         # actions
@@ -113,7 +113,7 @@ class EnvConfig:
         use_agent_indicator: Optional[bool] = False,
         use_agent_type: Optional[bool] = False,
         use_building_properties: Optional[bool] = False,
-        buildig_properties: Optional[Dict[str,Dict[str,float]]] = {},
+        building_properties: Optional[Dict[str,Dict[str,float]]] = {},
         use_one_day_weather_prediction: Optional[bool] = False,
         ):
         """
@@ -127,7 +127,7 @@ class EnvConfig:
             types of agents actuating in the same environment.
             use_building_properties (bool): # define if the building properties will be used as an observation for 
             the agent. This is recommended if different buildings/thermal zones will be used with the same policy.
-            buildig_properties (Dict[str,Dict[str,float]]): # The episode config define important aspects about the 
+            building_properties (Dict[str,Dict[str,float]]): # The episode config define important aspects about the 
             building to be simulated in the episode.
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a 
             prediction of the weathertime ahead. The variables to predict are:
@@ -165,7 +165,7 @@ class EnvConfig:
         self.use_agent_indicator = use_agent_indicator
         self.use_agent_type = use_agent_type
         self.use_building_properties = use_building_properties
-        self.buildig_properties = buildig_properties
+        self.building_properties = building_properties
         self.use_one_day_weather_prediction = use_one_day_weather_prediction
         self.ep_environment_variables = ep_environment_variables
         self.ep_thermal_zones_variables = ep_thermal_zones_variables
@@ -178,7 +178,7 @@ class EnvConfig:
     
     def actions(
         self,
-        action_fn: ActionFunction = ActionFunction
+        action_fn: ActionFunction = ActionFunction,
         ):
         """
         This method is used to modify the actions configuration of the environment.

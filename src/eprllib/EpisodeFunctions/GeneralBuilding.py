@@ -17,7 +17,8 @@ class GeneralBuilding(EpisodeFunction):
         self, episode_fn_config:Dict[str,Any]
     ):
         super().__init__(episode_fn_config)
-        self.epjson_files_folder_path = episode_fn_config['epjson_files_folder_path']
+        self.epjson_files_folder_path: str = episode_fn_config['epjson_files_folder_path']
+        self.epw_files_folder_path: str = episode_fn_config['epw_files_folder_path']
     
     def get_episode_config(self, env_config:Dict[str,Any]) -> Dict[str,Any]:
         """
@@ -129,7 +130,7 @@ class GeneralBuilding(EpisodeFunction):
         
                 
         # Select the schedule file for loads
-        env_config = random_weather_config(env_config)
+        env_config = random_weather_config(env_config, self.epw_files_folder_path)
         
         # The new modify epjson file is writed in the results folder created by RLlib
         # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']

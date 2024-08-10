@@ -44,23 +44,38 @@ class henderson_2024(RewardFunction):
             Dict[str,float]: The reward value for each agent in the timestep.
         """
         super().__init__(reward_fn_config)
+        self.agents = {agent for agent in reward_fn_config.keys()}
         
-        self.thermal_zone: Dict[str,str] = reward_fn_config["thermal_zone"]
-        self.comfort_reward: Dict[str,bool] = reward_fn_config['comfort_reward']
-        self.energy_reward: Dict[str,bool] = reward_fn_config['energy_reward']
-        self.cut_reward_len_timesteps: Dict[str,float] = reward_fn_config['cut_reward_len_timesteps']
-        self.beta: Dict[str,float] = reward_fn_config['beta']
-        self.ppd_name: Dict[str,str] = reward_fn_config['ppd_name']
-        self.T_interior_name: Dict[str,str] = reward_fn_config['T_interior_name']
-        self.occupancy_name: Dict[str,str] = reward_fn_config['occupancy_name']
-        self.cooling_energy_ref: Dict[str,str] = reward_fn_config['cooling_energy_ref']
-        self.heating_energy_ref: Dict[str,str] = reward_fn_config['heating_energy_ref']
-        self.cooling_name: Dict[str,str] = reward_fn_config['cooling_name']
-        self.heating_name: Dict[str,str] = reward_fn_config['heating_name']
+        self.thermal_zone: Dict[str,str] = {agent: None for agent in self.agents}
+        self.comfort_reward: Dict[str,bool] = {agent: None for agent in self.agents}
+        self.energy_reward: Dict[str,bool] = {agent: None for agent in self.agents}
+        self.cut_reward_len_timesteps: Dict[str,float] = {agent: None for agent in self.agents}
+        self.beta: Dict[str,float] = {agent: None for agent in self.agents}
+        self.ppd_name: Dict[str,str] = {agent: None for agent in self.agents}
+        self.T_interior_name: Dict[str,str] = {agent: None for agent in self.agents}
+        self.occupancy_name: Dict[str,str] = {agent: None for agent in self.agents}
+        self.cooling_energy_ref: Dict[str,str] = {agent: None for agent in self.agents}
+        self.heating_energy_ref: Dict[str,str] = {agent: None for agent in self.agents}
+        self.cooling_name: Dict[str,str] = {agent: None for agent in self.agents}
+        self.heating_name: Dict[str,str] = {agent: None for agent in self.agents}
+        
+        for agent in self.agents:
+            self.thermal_zone[agent] = reward_fn_config[agent]["thermal_zone"]
+            self.comfort_reward[agent] = reward_fn_config[agent]['comfort_reward']
+            self.energy_reward[agent] = reward_fn_config[agent]['energy_reward']
+            self.cut_reward_len_timesteps[agent] = reward_fn_config[agent]['cut_reward_len_timesteps']
+            self.beta[agent] = reward_fn_config[agent]['beta']
+            self.ppd_name[agent] = reward_fn_config[agent]['ppd_name']
+            self.T_interior_name[agent] = reward_fn_config[agent]['T_interior_name']
+            self.occupancy_name[agent] = reward_fn_config[agent]['occupancy_name']
+            self.cooling_energy_ref[agent] = reward_fn_config[agent]['cooling_energy_ref']
+            self.heating_energy_ref[agent] = reward_fn_config[agent]['heating_energy_ref']
+            self.cooling_name[agent] = reward_fn_config[agent]['cooling_name']
+            self.heating_name[agent] = reward_fn_config[agent]['heating_name']
         
         # dictionary to save the values of each agent when the reward is dalyed.
-        self.ppd_dict = {key: [] for key in self.thermal_zone.keys()}
-        self.energy_dict = {key: [] for key in self.thermal_zone.keys()}
+        self.ppd_dict = {key: [] for key in self.agents}
+        self.energy_dict = {key: [] for key in self.agents}
         
         self.timestep = 0
         
@@ -84,10 +99,10 @@ class henderson_2024(RewardFunction):
         """
         self.timestep += 1
         # dictionary to save the reward values of each agent.
-        reward_dict = {key: 0. for key in self.thermal_zone.keys()}
+        reward_dict = {key: 0. for key in self.agents}
         
         # asign the ThermalZone values above defined to each agent
-        for agent in self.thermal_zone.keys():
+        for agent in self.agents:
             if self.comfort_reward[agent]:
                 ppd = infos[agent][self.ppd_name[agent]]
                 occupancy = infos[agent][self.occupancy_name[agent]]
@@ -117,7 +132,7 @@ class henderson_2024(RewardFunction):
         
         # calculate the reward if the timestep is divisible by the cut_reward_len_timesteps.
         # if don't return 0.
-        for agent in self.thermal_zone.keys():
+        for agent in self.agents:
             if self.timestep % self.cut_reward_len_timesteps[agent] == 0:
                 if self.comfort_reward[agent]:
                     ppd_avg = sum(self.ppd_dict[agent])/len(self.ppd_dict[agent])
@@ -133,9 +148,9 @@ class henderson_2024(RewardFunction):
                 reward_dict[agent] = rew1 + rew2
                 
         # emptly the lists
-        for agent in self.thermal_zone.keys():
+        for agent in self.agents:
             if self.timestep % self.cut_reward_len_timesteps[agent] == 0:
-                self.ppd_dict = {key: [] for key in self.thermal_zone.keys()}
-                self.energy_dict = {key: [] for key in self.thermal_zone.keys()}
+                self.ppd_dict = {key: [] for key in self.agents}
+                self.energy_dict = {key: [] for key in self.agents}
                 
         return reward_dict

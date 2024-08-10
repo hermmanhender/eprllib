@@ -9,7 +9,7 @@
 project = 'eprllib'
 copyright = '2024, Germán Rodolfo Henderson'
 author = 'Germán Rodolfo Henderson'
-release = '1.4.1'
+release = '1.4.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -31,5 +31,12 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = "sphinx_book_theme"
 html_static_path = ['_static']
+
+html_theme_options = {
+    "repository_url": "https://github.com/hermmanhender/eprllib",
+    "use_repository_button": True,
+}
+html_logo = "Images/eprllib_logo.png"
+html_title = "eprllib: use EnergyPlus as an environment for DRL control"
