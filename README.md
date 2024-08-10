@@ -1,4 +1,4 @@
-<img src="docs/images/eprllib_logo.jpeg" alt="logo" width="200"/>
+<img src="docs/Images/eprllib_logo.jpeg" alt="logo" width="200"/>
 
 [![Documentation](https://img.shields.io/badge/Documentation-View%20Here-brightgreen)]([https://your.documentation.url](https://hermmanhender.github.io/eprllib/))
 
