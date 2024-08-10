@@ -127,9 +127,3 @@ Example configuration
    generated/eprllib.RewardFunctions.RewardFunctions
    generated/eprllib.RewardFunctions
    generated/eprllib
-
-.. autosummary::
-   :toctree: generated
-   :recursive:
-
-   eprllib
