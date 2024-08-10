@@ -38,5 +38,6 @@ html_theme_options = {
     "repository_url": "https://github.com/hermmanhender/eprllib",
     "use_repository_button": True,
 }
-html_logo = "https://github.com/hermmanhender/eprllib/docs/docs_generation/Images/eprllib_logo.png"
+
+html_logo = "Images/eprllib_logo.png"
 html_title = "eprllib: use EnergyPlus as an environment for DRL control"
