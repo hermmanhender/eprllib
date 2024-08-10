@@ -1,6 +1,6 @@
 <img src="docs/images/eprllib_logo.jpeg" alt="logo" width="200"/>
 
-[![Documentation Status](https://readthedocs.org/projects/eprllib/badge/?version=latest)](https://eprllib.readthedocs.io/latest/?badge=latest)
+[![Documentation](https://img.shields.io/badge/Documentation-View%20Here-brightgreen)]([https://your.documentation.url](https://hermmanhender.github.io/eprllib/))
 
 # eprllib: use EnergyPlus as an environment for RLlib 
 
