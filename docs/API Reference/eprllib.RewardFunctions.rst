@@ -1,4 +1,4 @@
-eprllib.RewardFunctions
+﻿eprllib.RewardFunctions
 =======================
 
 .. automodule:: eprllib.RewardFunctions
