@@ -32,7 +32,7 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_book_theme"
-html_static_path = ['../_static']
+html_static_path = ['_static']
 
 html_theme_options = {
     "repository_url": "https://github.com/hermmanhender/eprllib",
@@ -41,4 +41,4 @@ html_theme_options = {
 
 html_logo = "Images/eprllib_logo.png"
 html_title = "eprllib: use EnergyPlus as an environment for DRL control"
-html_baseurl = "https://hermmanhender.github.io/eprllib/"
+# html_baseurl = "https://hermmanhender.github.io/eprllib/"
