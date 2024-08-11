@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Overview &#8212; eprllib: use EnergyPlus as an environment for DRL control</title>
+    <title>Reward functions &#8212; eprllib: use EnergyPlus as an environment for DRL control</title>
   
   
   
@@ -40,12 +40,12 @@
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'Overview';</script>
-    <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/Overview.html" />
+    <script>DOCUMENTATION_OPTIONS.pagename = 'RewardFunction';</script>
+    <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/RewardFunction.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Getting Started with eprllib" href="GettingStarted.html" />
-    <link rel="prev" title="Welcome to eprllib’s documentation!" href="index.html" />
+    <link rel="next" title="Action space and action functions" href="ActionFunction.html" />
+    <link rel="prev" title="EnergyPlus as an Environment for DRL" href="Environment.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -157,11 +157,11 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with eprllib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="KeyConcepts.html">Key Concepts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Environment.html">EnergyPlus as an Environment for DRL</a></li>
-<li class="toctree-l1"><a class="reference internal" href="RewardFunction.html">Reward functions</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Reward functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ActionFunction.html">Action space and action functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="EpisodeFunction.html">Dinamic episode properties</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Agents.html">Conventional Agents</a></li>
@@ -279,7 +279,7 @@
       
       
       
-      <li><a href="https://github.com/hermmanhender/eprllib/edit/docs//docs/Overview.rst" target="_blank"
+      <li><a href="https://github.com/hermmanhender/eprllib/edit/docs//docs/RewardFunction.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -296,7 +296,7 @@
       
       
       
-      <li><a href="https://github.com/hermmanhender/eprllib/issues/new?title=Issue%20on%20page%20%2FOverview.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/hermmanhender/eprllib/issues/new?title=Issue%20on%20page%20%2FRewardFunction.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -326,7 +326,7 @@
       
       
       
-      <li><a href="_sources/Overview.rst" target="_blank"
+      <li><a href="_sources/RewardFunction.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -397,9 +397,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -410,22 +408,11 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Overview</h1>
+    <h1>Reward functions</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#organization-of-the-documentation">Organization of the documentation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -435,98 +422,11 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
-<p>Why eprllib was developed.</p>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
-<p>To install EnergyPlusRL, simply use pip:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">eprllib</span>
-</pre></div>
-</div>
-</section>
-<section id="organization-of-the-documentation">
-<h2>Organization of the documentation<a class="headerlink" href="#organization-of-the-documentation" title="Link to this heading">#</a></h2>
-<p>The organization of the documentation.</p>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
-<ol class="arabic simple">
-<li><p>Import eprllib.</p></li>
-<li><p>Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).</p></li>
-<li><p>Configure RLlib algorithm to train the policy.</p></li>
-<li><p>Execute the training using RLlib or Tune.</p></li>
-</ol>
-</section>
-<section id="example-configuration">
-<h2>Example configuration<a class="headerlink" href="#example-configuration" title="Link to this heading">#</a></h2>
-<ol class="arabic simple">
-<li><p>Import eprllib (and the libraries that you need).</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ray</span>
-<span class="kn">from</span> <span class="nn">ray.tune</span> <span class="kn">import</span> <span class="n">register_env</span>
-<span class="kn">from</span> <span class="nn">ray.rllib.algorithms.ppo.ppo</span> <span class="kn">import</span> <span class="n">PPOConfig</span>
-<span class="kn">import</span> <span class="nn">eprllib</span>
-<span class="kn">from</span> <span class="nn">eprllib.Env.EnvConfig</span> <span class="kn">import</span> <span class="n">EnvConfig</span><span class="p">,</span> <span class="n">env_config_to_dic</span>
-<span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgent.EnergyPlusEnv</span> <span class="kn">import</span> <span class="n">EnergyPlusEnv_v0</span>
-</pre></div>
-</div>
-<ol class="arabic simple">
-<li><p>Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">BuildingModel</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
-<span class="n">BuildingModel</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
-    <span class="n">epjson_path</span><span class="o">=</span><span class="s1">&#39;path_to_epJSON_file&#39;</span><span class="p">,</span>
-    <span class="n">epw_path</span><span class="o">=</span><span class="s1">&#39;path_to_EPW_file&#39;</span><span class="p">,</span>
-    <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;path_to_output_folder&#39;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">BuildingModel</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
-    <span class="n">agents_config</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;Thermal Zone: Room1&#39;</span><span class="p">:{</span>
-            <span class="s1">&#39;Agent 1 in Room 1&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;ep_actuator_config&#39;</span><span class="p">:</span> <span class="p">(),</span>
-                <span class="s1">&#39;thermal_zone&#39;</span><span class="p">:</span> <span class="s1">&#39;Thermal Zone: Room 1&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;actuator_type’: 3 ,</span>
-                <span class="s1">&#39;agent_id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="3">
-<li><p>Configure RLlib algorithm to train the policy.</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start a Ray server.</span>
-<span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
-<span class="c1"># Register the environment.</span>
-<span class="n">register_env</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">EnergyPlusEnv_v0</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
-<span class="c1"># Configure the algorith and assign the environment registred.</span>
-<span class="n">algo</span> <span class="o">=</span> <span class="n">PPOConfig</span> <span class="p">(</span> <span class="p">)</span>
-<span class="n">algo</span><span class="o">.</span><span class="n">environment</span><span class="p">(</span>
-    <span class="n">env</span> <span class="o">=</span> <span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span>
-    <span class="n">env_config</span> <span class="o">=</span> <span class="n">env_config_to_dict</span><span class="p">(</span><span class="n">BuildingModel</span><span class="p">)</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="4">
-<li><p>Execute the training using RLlib or Tune.</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the policy with Tune.</span>
-<span class="n">tune</span><span class="o">.</span><span class="n">Tuner</span><span class="p">(</span>
-    <span class="s1">&#39;PPO&#39;</span><span class="p">,</span>
-    <span class="n">tune_config</span><span class="o">=</span><span class="n">tune</span><span class="o">.</span><span class="n">TuneConfig</span><span class="p">(</span>
-        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
-        <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;episode_reward_mean&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
-    <span class="n">run_config</span><span class="o">=</span><span class="n">air</span><span class="o">.</span><span class="n">RunConfig</span><span class="p">(</span>
-        <span class="n">stop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;episodes_total&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-    <span class="p">),</span>
-    <span class="n">param_space</span><span class="o">=</span><span class="n">algo</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
-<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-</pre></div>
-</div>
-</section>
+  <section id="reward-functions">
+<h1>Reward functions<a class="headerlink" href="#reward-functions" title="Link to this heading">#</a></h1>
+<p>Introduction to reward functions in DRL.</p>
+<p>Why to use infos in the reward function.</p>
+<p>How to configurate a reward function.</p>
 </section>
 
 
@@ -541,20 +441,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="index.html"
+       href="Environment.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Welcome to eprllib’s documentation!</p>
+        <p class="prev-next-title">EnergyPlus as an Environment for DRL</p>
       </div>
     </a>
     <a class="right-next"
-       href="GettingStarted.html"
+       href="ActionFunction.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Getting Started with eprllib</p>
+        <p class="prev-next-title">Action space and action functions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -564,24 +464,6 @@ document.write(`
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#organization-of-the-documentation">Organization of the documentation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

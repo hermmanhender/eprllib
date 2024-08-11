@@ -9,7 +9,7 @@
 project = 'eprllib'
 copyright = '2024, Germán Rodolfo Henderson'
 author = 'Germán Rodolfo Henderson'
-release = '1.4.1'
+release = '1.4.3'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -36,7 +36,7 @@ html_static_path = ['_static']
 html_theme_options = {
     "repository_url": "https://github.com/hermmanhender/eprllib",
     "repository_branch": "docs",
-    "path_to_docs": "docs/",
+    "path_to_docs": "/docs",
     "use_edit_page_button": True,
     "use_repository_button": True,
     "use_issues_button": True,
