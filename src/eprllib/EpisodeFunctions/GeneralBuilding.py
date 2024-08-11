@@ -1,3 +1,4 @@
+random number of thermal zone
 """
 Generalization Building Model
 =============================
@@ -128,7 +129,11 @@ class GeneralBuilding(EpisodeFunction):
             if env_config['reward_fn_config'].get('heating_energy_ref', False):
                 env_config['reward_fn_config']['heating_energy_ref'] = E_heat_ref*number_of_timesteps_per_hour*3600
         
-                
+        # Implementation of a random number of thermal zone 
+        for agent in [agent for agent in env_config['agents_config'].keys()]:
+            env_config['agents_config'][agent]['agent_indicator'] = no.random.randint(0,50)
+        # TODO: Add a thermal zone indicator to the obs space.
+
         # Select the schedule file for loads
         env_config = random_weather_config(env_config, self.epw_files_folder_path)
         
