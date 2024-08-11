@@ -36,6 +36,7 @@ html_static_path = ['_static']
 html_theme_options = {
     "repository_url": "https://github.com/hermmanhender/eprllib",
     "use_repository_button": True,
+    "path_to_docs": "docs/"
 }
 
 html_logo = "Images/eprllib_logo.png"
