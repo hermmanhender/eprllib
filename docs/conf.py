@@ -23,7 +23,7 @@ extensions = [
 ]
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['Thumbs.db', '.DS_Store']
 
 
 
@@ -35,8 +35,13 @@ html_static_path = ['_static']
 
 html_theme_options = {
     "repository_url": "https://github.com/hermmanhender/eprllib",
+    "repository_branch": "docs",
+    "path_to_docs": "/docs",
+    "use_edit_page_button": True,
     "use_repository_button": True,
+    "use_issues_button": True,
 }
 
 html_logo = "Images/eprllib_logo.png"
 html_title = "eprllib: use EnergyPlus as an environment for DRL control"
+html_baseurl = "https://hermmanhender.github.io/eprllib/docs/"
