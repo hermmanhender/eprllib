@@ -1,7 +1,11 @@
 Getting Started with eprllib
 ============================
 
-Why eprllib.
+EnergyPlus and RLlib must to share the same information to work well.
+
+.. image:: Images/general_overview.png
+    :width: 400
+
 
 How to install eprllib.
 
