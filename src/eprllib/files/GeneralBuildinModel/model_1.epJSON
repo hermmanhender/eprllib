@@ -1,0 +1,5262 @@
+{
+    "AirflowNetwork:MultiZone:Component:SimpleOpening": {
+        "SimpleOpening": {
+            "air_mass_flow_coefficient_when_opening_is_closed": 0.001,
+            "air_mass_flow_exponent_when_opening_is_closed": 0.65,
+            "discharge_coefficient": 1,
+            "minimum_density_difference_for_two_way_flow": 0.0001
+        }
+    },
+    "AirflowNetwork:MultiZone:ReferenceCrackConditions": {
+        "CrackConditions": {
+            "reference_barometric_pressure": 89320,
+            "reference_temperature": 20
+        }
+    },
+    "AirflowNetwork:MultiZone:Surface": {
+        "AirflowNetwork:MultiZone:Surface 1": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "SimpleOpening",
+            "surface_name": "window_north",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "Always On",
+            "window_door_opening_factor_or_crack_factor": 1
+        },
+        "AirflowNetwork:MultiZone:Surface 2": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "SimpleOpening",
+            "surface_name": "window_south",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "Always On",
+            "window_door_opening_factor_or_crack_factor": 1
+        },
+        "AirflowNetwork:MultiZone:Surface 3": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "SimpleOpening",
+            "surface_name": "window_east",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "Always On",
+            "window_door_opening_factor_or_crack_factor": 1
+        },
+        "AirflowNetwork:MultiZone:Surface 4": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "SimpleOpening",
+            "surface_name": "window_west",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "Always On",
+            "window_door_opening_factor_or_crack_factor": 1
+        },
+        "AirflowNetwork:MultiZone:Surface 5": {
+            "equivalent_rectangle_aspect_ratio": 1,
+            "equivalent_rectangle_method": "PolygonHeight",
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "leakage_component_name": "Crack",
+            "surface_name": "wall_south",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "Always On",
+            "window_door_opening_factor_or_crack_factor": 1
+        }
+    },
+    "AirflowNetwork:MultiZone:Surface:Crack": {
+        "Crack": {
+            "air_mass_flow_coefficient_at_reference_conditions": 0.01,
+            "air_mass_flow_exponent": 0.65,
+            "reference_crack_conditions": "CrackConditions"
+        }
+    },
+    "AirflowNetwork:MultiZone:Zone": {
+        "AirflowNetwork:MultiZone:Zone 1": {
+            "facade_width": 10,
+            "indoor_and_outdoor_enthalpy_difference_upper_limit_for_minimum_venting_open_factor": 300000,
+            "indoor_and_outdoor_temperature_difference_upper_limit_for_minimum_venting_open_factor": 100,
+            "single_sided_wind_pressure_coefficient_algorithm": "Standard",
+            "ventilation_control_mode": "Constant",
+            "venting_availability_schedule_name": "Always On",
+            "zone_name": "Thermal Zone"
+        }
+    },
+    "AirflowNetwork:SimulationControl": {
+        "Flujo_Control": {
+            "absolute_airflow_convergence_tolerance": 1e-06,
+            "airflownetwork_control": "MultizoneWithoutDistribution",
+            "allow_unsupported_zone_equipment": "No",
+            "building_type": "LowRise",
+            "convergence_acceleration_limit": 0,
+            "do_distribution_duct_sizing_calculation": "No",
+            "height_dependence_of_external_node_temperature": "No",
+            "initialization_type": "ZeroNodePressures",
+            "maximum_number_of_iterations": 500,
+            "ratio_of_building_width_along_short_axis_to_width_along_long_axis": 1,
+            "relative_airflow_convergence_tolerance": 0.0001,
+            "solver": "SkylineLU",
+            "wind_pressure_coefficient_type": "SurfaceAverageCalculation"
+        }
+    },
+    "Building": {
+        "Building 1": {
+            "loads_convergence_tolerance_value": 0.04,
+            "maximum_number_of_warmup_days": 25,
+            "minimum_number_of_warmup_days": 3,
+            "north_axis": 0,
+            "solar_distribution": "FullInteriorAndExterior",
+            "temperature_convergence_tolerance_value": 0.4,
+            "terrain": "City"
+        }
+    },
+    "BuildingSurface:Detailed": {
+        "floor": {
+            "construction_name": "Floor",
+            "outside_boundary_condition": "Ground",
+            "sun_exposure": "NoSun",
+            "surface_type": "Floor",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
+                }
+            ],
+            "wind_exposure": "NoWind",
+            "zone_name": "Thermal Zone"
+        },
+        "roof": {
+            "construction_name": "Roof",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Roof",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 3
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone"
+        },
+        "wall_east": {
+            "construction_name": "Wall",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 3
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone"
+        },
+        "wall_north": {
+            "construction_name": "Wall",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 3
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone"
+        },
+        "wall_south": {
+            "construction_name": "Wall",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 0,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 3
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone"
+        },
+        "wall_west": {
+            "construction_name": "Wall",
+            "outside_boundary_condition": "Outdoors",
+            "sun_exposure": "SunExposed",
+            "surface_type": "Wall",
+            "vertices": [
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 3
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 0,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 0
+                },
+                {
+                    "vertex_x_coordinate": 3,
+                    "vertex_y_coordinate": 3,
+                    "vertex_z_coordinate": 3
+                }
+            ],
+            "wind_exposure": "WindExposed",
+            "zone_name": "Thermal Zone"
+        }
+    },
+    "Construction": {
+        "Floor": {
+            "layer_2": "Piso_Madera",
+            "outside_layer": "Contrapiso"
+        },
+        "InternalMass": {
+            "outside_layer": "internal_mass"
+        },
+        "Roof": {
+            "layer_2": "roof_inner",
+            "outside_layer": "roof_exterior"
+        },
+        "Wall": {
+            "layer_2": "wall_inter",
+            "layer_3": "wall_inner",
+            "outside_layer": "wall_exterior"
+        },
+        "Window": {
+            "outside_layer": "WindowMaterial"
+        }
+    },
+    "ElectricEquipment": {
+        "clothes dryer": {
+            "design_level": 2922.7678231879,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 0.015,
+            "fraction_lost": 0.85,
+            "fraction_radiant": 0.081,
+            "schedule_name": "clothes_dryer",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "clothes washer": {
+            "design_level": 791.344220531483,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 0.03,
+            "fraction_lost": 0.7,
+            "fraction_radiant": 0.162,
+            "schedule_name": "clothes_washer",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "cooking range": {
+            "design_level": 1876.6284417021,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 0.079,
+            "fraction_lost": 0.2,
+            "fraction_radiant": 0.432,
+            "schedule_name": "cooking_range",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "dishwasher": {
+            "design_level": 411.547963019689,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 0.3,
+            "fraction_lost": 0.4,
+            "fraction_radiant": 0.18,
+            "schedule_name": "dishwasher",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "fridge": {
+            "design_level": 61.8344,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 0,
+            "fraction_lost": 0,
+            "fraction_radiant": 0.6,
+            "schedule_name": "fridge",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "mech vent house fan": {
+            "design_level": 18.95,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "mech vent",
+            "fraction_latent": 0,
+            "fraction_lost": 1,
+            "fraction_radiant": 0,
+            "schedule_name": "Always On Discrete",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "mech vent house fan cfis": {
+            "design_level": 0,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "mech vent",
+            "fraction_latent": 0,
+            "fraction_lost": 0,
+            "fraction_radiant": 0,
+            "schedule_name": "Always On Discrete",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "misc plug loads": {
+            "design_level": 155.301207952464,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "misc plug loads",
+            "fraction_latent": 0.045,
+            "fraction_lost": 0.1,
+            "fraction_radiant": 0.513,
+            "schedule_name": "plug_loads_other",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "misc tv": {
+            "design_level": 344.715317981728,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "misc tv",
+            "fraction_latent": 0,
+            "fraction_lost": 0,
+            "fraction_radiant": 0.6,
+            "schedule_name": "misc tv schedule",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "whole house fan": {
+            "design_level": 0,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "whole house fan",
+            "fraction_latent": 0,
+            "fraction_lost": 1,
+            "fraction_radiant": 0,
+            "schedule_name": "Always On Discrete",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        }
+    },
+    "FenestrationSurface:Detailed": {
+        "window_east": {
+            "building_surface_name": "wall_east",
+            "construction_name": "Window",
+            "multiplier": 1,
+            "number_of_vertices": "Autocalculate",
+            "surface_type": "Window",
+            "vertex_1_x_coordinate": 3,
+            "vertex_1_y_coordinate": 2.9,
+            "vertex_1_z_coordinate": 2.9,
+            "vertex_2_x_coordinate": 3,
+            "vertex_2_y_coordinate": 2.9,
+            "vertex_2_z_coordinate": 0.1,
+            "vertex_3_x_coordinate": 3,
+            "vertex_3_y_coordinate": 0.1,
+            "vertex_3_z_coordinate": 0.1,
+            "vertex_4_x_coordinate": 3,
+            "vertex_4_y_coordinate": 0.1,
+            "vertex_4_z_coordinate": 2.9,
+            "view_factor_to_ground": "Autocalculate"
+        },
+        "window_north": {
+            "building_surface_name": "wall_north",
+            "construction_name": "Window",
+            "surface_type": "Window",
+            "vertex_1_x_coordinate": 0.1,
+            "vertex_1_y_coordinate": 0,
+            "vertex_1_z_coordinate": 2.9,
+            "vertex_2_x_coordinate": 0.1,
+            "vertex_2_y_coordinate": 0,
+            "vertex_2_z_coordinate": 0.1,
+            "vertex_3_x_coordinate": 2.9,
+            "vertex_3_y_coordinate": 0,
+            "vertex_3_z_coordinate": 0.1,
+            "vertex_4_x_coordinate": 2.9,
+            "vertex_4_y_coordinate": 0,
+            "vertex_4_z_coordinate": 2.9
+        },
+        "window_south": {
+            "building_surface_name": "wall_south",
+            "construction_name": "Window",
+            "surface_type": "Window",
+            "vertex_1_x_coordinate": 2.9,
+            "vertex_1_y_coordinate": 3,
+            "vertex_1_z_coordinate": 2.9,
+            "vertex_2_x_coordinate": 2.9,
+            "vertex_2_y_coordinate": 3,
+            "vertex_2_z_coordinate": 0.1,
+            "vertex_3_x_coordinate": 0.1,
+            "vertex_3_y_coordinate": 3,
+            "vertex_3_z_coordinate": 0.1,
+            "vertex_4_x_coordinate": 0.1,
+            "vertex_4_y_coordinate": 3,
+            "vertex_4_z_coordinate": 2.9
+        },
+        "window_west": {
+            "building_surface_name": "wall_west",
+            "construction_name": "Window",
+            "multiplier": 1,
+            "number_of_vertices": "Autocalculate",
+            "surface_type": "Window",
+            "vertex_1_x_coordinate": 0,
+            "vertex_1_y_coordinate": 0.1,
+            "vertex_1_z_coordinate": 2.9,
+            "vertex_2_x_coordinate": 0,
+            "vertex_2_y_coordinate": 0.1,
+            "vertex_2_z_coordinate": 0.1,
+            "vertex_3_x_coordinate": 0,
+            "vertex_3_y_coordinate": 2.9,
+            "vertex_3_z_coordinate": 0.1,
+            "vertex_4_x_coordinate": 0,
+            "vertex_4_y_coordinate": 2.9,
+            "vertex_4_z_coordinate": 2.9,
+            "view_factor_to_ground": "Autocalculate"
+        }
+    },
+    "GlobalGeometryRules": {
+        "GlobalGeometryRules 1": {
+            "coordinate_system": "Relative",
+            "daylighting_reference_point_coordinate_system": "Relative",
+            "rectangular_surface_coordinate_system": "Relative",
+            "starting_vertex_position": "UpperLeftCorner",
+            "vertex_entry_direction": "Counterclockwise"
+        }
+    },
+    "HeatBalanceAlgorithm": {
+        "HeatBalanceAlgorithm 1": {
+            "algorithm": "ConductionTransferFunction",
+            "maximum_surface_convection_heat_transfer_coefficient_value": 1000,
+            "minimum_surface_convection_heat_transfer_coefficient_value": 0.1,
+            "surface_temperature_upper_limit": 200
+        }
+    },
+    "InternalMass": {
+        "internal_mass": {
+            "construction_name": "InternalMass",
+            "surface_area": 5,
+            "zone_or_zonelist_name": "Thermal Zone"
+        }
+    },
+    "Lights": {
+        "interior lighting": {
+            "design_level_calculation_method": "Watts/Area",
+            "end_use_subcategory": "General",
+            "fraction_radiant": 0.6,
+            "fraction_replaceable": 1,
+            "fraction_visible": 0.2,
+            "return_air_fraction": 0,
+            "return_air_fraction_calculated_from_plenum_temperature": "No",
+            "schedule_name": "lighting_interior",
+            "watts_per_zone_floor_area": 1,
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        }
+    },
+    "Material": {
+        "Contrapiso": {
+            "conductivity": 1.16,
+            "density": 2000,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1000,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.02,
+            "visible_absorptance": 0.7
+        },
+        "Piso_Madera": {
+            "conductivity": 0.34,
+            "density": 1200,
+            "roughness": "MediumSmooth",
+            "solar_absorptance": 0.7,
+            "specific_heat": 1380,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.02,
+            "visible_absorptance": 0.7
+        },
+        "internal_mass": {
+            "conductivity": 0.93,
+            "density": 1900,
+            "roughness": "Rough",
+            "solar_absorptance": 0.7,
+            "specific_heat": 1050,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.25,
+            "visible_absorptance": 0.7
+        },
+        "roof_exterior": {
+            "conductivity": 0.17,
+            "density": 1200,
+            "roughness": "Smooth",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1670,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.005,
+            "visible_absorptance": 0.7
+        },
+        "roof_inner": {
+            "conductivity": 1.16,
+            "density": 2000,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1000,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.18,
+            "visible_absorptance": 0.7
+        },
+        "wall_exterior": {
+            "conductivity": 0.93,
+            "density": 1900,
+            "roughness": "Rough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1050,
+            "thermal_absorptance": 0.93,
+            "thickness": 0.025,
+            "visible_absorptance": 0.7
+        },
+        "wall_inner": {
+            "conductivity": 0.035,
+            "density": 20,
+            "roughness": "VerySmooth",
+            "solar_absorptance": 0.3,
+            "specific_heat": 1674,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.05,
+            "visible_absorptance": 0.3
+        },
+        "wall_inter": {
+            "conductivity": 0.91,
+            "density": 1800,
+            "roughness": "MediumRough",
+            "solar_absorptance": 0.3,
+            "specific_heat": 880,
+            "thermal_absorptance": 0.9,
+            "thickness": 0.16,
+            "visible_absorptance": 0.3
+        }
+    },
+    "NodeList": {
+        "ZoneInlets": {
+            "nodes": [
+                {
+                    "node_name": "NODE 1"
+                }
+            ]
+        }
+    },
+    "OtherEquipment": {
+        "mech vent house fan latent load equip": {
+            "design_level": 0,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 1,
+            "fraction_lost": 0,
+            "fraction_radiant": 0,
+            "fuel_type": "None",
+            "schedule_name": "Always On Discrete",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "mech vent house fan sensible load equip": {
+            "design_level": 0,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "General",
+            "fraction_latent": 0,
+            "fraction_lost": 0,
+            "fraction_radiant": 0,
+            "fuel_type": "None",
+            "schedule_name": "Always On Discrete",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "water heater EC adjustment": {
+            "design_level": 0.01,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "water heater EC adjustment",
+            "fraction_latent": 0,
+            "fraction_lost": 1,
+            "fraction_radiant": 0,
+            "fuel_type": "Electricity",
+            "schedule_name": "Always On Discrete",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "water latent": {
+            "design_level": 1015.43398002474,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "water latent",
+            "fraction_latent": 1,
+            "fraction_lost": 0,
+            "fraction_radiant": 0,
+            "fuel_type": "None",
+            "schedule_name": "hot_water_fixtures",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        },
+        "water sensible": {
+            "design_level": -1000.75300681956,
+            "design_level_calculation_method": "EquipmentLevel",
+            "end_use_subcategory": "water sensible",
+            "fraction_latent": 0,
+            "fraction_lost": 0,
+            "fraction_radiant": 0.6,
+            "fuel_type": "None",
+            "schedule_name": "hot_water_fixtures",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        }
+    },
+    "OutdoorAir:Node": {
+        "Model Outdoor Air Node": {}
+    },
+    "Output:DebuggingData": {
+        "Output:DebuggingData 1": {
+            "report_debugging_data": "Yes",
+            "report_during_warmup": "Yes"
+        }
+    },
+    "Output:EnergyManagementSystem": {
+        "Output:EnergyManagementSystem 1": {
+            "actuator_availability_dictionary_reporting": "Verbose",
+            "ems_runtime_language_debug_output_level": "Verbose",
+            "internal_variable_availability_dictionary_reporting": "Verbose"
+        }
+    },
+    "Output:JSON": {
+        "Output:JSON 1": {
+            "option_type": "TimeSeriesAndTabular",
+            "output_cbor": "No",
+            "output_json": "Yes",
+            "output_messagepack": "No"
+        }
+    },
+    "Output:Meter": {
+        "Output:Meter 1": {
+            "key_name": "Heating:DistrictHeatingWater",
+            "reporting_frequency": "Timestep"
+        },
+        "Output:Meter 2": {
+            "key_name": "Cooling:DistrictCooling",
+            "reporting_frequency": "Timestep"
+        }
+    },
+    "Output:Variable": {
+        "Output:Variable 1": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Mean Radiant Temperature"
+        },
+        "Output:Variable 2": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Wind Speed"
+        },
+        "Output:Variable 3": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Wind Direction"
+        },
+        "Output:Variable 4": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Outdoor Air Relative Humidity"
+        },
+        "Output:Variable 5": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Air Relative Humidity"
+        },
+        "Output:Variable 6": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Mean Air Temperature"
+        },
+        "Output:Variable 7": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Surface Outside Face Incident Solar Radiation Rate per Area"
+        },
+        "Output:Variable 8": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Outdoor Air Drybulb Temperature"
+        },
+        "Output:Variable 9": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Site Outdoor Air Barometric Pressure"
+        },
+        "Output:Variable 10": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone People Occupant Count"
+        },
+        "Output:Variable 11": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Thermal Comfort Fanger Model PPD"
+        }
+    },
+    "Output:VariableDictionary": {
+        "Output:VariableDictionary 1": {
+            "key_field": "IDF",
+            "sort_option": "Unsorted"
+        }
+    },
+    "People": {
+        "People": {
+            "activity_level_schedule_name": "occupants activity schedule",
+            "air_velocity_schedule_name": "Air_velocity",
+            "carbon_dioxide_generation_rate": 3.82e-08,
+            "clothing_insulation_calculation_method": "DynamicClothingModelASHRAE55",
+            "enable_ashrae_55_comfort_warnings": "No",
+            "fraction_radiant": 0.31417,
+            "mean_radiant_temperature_calculation_type": "SurfaceWeighted",
+            "number_of_people": 4,
+            "number_of_people_calculation_method": "People",
+            "number_of_people_schedule_name": "occupants schedule",
+            "sensible_heat_fraction": 0.563,
+            "surface_name_angle_factor_list_name": "wall_north",
+            "thermal_comfort_model_1_type": "Fanger",
+            "work_efficiency_schedule_name": "Work Efficiency",
+            "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
+        }
+    },
+    "RunPeriod": {
+        "Run Period 1": {
+            "apply_weekend_holiday_rule": "No",
+            "begin_day_of_month": 1,
+            "begin_month": 1,
+            "day_of_week_for_start_day": "Sunday",
+            "end_day_of_month": 31,
+            "end_month": 12,
+            "treat_weather_as_actual": "No",
+            "use_weather_file_daylight_saving_period": "No",
+            "use_weather_file_holidays_and_special_days": "No",
+            "use_weather_file_rain_indicators": "Yes",
+            "use_weather_file_snow_indicators": "Yes"
+        }
+    },
+    "Schedule:Compact": {
+        "Activity_person": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 72
+                },
+                {
+                    "field": "Until 21:00"
+                },
+                {
+                    "field": 126
+                },
+                {
+                    "field": "Until 24:00"
+                },
+                {
+                    "field": 72
+                }
+            ],
+            "schedule_type_limits_name": "Any Number"
+        },
+        "Air_velocity": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 7:00"
+                },
+                {
+                    "field": 0.7
+                },
+                {
+                    "field": "Until 15:00"
+                },
+                {
+                    "field": 0
+                },
+                {
+                    "field": "Until 19:00"
+                },
+                {
+                    "field": 0.5
+                },
+                {
+                    "field": "Until 24:00"
+                },
+                {
+                    "field": 0.7
+                }
+            ],
+            "schedule_type_limits_name": "Any Number"
+        },
+        "Always Off": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 0
+                }
+            ],
+            "schedule_type_limits_name": "On/Off"
+        },
+        "Always On": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 1
+                }
+            ],
+            "schedule_type_limits_name": "On/Off"
+        },
+        "Work Efficiency": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 0
+                }
+            ],
+            "schedule_type_limits_name": "Fraction"
+        },
+        "ZONE CONTROL TYPE SCHED": {
+            "data": [
+                {
+                    "field": "Through: 3/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 4
+                },
+                {
+                    "field": "Through: 9/30"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 4
+                },
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 4
+                }
+            ],
+            "schedule_type_limits_name": "Control Type"
+        },
+        "cooling_setpoint": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 24
+                }
+            ],
+            "schedule_type_limits_name": "Temperature"
+        },
+        "heating_setpoint": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 19
+                }
+            ],
+            "schedule_type_limits_name": "Temperature"
+        },
+        "number_people": {
+            "data": [
+                {
+                    "field": "Through: 12/31"
+                },
+                {
+                    "field": "For: Alldays"
+                },
+                {
+                    "field": "Until: 24:00"
+                },
+                {
+                    "field": 1
+                }
+            ],
+            "schedule_type_limits_name": "Fraction"
+        }
+    },
+    "Schedule:Constant": {
+        "Always On Discrete": {
+            "hourly_value": 1,
+            "schedule_type_limits_name": "On/Off"
+        },
+        "HVAC_OnOff": {
+            "hourly_value": 1,
+            "schedule_type_limits_name": "AviabilityType"
+        },
+        "occupants activity schedule": {
+            "hourly_value": 117.228428068889,
+            "schedule_type_limits_name": "Any Number"
+        }
+    },
+    "Schedule:Day:Interval": {
+        "Schedule Day 4": {
+            "data": [
+                {
+                    "time": "24:00",
+                    "value_until_time": 0
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "Schedule Day 5": {
+            "data": [
+                {
+                    "time": "24:00",
+                    "value_until_time": 0
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "Schedule Day 6": {
+            "data": [
+                {
+                    "time": "24:00",
+                    "value_until_time": 0
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday1": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.610948905109489
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.595675182481752
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.580401459854014
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.565127737226277
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.54985401459854
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.580401459854014
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.610948905109489
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.626222627737226
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.610948905109489
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.641496350364963
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.626222627737226
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.672043795620438
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.733138686131387
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.763686131386861
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.733138686131387
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.717864963503649
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.702591240875912
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.672043795620438
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.626222627737226
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday2": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.60948905109489
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.594251824817518
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.579014598540146
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.563777372262774
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.548540145985401
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.579014598540146
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.60948905109489
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.624726277372263
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.60948905109489
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.639963503649635
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.624726277372263
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.670437956204379
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.731386861313868
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.761861313868613
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.731386861313868
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.716149635036496
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.700912408759124
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.670437956204379
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.624726277372263
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday3": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.791240875912409
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.771459854014598
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.751678832116788
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.563777372262774
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.712116788321168
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.751678832116788
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.791240875912409
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.811021897810219
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.791240875912409
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.830802919708029
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.811021897810219
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.87036496350365
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.949489051094891
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.989051094890511
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.949489051094891
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.92970802919708
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.90992700729927
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.87036496350365
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.811021897810219
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday6": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.8
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.78
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.76
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.74
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.72
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.76
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.8
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.82
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.8
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.84
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.82
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.88
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.96
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 1
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.96
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.94
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.92
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.88
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.82
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday10": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.67956204379562
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.66257299270073
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.645583941605839
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.628594890510949
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.611605839416058
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.645583941605839
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.67956204379562
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.696551094890511
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.67956204379562
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.713540145985401
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.696551094890511
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.747518248175182
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.815474452554744
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.849452554744526
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.815474452554744
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.798485401459854
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.781496350364963
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.747518248175182
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.696551094890511
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday11": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.675182481751825
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.658302919708029
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.641423357664234
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.624543795620438
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.607664233576642
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.641423357664234
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.675182481751825
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.69206204379562
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.675182481751825
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.708941605839416
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.69206204379562
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.742700729927007
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.81021897810219
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.843978102189781
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.81021897810219
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.793339416058394
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.776459854014598
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.742700729927007
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.69206204379562
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "fridge allday12": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.610948905109489
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.595675182481752
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.580401459854014
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.565127737226277
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.54985401459854
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.580401459854014
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.610948905109489
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.626222627737226
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.610948905109489
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.641496350364963
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.626222627737226
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.672043795620438
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.733138686131387
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.763686131386861
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.733138686131387
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.717864963503649
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.702591240875912
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.672043795620438
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.626222627737226
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday1": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.101928374655647
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0495867768595041
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0247933884297521
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0192837465564738
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0303030303030303
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0495867768595041
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0798898071625344
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.110192837465565
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.134986225895317
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.159779614325069
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.179063360881543
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.198347107438017
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.209366391184573
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.236914600550964
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.25068870523416
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.28099173553719
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.349862258953168
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.429752066115703
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.578512396694215
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.809917355371901
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 1
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.947658402203857
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.573002754820937
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.247933884297521
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday2": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.10121120051559
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0492378813319087
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0246189406659543
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0191480649624089
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0300898163694997
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0492378813319087
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0793276977014084
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.109417514070908
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.134036454736863
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.158655395402817
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.177803460365226
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.196951525327635
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.207893276734726
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.235247655252453
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.248924844511316
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.279014660880816
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.347400607175133
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.426728304876542
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.574441948872268
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.804218728421175
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.992963940193492
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.94099062100981
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.568971073168723
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.246189406659543
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday3": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0861505435743862
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0419110752524041
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0209555376262021
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.016298751487046
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0256123237653581
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0419110752524041
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0675233990177622
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0931357227831203
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.114091260409322
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.135046798035524
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.15134554952257
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.167644301009616
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.176957873287928
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.200241803983709
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.211883769331599
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.237496093096957
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.295705919836407
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.363229318854169
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.488962544611381
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.684547562455934
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.845206684256816
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.800967215934834
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.484305758472225
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.209555376262021
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday4": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0868677177144436
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0422599707799996
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0211299853899998
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0164344330811109
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0258255376988886
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0422599707799996
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0680855084788882
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0939110461777768
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.115041031567777
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.136171016957776
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.152605450038887
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.169039883119998
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.178430987737776
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.20190874928222
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.213647630054442
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.239473167753331
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.298167571614441
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.36625308009333
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.493032992433328
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.69024618940666
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.852242744063325
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.807634997128881
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.488337440124439
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.211299853899998
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday5": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0861505435743862
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0419110752524041
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0209555376262021
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.016298751487046
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0256123237653581
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0419110752524041
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0675233990177622
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0931357227831203
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.114091260409322
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.135046798035524
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.15134554952257
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.167644301009616
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.176957873287928
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.200241803983709
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.211883769331599
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.237496093096957
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.295705919836407
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.363229318854169
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.488962544611381
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.684547562455934
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.845206684256816
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.800967215934834
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.484305758472225
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.209555376262021
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday6": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0890192401346155
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0433066573627859
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.021653328681393
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0168414778633056
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0264651794994803
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0433066573627859
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0697718368622662
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0962370163617465
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.117890345043139
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.139543673724532
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.156385151587838
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.173226629451144
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.182850331087318
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.206909585177755
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.218939212222973
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.245404391722454
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.305552526948545
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.375324363810811
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.505244335899169
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.707342070258837
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.87335092348285
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.82763834071102
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.500432485081082
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.21653328681393
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday7": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.089288180437137
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0434374931856342
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0217187465928171
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.01689235846108
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0265451347245542
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0434374931856342
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0699826279101885
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0965277626347427
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.11824650922756
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.139965255820377
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.156857614281457
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.173749972742537
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.183402749006011
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.207534689664697
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.21960065999404
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.246145794718594
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.306475646365308
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.376458274275497
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.506770753832399
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.709479055365359
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.87598944591029
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.830138758658788
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.501944365700662
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.217187465928171
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday8": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0860608968068791
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0418674633114547
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0209337316557273
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0162817912877879
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0255856720236667
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0418674633114547
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0674531353351214
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0930388073587882
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.113972539014516
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.134906270670243
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.151188061958031
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.167469853245819
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.176773733981698
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.200033435821395
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.211663286741243
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.23724895876491
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.295398213364152
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.362851348699274
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.488453738633638
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.683835234087093
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.844327176781003
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.800133743285578
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.483801798265699
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.209337316557273
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday9": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0890192401346155
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0433066573627859
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.021653328681393
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0168414778633056
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0264651794994803
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0433066573627859
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0697718368622662
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0962370163617465
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.117890345043139
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.139543673724532
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.156385151587838
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.173226629451144
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.182850331087318
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.206909585177755
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.218939212222973
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.245404391722454
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.305552526948545
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.375324363810811
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.505244335899169
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.707342070258837
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.87335092348285
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.82763834071102
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.500432485081082
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.21653328681393
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday10": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0777237474287127
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0378115528031575
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0189057764015788
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0147044927567835
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.023107060046374
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0378115528031575
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0609186128495315
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0840256728959056
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.102931449297484
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.121837225699063
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.136541718455847
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.15124621121263
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.159648778502221
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.180655196726197
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.191158405838185
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.214265465884559
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.2667815114445
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.327700124294032
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.441134782703504
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.617588695784906
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.762532981530343
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.722620786904788
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.436933499058709
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.189057764015788
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday11": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0770962200561625
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0375062692165115
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0187531346082557
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0145857713619767
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0229204978545348
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0375062692165115
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0604267670710463
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0833472649255811
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.102100399533837
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.120853534142093
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.135439305504069
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.150025076866046
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.158359803358604
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.179196619589999
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.189615027705697
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.212535525560232
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.26462756613872
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.325054333209766
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.437573140859301
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.612602397203021
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.756376429199648
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.716786478359997
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.433405777613022
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.187531346082557
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekday12": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.101928374655647
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0495867768595041
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0247933884297521
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0192837465564738
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0303030303030303
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0495867768595041
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0798898071625344
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.110192837465565
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.134986225895317
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.159779614325069
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.179063360881543
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.198347107438017
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.209366391184573
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.236914600550964
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.25068870523416
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.28099173553719
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.349862258953168
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.429752066115703
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.578512396694215
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.809917355371901
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 1
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.947658402203857
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.573002754820937
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.247933884297521
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend1": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0936057406645642
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0468028703322821
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.025528838363063
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0170192255753753
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.023401435166141
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0297836447569068
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0510576767261259
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0914783374676423
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.151045626981456
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.19997590051066
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.238269158055254
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.261670593221395
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.280817221993693
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.331874898719819
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.378677769052101
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.416971026596695
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.438245058565914
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.453136880944368
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.5339782024274
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.702043054984231
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.825432440405703
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.761610344498045
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.480793122504353
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.219122529282957
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend2": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0929471250750158
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0464735625375079
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0253492159295498
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0168994772863665
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.023236781268754
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0295740852511414
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0506984318590995
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.09083469041422
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.149982860916503
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.198568858114806
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.236592682009131
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.259829463277885
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.278841375225047
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.329539807084147
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.376013369621655
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.41403719351598
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.435161540123938
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.449948582749508
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.530221099859749
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.697103438062619
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.819624648388776
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.756251608564901
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.477410233339854
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.217580770061969
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend3": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0791161976944997
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0395580988472499
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0215771448257727
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0143847632171818
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0197790494236249
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0251733356300681
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0431542896515453
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.077318102292352
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.127664773552488
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.169020967801886
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.201386685040545
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.22116573446417
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.237348593083499
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.280502882735044
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.320060981582294
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.352426698820953
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.370407652842431
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.382994320657465
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.451321945939078
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.593371482708748
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.697661016033316
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.643718153968884
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.406369560885385
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.185203826421215
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend4": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0797748132840481
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0398874066420241
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0217567672592858
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0145045115061906
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.019943703321012
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0253828951358335
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0435135345185717
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0779617493457743
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.128727539617441
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.170428010197739
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.203063161086668
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.22300686440768
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.239324439852144
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.282837974370716
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.32272538101274
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.355360531901669
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.373491171284407
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.386182618852324
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.455079048506729
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.598311099630361
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.703468808050242
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.649076889902028
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.409752450049884
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.186745585642204
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend5": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0791161976944997
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0395580988472499
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0215771448257727
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0143847632171818
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0197790494236249
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0251733356300681
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0431542896515453
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.077318102292352
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.127664773552488
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.169020967801886
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.201386685040545
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.22116573446417
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.237348593083499
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.280502882735044
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.320060981582294
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.352426698820953
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.370407652842431
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.382994320657465
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.451321945939078
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.593371482708748
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.697661016033316
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.643718153968884
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.406369560885385
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.185203826421215
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend6": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0817506600526933
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0408753300263466
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0222956345598254
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.014863756373217
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0204376650131733
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0260115736531297
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0445912691196509
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0798926905060411
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.1319158378123
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.174649137385299
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.208092589225037
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.228530254238211
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.24525198015808
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.289843249277731
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.330718579304077
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.364162031143815
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.382741726610337
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.395747513436902
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.466350356209682
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.6131299503952
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.720892184101023
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.665153097701459
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.419901117543379
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.191370863305168
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend7": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0819976408987739
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0409988204493869
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0223629929723929
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0149086619815953
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0204994102246935
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0260901584677917
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0447259859447858
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0801340581510745
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.132314375086658
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.175176778283744
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.208721267742334
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.229220677967027
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.245992922696322
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.290718908641107
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.331717729090494
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.365262218549084
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.383898046026078
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.396943125259974
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.467759269672551
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.614982306740804
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.72307010610737
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.667162623676388
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.421169700980066
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.191949023013039
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend8": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0790338707458062
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0395169353729031
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0215546920215835
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0143697946810557
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0197584676864515
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0251471406918474
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.043109384043167
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0772376464106742
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.127531927794369
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.168845087502404
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.201177125534779
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.220935593221231
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.237101612237419
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.280210996280586
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.319727931653489
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.352059969685864
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.370022213037183
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.382595783383107
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.450852308118122
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.592754030593546
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.6969350420312
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.643048311977241
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.405946699739823
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.185011106518592
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend9": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0817506600526933
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0408753300263466
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0222956345598254
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.014863756373217
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0204376650131733
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0260115736531297
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0445912691196509
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0798926905060411
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.1319158378123
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.174649137385299
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.208092589225037
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.228530254238211
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.24525198015808
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.289843249277731
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.330718579304077
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.364162031143815
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.382741726610337
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.395747513436902
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.466350356209682
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.6131299503952
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.720892184101023
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.665153097701459
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.419901117543379
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.191370863305168
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend10": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0713774645173062
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0356887322586531
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0194665812319926
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0129777208213284
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0178443661293266
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0227110114373247
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0389331624639852
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0697552494146402
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.11517727228929
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.152488219650609
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.181688091498598
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.199532457627924
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.214132393551919
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.253065556015904
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.288754288274557
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.317954160122546
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.334176311149206
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.345531816867869
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.407175990769179
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.535330983879797
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.629419459834427
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.580753006754446
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.366620613202527
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.167088155574603
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend11": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0708011758764514
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0354005879382257
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.0193094116026686
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0128729410684457
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.0177002939691128
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.02252764686978
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0386188232053371
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0691920582428956
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.114247351982456
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.151257057554237
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.18022117495824
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.197921468927353
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.212403527629354
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.251022350834691
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.286422938772917
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.31538705617692
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.331478232512477
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.342742055947367
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.403888526022484
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.531008819073385
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.624337641819617
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.576064112812945
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.363660585183591
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.165739116256238
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "misc tv schedule weekend12": {
+            "data": [
+                {
+                    "time": "01:00",
+                    "value_until_time": 0.0936057406645642
+                },
+                {
+                    "time": "02:00",
+                    "value_until_time": 0.0468028703322821
+                },
+                {
+                    "time": "03:00",
+                    "value_until_time": 0.025528838363063
+                },
+                {
+                    "time": "04:00",
+                    "value_until_time": 0.0170192255753753
+                },
+                {
+                    "time": "05:00",
+                    "value_until_time": 0.023401435166141
+                },
+                {
+                    "time": "06:00",
+                    "value_until_time": 0.0297836447569068
+                },
+                {
+                    "time": "07:00",
+                    "value_until_time": 0.0510576767261259
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.0914783374676423
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.151045626981456
+                },
+                {
+                    "time": "10:00",
+                    "value_until_time": 0.19997590051066
+                },
+                {
+                    "time": "11:00",
+                    "value_until_time": 0.238269158055254
+                },
+                {
+                    "time": "12:00",
+                    "value_until_time": 0.261670593221395
+                },
+                {
+                    "time": "13:00",
+                    "value_until_time": 0.280817221993693
+                },
+                {
+                    "time": "14:00",
+                    "value_until_time": 0.331874898719819
+                },
+                {
+                    "time": "15:00",
+                    "value_until_time": 0.378677769052101
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.416971026596695
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.438245058565914
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.453136880944368
+                },
+                {
+                    "time": "19:00",
+                    "value_until_time": 0.5339782024274
+                },
+                {
+                    "time": "20:00",
+                    "value_until_time": 0.702043054984231
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.825432440405703
+                },
+                {
+                    "time": "22:00",
+                    "value_until_time": 0.761610344498045
+                },
+                {
+                    "time": "23:00",
+                    "value_until_time": 0.480793122504353
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 0.219122529282957
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        },
+        "occupants schedule allday1": {
+            "data": [
+                {
+                    "time": "07:00",
+                    "value_until_time": 1
+                },
+                {
+                    "time": "08:00",
+                    "value_until_time": 0.868852459016393
+                },
+                {
+                    "time": "09:00",
+                    "value_until_time": 0.409836065573771
+                },
+                {
+                    "time": "16:00",
+                    "value_until_time": 0.245901639344262
+                },
+                {
+                    "time": "17:00",
+                    "value_until_time": 0.295081967213115
+                },
+                {
+                    "time": "18:00",
+                    "value_until_time": 0.540983606557377
+                },
+                {
+                    "time": "21:00",
+                    "value_until_time": 0.885245901639344
+                },
+                {
+                    "time": "24:00",
+                    "value_until_time": 1
+                }
+            ],
+            "interpolate_to_timestep": "No",
+            "schedule_type_limits_name": "Fraction"
+        }
+    },
+    "Schedule:File": {
+        "clothes_dryer": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 7,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "clothes_washer": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 6,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "cooking_range": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 4,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "dishwasher": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 5,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "hot_water_clothes_washer": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 10,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "hot_water_dishwasher": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 9,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "hot_water_fixtures": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 11,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "lighting_exterior": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 2,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "lighting_interior": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 1,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "plug_loads_other": {
+            "adjust_schedule_for_daylight_savings": "Yes",
+            "column_number": 8,
+            "column_separator": "Comma",
+            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "interpolate_to_timestep": "No",
+            "minutes_per_item": 10,
+            "number_of_hours_of_data": 8760,
+            "rows_to_skip_at_top": 1,
+            "schedule_type_limits_name": "Fraction"
+        }
+    },
+    "Schedule:Week:Daily": {
+        "fridge Week Rule - Dec2-Dec31": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday12",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday12",
+            "saturday_schedule_day_name": "fridge allday12",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday12",
+            "thursday_schedule_day_name": "fridge allday12",
+            "tuesday_schedule_day_name": "fridge allday12",
+            "wednesday_schedule_day_name": "fridge allday12",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Feb4-Feb24": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday2",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday2",
+            "saturday_schedule_day_name": "fridge allday2",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday2",
+            "thursday_schedule_day_name": "fridge allday2",
+            "tuesday_schedule_day_name": "fridge allday2",
+            "wednesday_schedule_day_name": "fridge allday2",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Feb25-Mar3": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday3",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday2",
+            "saturday_schedule_day_name": "fridge allday3",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday2",
+            "thursday_schedule_day_name": "fridge allday3",
+            "tuesday_schedule_day_name": "fridge allday2",
+            "wednesday_schedule_day_name": "fridge allday2",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Jan1-Jan27": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday1",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday1",
+            "saturday_schedule_day_name": "fridge allday1",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday1",
+            "thursday_schedule_day_name": "fridge allday1",
+            "tuesday_schedule_day_name": "fridge allday1",
+            "wednesday_schedule_day_name": "fridge allday1",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Jan28-Feb3": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday2",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday1",
+            "saturday_schedule_day_name": "fridge allday2",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday1",
+            "thursday_schedule_day_name": "fridge allday2",
+            "tuesday_schedule_day_name": "fridge allday1",
+            "wednesday_schedule_day_name": "fridge allday1",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Jun3-Sep29": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday6",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday6",
+            "saturday_schedule_day_name": "fridge allday6",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday6",
+            "thursday_schedule_day_name": "fridge allday6",
+            "tuesday_schedule_day_name": "fridge allday6",
+            "wednesday_schedule_day_name": "fridge allday6",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Mar4-May26": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday3",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday3",
+            "saturday_schedule_day_name": "fridge allday3",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday3",
+            "thursday_schedule_day_name": "fridge allday3",
+            "tuesday_schedule_day_name": "fridge allday3",
+            "wednesday_schedule_day_name": "fridge allday3",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - May27-Jun2": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday6",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday3",
+            "saturday_schedule_day_name": "fridge allday6",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday3",
+            "thursday_schedule_day_name": "fridge allday6",
+            "tuesday_schedule_day_name": "fridge allday3",
+            "wednesday_schedule_day_name": "fridge allday3",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Nov4-Nov24": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday11",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday11",
+            "saturday_schedule_day_name": "fridge allday11",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday11",
+            "thursday_schedule_day_name": "fridge allday11",
+            "tuesday_schedule_day_name": "fridge allday11",
+            "wednesday_schedule_day_name": "fridge allday11",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Nov25-Dec1": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday11",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday11",
+            "saturday_schedule_day_name": "fridge allday12",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday11",
+            "thursday_schedule_day_name": "fridge allday11",
+            "tuesday_schedule_day_name": "fridge allday11",
+            "wednesday_schedule_day_name": "fridge allday11",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Oct7-Oct27": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday10",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday10",
+            "saturday_schedule_day_name": "fridge allday10",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday10",
+            "thursday_schedule_day_name": "fridge allday10",
+            "tuesday_schedule_day_name": "fridge allday10",
+            "wednesday_schedule_day_name": "fridge allday10",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Oct28-Nov3": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday11",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday10",
+            "saturday_schedule_day_name": "fridge allday11",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday10",
+            "thursday_schedule_day_name": "fridge allday11",
+            "tuesday_schedule_day_name": "fridge allday10",
+            "wednesday_schedule_day_name": "fridge allday10",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "fridge Week Rule - Sep30-Oct6": {
+            "customday1_schedule_day_name": "Schedule Day 5",
+            "customday2_schedule_day_name": "Schedule Day 5",
+            "friday_schedule_day_name": "fridge allday10",
+            "holiday_schedule_day_name": "Schedule Day 5",
+            "monday_schedule_day_name": "fridge allday10",
+            "saturday_schedule_day_name": "fridge allday10",
+            "summerdesignday_schedule_day_name": "Schedule Day 5",
+            "sunday_schedule_day_name": "fridge allday6",
+            "thursday_schedule_day_name": "fridge allday10",
+            "tuesday_schedule_day_name": "fridge allday10",
+            "wednesday_schedule_day_name": "fridge allday10",
+            "winterdesignday_schedule_day_name": "Schedule Day 5"
+        },
+        "misc tv schedule Week Rule - Apr1-Apr28": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday4",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday4",
+            "saturday_schedule_day_name": "misc tv schedule weekend4",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend4",
+            "thursday_schedule_day_name": "misc tv schedule weekday4",
+            "tuesday_schedule_day_name": "misc tv schedule weekday4",
+            "wednesday_schedule_day_name": "misc tv schedule weekday4",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Apr29-May5": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday5",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday4",
+            "saturday_schedule_day_name": "misc tv schedule weekend5",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend4",
+            "thursday_schedule_day_name": "misc tv schedule weekday5",
+            "tuesday_schedule_day_name": "misc tv schedule weekday5",
+            "wednesday_schedule_day_name": "misc tv schedule weekday5",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Aug5-Aug25": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday8",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday8",
+            "saturday_schedule_day_name": "misc tv schedule weekend8",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend8",
+            "thursday_schedule_day_name": "misc tv schedule weekday8",
+            "tuesday_schedule_day_name": "misc tv schedule weekday8",
+            "wednesday_schedule_day_name": "misc tv schedule weekday8",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Aug26-Sep1": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday8",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday8",
+            "saturday_schedule_day_name": "misc tv schedule weekend9",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend8",
+            "thursday_schedule_day_name": "misc tv schedule weekday8",
+            "tuesday_schedule_day_name": "misc tv schedule weekday8",
+            "wednesday_schedule_day_name": "misc tv schedule weekday8",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Dec2-Dec31": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday12",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday12",
+            "saturday_schedule_day_name": "misc tv schedule weekend12",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend12",
+            "thursday_schedule_day_name": "misc tv schedule weekday12",
+            "tuesday_schedule_day_name": "misc tv schedule weekday12",
+            "wednesday_schedule_day_name": "misc tv schedule weekday12",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Feb4-Feb24": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday2",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday2",
+            "saturday_schedule_day_name": "misc tv schedule weekend2",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend2",
+            "thursday_schedule_day_name": "misc tv schedule weekday2",
+            "tuesday_schedule_day_name": "misc tv schedule weekday2",
+            "wednesday_schedule_day_name": "misc tv schedule weekday2",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Feb25-Mar3": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday3",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday2",
+            "saturday_schedule_day_name": "misc tv schedule weekend3",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend2",
+            "thursday_schedule_day_name": "misc tv schedule weekday3",
+            "tuesday_schedule_day_name": "misc tv schedule weekday2",
+            "wednesday_schedule_day_name": "misc tv schedule weekday2",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Jan1-Jan6": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday1",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday1",
+            "saturday_schedule_day_name": "misc tv schedule weekend1",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekday1",
+            "thursday_schedule_day_name": "misc tv schedule weekday1",
+            "tuesday_schedule_day_name": "misc tv schedule weekday1",
+            "wednesday_schedule_day_name": "misc tv schedule weekday1",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Jan7-Jan27": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday1",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday1",
+            "saturday_schedule_day_name": "misc tv schedule weekend1",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend1",
+            "thursday_schedule_day_name": "misc tv schedule weekday1",
+            "tuesday_schedule_day_name": "misc tv schedule weekday1",
+            "wednesday_schedule_day_name": "misc tv schedule weekday1",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Jan28-Feb3": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday2",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday1",
+            "saturday_schedule_day_name": "misc tv schedule weekend2",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend1",
+            "thursday_schedule_day_name": "misc tv schedule weekday2",
+            "tuesday_schedule_day_name": "misc tv schedule weekday1",
+            "wednesday_schedule_day_name": "misc tv schedule weekday1",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Jul1-Jul28": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday7",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday7",
+            "saturday_schedule_day_name": "misc tv schedule weekend7",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend7",
+            "thursday_schedule_day_name": "misc tv schedule weekday7",
+            "tuesday_schedule_day_name": "misc tv schedule weekday7",
+            "wednesday_schedule_day_name": "misc tv schedule weekday7",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Jul29-Aug4": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday8",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday7",
+            "saturday_schedule_day_name": "misc tv schedule weekend8",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend7",
+            "thursday_schedule_day_name": "misc tv schedule weekday8",
+            "tuesday_schedule_day_name": "misc tv schedule weekday7",
+            "wednesday_schedule_day_name": "misc tv schedule weekday8",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Jun3-Jun30": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday6",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday6",
+            "saturday_schedule_day_name": "misc tv schedule weekend6",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend6",
+            "thursday_schedule_day_name": "misc tv schedule weekday6",
+            "tuesday_schedule_day_name": "misc tv schedule weekday6",
+            "wednesday_schedule_day_name": "misc tv schedule weekday6",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Mar4-Mar31": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday3",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday3",
+            "saturday_schedule_day_name": "misc tv schedule weekend3",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend3",
+            "thursday_schedule_day_name": "misc tv schedule weekday3",
+            "tuesday_schedule_day_name": "misc tv schedule weekday3",
+            "wednesday_schedule_day_name": "misc tv schedule weekday3",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - May6-May26": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday5",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday5",
+            "saturday_schedule_day_name": "misc tv schedule weekend5",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend5",
+            "thursday_schedule_day_name": "misc tv schedule weekday5",
+            "tuesday_schedule_day_name": "misc tv schedule weekday5",
+            "wednesday_schedule_day_name": "misc tv schedule weekday5",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - May27-Jun2": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday6",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday5",
+            "saturday_schedule_day_name": "misc tv schedule weekend6",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend5",
+            "thursday_schedule_day_name": "misc tv schedule weekday5",
+            "tuesday_schedule_day_name": "misc tv schedule weekday5",
+            "wednesday_schedule_day_name": "misc tv schedule weekday5",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Nov4-Nov24": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday11",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday11",
+            "saturday_schedule_day_name": "misc tv schedule weekend11",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend11",
+            "thursday_schedule_day_name": "misc tv schedule weekday11",
+            "tuesday_schedule_day_name": "misc tv schedule weekday11",
+            "wednesday_schedule_day_name": "misc tv schedule weekday11",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Nov25-Dec1": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday11",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday11",
+            "saturday_schedule_day_name": "misc tv schedule weekend12",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend11",
+            "thursday_schedule_day_name": "misc tv schedule weekday11",
+            "tuesday_schedule_day_name": "misc tv schedule weekday11",
+            "wednesday_schedule_day_name": "misc tv schedule weekday11",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Oct7-Oct27": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday10",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday10",
+            "saturday_schedule_day_name": "misc tv schedule weekend10",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend10",
+            "thursday_schedule_day_name": "misc tv schedule weekday10",
+            "tuesday_schedule_day_name": "misc tv schedule weekday10",
+            "wednesday_schedule_day_name": "misc tv schedule weekday10",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Oct28-Nov3": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday11",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday10",
+            "saturday_schedule_day_name": "misc tv schedule weekend11",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend10",
+            "thursday_schedule_day_name": "misc tv schedule weekday11",
+            "tuesday_schedule_day_name": "misc tv schedule weekday10",
+            "wednesday_schedule_day_name": "misc tv schedule weekday10",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Sep2-Sep29": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday9",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday9",
+            "saturday_schedule_day_name": "misc tv schedule weekend9",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend9",
+            "thursday_schedule_day_name": "misc tv schedule weekday9",
+            "tuesday_schedule_day_name": "misc tv schedule weekday9",
+            "wednesday_schedule_day_name": "misc tv schedule weekday9",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "misc tv schedule Week Rule - Sep30-Oct6": {
+            "customday1_schedule_day_name": "Schedule Day 6",
+            "customday2_schedule_day_name": "Schedule Day 6",
+            "friday_schedule_day_name": "misc tv schedule weekday10",
+            "holiday_schedule_day_name": "Schedule Day 6",
+            "monday_schedule_day_name": "misc tv schedule weekday10",
+            "saturday_schedule_day_name": "misc tv schedule weekend10",
+            "summerdesignday_schedule_day_name": "Schedule Day 6",
+            "sunday_schedule_day_name": "misc tv schedule weekend9",
+            "thursday_schedule_day_name": "misc tv schedule weekday10",
+            "tuesday_schedule_day_name": "misc tv schedule weekday10",
+            "wednesday_schedule_day_name": "misc tv schedule weekday10",
+            "winterdesignday_schedule_day_name": "Schedule Day 6"
+        },
+        "occupants schedule Week Rule - Jan1-Dec31": {
+            "customday1_schedule_day_name": "Schedule Day 4",
+            "customday2_schedule_day_name": "Schedule Day 4",
+            "friday_schedule_day_name": "occupants schedule allday1",
+            "holiday_schedule_day_name": "Schedule Day 4",
+            "monday_schedule_day_name": "occupants schedule allday1",
+            "saturday_schedule_day_name": "occupants schedule allday1",
+            "summerdesignday_schedule_day_name": "Schedule Day 4",
+            "sunday_schedule_day_name": "occupants schedule allday1",
+            "thursday_schedule_day_name": "occupants schedule allday1",
+            "tuesday_schedule_day_name": "occupants schedule allday1",
+            "wednesday_schedule_day_name": "occupants schedule allday1",
+            "winterdesignday_schedule_day_name": "Schedule Day 4"
+        }
+    },
+    "Schedule:Year": {
+        "fridge": {
+            "schedule_type_limits_name": "Fraction",
+            "schedule_weeks": [
+                {
+                    "end_day": 27,
+                    "end_month": 1,
+                    "schedule_week_name": "fridge Week Rule - Jan1-Jan27",
+                    "start_day": 1,
+                    "start_month": 1
+                },
+                {
+                    "end_day": 3,
+                    "end_month": 2,
+                    "schedule_week_name": "fridge Week Rule - Jan28-Feb3",
+                    "start_day": 28,
+                    "start_month": 1
+                },
+                {
+                    "end_day": 24,
+                    "end_month": 2,
+                    "schedule_week_name": "fridge Week Rule - Feb4-Feb24",
+                    "start_day": 4,
+                    "start_month": 2
+                },
+                {
+                    "end_day": 3,
+                    "end_month": 3,
+                    "schedule_week_name": "fridge Week Rule - Feb25-Mar3",
+                    "start_day": 25,
+                    "start_month": 2
+                },
+                {
+                    "end_day": 26,
+                    "end_month": 5,
+                    "schedule_week_name": "fridge Week Rule - Mar4-May26",
+                    "start_day": 4,
+                    "start_month": 3
+                },
+                {
+                    "end_day": 2,
+                    "end_month": 6,
+                    "schedule_week_name": "fridge Week Rule - May27-Jun2",
+                    "start_day": 27,
+                    "start_month": 5
+                },
+                {
+                    "end_day": 29,
+                    "end_month": 9,
+                    "schedule_week_name": "fridge Week Rule - Jun3-Sep29",
+                    "start_day": 3,
+                    "start_month": 6
+                },
+                {
+                    "end_day": 6,
+                    "end_month": 10,
+                    "schedule_week_name": "fridge Week Rule - Sep30-Oct6",
+                    "start_day": 30,
+                    "start_month": 9
+                },
+                {
+                    "end_day": 27,
+                    "end_month": 10,
+                    "schedule_week_name": "fridge Week Rule - Oct7-Oct27",
+                    "start_day": 7,
+                    "start_month": 10
+                },
+                {
+                    "end_day": 3,
+                    "end_month": 11,
+                    "schedule_week_name": "fridge Week Rule - Oct28-Nov3",
+                    "start_day": 28,
+                    "start_month": 10
+                },
+                {
+                    "end_day": 24,
+                    "end_month": 11,
+                    "schedule_week_name": "fridge Week Rule - Nov4-Nov24",
+                    "start_day": 4,
+                    "start_month": 11
+                },
+                {
+                    "end_day": 1,
+                    "end_month": 12,
+                    "schedule_week_name": "fridge Week Rule - Nov25-Dec1",
+                    "start_day": 25,
+                    "start_month": 11
+                },
+                {
+                    "end_day": 31,
+                    "end_month": 12,
+                    "schedule_week_name": "fridge Week Rule - Dec2-Dec31",
+                    "start_day": 2,
+                    "start_month": 12
+                }
+            ]
+        },
+        "misc tv schedule": {
+            "schedule_type_limits_name": "Fraction",
+            "schedule_weeks": [
+                {
+                    "end_day": 6,
+                    "end_month": 1,
+                    "schedule_week_name": "misc tv schedule Week Rule - Jan1-Jan6",
+                    "start_day": 1,
+                    "start_month": 1
+                },
+                {
+                    "end_day": 27,
+                    "end_month": 1,
+                    "schedule_week_name": "misc tv schedule Week Rule - Jan7-Jan27",
+                    "start_day": 7,
+                    "start_month": 1
+                },
+                {
+                    "end_day": 3,
+                    "end_month": 2,
+                    "schedule_week_name": "misc tv schedule Week Rule - Jan28-Feb3",
+                    "start_day": 28,
+                    "start_month": 1
+                },
+                {
+                    "end_day": 24,
+                    "end_month": 2,
+                    "schedule_week_name": "misc tv schedule Week Rule - Feb4-Feb24",
+                    "start_day": 4,
+                    "start_month": 2
+                },
+                {
+                    "end_day": 3,
+                    "end_month": 3,
+                    "schedule_week_name": "misc tv schedule Week Rule - Feb25-Mar3",
+                    "start_day": 25,
+                    "start_month": 2
+                },
+                {
+                    "end_day": 31,
+                    "end_month": 3,
+                    "schedule_week_name": "misc tv schedule Week Rule - Mar4-Mar31",
+                    "start_day": 4,
+                    "start_month": 3
+                },
+                {
+                    "end_day": 28,
+                    "end_month": 4,
+                    "schedule_week_name": "misc tv schedule Week Rule - Apr1-Apr28",
+                    "start_day": 1,
+                    "start_month": 4
+                },
+                {
+                    "end_day": 5,
+                    "end_month": 5,
+                    "schedule_week_name": "misc tv schedule Week Rule - Apr29-May5",
+                    "start_day": 29,
+                    "start_month": 4
+                },
+                {
+                    "end_day": 26,
+                    "end_month": 5,
+                    "schedule_week_name": "misc tv schedule Week Rule - May6-May26",
+                    "start_day": 6,
+                    "start_month": 5
+                },
+                {
+                    "end_day": 2,
+                    "end_month": 6,
+                    "schedule_week_name": "misc tv schedule Week Rule - May27-Jun2",
+                    "start_day": 27,
+                    "start_month": 5
+                },
+                {
+                    "end_day": 30,
+                    "end_month": 6,
+                    "schedule_week_name": "misc tv schedule Week Rule - Jun3-Jun30",
+                    "start_day": 3,
+                    "start_month": 6
+                },
+                {
+                    "end_day": 28,
+                    "end_month": 7,
+                    "schedule_week_name": "misc tv schedule Week Rule - Jul1-Jul28",
+                    "start_day": 1,
+                    "start_month": 7
+                },
+                {
+                    "end_day": 4,
+                    "end_month": 8,
+                    "schedule_week_name": "misc tv schedule Week Rule - Jul29-Aug4",
+                    "start_day": 29,
+                    "start_month": 7
+                },
+                {
+                    "end_day": 25,
+                    "end_month": 8,
+                    "schedule_week_name": "misc tv schedule Week Rule - Aug5-Aug25",
+                    "start_day": 5,
+                    "start_month": 8
+                },
+                {
+                    "end_day": 1,
+                    "end_month": 9,
+                    "schedule_week_name": "misc tv schedule Week Rule - Aug26-Sep1",
+                    "start_day": 26,
+                    "start_month": 8
+                },
+                {
+                    "end_day": 29,
+                    "end_month": 9,
+                    "schedule_week_name": "misc tv schedule Week Rule - Sep2-Sep29",
+                    "start_day": 2,
+                    "start_month": 9
+                },
+                {
+                    "end_day": 6,
+                    "end_month": 10,
+                    "schedule_week_name": "misc tv schedule Week Rule - Sep30-Oct6",
+                    "start_day": 30,
+                    "start_month": 9
+                },
+                {
+                    "end_day": 27,
+                    "end_month": 10,
+                    "schedule_week_name": "misc tv schedule Week Rule - Oct7-Oct27",
+                    "start_day": 7,
+                    "start_month": 10
+                },
+                {
+                    "end_day": 3,
+                    "end_month": 11,
+                    "schedule_week_name": "misc tv schedule Week Rule - Oct28-Nov3",
+                    "start_day": 28,
+                    "start_month": 10
+                },
+                {
+                    "end_day": 24,
+                    "end_month": 11,
+                    "schedule_week_name": "misc tv schedule Week Rule - Nov4-Nov24",
+                    "start_day": 4,
+                    "start_month": 11
+                },
+                {
+                    "end_day": 1,
+                    "end_month": 12,
+                    "schedule_week_name": "misc tv schedule Week Rule - Nov25-Dec1",
+                    "start_day": 25,
+                    "start_month": 11
+                },
+                {
+                    "end_day": 31,
+                    "end_month": 12,
+                    "schedule_week_name": "misc tv schedule Week Rule - Dec2-Dec31",
+                    "start_day": 2,
+                    "start_month": 12
+                }
+            ]
+        },
+        "occupants schedule": {
+            "schedule_type_limits_name": "Fraction",
+            "schedule_weeks": [
+                {
+                    "end_day": 31,
+                    "end_month": 12,
+                    "schedule_week_name": "occupants schedule Week Rule - Jan1-Dec31",
+                    "start_day": 1,
+                    "start_month": 1
+                }
+            ]
+        }
+    },
+    "ScheduleTypeLimits": {
+        "Any Number": {},
+        "AviabilityType": {
+            "lower_limit_value": 0,
+            "numeric_type": "Discrete",
+            "unit_type": "Availability",
+            "upper_limit_value": 1
+        },
+        "Comfort_range": {
+            "lower_limit_value": -3,
+            "numeric_type": "Continuous",
+            "unit_type": "Dimensionless",
+            "upper_limit_value": 3
+        },
+        "Control Type": {
+            "lower_limit_value": 0,
+            "numeric_type": "Discrete",
+            "unit_type": "Dimensionless",
+            "upper_limit_value": 4
+        },
+        "Fraction": {
+            "lower_limit_value": 0,
+            "numeric_type": "Continuous",
+            "upper_limit_value": 1
+        },
+        "On/Off": {
+            "lower_limit_value": 0,
+            "numeric_type": "Discrete",
+            "unit_type": "Dimensionless",
+            "upper_limit_value": 1
+        },
+        "Temperature": {
+            "lower_limit_value": -60,
+            "numeric_type": "Continuous",
+            "unit_type": "Temperature",
+            "upper_limit_value": 200
+        }
+    },
+    "SimulationControl": {
+        "SimulationControl 1": {
+            "do_hvac_sizing_simulation_for_sizing_periods": "No",
+            "do_plant_sizing_calculation": "No",
+            "do_system_sizing_calculation": "No",
+            "do_zone_sizing_calculation": "No",
+            "maximum_number_of_hvac_sizing_simulation_passes": 1,
+            "run_simulation_for_sizing_periods": "No",
+            "run_simulation_for_weather_file_run_periods": "Yes"
+        }
+    },
+    "Site:Location": {
+        "Mendoza": {
+            "elevation": 676,
+            "latitude": -32.895,
+            "longitude": -68.872,
+            "time_zone": -3
+        }
+    },
+    "SurfaceConvectionAlgorithm:Inside": {
+        "SurfaceConvectionAlgorithm:Inside 1": {
+            "algorithm": "TARP"
+        }
+    },
+    "SurfaceConvectionAlgorithm:Outside": {
+        "SurfaceConvectionAlgorithm:Outside 1": {
+            "algorithm": "DOE-2"
+        }
+    },
+    "ThermostatSetpoint:DualSetpoint": {
+        "Dual_temp_sp": {
+            "cooling_setpoint_temperature_schedule_name": "cooling_setpoint",
+            "heating_setpoint_temperature_schedule_name": "heating_setpoint"
+        }
+    },
+    "Timestep": {
+        "Timestep 1": {
+            "number_of_timesteps_per_hour": 6
+        }
+    },
+    "Version": {
+        "Version 1": {
+            "version_identifier": "23.2"
+        }
+    },
+    "WindowMaterial:Blind": {
+        "Window Material Blind 1": {
+            "back_side_slat_beam_solar_reflectance": 0.7,
+            "back_side_slat_beam_visible_reflectance": 0.5,
+            "back_side_slat_diffuse_solar_reflectance": 0.7,
+            "back_side_slat_diffuse_visible_reflectance": 0.5,
+            "back_side_slat_infrared_hemispherical_emissivity": 0.9,
+            "blind_bottom_opening_multiplier": 0.5,
+            "blind_left_side_opening_multiplier": 0,
+            "blind_right_side_opening_multiplier": 0,
+            "blind_to_glass_distance": 0.05,
+            "blind_top_opening_multiplier": 0.5,
+            "front_side_slat_beam_solar_reflectance": 0.7,
+            "front_side_slat_beam_visible_reflectance": 0.5,
+            "front_side_slat_diffuse_solar_reflectance": 0.7,
+            "front_side_slat_diffuse_visible_reflectance": 0.5,
+            "front_side_slat_infrared_hemispherical_emissivity": 0.9,
+            "maximum_slat_angle": 180,
+            "minimum_slat_angle": 0,
+            "slat_angle": 177,
+            "slat_beam_solar_transmittance": 0,
+            "slat_beam_visible_transmittance": 0,
+            "slat_conductivity": 221,
+            "slat_diffuse_solar_transmittance": 0,
+            "slat_diffuse_visible_transmittance": 0,
+            "slat_infrared_hemispherical_transmittance": 0,
+            "slat_orientation": "Horizontal",
+            "slat_separation": 0.01875,
+            "slat_thickness": 0.001,
+            "slat_width": 0.025
+        }
+    },
+    "WindowMaterial:SimpleGlazingSystem": {
+        "WindowMaterial": {
+            "solar_heat_gain_coefficient": 0.5,
+            "u_factor": 2
+        }
+    },
+    "WindowShadingControl": {
+        "window_east": {
+            "fenestration_surfaces": [
+                {
+                    "fenestration_surface_name": "window_east"
+                }
+            ],
+            "glare_control_is_active": "No",
+            "multiple_surface_control_type": "Sequential",
+            "shading_control_is_scheduled": "No",
+            "shading_control_sequence_number": 1,
+            "shading_control_type": "AlwaysOff",
+            "shading_device_material_name": "Window Material Blind 1",
+            "shading_type": "InteriorBlind",
+            "type_of_slat_angle_control_for_blinds": "FixedSlatAngle",
+            "zone_name": "Thermal Zone"
+        },
+        "window_north": {
+            "fenestration_surfaces": [
+                {
+                    "fenestration_surface_name": "window_north"
+                }
+            ],
+            "glare_control_is_active": "No",
+            "multiple_surface_control_type": "Sequential",
+            "shading_control_is_scheduled": "No",
+            "shading_control_sequence_number": 1,
+            "shading_control_type": "AlwaysOff",
+            "shading_device_material_name": "Window Material Blind 1",
+            "shading_type": "InteriorBlind",
+            "type_of_slat_angle_control_for_blinds": "FixedSlatAngle",
+            "zone_name": "Thermal Zone"
+        },
+        "window_south": {
+            "fenestration_surfaces": [
+                {
+                    "fenestration_surface_name": "window_south"
+                }
+            ],
+            "glare_control_is_active": "No",
+            "multiple_surface_control_type": "Sequential",
+            "shading_control_is_scheduled": "No",
+            "shading_control_sequence_number": 1,
+            "shading_control_type": "AlwaysOff",
+            "shading_device_material_name": "Window Material Blind 1",
+            "shading_type": "InteriorBlind",
+            "type_of_slat_angle_control_for_blinds": "FixedSlatAngle",
+            "zone_name": "Thermal Zone"
+        },
+        "window_west": {
+            "fenestration_surfaces": [
+                {
+                    "fenestration_surface_name": "window_west"
+                }
+            ],
+            "glare_control_is_active": "No",
+            "multiple_surface_control_type": "Sequential",
+            "shading_control_is_scheduled": "No",
+            "shading_control_sequence_number": 1,
+            "shading_control_type": "AlwaysOff",
+            "shading_device_material_name": "Window Material Blind 1",
+            "shading_type": "InteriorBlind",
+            "type_of_slat_angle_control_for_blinds": "FixedSlatAngle",
+            "zone_name": "Thermal Zone"
+        }
+    },
+    "Zone": {
+        "Thermal Zone": {
+            "direction_of_relative_north": 0,
+            "multiplier": 1,
+            "part_of_total_floor_area": "Yes",
+            "x_origin": 0,
+            "y_origin": 0,
+            "z_origin": 0
+        }
+    },
+    "ZoneControl:Thermostat": {
+        "Thermostat": {
+            "control_1_name": "Dual_temp_sp",
+            "control_1_object_type": "ThermostatSetpoint:DualSetpoint",
+            "control_type_schedule_name": "ZONE CONTROL TYPE SCHED",
+            "zone_or_zonelist_name": "Thermal Zone"
+        }
+    },
+    "ZoneHVAC:EquipmentConnections": {
+        "ZoneHVAC:EquipmentConnections 1": {
+            "zone_air_inlet_node_or_nodelist_name": "ZoneInlets",
+            "zone_air_node_name": "NODE 4",
+            "zone_conditioning_equipment_list_name": "Equipos",
+            "zone_name": "Thermal Zone",
+            "zone_return_air_node_or_nodelist_name": "NODE 5"
+        }
+    },
+    "ZoneHVAC:EquipmentList": {
+        "Equipos": {
+            "equipment": [
+                {
+                    "zone_equipment_cooling_sequence": 1,
+                    "zone_equipment_heating_or_no_load_sequence": 1,
+                    "zone_equipment_name": "IdealHVAC",
+                    "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem"
+                }
+            ],
+            "load_distribution_scheme": "SequentialLoad"
+        }
+    },
+    "ZoneHVAC:IdealLoadsAirSystem": {
+        "IdealHVAC": {
+            "availability_schedule_name": "HVAC_OnOff",
+            "cooling_limit": "LimitCapacity",
+            "dehumidification_control_type": "ConstantSupplyHumidityRatio",
+            "heating_limit": "LimitCapacity",
+            "humidification_control_type": "ConstantSupplyHumidityRatio",
+            "maximum_heating_supply_air_humidity_ratio": 0.0156,
+            "maximum_heating_supply_air_temperature": 50,
+            "maximum_sensible_heating_capacity": 2500,
+            "maximum_total_cooling_capacity": 2500,
+            "minimum_cooling_supply_air_humidity_ratio": 0.0077,
+            "minimum_cooling_supply_air_temperature": 0,
+            "zone_supply_air_node_name": "NODE 1"
+        }
+    }
+}
