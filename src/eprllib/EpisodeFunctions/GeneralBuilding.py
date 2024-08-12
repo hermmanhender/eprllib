@@ -183,7 +183,7 @@ class GeneralBuilding(EpisodeFunction):
         # Implementation of a random number of agent indicator and thermal zone
         for agent in [agent for agent in env_config['agents_config'].keys()]:
             env_config['agents_config'][agent]['agent_indicator'] = np.random.randint(0,50)
-            env_config['agents_config'][agent]['thermal_zone'] = np.random.randint(0,50)
+            env_config['agents_config'][agent]['thermal_zone_indicator'] = np.random.randint(0,50)
 
         # Select the schedule file for loads
         env_config = random_weather_config(env_config, self.epw_files_folder_path)
