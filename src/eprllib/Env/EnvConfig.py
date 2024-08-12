@@ -42,6 +42,7 @@ class EnvConfig:
         self.no_observable_variables: Dict[str,List]|bool = False
         self.use_actuator_state: bool = False
         self.use_agent_indicator: bool = False
+        self.use_thermal_zone_indicator: bool = False
         self.use_agent_type: bool = False
         self.use_building_properties: bool = False
         self.building_properties: Dict[str,Dict[str,float]] = {}
@@ -95,7 +96,7 @@ class EnvConfig:
         Args:
             agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents 
             involved in the environment. The mandatory components of the agent are: ep_actuator_configuration, 
-            thermal_zone, actuator_type, agent_indicator.
+            thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
         """
         self.agents_config = agents_config
     
@@ -111,6 +112,7 @@ class EnvConfig:
         no_observable_variables: Dict[str,List[str]]|bool = False,
         use_actuator_state: Optional[bool] = False,
         use_agent_indicator: Optional[bool] = False,
+        use_thermal_zone_indicator: Optional[bool] = False,
         use_agent_type: Optional[bool] = False,
         use_building_properties: Optional[bool] = False,
         building_properties: Optional[Dict[str,Dict[str,float]]] = {},
@@ -122,6 +124,7 @@ class EnvConfig:
         Args:
             use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
             use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. 
+            use_thermal_zone_indicator (bool): define if thermal zone indicator will be used as an observation for the agent.
             This is recommended True for muilti-agent usage and False for single agent case.
             use_agent_type (bool): define if the agent/actuator type will be used. This is recommended for different 
             types of agents actuating in the same environment.
@@ -163,6 +166,7 @@ class EnvConfig:
         # TODO: Al least one variable must to be defined.
         self.use_actuator_state = use_actuator_state
         self.use_agent_indicator = use_agent_indicator
+        self.use_thermal_zone_indicator = use_thermal_zone_indicator
         self.use_agent_type = use_agent_type
         self.use_building_properties = use_building_properties
         self.building_properties = building_properties

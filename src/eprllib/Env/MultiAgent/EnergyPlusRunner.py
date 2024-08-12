@@ -313,8 +313,6 @@ class EnergyPlusRunner:
         for agent in self._agent_ids:
             # Agent properties
             agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
-            agent_type = self.env_config['agents_config'][agent]['actuator_type']
-            agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
             
             # Agent infos asignation
             agents_infos[agent] = infos_tz[agent_thermal_zone]
@@ -332,6 +330,7 @@ class EnergyPlusRunner:
                 )
             # if apply, add the agent indicator.
             if self.env_config['use_agent_indicator']:
+                agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],
@@ -339,8 +338,19 @@ class EnergyPlusRunner:
                     ),
                     dtype='float32'
                 )
+            # if apply, add the thermal zone indicator
+            if self.env_config['use_thermal_zone_indicator']:
+                thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                agents_obs[agent] = np.concatenate(
+                    (
+                        agents_obs[agent],
+                        [thermal_zone_indicator],
+                    ),
+                    dtype='float32'
+                )
             # if apply, add the agent type.
             if self.env_config['use_agent_type']:
+                agent_type = self.env_config['agents_config'][agent]['actuator_type']
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],

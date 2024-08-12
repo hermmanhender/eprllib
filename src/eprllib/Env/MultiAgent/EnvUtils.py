@@ -109,6 +109,10 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
     if env_config['use_agent_indicator']:
         obs_space_len += 1
         
+    # thermal_zone_indicator
+    if env_config['use_thermal_zone_indicator']:
+        obs_space_len += 1
+        
     # agent type.
     if env_config['use_agent_type']:
         obs_space_len += 1
