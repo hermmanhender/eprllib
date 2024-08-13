@@ -158,12 +158,12 @@ class EnergyPlusRunner:
                 )
             if self.env_config['ep_thermal_zones_variables']:
                 # Transform the list of names in Tuples
-                thermal_zone_thermal_zone_var_handles:Dict = self.thermal_zone_var_handles[thermal_zone]
+                thermal_zone_var_handles:Dict = self.thermal_zone_var_handles[thermal_zone]
                 obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_variable_value(state_argument, handle)
                         for key, handle
-                        in thermal_zone_thermal_zone_var_handles.items()
+                        in thermal_zone_var_handles.items()
                     }
                 )
             if self.env_config['ep_object_variables']:
