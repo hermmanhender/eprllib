@@ -49,14 +49,14 @@ class EnvConfig:
         self.use_one_day_weather_prediction: bool = False
 
         # actions
-        self.action_fn: ActionFunction = ActionFunction
+        self.action_fn: ActionFunction = ActionFunction()
 
         # rewards
-        self.reward_fn: RewardFunction = RewardFunction
+        self.reward_fn: RewardFunction = RewardFunction()
 
         # functionalities
         self.cut_episode_len: int = 1
-        self.episode_fn: EpisodeFunction = EpisodeFunction
+        self.episode_fn: EpisodeFunction = EpisodeFunction()
     
     def generals(
         self, 
@@ -95,7 +95,7 @@ class EnvConfig:
 
         Args:
             agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents 
-            involved in the environment. The mandatory components of the agent are: ep_actuator_configuration, 
+            involved in the environment. The mandatory components of the agent are: ep_actuator_config, 
             thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
         """
         self.agents_config = agents_config
@@ -182,7 +182,7 @@ class EnvConfig:
     
     def actions(
         self,
-        action_fn: ActionFunction = ActionFunction,
+        action_fn: ActionFunction = ActionFunction(),
         ):
         """
         This method is used to modify the actions configuration of the environment.
@@ -197,7 +197,7 @@ class EnvConfig:
 
     def rewards(
         self,
-        reward_fn: RewardFunction = RewardFunction,
+        reward_fn: RewardFunction = RewardFunction(),
         ):
         """
         This method is used to modify the rewards configuration of the environment.
@@ -210,7 +210,7 @@ class EnvConfig:
 
     def functionalities(
         self,
-        episode_fn: EpisodeFunction = EpisodeFunction,
+        episode_fn: EpisodeFunction = EpisodeFunction(),
         cut_episode_len: int = 0,
         ):
         """

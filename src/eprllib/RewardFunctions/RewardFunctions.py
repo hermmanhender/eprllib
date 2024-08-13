@@ -19,7 +19,7 @@ class RewardFunction:
         self,
         reward_fn_config: Dict[str,Any]
     ):
-        self.reward_config = reward_fn_config
+        self.reward_fn_config = reward_fn_config
     
     def calculate_reward(
         self,

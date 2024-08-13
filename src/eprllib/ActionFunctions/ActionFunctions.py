@@ -21,8 +21,7 @@ class ActionFunction:
         them in the environment.
 
         Args:
-            agents_config (Dict): This tale the configuration of the agents in the EnvConfig class.
-            _agent_ids (Set): Agent ids in the environment.
+            action_fn_config (Dict[str,Any]): Configuration for the action transformer function.
         """
         self.action_fn_config = action_fn_config
     
