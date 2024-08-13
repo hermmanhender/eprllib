@@ -51,159 +51,268 @@ be calculated in Erl. This control leads to a constant volume system that
 cycles in an attempt to control the zone conditions. In practice, it can 
 achieve relatively good control when loads do not exceed the available capacity.
 """
+if __name__ == '__main__':
+    # import the necessary libraries
+    from typing import Dict, Any
+    from tempfile import TemporaryDirectory
+    import ray
+    from ray import air, tune
+    from ray.tune import register_env
+    from ray.rllib.algorithms.ppo.ppo import PPOConfig
+    from ray.rllib.policy.policy import PolicySpec
+    from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
+    from eprllib.Env.EnvConfig import EnvConfig, env_config_to_dict
+    from eprllib.ActionFunctions.DualSetPointThermostat import DualSetPointThermostat
+    from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 
-# import the necessary libraries
-import time
-from tempfile import TemporaryDirectory
-from gymnasium.spaces import Discrete
-import ray
-from ray import air, tune
-from ray.tune import register_env
-from ray.rllib.algorithms.dqn.dqn import DQNConfig
-from ray.rllib.policy.policy import PolicySpec
-from eprllib.env.multiagent.EnergyPlusEnvironment import EnergyPlusEnv_v0
-from eprllib.tools import ActionTransformers, rewards, utils
+    # Define a custom reward function
+    class EnergyTemperatureReward(RewardFunction):
+        def __init__(
+            self,
+            reward_fn_config: Dict[str,Any]
+        ):
+            super().__init__(reward_fn_config)
+            self.agents = {agent for agent in reward_fn_config.keys()}
+            
+            self.beta: Dict[str,float] = {agent: None for agent in self.agents}
+            self.T_interior_name: Dict[str,str] = {agent: None for agent in self.agents}
+            self.cooling_name: Dict[str,str] = {agent: None for agent in self.agents}
+            self.heating_name: Dict[str,str] = {agent: None for agent in self.agents}
+            
+            for agent in self.agents:
+                self.beta[agent] = reward_fn_config[agent]['beta']
+                self.T_interior_name[agent] = reward_fn_config[agent]['T_interior_name']
+                self.cooling_name[agent] = reward_fn_config[agent]['cooling_name']
+                self.heating_name[agent] = reward_fn_config[agent]['heating_name']
 
-# define the eprllib configuration
-env_config={
-    # === ENERGYPLUS OPTIONS === #
-    'epjson': "C:/EnergyPlusV23-2-0/ExampleFiles/RefBldgSmallOfficeNew2004_Chicago.idf",
-    "epw_training": "C:/EnergyPlusV23-2-0/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
-    "epw": "C:/EnergyPlusV23-2-0/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
-    'output': TemporaryDirectory("output","eprllib",'path_to_outputs_folder'),
-    'ep_terminal_output': False,
-    
-    # === EXPERIMENT OPTIONS === #
-    'is_test': False,
-    
-    # === ENVIRONMENT OPTIONS === #
-    'action_space': Discrete(4),
-    'action_transformer': ActionTransformers.thermostat_dual,
-    'reward_function': rewards.PPD_Energy_reward,
-    "ep_variables":{
-        "To": ("Site Outdoor Air Drybulb Temperature", "Environment"),
-        "Ti": ("Zone Mean Air Temperature", "Core_ZN"),
-        "v": ("Site Wind Speed", "Environment"),
-        "d": ("Site Wind Direction", "Environment"),
-        "RHo": ("Site Outdoor Air Relative Humidity", "Environment"),
-        "RHi": ("Zone Air Relative Humidity", "Core_ZN"),
-        "pres": ("Site Outdoor Air Barometric Pressure", "Environment"),
-        "occupancy": ("Zone People Occupant Count", "Core_ZN"),
-        "ppd": ("Zone Thermal Comfort Fanger Model PPD", "Core_ZN People")
-    },
-    "ep_meters": {
-        "heating_meter": "Heating:Electricity: Core_ZN",
-        "cooling_meter": "Cooling:Electricity: Core_ZN",
-    },
-    "ep_actuators": {
-        "cooling_setpoint": ("Zone Temperature Control", "Cooling Setpoint", "Core_ZN"),
-        "heating_serpoint": ("Zone Temperature Control", "Heating Setpoint", "Core_ZN"),
-    },
-    'time_variables': [
-        'hour',
-        'day_of_year',
-        'day_of_the_week',
-        ],
-    'weather_variables': [
-        'is_raining',
-        'sun_is_up',
-        "today_weather_beam_solar_at_time",
-        ],
-    "infos_variables": ["ppd", 'heating_meter', 'cooling_meter'],
-    "no_observable_variables": ["ppd"],
-    
-    # === OPTIONAL === #
-    "timeout": 10,
-    'beta_reward': 0.5,
-    "weather_prob_days": 2
-}
+        def calculate_reward(
+        self,
+        infos: Dict[str,Dict[str,Any]] = None
+        ) -> Dict[str,float]:
+            """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+            amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
+            divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
+            of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
+            Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
 
-# inicialize ray server and after that register the environment
-ray.init()
-register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
+            Args:
+                self (Environment): RLlib environment.
+                obs (dict): Zone Mean Air Temperature for the Thermal Zone in °C.
+                infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
 
-# configurate the algorithm
-def policy_mapping_fn(agent_id, episode, worker, **kwargs):
-    return "shared_policy"
-
-algo = DQNConfig().training(
-    # === General Algo Configs === #
-    gamma = 0.99,
-    lr = 0.01,
-    grad_clip = 40,
-    grad_clip_by = 'global_norm',
-    train_batch_size = 256,
-    model = {
-        "fcnet_hiddens": [256,256,256],
-        "fcnet_activation": "relu",
+            Returns:
+                float: reward normalize value
+            """
+            # dictionary to save the reward values of each agent.
+            reward_dict = {agent: 0. for agent in self.agents}
+            
+            # asign the ThermalZone values above defined to each agent
+            for agent in self.agents:
+                T_interior = infos[agent][self.T_interior_name[agent]]
+                cooling_meter = infos[agent][self.cooling_name[agent]]
+                heating_meter = infos[agent][self.heating_name[agent]]
+                    
+                rew1 = -(1-self.beta[agent])*(T_interior-22)**2
+                rew2 = -self.beta[agent]*(cooling_meter + heating_meter)
+                
+                reward_dict[agent] = rew1 + rew2
+                    
+            return reward_dict
+        
+        
+    reward_fn_config = {
+        "Heating Thermostat": {
+            'beta': 0.5,
+            'T_interior_name': "Zone Mean Air Temperature",
+            'cooling_name': "Cooling:Electricity",
+            'heating_name': "Heating:Electricity",
         },
-    optimizer = {},
-    # === DQN Configs === #
-    num_atoms = 100,
-    v_min = -343,
-    v_max = 0,
-    noisy = True,
-    sigma0 = 0.7,
-    dueling = True,
-    hiddens = [256],
-    double_q = True,
-    n_step = 12,
-    replay_buffer_config = {
-        '_enable_replay_buffer_api': True,
-        'type': 'MultiAgentPrioritizedReplayBuffer',
-        'capacity': 5000000,
-        'prioritized_replay_alpha': 0.7,
-        'prioritized_replay_beta': 0.6,
-        'prioritized_replay_eps': 1e-6,
-        'replay_sequence_length': 1,
+        "Cooling Thermostat": {
+            'beta': 0.5,
+            'T_interior_name': "Zone Mean Air Temperature",
+            'cooling_name': "Cooling:Electricity",
+            'heating_name': "Heating:Electricity",
         },
-    categorical_distribution_temperature = 0.5,
-).environment(
-    env="EPEnv",
-    env_config=env_config,
-).framework(
-    framework = 'torch',
-).rollouts(
-    num_rollout_workers = 7,
-    create_env_on_local_worker=True,
-    rollout_fragment_length = 'auto',
-    enable_connectors = True,
-    num_envs_per_worker=1,
-).experimental(
-    _enable_new_api_stack = False,
-).multi_agent(
-    policies = {
-        'shared_policy': PolicySpec(),
-    },
-    policy_mapping_fn = policy_mapping_fn,
-).resources(
-    num_gpus = 0,
-)
-algo.exploration(
-    exploration_config={
-        "type": "EpsilonGreedy",
-        "initial_epsilon": 1.,
-        "final_epsilon": 0.,
-        "epsilon_timesteps": 6*24*365*100,
     }
-)
+    reward_fn = EnergyTemperatureReward(reward_fn_config)
 
-# init the training loop
-tune.Tuner(
-    "DQN",
-    tune_config=tune.TuneConfig(
-        mode="max",
-        metric="episode_reward_mean",
-    ),
-    run_config=air.RunConfig(
-        stop={"episodes_total": 200},
-        checkpoint_config=air.CheckpointConfig(
-            checkpoint_at_end = True,
-            checkpoint_frequency = 10,
+    # Use a build-in action function
+    action_fn_config = {
+        "agents_type": {
+            "Heating Thermostat": 2,
+            "Cooling Thermostat": 1
+        },
+    }
+    action_fn = DualSetPointThermostat(action_fn_config)
+
+    # Define the environment configuration
+    RefBldgSallOfficeNew2004_Chicago = EnvConfig()
+    RefBldgSallOfficeNew2004_Chicago.generals(
+        epjson_path = "C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/tests/ExampleFiles/RefBldgSmallOfficeNew2004_Chicago.idf", 
+        epw_path = "C:/Users/grhen/Documents/GitHub/natural_ventilation_EP_RLlib/tests/WeatherData/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw",
+        output_path = TemporaryDirectory("_output","eprllib_test_").name,
+        ep_terminal_output = True
+    )
+    RefBldgSallOfficeNew2004_Chicago.agents(
+        agents_config = {
+            "Heating Thermostat": {
+                "ep_actuator_config": ("Zone Temperature Control", "Heating Setpoint", "Core_ZN"),
+                "thermal_zone": "Core_ZN",
+                "thermal_zone_indicator": 1,
+                "actuator_type": 2,
+                "agent_indicator": 1
+            },
+            "Cooling Thermostat": {
+                "ep_actuator_config": ("Zone Temperature Control", "Cooling Setpoint", "Core_ZN"),
+                "thermal_zone": "Core_ZN",
+                "thermal_zone_indicator": 1,
+                "actuator_type": 1,
+                "agent_indicator": 2
+            }
+        }
+    )
+    RefBldgSallOfficeNew2004_Chicago.observations(
+        ep_environment_variables = [
+            "Site Outdoor Air Drybulb Temperature",
+            "Site Outdoor Air Relative Humidity",
+        ],
+        ep_thermal_zones_variables = [
+            "Zone Mean Air Temperature",
+        ],
+        ep_meters = [
+            "Cooling:Electricity",
+            "Heating:Electricity",
+        ],
+        infos_variables = {
+            "Core_ZN": [
+                "Zone Mean Air Temperature",
+                "Cooling:Electricity", 
+                "Heating:Electricity",
+            ],
+        },
+        use_agent_indicator = True,
+    )
+    RefBldgSallOfficeNew2004_Chicago.actions(
+        action_fn = action_fn
+    )
+    RefBldgSallOfficeNew2004_Chicago.rewards(
+        reward_fn = reward_fn
+    )
+    # transfor the config to a dictionary
+    env_config = env_config_to_dict(RefBldgSallOfficeNew2004_Chicago)
+
+    # inicialize ray server and after that register the environment
+    ray.init()
+    register_env(name="EPEnv", env_creator=lambda args: EnergyPlusEnv_v0(args))
+
+    algo = PPOConfig().training(
+        # General Algo Configs
+        gamma = 0.8,
+        # Float specifying the discount factor of the Markov Decision process.
+        lr = 0.0001,
+        # The learning rate (float) or learning rate schedule
+        model = {
+            "fcnet_hiddens": [64,64],
+            "fcnet_activation": "relu",
+            },
+        # Arguments passed into the policy model. See models/catalog.py for a full list of the 
+        # available model options.
+        train_batch_size = 8000,
+        # PPO Configs
+        lr_schedule = None, # List[List[int | float]] | None = NotProvided,
+        # Learning rate schedule. In the format of [[timestep, lr-value], [timestep, lr-value], …] 
+        # Intermediary timesteps will be assigned to interpolated learning rate values. A schedule 
+        # should normally start from timestep 0.
+        use_critic = True, # bool | None = NotProvided,
+        # Should use a critic as a baseline (otherwise don’t use value baseline; required for using GAE).
+        use_gae = True, # bool | None = NotProvided,
+        # If true, use the Generalized Advantage Estimator (GAE) with a value function, 
+        # see https://arxiv.org/pdf/1506.02438.pdf.
+        lambda_ = 0.2,
+        # The GAE (lambda) parameter.  The generalized advantage estimator for 0 < λ < 1 makes a 
+        # compromise between bias and variance, controlled by parameter λ.
+        use_kl_loss = True, # bool | None = NotProvided,
+        # Whether to use the KL-term in the loss function.
+        kl_coeff = 9,
+        # Initial coefficient for KL divergence.
+        kl_target = 0.05,
+        # Target value for KL divergence.
+        sgd_minibatch_size = 800, # if not tune_runner else tune.choice([48, 128]), # int | None = NotProvided,
+        # Total SGD batch size across all devices for SGD. This defines the minibatch size 
+        # within each epoch.
+        num_sgd_iter = 40, # if not tune_runner else tune.randint(30, 60), # int | None = NotProvided,
+        # Number of SGD iterations in each outer loop (i.e., number of epochs to execute per train batch).
+        shuffle_sequences = True, # bool | None = NotProvided,
+        # Whether to shuffle sequences in the batch when training (recommended).
+        vf_loss_coeff = 0.4,
+        # Coefficient of the value function loss. IMPORTANT: you must tune this if you set 
+        # vf_share_layers=True inside your model’s config.
+        entropy_coeff = 10,
+        # Coefficient of the entropy regularizer.
+        entropy_coeff_schedule = None, # List[List[int | float]] | None = NotProvided,
+        # Decay schedule for the entropy regularizer.
+        clip_param = 0.1, # if not tune_runner else tune.uniform(0.1, 0.4), # float | None = NotProvided,
+        # The PPO clip parameter.
+        vf_clip_param = 10, # if not tune_runner else tune.uniform(0, 50), # float | None = NotProvided,
+        # Clip param for the value function. Note that this is sensitive to the scale of the 
+        # rewards. If your expected V is large, increase this.
+        grad_clip = None, # float | None = NotProvided,
+        # If specified, clip the global norm of gradients by this amount.
+    ).environment(
+        env = "EPEnv",
+        env_config = env_config,
+    ).framework(
+        framework = 'torch',
+    ).fault_tolerance(
+        recreate_failed_env_runners = True,
+    ).env_runners(
+        num_env_runners = 0,
+        create_env_on_local_worker = True,
+        rollout_fragment_length = 'auto',
+        enable_connectors = True,
+        num_envs_per_env_runner = 1,
+        explore = True,
+        exploration_config = {
+            "type": "EpsilonGreedy",
+            "initial_epsilon": 1.,
+            "final_epsilon": 0.,
+            "epsilon_timesteps": 6*24*365*8,
+        },
+    ).multi_agent(
+        policies = {
+            'shared_policy': PolicySpec(),
+        },
+        policy_mapping_fn = lambda agent_id, episode, worker, **kwargs: "shared_policy",
+    ).reporting( # multi_agent config va aquí
+        min_sample_timesteps_per_iteration = 1000,
+    ).checkpointing(
+        export_native_model_files = True,
+    ).debugging(
+        log_level = "ERROR",
+    ).resources(
+        num_gpus = 0,
+    )
+
+    my_new_ppo = algo.build()
+    results = my_new_ppo.train()
+    ray.shutdown()
+
+    """# init the training loop
+    tune.Tuner(
+        "PPO",
+        tune_config=tune.TuneConfig(
+            mode="max",
+            metric="episode_reward_mean",
         ),
-    ),
-    param_space=algo.to_dict(),
-).fit()
+        run_config=air.RunConfig(
+            stop={"episodes_total": 16},
+            checkpoint_config=air.CheckpointConfig(
+                checkpoint_at_end = True,
+                checkpoint_frequency = 10,
+            ),
+        ),
+        param_space=algo.to_dict(),
+    ).fit()
 
-# close the ray server
-ray.shutdown()
+    # close the ray server
+    ray.shutdown()"""

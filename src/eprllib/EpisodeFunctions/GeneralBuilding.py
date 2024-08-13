@@ -2,8 +2,33 @@
 Generalization Building Model
 =============================
 
-This method is to create random simlpe buildings to train a policy that generalizate
-the control of different devices in a building.
+The `GeneralBuilding` class is a part of the `EpisodeFunction` module, which is responsible for 
+defining the properties and configurations of a building episode. The class has the following main 
+functionalities:
+
+1. **Building Dimensions** : The code generates random dimensions for the building, including height, 
+width, and length, within a specified range. It also calculates the building area and aspect ratio 
+based on these dimensions.
+2. **Window Area Ratio** : The code randomly assigns window area ratios for each side of the building 
+(north, east, south, and west) within a specified range.
+3. **Construction Materials** : The code defines the properties of the construction materials used 
+for the building's walls, roof, and internal mass. These properties include thickness, conductivity, 
+density, specific heat, thermal absorptance, and solar absorptance. The values for these properties 
+are randomly generated within specified ranges.
+4. **Window Properties** : The code randomly assigns values for the window's U-factor and solar heat
+gain coefficient within specified ranges.
+5. **Internal Mass** : The code randomly assigns surface areas for the internal mass components of the 
+building.
+6. **HVAC Capacity** : The code randomly sets the maximum sensible heating and total cooling capacities 
+for the HVAC system within specified ranges.
+
+The code reads an initial EnergyPlus JSON (epJSON) file and modifies its properties based on the randomly 
+generated values. This modified epJSON object can then be used to simulate the building's energy performance 
+using EnergyPlus.
+
+It's important to note that the code uses random number generation extensively to create variations in the 
+building properties for each episode. This approach is likely used for training or testing purposes in the 
+context of a reinforcement learning environment.
 """
 import os
 import json
@@ -16,6 +41,30 @@ class GeneralBuilding(EpisodeFunction):
     def __init__(
         self, episode_fn_config:Dict[str,Any]
     ):
+        """
+        This method initialize the GeneralBuilding class. It reads the initial epJSON file and
+        modifies its properties based on the randomly generated values.
+
+        The episode_fn_config dictionary should contain the following keys:
+        - epjson_files_folder_path (str): The path to the folder containing the epJSON files.
+        - epw_files_folder_path (str): The path to the folder containing the EPW weather files.
+
+        The method calls the parent class's __init__ method and initializes the class attributes
+        based on the provided episode_fn_config dictionary.
+        
+        If you set `EnvConfig.generals(epjson_path='auto')` the default GeneralBuildingModel epJSON
+        file is called.
+
+        Example:
+            episode_fn_config = {
+                'epjson_files_folder_path': 'path/to/epjson/files',
+                'epw_files_folder_path': 'path/to/epw/files'
+            }
+            episode_fn = GeneralBuilding(episode_fn_config)
+
+        Args:
+            episode_fn_config (Dict[str,Any]): Dictionary to configurate the episode_fn.
+        """
         super().__init__(episode_fn_config)
         self.epjson_files_folder_path: str = episode_fn_config['epjson_files_folder_path']
         self.epw_files_folder_path: str = episode_fn_config['epw_files_folder_path']
@@ -28,7 +77,10 @@ class GeneralBuilding(EpisodeFunction):
         Return:
             dict: The method returns the env_config with modifications.
         """
+        
         epjson_path: str = env_config['epjson_path']
+        if epjson_path in ["auto", None]:
+            epjson_path = "src/eprllib/files/GeneralBuildinModel/model_1.epJSON"
         # Establish the epJSON Object, it will be manipulated to modify the building model.
         with open(epjson_path) as file:
             epJSON_object: dict = json.load(file)
@@ -128,7 +180,11 @@ class GeneralBuilding(EpisodeFunction):
             if env_config['reward_fn_config'].get('heating_energy_ref', False):
                 env_config['reward_fn_config']['heating_energy_ref'] = E_heat_ref*number_of_timesteps_per_hour*3600
         
-                
+        # Implementation of a random number of agent indicator and thermal zone
+        for agent in [agent for agent in env_config['agents_config'].keys()]:
+            env_config['agents_config'][agent]['agent_indicator'] = np.random.randint(0,50)
+            env_config['agents_config'][agent]['thermal_zone_indicator'] = np.random.randint(0,50)
+
         # Select the schedule file for loads
         env_config = random_weather_config(env_config, self.epw_files_folder_path)
         
