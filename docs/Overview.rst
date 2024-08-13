@@ -32,8 +32,8 @@ Usage
 -----
 
 1. Import eprllib.
-2. Configure your custom or build-in `RewardFunction <RewardFunction>`_, `ActionFunction <ActionFunction>`_ and 
-   `EpisodeFunction <EpisodeFunction>`_.
+2. Configure your custom or build-in :doc:`RewardFunction`, :doc:`ActionFunction` and 
+   :doc:`EpisodeFunction`.
 3. Configure an EnvConfig object to feed EnergyPlus Python API and RLlib with the environment configuration based on the EnergyPlus model,
     specifying the parameters required (see eprllib.Env.EnvConfig).
 4. Configure `RLlib algorithm <https://docs.ray.io/en/latest/rllib/rllib-algorithms.html>`_ to train the policy.

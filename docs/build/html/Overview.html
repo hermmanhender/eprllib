@@ -421,7 +421,6 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#organization-of-the-documentation">Organization of the documentation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
 </ul>
@@ -437,7 +436,20 @@ document.write(`
                   
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h1>
-<p>Why eprllib was developed.</p>
+<p>There are various ways to classify control methods, one of which is learning-based approaches, such as
+Reinforcement Learning (RL). In scenarios where multiple agents operate simultaneously in an environment,
+they can take actions, receive observations, and obtain rewards from it. This interaction is utilized to
+learn an optimal policy that maps observations to actions. The general scheme of RL can be seen in the
+following image.</p>
+<a class="reference internal image-reference" href="_images/markov_decision_process.png"><img alt="_images/markov_decision_process.png" src="_images/markov_decision_process.png" style="width: 400px;" />
+</a>
+<p>During the learning process, an algorithm attempts to predict the cumulative reward that the agents will
+receive if they follow a certain policy. This prediction is represented by a Value function <cite>V(obs)</cite> or an
+Action-Value function <cite>Q(obs,act)</cite>. A modern approach to predicting the <cite>V</cite> or <cite>Q</cite> functions involves using deep neural
+networks (DNN) to approximate these values. When DNNs are used, the methodology is referred to as Deep
+Reinforcement Learning (DRL), and the DNN model is known as the policy.</p>
+<p>In <strong>eprllib</strong>, we use EnergyPlus to model the environment and RLlib as a framework for DRL to train, evaluate,
+save, and restore policies.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
 <p>To install EnergyPlusRL, simply use pip:</p>
@@ -445,17 +457,19 @@ document.write(`
 </pre></div>
 </div>
 </section>
-<section id="organization-of-the-documentation">
-<h2>Organization of the documentation<a class="headerlink" href="#organization-of-the-documentation" title="Link to this heading">#</a></h2>
-<p>The organization of the documentation.</p>
-</section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
 <ol class="arabic simple">
 <li><p>Import eprllib.</p></li>
-<li><p>Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).</p></li>
-<li><p>Configure RLlib algorithm to train the policy.</p></li>
-<li><p>Execute the training using RLlib or Tune.</p></li>
+<li><p>Configure your custom or build-in <a class="reference internal" href="RewardFunction.html"><span class="doc">Reward functions</span></a>, <a class="reference internal" href="ActionFunction.html"><span class="doc">Action space and action functions</span></a> and
+<a class="reference internal" href="EpisodeFunction.html"><span class="doc">Dinamic episode properties</span></a>.</p></li>
+<li><dl class="simple">
+<dt>Configure an EnvConfig object to feed EnergyPlus Python API and RLlib with the environment configuration based on the EnergyPlus model,</dt><dd><p>specifying the parameters required (see eprllib.Env.EnvConfig).</p>
+</dd>
+</dl>
+</li>
+<li><p>Configure <a class="reference external" href="https://docs.ray.io/en/latest/rllib/rllib-algorithms.html">RLlib algorithm</a> to train the policy.</p></li>
+<li><p>Execute the training using <a class="reference external" href="https://docs.ray.io/en/latest/rllib/index.html">RLlib</a> or <a class="reference external" href="https://docs.ray.io/en/latest/tune/index.html">Tune</a>.</p></li>
 </ol>
 </section>
 <section id="example-configuration">
@@ -469,12 +483,8 @@ document.write(`
 <span class="kn">import</span> <span class="nn">eprllib</span>
 <span class="kn">from</span> <span class="nn">eprllib.Env.EnvConfig</span> <span class="kn">import</span> <span class="n">EnvConfig</span><span class="p">,</span> <span class="n">env_config_to_dic</span>
 <span class="kn">from</span> <span class="nn">eprllib.Env.MultiAgent.EnergyPlusEnv</span> <span class="kn">import</span> <span class="n">EnergyPlusEnv_v0</span>
-</pre></div>
-</div>
-<ol class="arabic simple">
-<li><p>Configure EnvConfig to provide a EnergyPlus model based configuration, specifying the parameters required (see eprllib.Env.EnvConfig).</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">BuildingModel</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
+
+<span class="n">BuildingModel</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
 <span class="n">BuildingModel</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
     <span class="n">epjson_path</span><span class="o">=</span><span class="s1">&#39;path_to_epJSON_file&#39;</span><span class="p">,</span>
     <span class="n">epw_path</span><span class="o">=</span><span class="s1">&#39;path_to_EPW_file&#39;</span><span class="p">,</span>
@@ -492,12 +502,8 @@ document.write(`
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="3">
-<li><p>Configure RLlib algorithm to train the policy.</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start a Ray server.</span>
+
+<span class="c1"># Start a Ray server.</span>
 <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
 <span class="c1"># Register the environment.</span>
 <span class="n">register_env</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">EnergyPlusEnv_v0</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
@@ -507,12 +513,8 @@ document.write(`
     <span class="n">env</span> <span class="o">=</span> <span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span>
     <span class="n">env_config</span> <span class="o">=</span> <span class="n">env_config_to_dict</span><span class="p">(</span><span class="n">BuildingModel</span><span class="p">)</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="4">
-<li><p>Execute the training using RLlib or Tune.</p></li>
-</ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train the policy with Tune.</span>
+
+<span class="c1"># Train the policy with Tune.</span>
 <span class="n">tune</span><span class="o">.</span><span class="n">Tuner</span><span class="p">(</span>
     <span class="s1">&#39;PPO&#39;</span><span class="p">,</span>
     <span class="n">tune_config</span><span class="o">=</span><span class="n">tune</span><span class="o">.</span><span class="n">TuneConfig</span><span class="p">(</span>
@@ -575,7 +577,6 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#organization-of-the-documentation">Organization of the documentation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
 </ul>
