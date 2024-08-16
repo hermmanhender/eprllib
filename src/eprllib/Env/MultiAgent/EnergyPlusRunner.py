@@ -300,6 +300,8 @@ class EnergyPlusRunner:
                         self.obs_keys.append('actuator_state')
                     if self.env_config['use_agent_indicator']:
                         self.obs_keys.append('agent_indicator')
+                    if self.env_config['use_thermal_zone_indicator']:
+                        self.obs_keys.append('thermal_zone_indicator')
                     if self.env_config['use_agent_type']:
                         self.obs_keys.append('agent_type')
                 # ==FIN DEL LOOP DE OBSERVACIONES==
