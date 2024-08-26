@@ -285,26 +285,26 @@ class EnergyPlusRunner:
                         })
                 obs_tz[thermal_zone].update(weather_pred)
                 
-                # Set the variables in the infos dict before to delete from the obs dict.
-                if self.env_config['infos_variables']:
-                    infos_tz[thermal_zone] = {variable: obs_tz[thermal_zone][variable] for variable in self.env_config['infos_variables'][thermal_zone]}
-                # after infos assignation, delete not observable variables
-                if self.env_config['no_observable_variables']:
-                    for variable in self.env_config['no_observable_variables'][thermal_zone]:
-                        del obs_tz[thermal_zone][variable]
-                
-                if self.first_observation:
-                    self.obs_keys = [key for key in obs_tz[thermal_zone].keys()]
-                    self.infos_keys = [key for key in infos_tz[thermal_zone].keys()]
-                    if self.env_config['use_actuator_state']:
-                        self.obs_keys.append('actuator_state')
-                    if self.env_config['use_agent_indicator']:
-                        self.obs_keys.append('agent_indicator')
-                    if self.env_config['use_thermal_zone_indicator']:
-                        self.obs_keys.append('thermal_zone_indicator')
-                    if self.env_config['use_agent_type']:
-                        self.obs_keys.append('agent_type')
-                # ==FIN DEL LOOP DE OBSERVACIONES==
+            # Set the variables in the infos dict before to delete from the obs dict.
+            if self.env_config['infos_variables']:
+                infos_tz[thermal_zone] = {variable: obs_tz[thermal_zone][variable] for variable in self.env_config['infos_variables'][thermal_zone]}
+            # after infos assignation, delete not observable variables
+            if self.env_config['no_observable_variables']:
+                for variable in self.env_config['no_observable_variables'][thermal_zone]:
+                    del obs_tz[thermal_zone][variable]
+            
+            if self.first_observation:
+                self.obs_keys = [key for key in obs_tz[thermal_zone].keys()]
+                self.infos_keys = [key for key in infos_tz[thermal_zone].keys()]
+                if self.env_config['use_actuator_state']:
+                    self.obs_keys.append('actuator_state')
+                if self.env_config['use_agent_indicator']:
+                    self.obs_keys.append('agent_indicator')
+                if self.env_config['use_thermal_zone_indicator']:
+                    self.obs_keys.append('thermal_zone_indicator')
+                if self.env_config['use_agent_type']:
+                    self.obs_keys.append('agent_type')
+            # ==FIN DEL LOOP DE OBSERVACIONES==
                 
         # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
         
