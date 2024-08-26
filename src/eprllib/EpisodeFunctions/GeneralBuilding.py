@@ -181,9 +181,12 @@ class GeneralBuilding(EpisodeFunction):
                 env_config['reward_fn_config']['heating_energy_ref'] = E_heat_ref*number_of_timesteps_per_hour*3600
         
         # Implementation of a random number of agent indicator and thermal zone
+        agent_indicator_init = np.random.randint(0,50)
+        thermal_zone_indicator = np.random.randint(0,50)
         for agent in [agent for agent in env_config['agents_config'].keys()]:
-            env_config['agents_config'][agent]['agent_indicator'] = np.random.randint(0,50)
-            env_config['agents_config'][agent]['thermal_zone_indicator'] = np.random.randint(0,50)
+            env_config['agents_config'][agent]['agent_indicator'] = agent_indicator_init
+            env_config['agents_config'][agent]['thermal_zone_indicator'] = thermal_zone_indicator
+            agent_indicator_init += 1
 
         # Select the schedule file for loads
         env_config = random_weather_config(env_config, self.epw_files_folder_path)
