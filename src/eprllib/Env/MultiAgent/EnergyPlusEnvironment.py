@@ -171,12 +171,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # environment present a terminal state.
         terminated = {}
         truncated = {}
-        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: None
+        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: 0
         cut_episode_len: int = self.env_config['cut_episode_len']
         if cut_episode_len == 0:
             self.truncateds = False
         else:
-            cut_episode_len_timesteps = cut_episode_len * 24*self.env_config['num_time_steps_in_hour']
+            cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
