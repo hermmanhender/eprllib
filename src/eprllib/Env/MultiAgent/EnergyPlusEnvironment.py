@@ -183,14 +183,13 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
         
+        # check for simulation errors.
+        if self.energyplus_runner.failed():
+            self.terminateds = True
+            raise Exception('Simulation in EnergyPlus fallied.')
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
         if self.energyplus_runner.simulation_complete:
-            # check for simulation errors.
-            if self.energyplus_runner.failed():
-                raise Exception('Simulation in EnergyPlus fallied.')
-                
-            
             # if the simulation is complete, the episode is ended.
             self.terminateds = True
             # we use the last observation as a observation for the timestep.
@@ -202,7 +201,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         else:
             try:
                 # Send the action to the EnergyPlus Runner flow.
-                self.act_queue.put(action,timeout=timeout)
+                self.act_queue.put(action)
                 self.energyplus_runner.act_event.set()
                 # Get the return observation and infos after the action is applied.
                 self.energyplus_runner.obs_event.wait(timeout=timeout)
@@ -220,13 +219,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 obs = self.last_obs
                 infos = self.last_infos
         
-        # Raise an exception if the episode is faulty.
-        if self.energyplus_runner.failed():
-            self.terminateds = True
-            raise Exception('Simulation in EnergyPlus fallied.')
-        
         # Calculate the reward in the timestep
-        
         reward_dict = self.reward_fn.calculate_reward(infos)
         
         terminated["__all__"] = self.terminateds
