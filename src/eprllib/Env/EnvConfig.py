@@ -47,6 +47,7 @@ class EnvConfig:
         self.use_building_properties: bool = False
         self.building_properties: Dict[str,Dict[str,float]] = NotImplemented
         self.use_one_day_weather_prediction: bool = False
+        self.prediction_hours: int = 24
 
         # actions
         self.action_fn: ActionFunction = ActionFunction({})
@@ -117,6 +118,7 @@ class EnvConfig:
         use_building_properties: Optional[bool] = False,
         building_properties: Optional[Dict[str,Dict[str,float]]] = NotImplemented,
         use_one_day_weather_prediction: Optional[bool] = False,
+        prediction_hours: int = 24
         ):
         """
         This method is used to modify the observations configuration of the environment.
@@ -171,6 +173,11 @@ class EnvConfig:
         self.use_building_properties = use_building_properties
         self.building_properties = building_properties
         self.use_one_day_weather_prediction = use_one_day_weather_prediction
+        if prediction_hours <= 0 or prediction_hours > 24:
+            self.prediction_hours = 24
+            raise ValueError(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
+        else:
+            self.prediction_hours = prediction_hours
         self.ep_environment_variables = ep_environment_variables
         self.ep_thermal_zones_variables = ep_thermal_zones_variables
         self.ep_object_variables = ep_object_variables

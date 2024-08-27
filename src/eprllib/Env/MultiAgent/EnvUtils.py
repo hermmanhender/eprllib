@@ -22,16 +22,20 @@ def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
     """
     import sys
     
+    new_path = None
     if path is not None:
-        sys.path.insert(0, f"{path}")
-    else:  
+        new_path = path
+    else:
         os_platform = sys.platform
-        if os_platform == "linux":    
-            sys.path.insert(0, f"/usr/local/EnergyPlus-{version}")
+        if os_platform == "linux":
+            new_path = f"/usr/local/EnergyPlus-{version}"
         else:
-            sys.path.insert(0, f"C:/EnergyPlusV{version}")
-    
-    return print(f"EnergyPlus API path added: {sys.path[0]}")
+            new_path = f"C:/EnergyPlusV{version}"
+
+    # Check if the new path is already in sys.path
+    if new_path not in sys.path:
+        sys.path.insert(0, new_path)
+        print(f"EnergyPlus API path added: {new_path}")
     
 def actuators_to_agents(agent_config:Dict[str, List]) -> Tuple[List,List,Dict,Dict]:
     """
