@@ -277,6 +277,12 @@ class EnergyPlusRunner:
             if self.env_config['no_observable_variables']:
                 for variable in self.env_config['no_observable_variables'][thermal_zone]:
                     del obs_tz[thermal_zone][variable]
+            
+            # Print the obs_tz dictionary if one of the values are NaN or Inf
+            for key, value in obs_tz[thermal_zone].items():
+                if np.isnan(value).any() or np.isinf(value).any():
+                    print(f"NaN or Inf value found in obs_tz[{thermal_zone}][{key}]: {value}")
+            
             # ==FIN DEL LOOP DE OBSERVACIONES==    
             # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
         
@@ -343,7 +349,11 @@ class EnergyPlusRunner:
                     ),
                     dtype='float32'
                 )
-                
+            
+            # Print the agents_obs array if one of the values are NaN or Inf
+            if np.isnan(agents_obs[agent]).any() or np.isinf(agents_obs[agent]).any():
+                print(f"NaN or Inf value found in agents_obs[{agent}]:\n{agents_obs[agent]}")
+                    
             # Agent infos asignation
             agents_infos[agent] = infos_tz[agent_thermal_zone]
         

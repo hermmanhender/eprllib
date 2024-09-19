@@ -171,12 +171,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # environment present a terminal state.
         terminated = {}
         truncated = {}
-        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: None
+        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: 0
         cut_episode_len: int = self.env_config['cut_episode_len']
         if cut_episode_len == 0:
             self.truncateds = False
         else:
-            cut_episode_len_timesteps = cut_episode_len * 24*self.env_config['num_time_steps_in_hour']
+            cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
@@ -220,11 +220,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos = self.last_infos
         
         # Calculate the reward in the timestep
-        reward_dict = self.reward_fn.calculate_reward(infos)
+        reward_dict = self.reward_fn.calculate_reward(infos, self.truncateds)
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
-        
+        # if self.timestep % 100 == 0:
+        #     print(f"Action: {action}\nReward: {reward_dict}")
         return obs, reward_dict, terminated, truncated, infos
 
     def close(self):
