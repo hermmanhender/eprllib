@@ -6,7 +6,7 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import obs_space, discrete_action_space
+from eprllib.Env.MultiAgent.EnvUtils import obs_space_AMA, discrete_action_space
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
@@ -83,7 +83,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # asignation of environment action space.
         self.action_space = discrete_action_space()
         # asignation of the environment observation space.
-        self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
+        self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids)
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
         

@@ -22,16 +22,20 @@ def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
     """
     import sys
     
+    new_path = None
     if path is not None:
-        sys.path.insert(0, f"{path}")
-    else:  
+        new_path = path
+    else:
         os_platform = sys.platform
-        if os_platform == "linux":    
-            sys.path.insert(0, f"/usr/local/EnergyPlus-{version}")
+        if os_platform == "linux":
+            new_path = f"/usr/local/EnergyPlus-{version}"
         else:
-            sys.path.insert(0, f"C:/EnergyPlusV{version}")
-    
-    return print(f"EnergyPlus API path added: {sys.path[0]}")
+            new_path = f"C:/EnergyPlusV{version}"
+
+    # Check if the new path is already in sys.path
+    if new_path not in sys.path:
+        sys.path.insert(0, new_path)
+        print(f"EnergyPlus API path added: {new_path}")
     
 def actuators_to_agents(agent_config:Dict[str, List]) -> Tuple[List,List,Dict,Dict]:
     """
@@ -159,6 +163,78 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
         
     # construct the observation space.
     return Box(float("-inf"), float("inf"), (obs_space_len,))
+
+def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set, n_agents:int=20):
+    """
+    This method construct the observation space of the environment.
+
+    Args:
+        env_config (Dict): The environment configuration dictionary.
+
+    Returns:
+        space.Box: The observation space of the environment.
+    """
+    
+    obs_space_len = 0
+    
+    # actuator state.
+    if env_config['use_actuator_state']:
+        obs_space_len += 1
+        
+    # agent_indicator.
+    if env_config['use_agent_indicator']:
+        obs_space_len += 1
+        
+    # thermal_zone_indicator
+    if env_config['use_thermal_zone_indicator']:
+        obs_space_len += 1
+        
+    # agent type.
+    if env_config['use_agent_type']:
+        obs_space_len += 1
+        
+    # building properties.
+    if env_config['use_building_properties']:
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len += len([key for key in env_config['building_properties'][thermal_zone_name].keys()])
+        
+    # weather prediction.
+    if env_config['use_one_day_weather_prediction']:
+        obs_space_len += 24*6
+        
+    # variables and meters.
+    if env_config['ep_environment_variables']:
+        obs_space_len += len(env_config['ep_environment_variables'])
+    
+    if env_config['ep_thermal_zones_variables']:
+        obs_space_len += len(env_config['ep_thermal_zones_variables'])
+    
+    if env_config['ep_object_variables']:
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len += len([key for key in env_config['ep_object_variables'][thermal_zone_name].keys()])
+        
+    if env_config['ep_meters']:
+        obs_space_len += len(env_config['ep_meters'])
+        
+    if env_config['time_variables']:
+        obs_space_len += len(env_config['time_variables'])
+        
+    if env_config['weather_variables']:
+        obs_space_len += len(env_config['weather_variables'])
+        
+    # discount the not observable variables.
+    if env_config['no_observable_variables']:
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len -= len(env_config['no_observable_variables'][thermal_zone_name])
+        
+    # construct the observation space.
+    return Box(float("-inf"), float("inf"), ((obs_space_len*n_agents)+n_agents,))
 
 def continuous_action_space():
     """
