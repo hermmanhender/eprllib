@@ -41,7 +41,7 @@ class EnvConfig:
         self.infos_variables: Dict[str,List]|bool = False
         self.no_observable_variables: Dict[str,List]|bool = False
         self.use_actuator_state: bool = False
-        self.use_agent_indicator: bool = False
+        self.use_agent_indicator: bool = True
         self.use_thermal_zone_indicator: bool = False
         self.use_agent_type: bool = False
         self.use_building_properties: bool = False
@@ -112,7 +112,7 @@ class EnvConfig:
         infos_variables: Dict[str,List[str]]|bool = False,
         no_observable_variables: Dict[str,List[str]]|bool = False,
         use_actuator_state: Optional[bool] = False,
-        use_agent_indicator: Optional[bool] = False,
+        use_agent_indicator: Optional[bool] = True,
         use_thermal_zone_indicator: Optional[bool] = False,
         use_agent_type: Optional[bool] = False,
         use_building_properties: Optional[bool] = False,
@@ -125,7 +125,7 @@ class EnvConfig:
 
         Args:
             use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
-            use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. 
+            use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. # DEPRECATED_VALUE
             use_thermal_zone_indicator (bool): define if thermal zone indicator will be used as an observation for the agent.
             This is recommended True for muilti-agent usage and False for single agent case.
             use_agent_type (bool): define if the agent/actuator type will be used. This is recommended for different 

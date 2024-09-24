@@ -21,10 +21,12 @@ EP_API_add_path()
 from pyenergyplus.api import EnergyPlusAPI
 api = EnergyPlusAPI()
 
-class EnergyPlusRunner:
+class EnergyPlusRunnerAMA:
     """
     This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
+    The AMA means "Augmented Multi Agent" and focus on augmentation of the observation space to include 
+    the precense of 100 agents and 50 thermal zones.
     """
     def __init__(
         self,
@@ -34,7 +36,9 @@ class EnergyPlusRunner:
         act_queue: Queue,
         infos_queue: Queue,
         _agent_ids: Set,
+        _agent_indicator: Dict,
         _thermal_zone_ids: Set,
+        _thermal_zone_indicator: Dict,
         ) -> None:
         """
         The object has an intensive interaction with EnergyPlus Environment script, exchange information
@@ -58,7 +62,9 @@ class EnergyPlusRunner:
         self.act_queue = act_queue
         self.infos_queue = infos_queue
         self._agent_ids = _agent_ids
+        self._agent_indicator = _agent_indicator
         self._thermal_zone_ids = _thermal_zone_ids
+        self._thermal_zone_indicator = _thermal_zone_indicator
         
         # The queue events are generated (To sure the coordination with EnergyPlusEnvironment).
         self.obs_event = threading.Event()
@@ -301,20 +307,21 @@ class EnergyPlusRunner:
                 self.obs_keys.append('agent_type')
                 
         # Se asignan observaciones y infos a cada agente.
-        agents_obs = {agent: [] for agent in self._agent_ids}
         agents_infos = {agent: {} for agent in self._agent_ids}
         
+        ag_pool = set()
+        first_agent = True
         for agent in self._agent_ids:
             # Agent properties
             agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
             
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
+            ag_var = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
             # if apply, add the actuator state.
             if self.env_config['use_actuator_state']:
-                agents_obs[agent] = np.concatenate(
+                ag_var = np.concatenate(
                     (
-                        agents_obs[agent],
+                        ag_var,
                         [self.agent_actions[agent]],
                     ),
                     dtype='float32'
@@ -322,9 +329,9 @@ class EnergyPlusRunner:
             # if apply, add the agent indicator.
             if self.env_config['use_agent_indicator']:
                 agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
-                agents_obs[agent] = np.concatenate(
+                ag_var = np.concatenate(
                     (
-                        agents_obs[agent],
+                        ag_var,
                         [agent_indicator],
                     ),
                     dtype='float32'
@@ -332,9 +339,9 @@ class EnergyPlusRunner:
             # if apply, add the thermal zone indicator
             if self.env_config['use_thermal_zone_indicator']:
                 thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
-                agents_obs[agent] = np.concatenate(
+                ag_var = np.concatenate(
                     (
-                        agents_obs[agent],
+                        ag_var,
                         [thermal_zone_indicator],
                     ),
                     dtype='float32'
@@ -342,26 +349,53 @@ class EnergyPlusRunner:
             # if apply, add the agent type.
             if self.env_config['use_agent_type']:
                 agent_type = self.env_config['agents_config'][agent]['actuator_type']
-                agents_obs[agent] = np.concatenate(
+                ag_var = np.concatenate(
                     (
-                        agents_obs[agent],
+                        ag_var,
                         [agent_type],
                     ),
                     dtype='float32'
                 )
-            
-            # Print the agents_obs array if one of the values are NaN or Inf
-            if np.isnan(agents_obs[agent]).any() or np.isinf(agents_obs[agent]).any():
-                print(f"NaN or Inf value found in agents_obs[{agent}]:\n{agents_obs[agent]}")
-                    
+            if first_agent:
+                ag_var_len = len(ag_var)
+                first_agent = False
+            ag_pool.add(ag_var)
             # Agent infos asignation
             agents_infos[agent] = infos_tz[agent_thermal_zone]
+        
+        # Fill the obs with the rest of agents with zero obs.
+        for _ in range(21-len(self._agent_ids)):
+            ag_var = np.array([0]*ag_var_len, dtype='float32')
+            ag_pool.add(ag_var)
+        obs = np.array([])
+        for embedding in ag_pool:
+            obs = np.concatenate(
+                (
+                    obs,
+                    embedding
+                ),
+                dtype='float32'
+            )
+        agents_obs = {agent: [] for agent in self._agent_ids}
+        for agent in self._agent_ids:
+            if self.env_config['use_agent_indicator']:
+                agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                agent_id_vector = np.array([0]*20)
+                agent_id_vector[agent_indicator] = 1
+            agents_obs[agent] = np.concatenate(
+                (
+                    agent_id_vector,
+                    obs
+                ),
+                dtype='float32'
+            )
         
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(agents_obs)
         self.obs_event.set()
         self.infos_queue.put(agents_infos)
         self.infos_event.set()
+        
 
     def _collect_first_obs(self, state_argument):
         """
