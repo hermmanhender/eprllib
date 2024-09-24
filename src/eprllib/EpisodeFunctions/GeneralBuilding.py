@@ -33,7 +33,8 @@ context of a reinforcement learning environment.
 import os
 import json
 import numpy as np
-from typing import Dict, Any
+import pandas as pd
+from typing import Dict, Any, Tuple
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.Tools.Utils import building_dimension, inertial_mass, u_factor, random_weather_config
 
@@ -160,6 +161,13 @@ class GeneralBuilding(EpisodeFunction):
         for key in [key for key in epJSON_object["InternalMass"].keys()]:
             epJSON_object["InternalMass"][key]["surface_area"] = np.random.randint(10,40)
         
+        # RunPeriod of a random date
+        beging_month, beging_day, end_month, end_day = self.run_period(np.random.randint(1, 365-90), 90)
+        epJSON_object['RunPeriod']['Run Period 1']['begin_month'] = beging_month
+        epJSON_object['RunPeriod']['Run Period 1']['begin_day_of_month'] = beging_day
+        epJSON_object['RunPeriod']['Run Period 1']['end_month'] = end_month
+        epJSON_object['RunPeriod']['Run Period 1']['end_day_of_month'] = end_day
+        
         # The total inertial thermal mass is calculated.
         # env_config['building_properties']['inercial_mass'] = inertial_mass(epJSON_object)
         
@@ -170,15 +178,15 @@ class GeneralBuilding(EpisodeFunction):
         E_cool_ref = env_config['building_properties']['E_cool_ref'] = (3000 - 100)*np.random.random_sample() + 100
         E_heat_ref = env_config['building_properties']['E_heat_ref'] = (3000 - 100)*np.random.random_sample() + 100
         HVAC_names = [key for key in epJSON_object["ZoneHVAC:IdealLoadsAirSystem"].keys()]
-        number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
         for hvac in range(len(HVAC_names)):
             epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_sensible_heating_capacity"] = E_heat_ref
             epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = E_cool_ref
-        if env_config.get('reward_fn_config', False):
-            if env_config['reward_fn_config'].get('cooling_energy_ref', False):
-                env_config['reward_fn_config']['cooling_energy_ref'] = E_cool_ref*number_of_timesteps_per_hour*3600
-            if env_config['reward_fn_config'].get('heating_energy_ref', False):
-                env_config['reward_fn_config']['heating_energy_ref'] = E_heat_ref*number_of_timesteps_per_hour*3600
+        
+        number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
+        for agent in [agent for agent in env_config['agents_config'].keys()]:
+            env_config['reward_fn'].reward_fn_config[agent]['floor_size'] = w*l
+            env_config['reward_fn'].reward_fn_config[agent]['cooling_energy_ref'] = E_cool_ref*3600/number_of_timesteps_per_hour
+            env_config['reward_fn'].reward_fn_config[agent]['heating_energy_ref'] = E_heat_ref*3600/number_of_timesteps_per_hour
         
         # Implementation of a random number of agent indicator and thermal zone
         agent_indicator_init = np.random.randint(0,50)
@@ -188,9 +196,9 @@ class GeneralBuilding(EpisodeFunction):
             env_config['agents_config'][agent]['thermal_zone_indicator'] = thermal_zone_indicator
             agent_indicator_init += 1
 
-        # Select the schedule file for loads
+        # Select the weather site
         env_config = random_weather_config(env_config, self.epw_files_folder_path)
-        
+                
         # The new modify epjson file is writed in the results folder created by RLlib
         # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']
         if not os.path.exists(f"{self.epjson_files_folder_path}/models"):
@@ -202,4 +210,61 @@ class GeneralBuilding(EpisodeFunction):
             # The new modify epjson file is writed.
         
         return env_config
+    
+    def run_period(self, julian_day:int, days_period:int=28) -> Tuple[int,int,int,int]:
+        """
+        This function returns the begin and end date of the 'days_period' of simulation given a 'julian_day' between 1 and 365.
+        """
+        if julian_day < 1 or julian_day+days_period > 365:
+            raise ValueError('Julian day must be between 1 and (365-days_period)')
+        if days_period < 1:
+            raise ValueError('Days period must be greater than 0')
+        
+        # Declaration of variables
+        beging_month = 1
+        beging_day = 0
+        check_day = 0
+        max_day = self.max_day_in_month(beging_month)
+        
+        # Initial date
+        while True:
+            beging_day += 1
+            check_day += 1
+            if julian_day == check_day:
+                break
+            if beging_day >= max_day:
+                beging_day = 0
+                beging_month += 1
+                max_day = self.max_day_in_month(beging_month)
+        
+        # End date
+        end_month = beging_month
+        end_day = beging_day + days_period
+        while True:
+            if end_day > max_day:
+                end_day -= max_day
+                end_month += 1
+                max_day = self.max_day_in_month(end_month)
+            else:
+                break
+            
+        return beging_month, beging_day, end_month, end_day
+    
+    
+    def max_day_in_month(self, month:int) -> int:
+        """
+        This function returns the maximum number of days in a given month.
+        """
+        months_31 = [1,3,5,7,8,10,12]
+        months_30 = [4,6,9,11]
+        months_28 = [2]
+        if month in months_31:
+            max_day = 31
+        elif month in months_30:
+            max_day = 30
+        elif month in months_28:
+            max_day = 28
+        else:
+            raise ValueError('Invalid month')
+        return max_day
     
