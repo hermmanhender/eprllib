@@ -17,7 +17,7 @@ class RewardFunction:
     """
     def __init__(
         self,
-        reward_fn_config: Dict[str,Any]
+        reward_fn_config: Dict[str,Any] = {}
     ):
         self.reward_fn_config = reward_fn_config
     

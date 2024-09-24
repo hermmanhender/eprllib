@@ -22,14 +22,14 @@ class EnvConfig:
         This is the main object that it is used to relate the EnergyPlus model and the RLlib policy training execution.
         """
         # generals
-        self.epjson_path: str = ''
-        self.epw_path: str = ''
-        self.output_path: str = ''
+        self.epjson_path: str = NotImplemented
+        self.epw_path: str = NotImplemented
+        self.output_path: str = NotImplemented
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
 
         # agents
-        self.agents_config: Dict[str,Dict[str,Any]] = {}
+        self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
 
         # observations
         self.ep_environment_variables: List|bool = False
@@ -41,28 +41,29 @@ class EnvConfig:
         self.infos_variables: Dict[str,List]|bool = False
         self.no_observable_variables: Dict[str,List]|bool = False
         self.use_actuator_state: bool = False
-        self.use_agent_indicator: bool = False
+        self.use_agent_indicator: bool = True
         self.use_thermal_zone_indicator: bool = False
         self.use_agent_type: bool = False
         self.use_building_properties: bool = False
-        self.building_properties: Dict[str,Dict[str,float]] = {}
+        self.building_properties: Dict[str,Dict[str,float]] = NotImplemented
         self.use_one_day_weather_prediction: bool = False
+        self.prediction_hours: int = 24
 
         # actions
-        self.action_fn: ActionFunction = ActionFunction()
+        self.action_fn: ActionFunction = ActionFunction({})
 
         # rewards
-        self.reward_fn: RewardFunction = RewardFunction()
+        self.reward_fn: RewardFunction = RewardFunction({})
 
         # functionalities
         self.cut_episode_len: int = 1
-        self.episode_fn: EpisodeFunction = EpisodeFunction()
+        self.episode_fn: EpisodeFunction = EpisodeFunction({})
     
     def generals(
         self, 
-        epjson_path:str,
-        epw_path:str,
-        output_path:str,
+        epjson_path:str = NotImplemented,
+        epw_path:str = NotImplemented,
+        output_path:str = NotImplemented,
         ep_terminal_output:Optional[bool] = True,
         timeout:Optional[float] = 10.0
         ):
@@ -88,7 +89,7 @@ class EnvConfig:
         
     def agents(
         self, 
-        agents_config:Dict[str,Dict[str,Any]]
+        agents_config:Dict[str,Dict[str,Any]] = NotImplemented
         ):
         """
         This method is used to modify the agents configuration of the environment.
@@ -111,19 +112,20 @@ class EnvConfig:
         infos_variables: Dict[str,List[str]]|bool = False,
         no_observable_variables: Dict[str,List[str]]|bool = False,
         use_actuator_state: Optional[bool] = False,
-        use_agent_indicator: Optional[bool] = False,
+        use_agent_indicator: Optional[bool] = True,
         use_thermal_zone_indicator: Optional[bool] = False,
         use_agent_type: Optional[bool] = False,
         use_building_properties: Optional[bool] = False,
-        building_properties: Optional[Dict[str,Dict[str,float]]] = {},
+        building_properties: Optional[Dict[str,Dict[str,float]]] = NotImplemented,
         use_one_day_weather_prediction: Optional[bool] = False,
+        prediction_hours: int = 24
         ):
         """
         This method is used to modify the observations configuration of the environment.
 
         Args:
             use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
-            use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. 
+            use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. # DEPRECATED_VALUE
             use_thermal_zone_indicator (bool): define if thermal zone indicator will be used as an observation for the agent.
             This is recommended True for muilti-agent usage and False for single agent case.
             use_agent_type (bool): define if the agent/actuator type will be used. This is recommended for different 
@@ -171,6 +173,11 @@ class EnvConfig:
         self.use_building_properties = use_building_properties
         self.building_properties = building_properties
         self.use_one_day_weather_prediction = use_one_day_weather_prediction
+        if prediction_hours <= 0 or prediction_hours > 24:
+            self.prediction_hours = 24
+            raise ValueError(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
+        else:
+            self.prediction_hours = prediction_hours
         self.ep_environment_variables = ep_environment_variables
         self.ep_thermal_zones_variables = ep_thermal_zones_variables
         self.ep_object_variables = ep_object_variables
@@ -182,7 +189,7 @@ class EnvConfig:
     
     def actions(
         self,
-        action_fn: ActionFunction = ActionFunction(),
+        action_fn: ActionFunction = ActionFunction({}),
         ):
         """
         This method is used to modify the actions configuration of the environment.
@@ -197,7 +204,7 @@ class EnvConfig:
 
     def rewards(
         self,
-        reward_fn: RewardFunction = RewardFunction(),
+        reward_fn: RewardFunction = RewardFunction({}),
         ):
         """
         This method is used to modify the rewards configuration of the environment.
@@ -210,7 +217,7 @@ class EnvConfig:
 
     def functionalities(
         self,
-        episode_fn: EpisodeFunction = EpisodeFunction(),
+        episode_fn: EpisodeFunction = EpisodeFunction({}),
         cut_episode_len: int = 0,
         ):
         """
