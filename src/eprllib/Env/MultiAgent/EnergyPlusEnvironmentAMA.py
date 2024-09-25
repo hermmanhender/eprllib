@@ -7,7 +7,7 @@ from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
 from eprllib.Env.MultiAgent.EnvUtils import obs_space_AMA, discrete_action_space
-from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
+from eprllib.Env.MultiAgent.EnergyPlusRunnerAMA import EnergyPlusRunnerAMA
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 
@@ -137,7 +137,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             self.env_config = self.episode_fn.get_episode_config(self.env_config)
             
             # Start EnergyPlusRunner whith the following configuration.
-            self.energyplus_runner = EnergyPlusRunner(
+            self.energyplus_runner = EnergyPlusRunnerAMA(
                 episode=self.episode,
                 env_config=self.env_config,
                 obs_queue=self.obs_queue,
