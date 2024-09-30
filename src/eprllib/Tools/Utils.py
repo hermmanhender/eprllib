@@ -130,11 +130,11 @@ def inertial_mass_calculation(env_config:Dict) -> float:
     with open(env_config['epjson_path']) as file:
         epJSON_object: dict = json.load(file)
 
-    return inertial_mass(epJSON_object)
+    return effective_thermal_capacity(epJSON_object)
 
-def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
+def effective_thermal_capacity(epJSON_object:Dict[str,Dict]) -> float:
     """
-    The inertial_mass function calculates the total thermal mass of a building based 
+    The `effective_thermal_capacity` function calculates the total effective thermal capacity of a building based 
     on the construction materials and surface areas specified in an EnergyPlus JSON 
     object.
 
@@ -146,12 +146,12 @@ def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
         dictionaries containing the properties of each object instance.
 
     Returns:
-        float: The total thermal mass of the building in J/°C (Joules per degree Celsius). 
+        float: The total thermal capacity of the building in J/°C (Joules per degree Celsius). 
         The thermal mass represents the amount of heat energy required to raise the 
         temperature of the building's construction materials by one degree Celsius.
     """
     # se define una lista para almacenar
-    masas_termicas = []
+    Cdyn = []
     
     building_surfaces = []
     if epJSON_object.get("BuildingSurface:Detailed", False):
@@ -184,10 +184,10 @@ def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
         # se obtiene la densidad del materia: \rho[kg/m3]
         # se obtiene el calor específico del material: C[J/kg°C]
         # se calcula el volumen que ocupa el material: V[m3]=area*thickness
-        # se calcula la masa térmica: M[J/°C] = \rho[kg/m3] * C[J/kg°C] * V[m3]
+        # se calcula la capacidad térmica: M[J/°C] = \rho[kg/m3] * C[J/kg°C] * V[m3]
         
         # se establece un lazo para calcular la masa térmica de cada capa
-        m_surface = 0
+        Cdyn_surface = 0
         layers = [key for key in epJSON_object['Construction'][s_construction].keys()]
         for layer in layers:
             material = epJSON_object['Construction'][s_construction][layer]
@@ -197,17 +197,17 @@ def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
             )
             # se obtiene el espesor y la conductividad térmica del material de la capa
             if material_list == 'Material:NoMass' or material_list == 'Material:AirGap' or material_list == 'Material:InfraredTransparent' or material_list == 'WindowMaterial:Gas':
-                m_capa = 0
+                Cdyn_capa = 0
             else:
                 espesor_capa = epJSON_object[material_list][material]['thickness']
                 calor_especifico_capa = epJSON_object[material_list][material]['specific_heat']
                 densidad_capa = epJSON_object[material_list][material]['density']
-                m_capa = area * espesor_capa * calor_especifico_capa * densidad_capa
+                Cdyn_capa = (area * espesor_capa * densidad_capa) * calor_especifico_capa
 
             # se suma la resistencia de la superficie
-            m_surface += m_capa
+            Cdyn_surface += Cdyn_capa
         # se guarda la resistencia de la superficie
-        masas_termicas.append(m_surface)
+        Cdyn.append(Cdyn_surface)
     
     # se suma la masa interna asignada
     for surface in internal_mass_surfaces:
@@ -219,10 +219,10 @@ def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
         # se obtiene la densidad del materia: \rho[kg/m3]
         # se obtiene el calor específico del material: C[J/kg°C]
         # se calcula el volumen que ocupa el material: V[m3]=area*thickness
-        # se calcula la masa térmica: M[J/°C] = \rho[kg/m3] * C[J/kg°C] * V[m3]
+        # se calcula la capacidad térmica: M[J/°C] = \rho[kg/m3] * C[J/kg°C] * V[m3]
         
         # se establece un lazo para calcular la masa térmica de cada capa
-        m_surface = 0
+        Cdyn_surface = 0
         layers = [key for key in epJSON_object['Construction'][s_construction].keys()]
         for layer in layers:
             material = epJSON_object['Construction'][s_construction][layer]
@@ -232,24 +232,24 @@ def inertial_mass(epJSON_object:Dict[str,Dict]) -> float:
             )
             # se obtiene el espesor y la conductividad térmica del material de la capa
             if material_list == 'Material:NoMass' or material_list == 'Material:AirGap' or material_list == 'Material:InfraredTransparent' or material_list == 'WindowMaterial:Gas':
-                m_capa = 0
+                Cdyn_capa = 0
             else:
                 espesor_capa = epJSON_object[material_list][material]['thickness']
                 calor_especifico_capa = epJSON_object[material_list][material]['specific_heat']
                 densidad_capa = epJSON_object[material_list][material]['density']
-                m_capa = area * espesor_capa * calor_especifico_capa * densidad_capa
+                Cdyn_capa = (area * espesor_capa * densidad_capa) * calor_especifico_capa
 
             # se suma la resistencia de la superficie
-            m_surface += m_capa
+            Cdyn_surface += Cdyn_capa
         # se guarda la resistencia de la superficie
-        masas_termicas.append(m_surface)
+        Cdyn.append(Cdyn_surface)
     
     # Cálculo de la masa termica total
-    M_total = 0.
-    for m in range(0,len(masas_termicas)-1,1):
-        M_total += masas_termicas[m]
+    Cdyn_total = 0.
+    for m in range(0,len(Cdyn)-1,1):
+        Cdyn_total += Cdyn[m]
     
-    return M_total
+    return Cdyn_total
 
 def u_factor_calculation(env_config:Dict) -> float:
     """
