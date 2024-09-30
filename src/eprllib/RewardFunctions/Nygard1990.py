@@ -14,13 +14,7 @@ class Nygard1990(RewardFunction):
         reward_fn_config: Dict[str,Any]
         ) -> Dict[str,float]:
         """
-        This class implements the Henderson et al. (2024) reward function for the EnergyPlusEnv_v0 environment.
-        The reward function is divided into two components: energy demand penalty and comfort penalty. The energy 
-        demand penalty is based on the maximum energy demand for the entire episode, and the comfort penalty is 
-        based on the average PPD comfort metric for the entire episode. The reward function is normalized by 
-        dividing each term by the maximum value for the entire episode, and multiplying by a ponderation factor 
-        for the energy and (1-beta) for the comfort. Both terms are negatives, representing a penalti for demand 
-        energy and for generate discomfort.
+        _description_
 
         Args:
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
