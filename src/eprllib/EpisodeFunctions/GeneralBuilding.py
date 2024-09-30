@@ -36,7 +36,7 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Any, Tuple
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.Tools.Utils import building_dimension, inertial_mass, u_factor, random_weather_config
+from eprllib.Tools.Utils import building_dimension, effective_thermal_capacity, u_factor, random_weather_config
 
 class GeneralBuilding(EpisodeFunction):
     def __init__(
@@ -169,7 +169,7 @@ class GeneralBuilding(EpisodeFunction):
         epJSON_object['RunPeriod']['Run Period 1']['end_day_of_month'] = end_day
         
         # The total inertial thermal mass is calculated.
-        # env_config['building_properties']['inercial_mass'] = inertial_mass(epJSON_object)
+        env_config['building_properties']['Cdyn'] = effective_thermal_capacity(epJSON_object)
         
         # The global U factor is calculated.
         # env_config['building_properties']['construction_u_factor'] = u_factor(epJSON_object)
@@ -182,11 +182,11 @@ class GeneralBuilding(EpisodeFunction):
             epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_sensible_heating_capacity"] = E_heat_ref
             epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = E_cool_ref
         
-        number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
-        for agent in [agent for agent in env_config['agents_config'].keys()]:
-            env_config['reward_fn'].reward_fn_config[agent]['floor_size'] = w*l
-            env_config['reward_fn'].reward_fn_config[agent]['cooling_energy_ref'] = E_cool_ref*3600/number_of_timesteps_per_hour
-            env_config['reward_fn'].reward_fn_config[agent]['heating_energy_ref'] = E_heat_ref*3600/number_of_timesteps_per_hour
+        # number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
+        # for agent in [agent for agent in env_config['agents_config'].keys()]:
+        #     env_config['reward_fn'].reward_fn_config[agent]['floor_size'] = w*l
+        #     env_config['reward_fn'].reward_fn_config[agent]['cooling_energy_ref'] = E_cool_ref*3600/number_of_timesteps_per_hour
+        #     env_config['reward_fn'].reward_fn_config[agent]['heating_energy_ref'] = E_heat_ref*3600/number_of_timesteps_per_hour
         
         # Implementation of a random number of agent indicator and thermal zone
         agent_indicator_init = np.random.randint(0,50)
