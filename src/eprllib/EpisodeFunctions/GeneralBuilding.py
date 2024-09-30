@@ -169,7 +169,7 @@ class GeneralBuilding(EpisodeFunction):
         epJSON_object['RunPeriod']['Run Period 1']['end_day_of_month'] = end_day
         
         # The total inertial thermal mass is calculated.
-        env_config['building_properties']['Cdyn'] = effective_thermal_capacity(epJSON_object)
+        env_config['reward_fn'].reward_fn_config[agent]['Cdyn'] = effective_thermal_capacity(epJSON_object)
         
         # The global U factor is calculated.
         # env_config['building_properties']['construction_u_factor'] = u_factor(epJSON_object)
