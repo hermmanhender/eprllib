@@ -86,7 +86,7 @@ class Nygard1990(RewardFunction):
     truncated_flag: bool = False
     ) -> Dict[str,float]:
         """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
-        amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
+        amount of one week divide per the maximun reference energy demand and the average PMV comfort metric
         divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
         of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
         Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
@@ -132,7 +132,7 @@ class Nygard1990(RewardFunction):
         for agent in self.agents:
             if self.timestep % self.cut_reward_len_timesteps[agent] == 0 or truncated_flag:
                 
-                if len(self.ppd_dict[agent]) > 0:
+                if len(self.pmv_dict[agent]) > 0:
                     pmv_avg = sum(self.pmv_dict[agent])/len(self.pmv_dict[agent])
                     total_energy = sum(self.energy_dict[agent])
                     Cu = self.Cu(T_interior, self.Cdyn[agent], pmv_avg)
@@ -145,7 +145,7 @@ class Nygard1990(RewardFunction):
         # emptly the lists
         for agent in self.agents:
             if self.timestep % self.cut_reward_len_timesteps[agent] == 0 or truncated_flag:
-                self.ppd_dict = {agent: []}
+                self.pmv_dict = {agent: []}
                 self.energy_dict = {agent: []}
                 
         # Print the reward_dict if one of the values are NaN or Inf
