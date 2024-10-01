@@ -3,6 +3,7 @@
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
 Python API in the version 23.2.0.
 """
+import os
 import threading
 import numpy as np
 from queue import Queue
@@ -550,7 +551,7 @@ class EnergyPlusRunnerAMA:
             "-w",
             self.env_config["epw_path"],
             "-d",
-            f"{self.env_config['output_path']}/episode-{self.episode:08}",
+            f"{self.env_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}",
             self.env_config["epjson_path"]
         ]
         return eplus_args
