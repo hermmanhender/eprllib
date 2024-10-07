@@ -56,7 +56,7 @@ class EnvConfig:
         self.reward_fn: RewardFunction = RewardFunction({})
 
         # functionalities
-        self.cut_episode_len: int = 1
+        self.cut_episode_len: int = 0
         self.episode_fn: EpisodeFunction = EpisodeFunction({})
     
     def generals(
