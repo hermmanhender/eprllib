@@ -27,6 +27,7 @@ class EnvConfig:
         self.output_path: str = NotImplemented
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
+        self.number_of_agents_total:int = NotImplemented
 
         # agents
         self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
@@ -56,7 +57,7 @@ class EnvConfig:
         self.reward_fn: RewardFunction = RewardFunction({})
 
         # functionalities
-        self.cut_episode_len: int = 1
+        self.cut_episode_len: int = 0
         self.episode_fn: EpisodeFunction = EpisodeFunction({})
     
     def generals(
@@ -65,7 +66,8 @@ class EnvConfig:
         epw_path:str = NotImplemented,
         output_path:str = NotImplemented,
         ep_terminal_output:Optional[bool] = True,
-        timeout:Optional[float] = 10.0
+        timeout:Optional[float] = 10.0,
+        number_of_agents_total:int = NotImplemented
         ):
         """
         This method is used to modify the general configuration of the environment.
@@ -80,12 +82,16 @@ class EnvConfig:
             and the time that the environment wait to apply an action in the EnergyPlus simulation. 
             After that time, the episode is finished. If your environment is time consuming, you 
             can increase this limit. By default the value is 10 seconds.
+            number_of_agents_total (int): The total amount of agents allow to interact in the cooperative
+            policy. The value must be equal or greater than the number of agents configured in the agents
+            section.
         """
         self.epjson_path = epjson_path
         self.epw_path = epw_path
         self.output_path = output_path
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
+        self.number_of_agents_total = number_of_agents_total
         
     def agents(
         self, 

@@ -164,7 +164,7 @@ def obs_space(env_config:Dict, _thermal_none_ids:Set):
     # construct the observation space.
     return Box(float("-inf"), float("inf"), (obs_space_len,))
 
-def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set, n_agents:int=20):
+def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set):
     """
     This method construct the observation space of the environment.
 
@@ -174,7 +174,7 @@ def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set, n_agents:int=20):
     Returns:
         space.Box: The observation space of the environment.
     """
-    
+    n_agents = env_config['number_of_agents_total']
     obs_space_len = 0
     
     # actuator state.
