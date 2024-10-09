@@ -3,6 +3,7 @@
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
 Python API in the version 23.2.0.
 """
+import os
 import threading
 import numpy as np
 import random
@@ -20,6 +21,7 @@ from eprllib.Env.MultiAgent.EnvUtils import (
 # EnergyPlus Python API path adding
 EP_API_add_path(version="24-1-0")
 from pyenergyplus.api import EnergyPlusAPI
+import time
 api = EnergyPlusAPI()
 
 class EnergyPlusRunnerAMA:
@@ -361,13 +363,17 @@ class EnergyPlusRunnerAMA:
             agents_infos[agent] = infos_tz[agent_thermal_zone]
         
         # Fill the obs with the rest of agents with zero obs.
-        for _ in range(20-len(self._agent_ids)):
+        number_of_agents_total = self.env_config['number_of_agents_total']
+        for _ in range(number_of_agents_total-len(self._agent_ids)):
             ag_var = np.array([0]*ag_var_len, dtype='float32')
             ag_pool.append(tuple(ag_var))
         # Create the general observation
         obs_list = []
-        for embedding in random.sample(ag_pool, len(ag_pool)):
+
+        shuffled_ag_pool = random.sample(ag_pool, len(ag_pool))  # This shuffles the list
+        for embedding in shuffled_ag_pool:
             obs_list.append(np.array(embedding, dtype='float32'))
+
         # Concatenamos todas las observaciones en un solo NDArray
         obs = np.concatenate(obs_list)
         # Add agent indicator for the observation for each agent
@@ -375,15 +381,15 @@ class EnergyPlusRunnerAMA:
         for agent in self._agent_ids:
             if self.env_config['use_agent_indicator']:
                 agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
-                agent_id_vector = np.array([0]*20)
-                agent_id_vector[agent_indicator] = 1
-            agents_obs[agent] = np.concatenate(
-                (
-                    agent_id_vector,
-                    obs
-                ),
-                dtype='float32'
-            )
+                agent_id_vector = np.array([0]*number_of_agents_total)
+                agent_id_vector[agent_indicator-1] = 1
+                agents_obs[agent] = np.concatenate(
+                    (
+                        agent_id_vector,
+                        obs
+                    ),
+                    dtype='float32'
+                )
         
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(agents_obs)
@@ -517,6 +523,7 @@ class EnergyPlusRunnerAMA:
         """
         if not self.simulation_complete:
             self.simulation_complete = True
+        time.sleep(5)
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None
@@ -545,7 +552,7 @@ class EnergyPlusRunnerAMA:
             "-w",
             self.env_config["epw_path"],
             "-d",
-            f"{self.env_config['output_path']}/episode-{self.episode:08}",
+            f"{self.env_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}",
             self.env_config["epjson_path"]
         ]
         return eplus_args
