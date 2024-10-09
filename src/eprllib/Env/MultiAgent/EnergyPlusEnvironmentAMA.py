@@ -87,12 +87,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             self.action_space = self.env_config['action_space']
             
         # asignation of the environment observation space.
-        self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids,n_agents=5)
+        self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids)
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
         
         # EnergyPlusRunner class.
-        self.energyplus_runner: Optional[EnergyPlusRunner] = None
+        self.energyplus_runner: Optional[EnergyPlusRunnerAMA] = None
         # queues for communication between MDP and EnergyPlus.
         self.obs_queue: Optional[Queue] = None
         self.act_queue: Optional[Queue] = None
