@@ -6,7 +6,6 @@ Python API in the version 23.2.0.
 import os
 import threading
 import numpy as np
-import random
 from queue import Queue
 from typing import Any, Dict, List, Optional, Set
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
@@ -19,17 +18,14 @@ from eprllib.Env.MultiAgent.EnvUtils import (
     EP_API_add_path,
 )
 # EnergyPlus Python API path adding
-EP_API_add_path(version="24-1-0")
+EP_API_add_path()
 from pyenergyplus.api import EnergyPlusAPI
-import time
 api = EnergyPlusAPI()
 
-class EnergyPlusRunnerAMA:
+class EnergyPlusRunner:
     """
     This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
-    The AMA means "Augmented Multi Agent" and focus on augmentation of the observation space to include 
-    the precense of 100 agents and 50 thermal zones.
     """
     def __init__(
         self,
@@ -306,21 +302,20 @@ class EnergyPlusRunnerAMA:
                 self.obs_keys.append('agent_type')
                 
         # Se asignan observaciones y infos a cada agente.
+        agents_obs = {agent: [] for agent in self._agent_ids}
         agents_infos = {agent: {} for agent in self._agent_ids}
         
-        ag_pool = []
-        first_agent = True
         for agent in self._agent_ids:
             # Agent properties
             agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
             
             # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            ag_var = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
+            agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
             # if apply, add the actuator state.
             if self.env_config['use_actuator_state']:
-                ag_var = np.concatenate(
+                agents_obs[agent] = np.concatenate(
                     (
-                        ag_var,
+                        agents_obs[agent],
                         [self.agent_actions[agent]],
                     ),
                     dtype='float32'
@@ -328,9 +323,9 @@ class EnergyPlusRunnerAMA:
             # if apply, add the agent indicator.
             if self.env_config['use_agent_indicator']:
                 agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
-                ag_var = np.concatenate(
+                agents_obs[agent] = np.concatenate(
                     (
-                        ag_var,
+                        agents_obs[agent],
                         [agent_indicator],
                     ),
                     dtype='float32'
@@ -338,9 +333,9 @@ class EnergyPlusRunnerAMA:
             # if apply, add the thermal zone indicator
             if self.env_config['use_thermal_zone_indicator']:
                 thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
-                ag_var = np.concatenate(
+                agents_obs[agent] = np.concatenate(
                     (
-                        ag_var,
+                        agents_obs[agent],
                         [thermal_zone_indicator],
                     ),
                     dtype='float32'
@@ -348,55 +343,26 @@ class EnergyPlusRunnerAMA:
             # if apply, add the agent type.
             if self.env_config['use_agent_type']:
                 agent_type = self.env_config['agents_config'][agent]['actuator_type']
-                ag_var = np.concatenate(
+                agents_obs[agent] = np.concatenate(
                     (
-                        ag_var,
+                        agents_obs[agent],
                         [agent_type],
                     ),
                     dtype='float32'
                 )
-            if first_agent:
-                ag_var_len = len(ag_var)
-                first_agent = False
-            ag_pool.append(tuple(ag_var))
+            
+            # Print the agents_obs array if one of the values are NaN or Inf
+            if np.isnan(agents_obs[agent]).any() or np.isinf(agents_obs[agent]).any():
+                print(f"NaN or Inf value found in agents_obs[{agent}]:\n{agents_obs[agent]}")
+                    
             # Agent infos asignation
             agents_infos[agent] = infos_tz[agent_thermal_zone]
-        
-        # Fill the obs with the rest of agents with zero obs.
-        number_of_agents_total = self.env_config['number_of_agents_total']
-        for _ in range(number_of_agents_total-len(self._agent_ids)):
-            ag_var = np.array([0]*ag_var_len, dtype='float32')
-            ag_pool.append(tuple(ag_var))
-        # Create the general observation
-        obs_list = []
-
-        shuffled_ag_pool = random.sample(ag_pool, len(ag_pool))  # This shuffles the list
-        for embedding in shuffled_ag_pool:
-            obs_list.append(np.array(embedding, dtype='float32'))
-
-        # Concatenamos todas las observaciones en un solo NDArray
-        obs = np.concatenate(obs_list)
-        # Add agent indicator for the observation for each agent
-        agents_obs = {agent: [] for agent in self._agent_ids}
-        for agent in self._agent_ids:
-            if self.env_config['use_agent_indicator']:
-                agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
-                agent_id_vector = np.array([0]*number_of_agents_total)
-                agent_id_vector[agent_indicator-1] = 1
-                agents_obs[agent] = np.concatenate(
-                    (
-                        agent_id_vector,
-                        obs
-                    ),
-                    dtype='float32'
-                )
         
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(agents_obs)
         self.obs_event.set()
         self.infos_queue.put(agents_infos)
         self.infos_event.set()
-        
 
     def _collect_first_obs(self, state_argument):
         """
@@ -523,7 +489,6 @@ class EnergyPlusRunnerAMA:
         """
         if not self.simulation_complete:
             self.simulation_complete = True
-        time.sleep(5)
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None
