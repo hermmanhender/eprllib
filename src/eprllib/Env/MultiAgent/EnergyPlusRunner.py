@@ -3,8 +3,11 @@
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
 Python API in the version 23.2.0.
 """
+import os
 import threading
 import numpy as np
+import time
+import random
 from queue import Queue
 from typing import Any, Dict, List, Optional, Set
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
@@ -17,8 +20,10 @@ from eprllib.Env.MultiAgent.EnvUtils import (
     EP_API_add_path,
 )
 # EnergyPlus Python API path adding
-EP_API_add_path()
+EP_API_add_path(version="24-1-0")
 from pyenergyplus.api import EnergyPlusAPI
+import time
+import time
 api = EnergyPlusAPI()
 
 class EnergyPlusRunner:
@@ -75,6 +80,7 @@ class EnergyPlusRunner:
         self.first_observation = True
         self.obs = {}
         self.infos = {}
+        self.unique_id = time.time()
         
         # create a variable to save the obs dict key to use in posprocess
         self.obs_keys = []
@@ -138,14 +144,14 @@ class EnergyPlusRunner:
             for key, handle
             in self.actuator_handles.items()
         }
-        
+        # TODO: Register the environment variables. The infos and not observables parameters must be changed.
         # Thermal zone obs and infos dicts.
         obs_tz = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         infos_tz = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         
         # Loop for each Thermal Zone conditioned.   
         for thermal_zone in self._thermal_zone_ids:
-            if self.env_config['ep_environment_variables']:
+            if self.env_config['ep_environment_variables']: # TODO: Move to env variable.
                 obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_variable_value(state_argument, handle)
@@ -171,7 +177,7 @@ class EnergyPlusRunner:
                         in thermal_zone_object_var_handles.items()
                     }
                 )
-            if self.env_config['ep_meters']:
+            if self.env_config['ep_meters']: # TODO: Move to env variable.
                 obs_tz[thermal_zone].update(
                     {
                         key: api.exchange.get_meter_value(state_argument, handle)
@@ -179,7 +185,7 @@ class EnergyPlusRunner:
                         in self.meter_handles.items()
                     }
                 )
-            if self.env_config['time_variables']:
+            if self.env_config['time_variables']: # TODO: Move to env variable.
                 time_variables_methods = {
                     'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
                     'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
@@ -199,7 +205,7 @@ class EnergyPlusRunner:
                 }
                 time_variables_dict = {variable: time_variables_methods[variable] for variable in self.env_config['time_variables']}
                 obs_tz[thermal_zone].update(time_variables_dict)
-            if self.env_config['weather_variables']:
+            if self.env_config['weather_variables']: # TODO: Move to env variable.
                 weather_variables_methods = {
                     'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
                     'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
@@ -235,7 +241,7 @@ class EnergyPlusRunner:
                 }
                 weather_variables_dict = {variable: weather_variables_methods[variable] for variable in self.env_config['weather_variables']}
                 obs_tz[thermal_zone].update(weather_variables_dict)
-            if self.env_config['use_one_day_weather_prediction']:
+            if self.env_config['use_one_day_weather_prediction']: # TODO: Move to env variable.
                 weather_pred = {}
                 # The list sigma_max contains the standard deviation of the predictions in the following order:
                 #   - Dry Bulb Temperature in °C with squer desviation of 2.05 °C, 
@@ -287,6 +293,9 @@ class EnergyPlusRunner:
             # Ahora se tienen todas las observaciones e infos, una por cada zona térmica.
         
         # Se obtienen los keys de las observaciones para la primer observación
+        # TODO: This must be changed because the keys are different for the different types of
+        # agents: centralized, fully_shared or independent. This will be made together with the
+        # observation definition in EnergyPlusEnvironment.
         if self.first_observation:
             thermal_zone = list(self._thermal_zone_ids)[0]
             self.obs_keys = [key for key in obs_tz[thermal_zone].keys()]
@@ -299,69 +308,228 @@ class EnergyPlusRunner:
                 self.obs_keys.append('thermal_zone_indicator')
             if self.env_config['use_agent_type']:
                 self.obs_keys.append('agent_type')
+        
+        if self.env_config['multi_agent_method'] == "fully_shared":#, "centralize", "independent", "custom":
+            # Se asignan observaciones y infos a cada agente.
+            agents_infos = {agent: {} for agent in self._agent_ids}
+            
+            ag_pool = []
+            first_agent = True
+            for agent in self._agent_ids:
+                # Agent properties
+                agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
                 
-        # Se asignan observaciones y infos a cada agente.
-        agents_obs = {agent: [] for agent in self._agent_ids}
-        agents_infos = {agent: {} for agent in self._agent_ids}
-        
-        for agent in self._agent_ids:
-            # Agent properties
-            agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+                # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+                ag_var = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
+                # if apply, add the actuator state.
+                if self.env_config['use_actuator_state']:
+                    ag_var = np.concatenate(
+                        (
+                            ag_var,
+                            [self.agent_actions[agent]],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the agent indicator.
+                if self.env_config['use_agent_indicator']:
+                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    ag_var = np.concatenate(
+                        (
+                            ag_var,
+                            [agent_indicator],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the thermal zone indicator
+                if self.env_config['use_thermal_zone_indicator']:
+                    thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                    ag_var = np.concatenate(
+                        (
+                            ag_var,
+                            [thermal_zone_indicator],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the agent type.
+                if self.env_config['use_agent_type']:
+                    agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                    ag_var = np.concatenate(
+                        (
+                            ag_var,
+                            [agent_type],
+                        ),
+                        dtype='float32'
+                    )
+                if first_agent:
+                    ag_var_len = len(ag_var)
+                    first_agent = False
+                ag_pool.append(tuple(ag_var))
+                # Agent infos asignation
+                agents_infos[agent] = infos_tz[agent_thermal_zone]
             
-            # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
-            # if apply, add the actuator state.
-            if self.env_config['use_actuator_state']:
-                agents_obs[agent] = np.concatenate(
-                    (
-                        agents_obs[agent],
-                        [self.agent_actions[agent]],
-                    ),
-                    dtype='float32'
-                )
-            # if apply, add the agent indicator.
-            if self.env_config['use_agent_indicator']:
-                agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
-                agents_obs[agent] = np.concatenate(
-                    (
-                        agents_obs[agent],
-                        [agent_indicator],
-                    ),
-                    dtype='float32'
-                )
-            # if apply, add the thermal zone indicator
-            if self.env_config['use_thermal_zone_indicator']:
-                thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
-                agents_obs[agent] = np.concatenate(
-                    (
-                        agents_obs[agent],
-                        [thermal_zone_indicator],
-                    ),
-                    dtype='float32'
-                )
-            # if apply, add the agent type.
-            if self.env_config['use_agent_type']:
-                agent_type = self.env_config['agents_config'][agent]['actuator_type']
-                agents_obs[agent] = np.concatenate(
-                    (
-                        agents_obs[agent],
-                        [agent_type],
-                    ),
-                    dtype='float32'
-                )
+            # Fill the obs with the rest of agents with zero obs.
+            number_of_agents_total = self.env_config['number_of_agents_total']
+            for _ in range(number_of_agents_total-len(self._agent_ids)):
+                ag_var = np.array([0]*ag_var_len, dtype='float32')
+                ag_pool.append(tuple(ag_var))
+            # Create the general observation
+            obs_list = []
+
+            shuffled_ag_pool = random.sample(ag_pool, len(ag_pool))  # This shuffles the list
+            for embedding in shuffled_ag_pool:
+                obs_list.append(np.array(embedding, dtype='float32'))
+
+            # Concatenamos todas las observaciones en un solo NDArray
+            obs = np.concatenate(obs_list)
+            # Add agent indicator for the observation for each agent
+            agents_obs = {agent: [] for agent in self._agent_ids}
+            for agent in self._agent_ids:
+                if self.env_config['use_agent_indicator']:
+                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agent_id_vector = np.array([0]*number_of_agents_total)
+                    agent_id_vector[agent_indicator-1] = 1
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agent_id_vector,
+                            obs
+                        ),
+                        dtype='float32'
+                    )
             
-            # Print the agents_obs array if one of the values are NaN or Inf
-            if np.isnan(agents_obs[agent]).any() or np.isinf(agents_obs[agent]).any():
-                print(f"NaN or Inf value found in agents_obs[{agent}]:\n{agents_obs[agent]}")
-                    
-            # Agent infos asignation
-            agents_infos[agent] = infos_tz[agent_thermal_zone]
+            # Set the agents observation and infos to communicate with the EPEnv.
+            self.obs_queue.put(agents_obs)
+            self.obs_event.set()
+            self.infos_queue.put(agents_infos)
+            self.infos_event.set()
         
-        # Set the agents observation and infos to communicate with the EPEnv.
-        self.obs_queue.put(agents_obs)
-        self.obs_event.set()
-        self.infos_queue.put(agents_infos)
-        self.infos_event.set()
+        elif self.env_config['multi_agent_method'] in ["independent","custom"]:#, "centralize", "independent", "custom":    
+            # Se asignan observaciones y infos a cada agente.
+            agents_obs = {agent: [] for agent in self._agent_ids}
+            agents_infos = {agent: {} for agent in self._agent_ids}
+            
+            for agent in self._agent_ids:
+                # Agent properties
+                agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+                
+                # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+                agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
+                # if apply, add the actuator state.
+                if self.env_config['use_actuator_state']:
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [self.agent_actions[agent]],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the agent indicator.
+                if self.env_config['use_agent_indicator']:
+                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [agent_indicator],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the thermal zone indicator
+                if self.env_config['use_thermal_zone_indicator']:
+                    thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [thermal_zone_indicator],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the agent type.
+                if self.env_config['use_agent_type']:
+                    agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [agent_type],
+                        ),
+                        dtype='float32'
+                    )
+                
+                # Print the agents_obs array if one of the values are NaN or Inf
+                if np.isnan(agents_obs[agent]).any() or np.isinf(agents_obs[agent]).any():
+                    print(f"NaN or Inf value found in agents_obs[{agent}]:\n{agents_obs[agent]}")
+                        
+                # Agent infos asignation
+                agents_infos[agent] = infos_tz[agent_thermal_zone]
+            
+            # Set the agents observation and infos to communicate with the EPEnv.
+            self.obs_queue.put(agents_obs)
+            self.obs_event.set()
+            self.infos_queue.put(agents_infos)
+            self.infos_event.set()
+        
+        # TODO: centralized is not implemented yet, this is a copy of independent.
+        elif self.env_config['multi_agent_method'] in ["centralize"]:#, "centralize", "independent", "custom":    
+            # Se asignan observaciones y infos a cada agente.
+            agents_obs = {agent: [] for agent in self._agent_ids}
+            agents_infos = {agent: {} for agent in self._agent_ids}
+            
+            for agent in self._agent_ids:
+                # Agent properties
+                agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+                
+                # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
+                agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
+                # if apply, add the actuator state.
+                if self.env_config['use_actuator_state']:
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [self.agent_actions[agent]],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the agent indicator.
+                if self.env_config['use_agent_indicator']:
+                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [agent_indicator],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the thermal zone indicator
+                if self.env_config['use_thermal_zone_indicator']:
+                    thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [thermal_zone_indicator],
+                        ),
+                        dtype='float32'
+                    )
+                # if apply, add the agent type.
+                if self.env_config['use_agent_type']:
+                    agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            [agent_type],
+                        ),
+                        dtype='float32'
+                    )
+                
+                # Print the agents_obs array if one of the values are NaN or Inf
+                if np.isnan(agents_obs[agent]).any() or np.isinf(agents_obs[agent]).any():
+                    print(f"NaN or Inf value found in agents_obs[{agent}]:\n{agents_obs[agent]}")
+                        
+                # Agent infos asignation
+                agents_infos[agent] = infos_tz[agent_thermal_zone]
+            
+            # Set the agents observation and infos to communicate with the EPEnv.
+            self.obs_queue.put(agents_obs)
+            self.obs_event.set()
+            self.infos_queue.put(agents_infos)
+            self.infos_event.set()
 
     def _collect_first_obs(self, state_argument):
         """
@@ -396,6 +564,8 @@ class EnergyPlusRunner:
                 
         # Get and transform the action from the EnergyPlusEnvironment `step` method.
         dict_action = self.action_fn.transform_action(self.act_queue.get())
+        # TODO: For centralize method, it is needed to descompose the junt action into the
+        # different agents. This would be included in the action_fn.
         
         # Perform the actions in EnergyPlus simulation.
         for agent in self._agent_ids:
@@ -488,6 +658,8 @@ class EnergyPlusRunner:
         """
         if not self.simulation_complete:
             self.simulation_complete = True
+        time.sleep(0.5)
+        api.runtime.stop_simulation(self.energyplus_state)
         self._flush_queues()
         self.energyplus_exec_thread.join()
         self.energyplus_exec_thread = None
@@ -516,7 +688,7 @@ class EnergyPlusRunner:
             "-w",
             self.env_config["epw_path"],
             "-d",
-            f"{self.env_config['output_path']}/episode-{self.episode:08}",
+            f"{self.env_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}",
             self.env_config["epjson_path"]
         ]
         return eplus_args
