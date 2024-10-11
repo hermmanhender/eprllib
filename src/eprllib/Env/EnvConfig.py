@@ -5,10 +5,13 @@ Environment Configuration
 This module contain the class and methods used to configure the environment.
 """
 
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Optional, List, Dict, Tuple, Any, TypeVar
+from gymnasium import spaces
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
+
+ActType = TypeVar("ActType")
 
 def env_config_to_dict(EnvConfig) -> Dict:
     """
@@ -30,6 +33,7 @@ class EnvConfig:
         self.number_of_agents_total:int = NotImplemented
 
         # agents
+        self.multi_agent_method: str = "fully_shared"
         self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
 
         # observations
@@ -51,8 +55,9 @@ class EnvConfig:
         self.prediction_hours: int = 24
 
         # actions
+        self.action_space: spaces.Space[ActType] = None
         self.action_fn: ActionFunction = ActionFunction({})
-
+        
         # rewards
         self.reward_fn: RewardFunction = RewardFunction({})
 
@@ -94,17 +99,28 @@ class EnvConfig:
         self.number_of_agents_total = number_of_agents_total
         
     def agents(
-        self, 
-        agents_config:Dict[str,Dict[str,Any]] = NotImplemented
+        self,
+        multi_agent_method:str = None,
+        agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
         ):
         """
         This method is used to modify the agents configuration of the environment.
 
         Args:
+            multi_agent_method (str): This parameter define the method to be used in the multi-agent
+            policy. The options are: "fully_shared" (default), "centralize", "independent", and "custom".
+            For a single agent case, this parameter is not used.
             agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents 
             involved in the environment. The mandatory components of the agent are: ep_actuator_config, 
             thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
         """
+        if multi_agent_method is not None:
+            self.multi_agent_method = multi_agent_method
+            options = ["fully_shared", "centralize", "independent", "custom"]
+            if self.multi_agent_method not in options:
+                raise ValueError(f"Invalid multi_agent_method. Must be one of {options}")
+            if self.multi_agent_method == "centralize":
+                raise NotImplementedError("centralize method is not implemented yet.")
         self.agents_config = agents_config
     
     def observations(
@@ -195,17 +211,27 @@ class EnvConfig:
     
     def actions(
         self,
+        action_space: spaces.Space[ActType] = None,
         action_fn: ActionFunction = ActionFunction({}),
+        
         ):
         """
         This method is used to modify the actions configuration of the environment.
         
         Args:
+            action_space (spaces.Space[ActType]): The action space is the space of the possible actions that the agent
+            can take in the environment. In the general case, we use the Discrete form of the gym spaces. This space is
+            used to sample the actions from the agent. If not is specified here, the policy defined in RLlib must contain
+            the action space.
             action_fn (ActionFunction): In the definition of the action space, usualy is use the discrete form of the 
             gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the 
             objective to transform appropiately the discret action into a value action for EP we define the action_fn. 
             This function take the arguments agent_id and action. You can find examples in eprllib.ActionFunctions.
         """
+        if action_space != None:
+            self.action_space = action_space
+            assert isinstance(action_space, spaces.Space), "The action_space must be a gym space."
+            
         self.action_fn = action_fn
 
     def rewards(
