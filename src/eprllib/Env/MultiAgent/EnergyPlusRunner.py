@@ -146,6 +146,10 @@ class EnergyPlusRunner:
         }
         # TODO: Register the environment variables. The infos and not observables parameters must be changed.
         # Thermal zone obs and infos dicts.
+        obs_site = {} # environmental, times, weather
+        infos_site = {}
+        obs_meters = {}
+        infos_meters = {}
         obs_tz = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         infos_tz = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         
