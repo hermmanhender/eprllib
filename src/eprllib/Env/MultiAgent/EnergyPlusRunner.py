@@ -92,6 +92,9 @@ class EnergyPlusRunner:
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
+        # TODO: Group all the variables into variables, meters and actuator only. The variables and meters
+        # that will be present in the observation space of the agents, must be include a list with the name
+        # of the agents.
         self.variables, self.var_handles = environment_variables(self.env_config)
         self.thermal_zone_variables, self.thermal_zone_var_handles = thermal_zone_variables(self.env_config, self._thermal_zone_ids)
         self.object_variables, self.object_var_handles = object_variables(self.env_config, self._thermal_zone_ids)
@@ -105,6 +108,14 @@ class EnergyPlusRunner:
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state = api.state_manager.new_state()
+        # TODO: use request_variable(state: c_void_p, variable_name: str | bytes, variable_key: str | bytes) to avoid
+        # the necesity of the user to use the output definition inside the IDF/epJSON file.
+        # for variable_name, variable_key in self.variables.items():
+        #     api.exchange.request_variable(
+        #         self.energyplus_state,
+        #         variable_name = variable_name,
+        #         variable_key = variable_key
+        #         )
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
