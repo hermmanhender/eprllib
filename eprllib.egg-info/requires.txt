@@ -1,0 +1,2 @@
+ray[all]>=2.20.0
+gymnasium>=0.28.1
