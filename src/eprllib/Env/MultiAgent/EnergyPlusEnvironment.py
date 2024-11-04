@@ -86,7 +86,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # asignation of the environment observation space.
         # TODO: Get the keys for the data saving here, together with the specification of the observation space.
         if self.env_config['multi_agent_method'] == "fully_shared":
-            self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids)
+            if not self.env_config.get("number_of_agents_total", False):
+                raise ValueError("The number of agents must be specified in the env_config for the fully_shared method.")
+            self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids, self.env_config['number_of_agents_total'])
         elif self.env_config['multi_agent_method'] == "centralize":
             self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
         elif self.env_config['multi_agent_method'] in ["independent", "custom"]:
@@ -184,7 +186,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         truncated = {}
         # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: 0
         cut_episode_len: int = self.env_config['cut_episode_len']
-        if cut_episode_len == 0:
+        if self.env_config["evaluation"]:
+            self.truncateds = False
+        elif cut_episode_len == 0:
             self.truncateds = False
         else:
             cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
