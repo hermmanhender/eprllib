@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "eprllib"
-version = "1.4.9"
+version = "1.41.0"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
