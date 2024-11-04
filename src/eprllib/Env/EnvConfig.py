@@ -30,10 +30,11 @@ class EnvConfig:
         self.output_path: str = NotImplemented
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
-        self.number_of_agents_total:int = NotImplemented
+        self.evaluation: bool = False
 
         # agents
         self.multi_agent_method: str = "fully_shared"
+        self.number_of_agents_total: List[str] = False
         self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
 
         # observations
@@ -72,7 +73,7 @@ class EnvConfig:
         output_path:str = NotImplemented,
         ep_terminal_output:Optional[bool] = True,
         timeout:Optional[float] = 10.0,
-        number_of_agents_total:int = NotImplemented
+        evaluation: bool = False,
         ):
         """
         This method is used to modify the general configuration of the environment.
@@ -96,11 +97,12 @@ class EnvConfig:
         self.output_path = output_path
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
-        self.number_of_agents_total = number_of_agents_total
+        self.evaluation = evaluation
         
     def agents(
         self,
         multi_agent_method:str = None,
+        number_of_agents_total: List[str] = None,
         agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
         ):
         """
@@ -121,6 +123,10 @@ class EnvConfig:
                 raise ValueError(f"Invalid multi_agent_method. Must be one of {options}")
             if self.multi_agent_method == "centralize":
                 raise NotImplementedError("centralize method is not implemented yet.")
+            if self.multi_agent_method == "fully_shared" and number_of_agents_total == None:
+                raise ValueError("n_agents must be defined for fully_shared method.")
+            else:
+                self.agents_ids = number_of_agents_total
         self.agents_config = agents_config
     
     def observations(
