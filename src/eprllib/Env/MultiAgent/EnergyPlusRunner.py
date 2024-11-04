@@ -703,7 +703,7 @@ class EnergyPlusRunner:
             "-w",
             self.env_config["epw_path"],
             "-d",
-            f"{self.env_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}",
+            f"{self.env_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}" if not self.env_config['evaluation'] else f"{self.env_config['output_path']}/evaluation-episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}",
             self.env_config["epjson_path"]
         ]
         return eplus_args
