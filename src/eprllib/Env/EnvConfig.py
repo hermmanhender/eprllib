@@ -34,7 +34,7 @@ class EnvConfig:
 
         # agents
         self.multi_agent_method: str = "fully_shared"
-        self.number_of_agents_total: List[str] = False
+        self.number_of_agents_total: int = NotImplemented
         self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
 
         # observations
@@ -102,7 +102,7 @@ class EnvConfig:
     def agents(
         self,
         multi_agent_method:str = None,
-        number_of_agents_total: List[str] = None,
+        number_of_agents_total: int = NotImplemented,
         agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
         ):
         """
@@ -116,6 +116,8 @@ class EnvConfig:
             involved in the environment. The mandatory components of the agent are: ep_actuator_config, 
             thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
         """
+        if number_of_agents_total is not NotImplemented:
+            self.number_of_agents_total = number_of_agents_total
         if multi_agent_method is not None:
             self.multi_agent_method = multi_agent_method
             options = ["fully_shared", "centralize", "independent", "custom"]
@@ -123,10 +125,8 @@ class EnvConfig:
                 raise ValueError(f"Invalid multi_agent_method. Must be one of {options}")
             if self.multi_agent_method == "centralize":
                 raise NotImplementedError("centralize method is not implemented yet.")
-            if self.multi_agent_method == "fully_shared" and number_of_agents_total == None:
+            if self.multi_agent_method == "fully_shared" and number_of_agents_total == NotImplemented:
                 raise ValueError("n_agents must be defined for fully_shared method.")
-            else:
-                self.agents_ids = number_of_agents_total
         self.agents_config = agents_config
     
     def observations(
