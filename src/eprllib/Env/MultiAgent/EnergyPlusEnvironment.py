@@ -79,6 +79,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
         self._agent_ids = set([key for key in env_config['agents_config'].keys()])
         
+        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
+        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
+        
         # asignation of environment action space.
         if self.env_config['action_space'] != None:
             self.action_space = self.env_config['action_space']
@@ -86,9 +89,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # asignation of the environment observation space.
         # TODO: Get the keys for the data saving here, together with the specification of the observation space.
         if self.env_config['multi_agent_method'] == "fully_shared":
-            if not self.env_config.get("number_of_agents_total", False):
-                raise ValueError("The number of agents must be specified in the env_config for the fully_shared method.")
-            self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids, self.env_config['number_of_agents_total'])
+            if type(self.env_config["number_of_agents_total"]) != int:
+                raise ValueError(f"\nThe number_of_agents_total must be specified in the env_config for the fully_shared method and must be a integer. The actual value is: {self.env_config['number_of_agents_total']}.\n")
+            self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids)
         elif self.env_config['multi_agent_method'] == "centralize":
             self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
         elif self.env_config['multi_agent_method'] in ["independent", "custom"]:
@@ -98,8 +101,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
-        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
-        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
