@@ -245,14 +245,14 @@ def continuous_action_space():
     """
     return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
 
-def discrete_action_space():
+def discrete_action_space(n:int=2):
     """
     This method construct the action space of the environment.
     
     Returns:
         gym.Discrete: Discrete action space with limits between [0,10] and a step of 1.
     """
-    return Discrete(11)
+    return Discrete(n)
 
 def environment_variables(env_config: Dict[str, Any]) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
     """

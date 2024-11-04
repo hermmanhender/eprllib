@@ -585,32 +585,54 @@ def building_dimension(epJSON_object, h:float, w:float, l:float, window_area_rel
     south_window_proportion = window_area_relation[2]
     west_window_proportion = window_area_relation[3]
     
-    window_coordinates = {
-        'window_north': [
-            [0+(w*north_window_proportion)/2,0,h*0.9],
-            [0+(w*north_window_proportion)/2,0,0.1],
-            [w-(w*north_window_proportion)/2,0,0.1],
-            [w-(w*north_window_proportion)/2,0,h*0.9]
-        ],
-        'window_east': [
-            [w,0+(l*east_window_proportion)/2,h*0.9],
-            [w,0+(l*east_window_proportion)/2,0.1],
-            [w,l-(l*east_window_proportion)/2,0.1],
-            [w,l-(l*east_window_proportion)/2,h*0.9]
-        ],
-        'window_south': [
-            [w-(w*south_window_proportion)/2,l,h*0.9],
-            [w-(w*south_window_proportion)/2,l,0.1],
-            [0+(w*south_window_proportion)/2,l,0.1],
-            [0+(w*south_window_proportion)/2,l,h*0.9]
-        ],
-        'window_west': [
-            [0,l-(l*west_window_proportion)/2,h*0.9],
-            [0,l-(l*west_window_proportion)/2,0.1],
-            [0,0+(l*west_window_proportion)/2,0.1],
-            [0,0+(l*west_window_proportion)/2,h*0.9]
-        ],
-    }
+    window_coordinates = {}
+    
+    # add the new coordinates to the windows that exist in the model
+    if north_window_proportion > 0:
+        window_coordinates.update(
+            {
+                'window_north': [
+                    [0+(w*north_window_proportion)/2,0,h*0.9],
+                    [0+(w*north_window_proportion)/2,0,0.1],
+                    [w-(w*north_window_proportion)/2,0,0.1],
+                    [w-(w*north_window_proportion)/2,0,h*0.9]
+                ],
+            }
+        )
+    if east_window_proportion > 0:
+        window_coordinates.update(
+            {
+                'window_east': [
+                    [w,0+(l*east_window_proportion)/2,h*0.9],
+                    [w,0+(l*east_window_proportion)/2,0.1],
+                    [w,l-(l*east_window_proportion)/2,0.1],
+                    [w,l-(l*east_window_proportion)/2,h*0.9]
+                ],
+            }
+        )
+    if south_window_proportion > 0:
+        window_coordinates.update(
+            {
+                'window_south': [
+                    [w-(w*south_window_proportion)/2,l,h*0.9],
+                    [w-(w*south_window_proportion)/2,l,0.1],
+                    [0+(w*south_window_proportion)/2,l,0.1],
+                    [0+(w*south_window_proportion)/2,l,h*0.9]
+                ],
+            }
+        )
+    if west_window_proportion > 0:
+        window_coordinates.update(
+            {
+                'window_west': [
+                    [0,l-(l*west_window_proportion)/2,h*0.9],
+                    [0,l-(l*west_window_proportion)/2,0.1],
+                    [0,0+(l*west_window_proportion)/2,0.1],
+                    [0,0+(l*west_window_proportion)/2,h*0.9]
+                ],
+            }
+        )
+    
     
     for window_name in [key for key in window_coordinates.keys()]:
         # Iterate over the four vertices of the surface
