@@ -11,6 +11,7 @@ import random
 from queue import Queue
 from typing import Any, Dict, List, Optional, Set
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.ActionFunctions.RBActionFunctions import RBActionFunction
 from eprllib.Env.MultiAgent.EnvUtils import (
     environment_variables, 
     thermal_zone_variables, 
@@ -39,6 +40,7 @@ class EnergyPlusRunner:
         act_queue: Queue,
         infos_queue: Queue,
         _agent_ids: Set,
+        _rb_agent_ids: Set,
         _thermal_zone_ids: Set,
         ) -> None:
         """
@@ -63,6 +65,7 @@ class EnergyPlusRunner:
         self.act_queue = act_queue
         self.infos_queue = infos_queue
         self._agent_ids = _agent_ids
+        self._rb_agent_ids = _rb_agent_ids
         self._thermal_zone_ids = _thermal_zone_ids
         
         # The queue events are generated (To sure the coordination with EnergyPlusEnvironment).
@@ -89,6 +92,7 @@ class EnergyPlusRunner:
         
         # Define the action transformer function
         self.action_fn: ActionFunction = self.env_config['action_fn']
+        self.rb_action_fn: RBActionFunction = self.env_config['rb_action_fn']
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
@@ -100,6 +104,7 @@ class EnergyPlusRunner:
         self.object_variables, self.object_var_handles = object_variables(self.env_config, self._thermal_zone_ids)
         self.meters, self.meter_handles = meters(self.env_config)
         self.actuators, self.actuator_handles = actuators(self.env_config, self._agent_ids)
+        self.rb_actuatuors, self.rb_actuator_handles = actuators(self.env_config, self._rb_agent_ids)
         
     def start(self) -> None:
         """
@@ -154,6 +159,11 @@ class EnergyPlusRunner:
             key: api.exchange.get_actuator_value(state_argument, handle)
             for key, handle
             in self.actuator_handles.items()
+        }
+        self.rb_agent_actions = {
+            key: api.exchange.get_actuator_value(state_argument, handle)
+            for key, handle
+            in self.rb_actuator_handles.items()
         }
         # TODO: Register the environment variables. The infos and not observables parameters must be changed.
         # Thermal zone obs and infos dicts.
@@ -332,7 +342,7 @@ class EnergyPlusRunner:
             first_agent = True
             for agent in self._agent_ids:
                 # Agent properties
-                agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+                agent_thermal_zone = self.env_config['dqn_agents_config'][agent]['thermal_zone']
                 
                 # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
                 ag_var = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
@@ -347,7 +357,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the agent indicator.
                 if self.env_config['use_agent_indicator']:
-                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agent_indicator = self.env_config['dqn_agents_config'][agent]['agent_indicator']
                     ag_var = np.concatenate(
                         (
                             ag_var,
@@ -357,7 +367,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the thermal zone indicator
                 if self.env_config['use_thermal_zone_indicator']:
-                    thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                    thermal_zone_indicator = self.env_config['dqn_agents_config'][agent]['thermal_zone_indicator']
                     ag_var = np.concatenate(
                         (
                             ag_var,
@@ -367,7 +377,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the agent type.
                 if self.env_config['use_agent_type']:
-                    agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                    agent_type = self.env_config['dqn_agents_config'][agent]['actuator_type']
                     ag_var = np.concatenate(
                         (
                             ag_var,
@@ -400,7 +410,7 @@ class EnergyPlusRunner:
             agents_obs = {agent: [] for agent in self._agent_ids}
             for agent in self._agent_ids:
                 if self.env_config['use_agent_indicator']:
-                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agent_indicator = self.env_config['dqn_agents_config'][agent]['agent_indicator']
                     agent_id_vector = np.array([0]*number_of_agents_total)
                     agent_id_vector[agent_indicator-1] = 1
                     agents_obs[agent] = np.concatenate(
@@ -424,7 +434,7 @@ class EnergyPlusRunner:
             
             for agent in self._agent_ids:
                 # Agent properties
-                agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+                agent_thermal_zone = self.env_config['dqn_agents_config'][agent]['thermal_zone']
                 
                 # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
                 agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
@@ -439,7 +449,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the agent indicator.
                 if self.env_config['use_agent_indicator']:
-                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agent_indicator = self.env_config['dqn_agents_config'][agent]['agent_indicator']
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
@@ -449,7 +459,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the thermal zone indicator
                 if self.env_config['use_thermal_zone_indicator']:
-                    thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                    thermal_zone_indicator = self.env_config['dqn_agents_config'][agent]['thermal_zone_indicator']
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
@@ -459,7 +469,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the agent type.
                 if self.env_config['use_agent_type']:
-                    agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                    agent_type = self.env_config['dqn_agents_config'][agent]['actuator_type']
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
@@ -489,7 +499,7 @@ class EnergyPlusRunner:
             
             for agent in self._agent_ids:
                 # Agent properties
-                agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
+                agent_thermal_zone = self.env_config['dqn_agents_config'][agent]['thermal_zone']
                 
                 # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
                 agents_obs[agent] = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
@@ -504,7 +514,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the agent indicator.
                 if self.env_config['use_agent_indicator']:
-                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agent_indicator = self.env_config['dqn_agents_config'][agent]['agent_indicator']
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
@@ -514,7 +524,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the thermal zone indicator
                 if self.env_config['use_thermal_zone_indicator']:
-                    thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                    thermal_zone_indicator = self.env_config['dqn_agents_config'][agent]['thermal_zone_indicator']
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
@@ -524,7 +534,7 @@ class EnergyPlusRunner:
                     )
                 # if apply, add the agent type.
                 if self.env_config['use_agent_type']:
-                    agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                    agent_type = self.env_config['dqn_agents_config'][agent]['actuator_type']
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
@@ -539,7 +549,8 @@ class EnergyPlusRunner:
                         
                 # Agent infos asignation
                 agents_infos[agent] = infos_tz[agent_thermal_zone]
-            
+                # TODO: add the infos for the rule based agents.
+                
             # Set the agents observation and infos to communicate with the EPEnv.
             self.obs_queue.put(agents_obs)
             self.obs_event.set()
@@ -588,6 +599,15 @@ class EnergyPlusRunner:
                 state=state_argument,
                 actuator_handle=self.actuator_handles[agent],
                 actuator_value=dict_action[agent]
+            )
+            
+        # Rule based agent actuation
+        rb_action_dict = self.rb_action_fn.get_actions(self.rb_agent_infos) #TODO: define the property self.rb_agent_infos
+        for agent in self._rb_agent_ids:
+            api.exchange.set_actuator_value(
+                state=state_argument,
+                rb_actuator_handle=self.rb_actuator_handles[agent],
+                rb_actuator_value=rb_action_dict[agent]
             )
        
     def _init_callback(self, state_argument) -> bool:
