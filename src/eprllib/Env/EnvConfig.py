@@ -8,6 +8,7 @@ This module contain the class and methods used to configure the environment.
 from typing import Optional, List, Dict, Tuple, Any, TypeVar
 from gymnasium import spaces
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.ActionFunctions.RBActionFunctions import RBActionFunction
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 
@@ -35,7 +36,8 @@ class EnvConfig:
         # agents
         self.multi_agent_method: str = "fully_shared"
         self.number_of_agents_total: int = NotImplemented
-        self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
+        self.drl_agents_config: Dict[str,Dict[str,Any]] = NotImplemented
+        self.rb_agents_config: Dict[str,Dict[str,Any]] = NotImplemented
 
         # observations
         self.ep_environment_variables: List|bool = False
@@ -58,6 +60,7 @@ class EnvConfig:
         # actions
         self.action_space: spaces.Space[ActType] = None
         self.action_fn: ActionFunction = ActionFunction({})
+        self.rb_action_fn: RBActionFunction = ActionFunction({})
         
         # rewards
         self.reward_fn: RewardFunction = RewardFunction({})
@@ -103,7 +106,8 @@ class EnvConfig:
         self,
         multi_agent_method:str = None,
         number_of_agents_total: int = NotImplemented,
-        agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
+        drl_agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
+        rb_agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
         ):
         """
         This method is used to modify the agents configuration of the environment.
@@ -112,7 +116,7 @@ class EnvConfig:
             multi_agent_method (str): This parameter define the method to be used in the multi-agent
             policy. The options are: "fully_shared" (default), "centralize", "independent", and "custom".
             For a single agent case, this parameter is not used.
-            agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents 
+            drl_agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents 
             involved in the environment. The mandatory components of the agent are: ep_actuator_config, 
             thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
         """
@@ -127,7 +131,8 @@ class EnvConfig:
                 raise NotImplementedError("centralize method is not implemented yet.")
             if self.multi_agent_method == "fully_shared" and number_of_agents_total == NotImplemented:
                 raise ValueError("n_agents must be defined for fully_shared method.")
-        self.agents_config = agents_config
+        self.drl_agents_config = drl_agents_config
+        self.rb_agents_config = rb_agents_config
     
     def observations(
         self,
@@ -219,7 +224,7 @@ class EnvConfig:
         self,
         action_space: spaces.Space[ActType] = None,
         action_fn: ActionFunction = ActionFunction({}),
-        
+        rb_action_fn: RBActionFunction = RBActionFunction({}),
         ):
         """
         This method is used to modify the actions configuration of the environment.
@@ -239,6 +244,7 @@ class EnvConfig:
             assert isinstance(action_space, spaces.Space), "The action_space must be a gym space."
             
         self.action_fn = action_fn
+        self.rb_action_fn = rb_action_fn
 
     def rewards(
         self,
