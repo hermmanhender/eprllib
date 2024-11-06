@@ -77,10 +77,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.env_config = env_config
         
         # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
-        self._agent_ids = set([key for key in env_config['agents_config'].keys()])
+        self._agent_ids = set([key for key in env_config['drl_agents_config'].keys()])
+        self._rb_agent_ids = set([key for key in env_config['rb_agents_config'].keys()])
         
         # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
-        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
+        self._thermal_zone_ids = set([self.env_config['drl_agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # asignation of environment action space.
         if self.env_config['action_space'] != None:
@@ -158,6 +159,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 act_queue=self.act_queue,
                 infos_queue=self.infos_queue,
                 _agent_ids=self._agent_ids,
+                _rb_agent_ids=self._rb_agent_ids,
                 _thermal_zone_ids=self._thermal_zone_ids,
             )
             # Divide the thread in two in this point.
