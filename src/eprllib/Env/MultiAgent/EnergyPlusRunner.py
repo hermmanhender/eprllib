@@ -325,17 +325,32 @@ class EnergyPlusRunner:
                 self.obs_keys.append('agent_type')
         
         if self.env_config['multi_agent_method'] == "fully_shared":#, "centralize", "independent", "custom":
-            # Se asignan observaciones y infos a cada agente.
+            # Add agent indicator for the observation for each agent
+            agents_obs = {agent: [] for agent in self._agent_ids}
             agents_infos = {agent: {} for agent in self._agent_ids}
+            number_of_agents_total = self.env_config['number_of_agents_total']
             
-            ag_pool = []
-            first_agent = True
+            # Agent_indicator vector (if any)
+            # Agent env observation (thermal_zone related term)
+            # Obs of others agents (actions, types) (point of view of the actual agent)
+            
             for agent in self._agent_ids:
                 # Agent properties
                 agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
-                
                 # Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
                 ag_var = np.array(list(obs_tz[agent_thermal_zone].values()), dtype='float32')
+                # If apply, add the igent ID vector for each agent obs
+                if number_of_agents_total > 1:
+                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                    agent_id_vector = np.array([0]*number_of_agents_total)
+                    agent_id_vector[agent_indicator-1] = 1
+                    ag_var = np.concatenate(
+                        (
+                            agent_id_vector,
+                            ag_var
+                        ),
+                        dtype='float32'
+                    )
                 # if apply, add the actuator state.
                 if self.env_config['use_actuator_state']:
                     ag_var = np.concatenate(
@@ -375,41 +390,76 @@ class EnergyPlusRunner:
                         ),
                         dtype='float32'
                     )
-                if first_agent:
-                    ag_var_len = len(ag_var)
-                    first_agent = False
-                ag_pool.append(tuple(ag_var))
-                # Agent infos asignation
                 agents_infos[agent] = infos_tz[agent_thermal_zone]
-            
-            # Fill the obs with the rest of agents with zero obs.
-            number_of_agents_total = self.env_config['number_of_agents_total']
-            for _ in range(number_of_agents_total-len(self._agent_ids)):
-                ag_var = np.array([0]*ag_var_len, dtype='float32')
-                ag_pool.append(tuple(ag_var))
+                agents_obs[agent] = ag_var
+                
             # Create the general observation
-            obs_list = []
-
-            shuffled_ag_pool = random.sample(ag_pool, len(ag_pool))  # This shuffles the list
-            for embedding in shuffled_ag_pool:
-                obs_list.append(np.array(embedding, dtype='float32'))
-
-            # Concatenamos todas las observaciones en un solo NDArray
-            obs = np.concatenate(obs_list)
-            # Add agent indicator for the observation for each agent
-            agents_obs = {agent: [] for agent in self._agent_ids}
-            for agent in self._agent_ids:
-                if self.env_config['use_agent_indicator']:
-                    agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
-                    agent_id_vector = np.array([0]*number_of_agents_total)
-                    agent_id_vector[agent_indicator-1] = 1
-                    agents_obs[agent] = np.concatenate(
-                        (
-                            agent_id_vector,
-                            obs
-                        ),
-                        dtype='float32'
-                    )
+            if number_of_agents_total > 1:
+                ag_pool = []
+                obs_list = []
+                first_agent = True
+                for agent in self._agent_ids:
+                    ag_var = np.array([], dtype='float32')
+                    # if apply, add the agent indicator.
+                    if self.env_config['use_agent_indicator']:
+                        agent_indicator = self.env_config['agents_config'][agent]['agent_indicator']
+                        ag_var = np.concatenate(
+                            (
+                                ag_var,
+                                [agent_indicator],
+                            ),
+                            dtype='float32'
+                        )
+                    # if apply, add the actuator state.
+                    if self.env_config['use_actuator_state']:
+                        ag_var = np.concatenate(
+                            (
+                                ag_var,
+                                [self.agent_actions[agent]],
+                            ),
+                            dtype='float32'
+                        )
+                    # if apply, add the thermal zone indicator
+                    if self.env_config['use_thermal_zone_indicator']:
+                        thermal_zone_indicator = self.env_config['agents_config'][agent]['thermal_zone_indicator']
+                        ag_var = np.concatenate(
+                            (
+                                ag_var,
+                                [thermal_zone_indicator],
+                            ),
+                            dtype='float32'
+                        )
+                    # if apply, add the agent type.
+                    if self.env_config['use_agent_type']:
+                        agent_type = self.env_config['agents_config'][agent]['actuator_type']
+                        ag_var = np.concatenate(
+                            (
+                                ag_var,
+                                [agent_type],
+                            ),
+                            dtype='float32'
+                        )
+                    ag_pool.append(tuple(ag_var))
+                    if first_agent:
+                        first_agent = False
+                        length_agent_in_poll = np.array([0]*len(ag_var))
+                
+                if number_of_agents_total-len(ag_pool) > 0:
+                    for _ in range(number_of_agents_total-len(ag_pool)):
+                        ag_pool.append(tuple(length_agent_in_poll))
+                
+                shuffled_ag_pool = random.sample(ag_pool, len(ag_pool))  # This shuffles the list
+                for embedding in shuffled_ag_pool:
+                    obs_list.append(np.array(embedding, dtype='float32'))
+                # Concatenamos todas las observaciones en un solo NDArray
+                obs = np.concatenate(obs_list, dtype='float32')
+                agents_obs[agent] = np.concatenate(
+                    (
+                        agents_obs[agent],
+                        obs,
+                    ),
+                    dtype='float32'
+                )
             
             # Set the agents observation and infos to communicate with the EPEnv.
             self.obs_queue.put(agents_obs)

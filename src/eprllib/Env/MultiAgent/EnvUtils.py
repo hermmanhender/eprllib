@@ -174,36 +174,10 @@ def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set):
     Returns:
         space.Box: The observation space of the environment.
     """
-    n_agents = env_config['number_of_agents_total']
     obs_space_len = 0
-    
-    # actuator state.
-    if env_config['use_actuator_state']:
-        obs_space_len += 1
-        
-    # agent_indicator.
-    if env_config['use_agent_indicator']:
-        obs_space_len += 1
-        
-    # thermal_zone_indicator
-    if env_config['use_thermal_zone_indicator']:
-        obs_space_len += 1
-        
-    # agent type.
-    if env_config['use_agent_type']:
-        obs_space_len += 1
-        
-    # building properties.
-    if env_config['use_building_properties']:
-        for thermal_zone in _thermal_none_ids:
-            thermal_zone_name = thermal_zone
-            break
-        obs_space_len += len([key for key in env_config['building_properties'][thermal_zone_name].keys()])
-        
-    # weather prediction.
-    if env_config['use_one_day_weather_prediction']:
-        obs_space_len += 24*6
-        
+    number_of_agents_total = env_config['number_of_agents_total']
+    if number_of_agents_total > 1:
+        obs_space_len += number_of_agents_total
     # variables and meters.
     if env_config['ep_environment_variables']:
         obs_space_len += len(env_config['ep_environment_variables'])
@@ -225,7 +199,16 @@ def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set):
         
     if env_config['weather_variables']:
         obs_space_len += len(env_config['weather_variables'])
+    # building properties.
+    if env_config['use_building_properties']:
+        for thermal_zone in _thermal_none_ids:
+            thermal_zone_name = thermal_zone
+            break
+        obs_space_len += len([key for key in env_config['building_properties'][thermal_zone_name].keys()])
         
+    # weather prediction.
+    if env_config['use_one_day_weather_prediction']:
+        obs_space_len += 24*6
     # discount the not observable variables.
     if env_config['no_observable_variables']:
         for thermal_zone in _thermal_none_ids:
@@ -233,8 +216,38 @@ def obs_space_AMA(env_config:Dict, _thermal_none_ids:Set):
             break
         obs_space_len -= len(env_config['no_observable_variables'][thermal_zone_name])
         
+    # actuator state.
+    if env_config['use_actuator_state']:
+        obs_space_len += 1
+        
+    # agent_indicator.
+    if env_config['use_agent_indicator']:
+        obs_space_len += 1
+        
+    # thermal_zone_indicator
+    if env_config['use_thermal_zone_indicator']:
+        obs_space_len += 1
+        
+    # agent type.
+    if env_config['use_agent_type']:
+        obs_space_len += 1
+    
+    if number_of_agents_total > 1:
+        for _ in range(number_of_agents_total):
+            if env_config['use_agent_indicator']:
+                obs_space_len += 1
+            # if apply, add the actuator state.
+            if env_config['use_actuator_state']:
+                obs_space_len += 1
+            # if apply, add the thermal zone indicator
+            if env_config['use_thermal_zone_indicator']:
+                obs_space_len += 1
+            # if apply, add the agent type.
+            if env_config['use_agent_type']:
+                obs_space_len += 1
+    
     # construct the observation space.
-    return Box(float("-inf"), float("inf"), ((obs_space_len*n_agents)+n_agents,))
+    return Box(float("-inf"), float("inf"), (obs_space_len,))
 
 def continuous_action_space():
     """
