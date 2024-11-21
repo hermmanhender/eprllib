@@ -6,10 +6,10 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import obs_space, obs_space_AMA
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
+from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -78,28 +78,18 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
         self._agent_ids = set([key for key in env_config['agents_config'].keys()])
+        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
+        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # asignation of environment action space.
         if self.env_config['action_space'] != None:
             self.action_space = self.env_config['action_space']
         
         # asignation of the environment observation space.
-        # TODO: Get the keys for the data saving here, together with the specification of the observation space.
-        if self.env_config['multi_agent_method'] == "fully_shared":
-            if not self.env_config.get("number_of_agents_total", False):
-                raise ValueError("The number of agents must be specified in the env_config for the fully_shared method.")
-            self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids, self.env_config['number_of_agents_total'])
-        elif self.env_config['multi_agent_method'] == "centralize":
-            self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
-        elif self.env_config['multi_agent_method'] in ["independent", "custom"]:
-            self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
-        else:
-            raise ValueError("Invalid multi_agent_method specified in env_config.")
+        
         
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
-        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
-        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
@@ -110,6 +100,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Episode and Reward functions
         self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
         self.reward_fn: RewardFunction = self.env_config['reward_fn']
+        # TODO: Get the keys for the data saving here, together with the specification of the observation space.
+        self.observation_fn: ObservationFunction = self.env_config['observation_fn']
+        self.observation_fn.get_agent_obs_dim(self.env_config, self._agent_ids, self._thermal_zone_ids)
         
         # ===CONTROLS=== #
         # variable for the registry of the episode number.
@@ -158,6 +151,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos_queue=self.infos_queue,
                 _agent_ids=self._agent_ids,
                 _thermal_zone_ids=self._thermal_zone_ids,
+                observation_fn=self.observation_fn
             )
             # Divide the thread in two in this point.
             self.energyplus_runner.start()
