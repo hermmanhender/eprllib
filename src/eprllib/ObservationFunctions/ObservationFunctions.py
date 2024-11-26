@@ -1,7 +1,8 @@
 """
 
 """
-from typing import Any, Dict, Tuple, Set
+from typing import Any, Dict, Tuple, Set, List
+import gymnasium as gym
 
 class ObservationFunction:
     def __init__(
@@ -15,7 +16,7 @@ class ObservationFunction:
         env_config: Dict[str,Any],
         _agent_ids: Set,
         _thermal_zone_ids: Set,
-        ) -> int:
+        ) -> Tuple[gym.Space, Dict[str,List[str]]]:
         return NotImplementedError("You must implement this method.")
         
     def set_agent_obs(
