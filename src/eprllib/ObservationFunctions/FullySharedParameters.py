@@ -1,12 +1,12 @@
 """
 
 """
-from typing import Any, Dict, Tuple, Set
+from typing import Any, Dict, Tuple, Set, List
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
 import numpy as np
 import random
-from gymnasium.spaces import Box
+import gymnasium as gym
 
 class FullySharedParameters(ObservationFunction):
     def __init__(
@@ -17,13 +17,14 @@ class FullySharedParameters(ObservationFunction):
         super().__init__(config)
         self.number_of_agents_total: int = self.config['number_of_agents_total']
         self.number_of_thermal_zone_total: int = self.config['number_of_thermal_zone_total']
+        self.observation_space_labels: Dict[str,List[str]] = None
     
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
         _agent_ids: Set,
         _thermal_zone_ids: Set,
-        ) -> int:
+        ) -> gym.Space:
         """
         This method construct the observation space of the environment.
 
@@ -35,14 +36,6 @@ class FullySharedParameters(ObservationFunction):
         """
         # Variable to save the obs_space dim.
         obs_space_len = 0
-        
-        # Get random names to count the variables inside dicts.
-        for agent in _agent_ids:
-            agent_random_name = agent
-            break
-        for thermal_zone in _thermal_zone_ids:
-            thermal_zone_random_name = thermal_zone
-            break
         
         # Add agents id vector to space dim.
         if self.number_of_thermal_zone_total > 1:
@@ -147,7 +140,7 @@ class FullySharedParameters(ObservationFunction):
                     obs_space_len += 1
         
         # construct the observation space.
-        return Box(float("-inf"), float("inf"), (obs_space_len,))
+        return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len,))
         
     def set_agent_obs(
         self,
@@ -167,7 +160,7 @@ class FullySharedParameters(ObservationFunction):
         # Add agent indicator for the observation for each agent
         agents_obs = {agent: [] for agent in _agent_ids}
         agents_infos = {agent: {} for agent in _agent_ids}
-        
+        agetns_obs_labels = {agent: [] for agent in _agent_ids} # To assign labels to the obs vector
         # Agent_indicator vector (if any)
         # Agent env observation (thermal_zone related term)
         # Obs of others agents (actions, types) (point of view of the actual agent)
@@ -315,3 +308,4 @@ class FullySharedParameters(ObservationFunction):
                 dtype='float32'
             )
         return agents_obs, agents_infos
+    
