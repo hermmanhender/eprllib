@@ -8,6 +8,7 @@ This module contain the methods used in the environment process.
 from typing import Tuple, Dict, List, Optional
 from gymnasium.spaces import Box, Discrete
 import numpy as np
+import sys
 
 def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
     """
@@ -20,8 +21,6 @@ def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
         path (Optional[str], optional): Complete path to the EnergyPlus installation directory 
         if this is different that the default installation. Defaults to None.
     """
-    import sys
-    
     new_path = None
     if path is not None:
         new_path = path
