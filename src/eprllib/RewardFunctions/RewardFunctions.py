@@ -21,9 +21,11 @@ class RewardFunction:
     ):
         self.reward_fn_config = reward_fn_config
     
-    def calculate_reward(
+    def get_reward(
         self,
-        infos: Dict[str,Dict[str,Any]]
+        infos: Dict[str,Dict[str,Any]],
+        terminated: bool,
+        truncated: bool,
         ) -> Dict[str,float]:
         """
         This method must be implemented in the subclass.
