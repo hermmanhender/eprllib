@@ -1,7 +1,7 @@
 """# ENERGYPLUS RUNNER
 
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
-Python API in the version 23.2.0.
+Python API in the version 24.1.0.
 """
 import os
 import threading
@@ -35,6 +35,7 @@ class EnergyPlusRunner:
         _agent_ids: Set,
         _thermal_zone_ids: Set,
         observation_fn: ObservationFunction,
+        action_fn: ActionFunction,
         ) -> None:
         """
         The object has an intensive interaction with EnergyPlus Environment script, exchange information
@@ -81,8 +82,8 @@ class EnergyPlusRunner:
         self.obs_keys = []
         self.infos_keys = []
         
-        # Define the action transformer function
-        self.action_fn: ActionFunction = self.env_config['action_fn']
+        # Define the action and observation functions.
+        self.action_fn = action_fn
         self.observation_fn = observation_fn
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
