@@ -50,7 +50,6 @@ class EnvConfig:
         allow EnergyPlus to resume controlling that value, there is an actuator reset function as well.
         
         * agents_config (Dict[str,Dict[str,Any]]):
-        
 
         **observations**
         
@@ -65,7 +64,7 @@ class EnvConfig:
         
         * variables_env: List = []
         * variables_thz: List = []
-        * variables_obj: Dict[str,Tuple[str,str]] = {} # {'agent_ID':('variable','key_object')}
+        * variables_obj: Dict[str,Tuple[str,str]] = {}  
         
         Meters represent groups of variables which are collected together, much like a meter on
         a building which represents multiple energy sources. Meters are handled the same way as
@@ -83,8 +82,7 @@ class EnvConfig:
         this handle to lookup the value.
         
         * static_variables: Dict[str,Tuple[str,str]] = {} # {'thermal_zone_ID':('variable','key_object')}
-        
-        
+                
         A number of parameters are made available as they vary through the
         simulation, including the current simulation day of week, day of year, hour, and many other
         things. These do not require a handle, but are available through direct function calls.
@@ -207,52 +205,15 @@ class EnvConfig:
 
         # agents
         self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
-        # Actuators: Actuators are the way that users modify the program at runtime using custom logic
-        # and calculations. Not every variable inside EnergyPlus can be actuated. This is intentional,
-        # because opening that door could allow the program to run at unrealistic conditions, with flow
-        # imbalances or energy imbalances, and many other possible problems. Instead, a specific set of
-        # items are available to actuate, primarily control functions, flow requests, and environmental
-        # boundary conditions. These actuators, when used in conjunction with the runtime API and
-        # data exchange variables, allow a user to read data, make decisions and perform calculations,
-        # then actuate control strategies for subsequent time steps.
-        # Actuator functions are similar, but not exactly the same, as for variables. An actuator
-        # handle/ID is still looked up, but it takes the actuator type, component name, and control
-        # type, since components may have more than one control type available for actuation. The
-        # actuator can then be “actuated” by calling a set-value function, which overrides an internal
-        # value, and informs EnergyPlus that this value is currently being externally controlled. To
-        # allow EnergyPlus to resume controlling that value, there is an actuator reset function as well.
 
         # observations
         self.observation_fn: ObservationFunction = NotImplemented
         self.observation_fn_config: Dict[str, Any] = {}
-        
         self.variables_env: List = []
         self.variables_thz: List = []
         self.variables_obj: Dict[str,Tuple[str,str]] = {} # {'agent_ID':('variable','key_object')}
-        # Variables: Variables represent time series output variables in the simulation. There are thousands
-        # of variables made available based on the specific configuration. A user typically requests
-        # variables to be in their output files by adding Output:Variable objects to the input file. It
-        # is important to note that if the user does not request these variables, they are not tracked,
-        # and thus not available on the API.
-        
         self.meters: Dict[str,Tuple[str,str]] = {} # {'agent_ID':('variable','key_object')}
-        # Meters: Meters represent groups of variables which are collected together, much like a meter on
-        # a building which represents multiple energy sources. Meters are handled the same way as
-        # variables, except that meters do not need to be requested prior running a simulation. From
-        # an API standpoint, a client must simply get a handle to a meter by name, and then access
-        # the meter value by using a get-value function on the API.
-        
         self.static_variables: Dict[str,Tuple[str,str]] = {} # {'thermal_zone_ID':('variable','key_object')}
-        # Internal Variables: The name “internal variable” is used here as it is what these variables were
-        # called in the original EMS implementation. Another name for these variables could be “static”
-        # variables. Basically, these variables represent data that does not change throughout a simulation 
-        # period. Examples include calculated zone volume or autosized equipment values. These
-        # values are treated just like meters, you use one function to access a handle ID, and then use
-        # this handle to lookup the value.
-        
-        # Simulation Parameters: A number of parameters are made available as they vary through the
-        # simulation, including the current simulation day of week, day of year, hour, and many other
-        # things. These do not require a handle, but are available through direct function calls.
         self.simulation_parameters: Dict[str,bool] = {
             'actual_date_time': False,
             'actual_time': False,
@@ -302,26 +263,8 @@ class EnvConfig:
             'zone_time_step': False,
             'zone_time_step_number': False,
         }
-        
         self.infos_variables: Dict[str,List|Dict[str,List]] = NotImplemented # TODO: add actuators, weather_prediction, building_properties
-        # {
-        #     'variables_env': [],
-        #     'variables_thz': [],
-        #     'variables_obj': {'agent_ID': []},
-        #     'meters': {'agent_ID': []},
-        #     'static_variables': {'thermal_zone_ID': []},
-        #     'simulation_parameters': [],
-        #     'zone_simulation_parameters': []
-        
         self.no_observable_variables: Dict[str,List|Dict[str,List]] = NotImplemented # TODO: add actuators, weather_prediction, building_properties
-        # {'variables_env': []
-        # 'variables_thz': []
-        # 'variables_obj': {'agent_ID': []}
-        # 'meters': {'agent_ID': []}
-        # 'static_variables': {'thermal_zone_ID': []}
-        # 'simulation_parameters': []
-        # 'zone_simulation_parameters': []
-        
         self.use_actuator_state: bool = False
         self.use_agent_indicator: bool = True
         self.use_thermal_zone_indicator: bool = False
