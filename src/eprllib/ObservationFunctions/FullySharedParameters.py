@@ -44,10 +44,10 @@ class FullySharedParameters(ObservationFunction):
         obs_space_len += len(env_config['variables_env'])
         # Thermal zone variables.
         obs_space_len += len(env_config['variables_thz'])
-        # simulation_parameters
-        obs_space_len += len(env_config['simulation_parameters'])
-        # zone_simulation_parameters
-        obs_space_len += len(env_config['zone_simulation_parameters'])
+        # simulation_parameters: Count the keys in the dict that are True
+        obs_space_len += len([key for key, value in env_config['simulation_parameters'].items() if value])
+        # zone_simulation_parameters: Count the keys in the dict that are True
+        obs_space_len += len([key for key, value in env_config['zone_simulation_parameters'].items() if value])
         # Object variables and meters variables.
         # Check all the agents have the same lengt.
         for agent in _agent_ids:
