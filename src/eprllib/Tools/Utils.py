@@ -715,3 +715,63 @@ def random_weather_config(env_config:Dict, epw_files_folder_path:str) -> Dict:
     env_config['epw_path'] = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])
     
     return env_config
+
+def generate_variated_schedule(input_path, output_path, variation_percentage=10):
+    """
+    Generates a new CSV with variations in schedule data.
+    
+    Parameters:
+    - input_path: str, path to the input CSV file.
+    - output_path: str, path to save the output CSV file.
+    - variation_percentage: float, maximum percentage variation for each value (default: 10).
+    """
+    # Load the input CSV
+    data = pd.read_csv(input_path)
+    
+    # Calculate variation range
+    variation_factor = variation_percentage / 100.0
+    
+    # Apply random variations within the specified range
+    def apply_variation(value):
+        variation = np.random.uniform(-variation_factor, variation_factor)
+        new_value = value * (1 + variation)
+        return np.clip(new_value, 0, 1)  # Ensure values stay within [0, 1]
+
+    # Apply variation to all columns
+    variated_data = data.applymap(apply_variation)
+    
+    # Save the new dataset to the specified output path
+    variated_data.to_csv(output_path, index=False)
+
+def generate_variated_schedule_with_shift(input_path, output_path, variation_percentage=10, shift_hours=0):
+    """
+    Generates a new CSV with variations and optional time shift in schedule data.
+    
+    Parameters:
+    - input_path: str, path to the input CSV file.
+    - output_path: str, path to save the output CSV file.
+    - variation_percentage: float, maximum percentage variation for each value (default: 10).
+    - shift_hours: int, number of hours to shift the schedules (default: 0).
+    """
+    # Load the input CSV
+    data = pd.read_csv(input_path)
+    
+    # Calculate variation range
+    variation_factor = variation_percentage / 100.0
+    
+    # Apply random variations within the specified range
+    def apply_variation(value):
+        variation = np.random.uniform(-variation_factor, variation_factor)
+        new_value = value * (1 + variation)
+        return np.clip(new_value, 0, 1)  # Ensure values stay within [0, 1]
+    
+    # Apply variation to all columns
+    variated_data = data.applymap(apply_variation)
+    
+    # Apply temporal shift if specified
+    if shift_hours != 0:
+        rows_to_shift = shift_hours  # Number of rows to shift (1 hour per row)
+        variated_data = variated_data.shift(periods=rows_to_shift, fill_value=0).reset_index(drop=True)
+
+    # Save the new dataset to the specified output path
+    variated_data.to_csv(output_path, index=False)
