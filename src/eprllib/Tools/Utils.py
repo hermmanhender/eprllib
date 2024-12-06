@@ -775,3 +775,61 @@ def generate_variated_schedule_with_shift(input_path, output_path, variation_per
 
     # Save the new dataset to the specified output path
     variated_data.to_csv(output_path, index=False)
+
+def generate_occupancy_schedule(input_path, output_path, random_variation=False, seed=None):
+    """
+    Generates an updated occupancy schedule based on typical residential patterns.
+    
+    Parameters:
+    - input_path: str, path to the input CSV file (with "occupancy" column).
+    - output_path: str, path to save the output CSV file.
+    - random_variation: bool, whether to introduce random variations to the schedule.
+    - seed: int, random seed for reproducibility (default: None).
+    """
+    # Set random seed if needed
+    if seed is not None:
+        np.random.seed(seed)
+    
+    # Load the input CSV
+    data = pd.read_csv(input_path)
+    assert "occupancy" in data.columns, "Input file must have an 'occupancy' column."
+    
+    # Generate timestamps assuming hourly data for a year (if not provided)
+    num_rows = len(data)
+    start_date = datetime.datetime(2024, 1, 1)
+    timestamps = [start_date + datetime.timedelta(hours=i) for i in range(num_rows)]
+    data["timestamp"] = timestamps
+
+    # Define occupancy rules based on weekdays and hours
+    def occupancy_pattern(timestamp):
+        hour = timestamp.hour
+        day = timestamp.weekday()  # 0=Monday, 6=Sunday
+        
+        if day < 5:  # Weekdays
+            if 7 <= hour < 9 or 17 <= hour < 23:
+                return 1  # Morning/evening peak
+            elif 9 <= hour < 17:
+                return 0  # Work hours
+            else:
+                return 1  # Night hours (sleeping)
+        else:  # Weekends
+            if 9 <= hour < 23:
+                return 1  # Occupied during the day
+            else:
+                return 1  # Night hours (sleeping)
+
+    # Apply patterns
+    data["occupancy"] = data["timestamp"].apply(occupancy_pattern)
+    
+    # Introduce random variations if enabled
+    if random_variation:
+        def add_randomness(occ_value):
+            return occ_value if np.random.rand() > 0.1 else 1 - occ_value  # Flip value with 10% probability
+        
+        data["occupancy"] = data["occupancy"].apply(add_randomness)
+
+    # Drop the timestamp column before saving
+    data.drop(columns=["timestamp"], inplace=True)
+
+    # Save the updated dataset to the specified output path
+    data.to_csv(output_path, index=False)
