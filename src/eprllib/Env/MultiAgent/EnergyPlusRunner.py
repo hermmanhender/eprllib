@@ -138,7 +138,7 @@ class EnergyPlusRunner:
         EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
-        dicr_agents_obs, dict_agents_infos = NotImplemented
+        dict_agents_obs, dict_agents_infos = NotImplemented
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
         if not self._init_callback(state_argument) or self.simulation_complete:
@@ -184,7 +184,7 @@ class EnergyPlusRunner:
             agent_states[agent].update(agent_states_p)
             agent_infos[agent].update(agent_infos_p)
         
-        dict_agents_obs, dict_agents_infos = self.multiagent_method.set_agent_obs(
+        dict_agents_obs, dict_agents_infos = self.observation_fn.set_agent_obs_and_infos(
             self.env_config,
             self._agent_ids,
             self._thermal_zone_ids,
