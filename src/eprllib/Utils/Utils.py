@@ -7,80 +7,6 @@ import json
 import pandas as pd
 import numpy as np
 
-def trial_str_creator(trial, name:str='eprllib'):
-    """
-    This method create a description for the folder where the outputs and checkpoints 
-    will be save.
-
-    Args:
-        trial: A trial type of RLlib.
-        name (str): Optional name for the trial. Default: eprllib
-
-    Returns:
-        str: Return a unique string for the folder of the trial.
-    """
-    return "{}_{}_{}".format(name, trial.trainable_name, trial.trial_id)
-
-def len_episode(env_config:Dict) -> str:
-    """
-    This function is used to modify the RunPeriod longitude of a epJSON file.
-    
-    Args:
-        epjson_file(str): path to the epJSON file.
-        output_folder(str): path to the destination folder where the modified file will be saved.
-        episode_len(int)[Optional]: longitude of the RunPeriod, or episode in the context of eprllib. Default is 7.
-        init_julian_day(int): The initial julian day to determine the RunPeriod. Defaut is 0, that means a random choice.
-        
-    Return:
-        str: path to the modified epJSON file.
-    """
-    epjson_file = env_config['epjson_path']
-    output_folder = env_config['output_path']
-    episode_len = env_config['episode_fn_config'].get('episode_len',7)
-    init_julian_day = env_config['episode_fn_config'].get('init_julian_day', 0)
-    # Open the epjson file
-    with open(epjson_file) as epf:
-        epjson_object = pd.read_json(epf)
-    # Transform the julian day into day,month tuple
-    if init_julian_day <= 0:
-        init_julian_day = np.random.randint(1, 366-episode_len)
-    init_day, init_month = from_julian_day(init_julian_day)
-    # Calculate the final day and month
-    end_julian_day = init_julian_day + episode_len
-    end_day, end_month = from_julian_day(end_julian_day)
-    # Change the values in the epjson file
-    epjson_object['RunPeriod']['RunPeriod 1']['beging_month'] = init_month
-    epjson_object['RunPeriod']['RunPeriod 1']['begin_day_of_month'] = init_day
-    epjson_object['RunPeriod']['RunPeriod 1']['end_month'] = end_month
-    epjson_object['RunPeriod']['RunPeriod 1']['end_day_of_month'] = end_day
-    # Save the epjson file modified into the output folder
-    df = pd.DataFrame(epjson_object)
-    output_path = output_folder + f'/epjson_file_{init_julian_day}.epjson'
-    df.to_json(output_path, orient='records')
-
-    print(f"The epjson file with the RunPeriod modified was saved in: {output_path}.")
-
-    return output_path
-
-def from_julian_day(julian_day:int):
-    """
-    This funtion take a julian day and return the corresponding
-    day and month for a tipical year of 365 days.
-    
-    Args:
-        julian_day(int): Julian day to be transform
-        
-    Return:
-        Tuple[int,int]: (day,month)
-    """
-    # Define the number of days in each month
-    days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    # Define the day variable as equal to julian day and discount it
-    day = julian_day
-    for month, days_in_month in enumerate(days_in_months):
-        if day <= days_in_month:
-            return (day, month + 1)
-        day -= days_in_month
         
 def variable_checking(
     epJSON_file:str,
@@ -715,3 +641,122 @@ def random_weather_config(env_config:Dict, epw_files_folder_path:str) -> Dict:
     env_config['epw_path'] = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])
     
     return env_config
+
+def generate_variated_schedule(input_path, output_path, variation_percentage=10):
+    """
+    Generates a new CSV with variations in schedule data.
+    
+    Parameters:
+    - input_path: str, path to the input CSV file.
+    - output_path: str, path to save the output CSV file.
+    - variation_percentage: float, maximum percentage variation for each value (default: 10).
+    """
+    # Load the input CSV
+    data = pd.read_csv(input_path)
+    
+    # Calculate variation range
+    variation_factor = variation_percentage / 100.0
+    
+    # Apply random variations within the specified range
+    def apply_variation(value):
+        variation = np.random.uniform(-variation_factor, variation_factor)
+        new_value = value * (1 + variation)
+        return np.clip(new_value, 0, 1)  # Ensure values stay within [0, 1]
+
+    # Apply variation to all columns
+    variated_data = data.applymap(apply_variation)
+    
+    # Save the new dataset to the specified output path
+    variated_data.to_csv(output_path, index=False)
+
+def generate_variated_schedule_with_shift(input_path, output_path, variation_percentage=10, shift_hours=0):
+    """
+    Generates a new CSV with variations and optional time shift in schedule data.
+    
+    Parameters:
+    - input_path: str, path to the input CSV file.
+    - output_path: str, path to save the output CSV file.
+    - variation_percentage: float, maximum percentage variation for each value (default: 10).
+    - shift_hours: int, number of hours to shift the schedules (default: 0).
+    """
+    # Load the input CSV
+    data = pd.read_csv(input_path)
+    
+    # Calculate variation range
+    variation_factor = variation_percentage / 100.0
+    
+    # Apply random variations within the specified range
+    def apply_variation(value):
+        variation = np.random.uniform(-variation_factor, variation_factor)
+        new_value = value * (1 + variation)
+        return np.clip(new_value, 0, 1)  # Ensure values stay within [0, 1]
+    
+    # Apply variation to all columns
+    variated_data = data.applymap(apply_variation)
+    
+    # Apply temporal shift if specified
+    if shift_hours != 0:
+        rows_to_shift = shift_hours  # Number of rows to shift (1 hour per row)
+        variated_data = variated_data.shift(periods=rows_to_shift, fill_value=0).reset_index(drop=True)
+
+    # Save the new dataset to the specified output path
+    variated_data.to_csv(output_path, index=False)
+
+def generate_occupancy_schedule(input_path, output_path, random_variation=False, seed=None):
+    """
+    Generates an updated occupancy schedule based on typical residential patterns.
+    
+    Parameters:
+    - input_path: str, path to the input CSV file (with "occupancy" column).
+    - output_path: str, path to save the output CSV file.
+    - random_variation: bool, whether to introduce random variations to the schedule.
+    - seed: int, random seed for reproducibility (default: None).
+    """
+    # Set random seed if needed
+    if seed is not None:
+        np.random.seed(seed)
+    
+    # Load the input CSV
+    data = pd.read_csv(input_path)
+    assert "occupancy" in data.columns, "Input file must have an 'occupancy' column."
+    
+    # Generate timestamps assuming hourly data for a year (if not provided)
+    num_rows = len(data)
+    start_date = datetime.datetime(2024, 1, 1)
+    timestamps = [start_date + datetime.timedelta(hours=i) for i in range(num_rows)]
+    data["timestamp"] = timestamps
+
+    # Define occupancy rules based on weekdays and hours
+    def occupancy_pattern(timestamp):
+        hour = timestamp.hour
+        day = timestamp.weekday()  # 0=Monday, 6=Sunday
+        
+        if day < 5:  # Weekdays
+            if 7 <= hour < 9 or 17 <= hour < 23:
+                return 1  # Morning/evening peak
+            elif 9 <= hour < 17:
+                return 0  # Work hours
+            else:
+                return 1  # Night hours (sleeping)
+        else:  # Weekends
+            if 9 <= hour < 23:
+                return 1  # Occupied during the day
+            else:
+                return 1  # Night hours (sleeping)
+
+    # Apply patterns
+    data["occupancy"] = data["timestamp"].apply(occupancy_pattern)
+    
+    # Introduce random variations if enabled
+    if random_variation:
+        def add_randomness(occ_value):
+            return occ_value if np.random.rand() > 0.1 else 1 - occ_value  # Flip value with 10% probability
+        
+        data["occupancy"] = data["occupancy"].apply(add_randomness)
+
+    # Drop the timestamp column before saving
+    data.drop(columns=["timestamp"], inplace=True)
+
+    # Save the updated dataset to the specified output path
+    data.to_csv(output_path, index=False)
+    
