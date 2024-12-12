@@ -4,9 +4,6 @@ from eprllib.Env.MultiAgent.EnvUtils import continuous_action_space
 from eprllib.Env.MultiAgent.EnvUtils import discrete_action_space
 from gymnasium.spaces import Box
 from gymnasium.spaces import Discrete
-from src.eprllib.Env.MultiAgent.EnvUtils import actuators_to_agents
-from typing import Dict, List
-from typing import Dict, List, Tuple
 from unittest.mock import patch
 import numpy as np
 import pytest
