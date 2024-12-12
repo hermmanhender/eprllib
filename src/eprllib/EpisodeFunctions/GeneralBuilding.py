@@ -33,11 +33,10 @@ context of a reinforcement learning environment.
 import os
 import json
 import numpy as np
-import pandas as pd
 from typing import Dict, Any, Tuple
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.Tools.Utils import building_dimension, effective_thermal_capacity, u_factor, random_weather_config
-import random
+from eprllib.Utils.Utils import building_dimension
+from eprllib.Utils.random_weather import get_random_weather
 
 class GeneralBuilding(EpisodeFunction):
     def __init__(
@@ -235,7 +234,7 @@ class GeneralBuilding(EpisodeFunction):
                 agent_indicator_init += 1
 
         # Select the weather site
-        env_config = random_weather_config(env_config, self.epw_files_folder_path)
+        env_config = get_random_weather(self.epw_files_folder_path)
                 
         # The new modify epjson file is writed in the results folder created by RLlib
         # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']

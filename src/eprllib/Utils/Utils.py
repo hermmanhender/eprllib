@@ -6,6 +6,7 @@ import os
 import json
 import pandas as pd
 import numpy as np
+import datetime
 
         
 def variable_checking(
@@ -605,40 +606,6 @@ def random_building_config(env_config:Dict):
     
     # The path to the epjson file is defined
     env_config['epjson_path'] = os.path.join(epjson_files_folder_path, os.listdir(epjson_files_folder_path)[id_epjson_file])
-    
-    return env_config
-
-def random_weather_config(env_config:Dict, epw_files_folder_path:str) -> Dict:
-    """
-    This method define the path to the epJSON file.
-
-    Args:
-        env_config (dict): Environment configuration.
-
-    Return:
-        Dict: The method returns the epw path.
-        
-    Example:
-    
-        env_config = {
-            ...
-            'episode_config': {
-                'epw_files_folder_path': 'path/to/epw/files',
-                'id_epw_file': None
-            }
-        }
-    """
-    if env_config.get('epw_path', False) == False:
-        env_config['epw_path'] = ''
-    
-    # For each property, assign the default or the user input
-    # TODO: Change the 'episode_fn_config'.
-    # id_epw_file = env_config['episode_fn_config'].get('id_epw_file', None)
-    # if id_epw_file is None:
-    id_epw_file = np.random.randint(0, len(os.listdir(epw_files_folder_path)))
-    
-    # The path to the epjson file is defined
-    env_config['epw_path'] = os.path.join(epw_files_folder_path, os.listdir(epw_files_folder_path)[id_epw_file])
     
     return env_config
 
