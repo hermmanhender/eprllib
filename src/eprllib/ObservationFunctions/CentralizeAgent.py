@@ -11,7 +11,7 @@ class CentralizeAgent(ObservationFunction):
         ):
         self.config = config
         
-    def set_agent_obs(
+    def set_agent_obs_and_infos(
         self,
         env_config: Dict[str,Any],
         _agent_ids: Set,
