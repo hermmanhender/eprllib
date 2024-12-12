@@ -20,7 +20,7 @@ class IndependentLearning(ObservationFunction):
         ) -> int:
         return NotImplementedError("You must implement this method.")
         
-    def set_agent_obs(
+    def set_agent_obs_and_infos(
         self,
         env_config: Dict[str,Any],
         _agent_ids: Set,
