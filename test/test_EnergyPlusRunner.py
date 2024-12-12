@@ -1,21 +1,15 @@
 from ctypes import c_void_p
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
-from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner, api
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
-from pyenergyplus.api import EnergyPlusAPI
 from queue import Queue
-from typing import Dict, Any
 from typing import Dict, Any, Set
-from typing import Dict, Any, Tuple
-from typing import Dict, Tuple
-from unittest.mock import MagicMock
 from unittest.mock import MagicMock, patch
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 import numpy as np
-import os
 import pytest
 import time
+import threading
 
 class TestEnergyplusrunner:
 
