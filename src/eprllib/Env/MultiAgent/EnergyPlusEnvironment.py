@@ -86,6 +86,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
         self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
+        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
+        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
+        
         # asignation of environment action space.
         self.action_space = self.action_fn.get_action_space_dim()
         

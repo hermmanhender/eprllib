@@ -349,6 +349,7 @@ class EnvConfig:
         """
         if agents_config == NotImplemented:
             raise NotImplementedError("agents_config must be defined.")
+
         self.agents_config = agents_config
     
     def observations(

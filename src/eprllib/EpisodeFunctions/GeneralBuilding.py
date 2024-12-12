@@ -36,7 +36,8 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Any, Tuple
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.Tools.Utils import building_dimension, inertial_mass, u_factor, random_weather_config
+from eprllib.Tools.Utils import building_dimension, effective_thermal_capacity, u_factor, random_weather_config
+import random
 
 class GeneralBuilding(EpisodeFunction):
     def __init__(
@@ -69,6 +70,7 @@ class GeneralBuilding(EpisodeFunction):
         super().__init__(episode_fn_config)
         self.epjson_files_folder_path: str = episode_fn_config['epjson_files_folder_path']
         self.epw_files_folder_path: str = episode_fn_config['epw_files_folder_path']
+        self.load_profiles_folder_path: str = episode_fn_config['load_profiles_folder_path']
     
     def get_episode_config(self, env_config:Dict[str,Any]) -> Dict[str,Any]:
         """
@@ -78,10 +80,28 @@ class GeneralBuilding(EpisodeFunction):
         Return:
             dict: The method returns the env_config with modifications.
         """
-        
+        # select the model:
+        model_window_configs = {
+          "1": [1,1,1,1], # all windows: [n,e,s,w]
+          "2": [1,1,1,0],
+          "3": [1,1,0,1],
+          "4": [1,0,1,1],
+          "5": [0,1,1,1],
+          "6": [1,1,0,0],
+          "7": [1,0,1,0],
+          "8": [0,1,1,0],
+          "9": [1,0,0,1],
+          "10": [0,1,0,1],
+          "11": [0,0,1,1],
+          "12": [1,0,0,0],
+          "13": [0,1,0,0],
+          "14": [0,0,1,0],
+          "15": [0,0,0,1],
+        }
+        model = np.random.randint(1, 16)
         epjson_path: str = env_config['epjson_path']
         if epjson_path in ["auto", None]:
-            epjson_path = "src/eprllib/files/GeneralBuildinModel/model_1.epJSON"
+            epjson_path = f"src/eprllib/files/GeneralBuildinModel/model_{model}.epJSON"
         # Establish the epJSON Object, it will be manipulated to modify the building model.
         with open(epjson_path) as file:
             epJSON_object: dict = json.load(file)
@@ -98,14 +118,17 @@ class GeneralBuilding(EpisodeFunction):
         
         # Change the dimension of the building and windows
         window_area_relation = []
-        env_config['building_properties']['window_area_relation_north'] = (0.9-0.05) * np.random.random_sample() + 0.05
-        env_config['building_properties']['window_area_relation_east'] = (0.9-0.05) * np.random.random_sample() + 0.05
-        env_config['building_properties']['window_area_relation_south'] = (0.9-0.05) * np.random.random_sample() + 0.05
-        env_config['building_properties']['window_area_relation_west'] = (0.9-0.05) * np.random.random_sample() + 0.05
-        window_area_relation.append(env_config['building_properties']['window_area_relation_north'])
-        window_area_relation.append(env_config['building_properties']['window_area_relation_east'])
-        window_area_relation.append(env_config['building_properties']['window_area_relation_south'])
-        window_area_relation.append(env_config['building_properties']['window_area_relation_west'])
+        model_window_config = model_window_configs[str(model)]
+        for i in range(4):
+            if model_window_config[i] == 1:
+                window_area_relation.append((0.9-0.05) * np.random.random_sample() + 0.05)
+            else:
+                window_area_relation.append(0)
+        env_config['building_properties']['window_area_relation_north'] = window_area_relation[0]
+        env_config['building_properties']['window_area_relation_east'] = window_area_relation[1]
+        env_config['building_properties']['window_area_relation_south'] = window_area_relation[2]
+        env_config['building_properties']['window_area_relation_west'] = window_area_relation[3]
+        
         window_area_relation = np.array(window_area_relation)
         building_dimension(epJSON_object, h, w, l,window_area_relation)
         
@@ -162,14 +185,15 @@ class GeneralBuilding(EpisodeFunction):
             epJSON_object["InternalMass"][key]["surface_area"] = np.random.randint(10,40)
         
         # RunPeriod of a random date
-        beging_month, beging_day, end_month, end_day = self.run_period(np.random.randint(1, 365-90), 90)
+        beging_month, beging_day, end_month, end_day = self.run_period(np.random.randint(1, 365-14), 14)
         epJSON_object['RunPeriod']['Run Period 1']['begin_month'] = beging_month
         epJSON_object['RunPeriod']['Run Period 1']['begin_day_of_month'] = beging_day
         epJSON_object['RunPeriod']['Run Period 1']['end_month'] = end_month
         epJSON_object['RunPeriod']['Run Period 1']['end_day_of_month'] = end_day
         
         # The total inertial thermal mass is calculated.
-        # env_config['building_properties']['inercial_mass'] = inertial_mass(epJSON_object)
+        # for agent in [agent for agent in env_config['agents_config'].keys()]:
+        #     env_config['reward_fn'].reward_fn_config[agent]['Cdyn'] = effective_thermal_capacity(epJSON_object)
         
         # The global U factor is calculated.
         # env_config['building_properties']['construction_u_factor'] = u_factor(epJSON_object)
@@ -182,19 +206,33 @@ class GeneralBuilding(EpisodeFunction):
             epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_sensible_heating_capacity"] = E_heat_ref
             epJSON_object["ZoneHVAC:IdealLoadsAirSystem"][HVAC_names[hvac]]["maximum_total_cooling_capacity"] = E_cool_ref
         
-        number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
-        for agent in [agent for agent in env_config['agents_config'].keys()]:
-            env_config['reward_fn'].reward_fn_config[agent]['floor_size'] = w*l
-            env_config['reward_fn'].reward_fn_config[agent]['cooling_energy_ref'] = E_cool_ref*3600/number_of_timesteps_per_hour
-            env_config['reward_fn'].reward_fn_config[agent]['heating_energy_ref'] = E_heat_ref*3600/number_of_timesteps_per_hour
+        # number_of_timesteps_per_hour = epJSON_object['Timestep']['Timestep 1']['number_of_timesteps_per_hour']
+        # for agent in [agent for agent in env_config['agents_config'].keys()]:
+        #     env_config['reward_fn'].reward_fn_config[agent]['floor_size'] = w*l
+        #     env_config['reward_fn'].reward_fn_config[agent]['cooling_energy_ref'] = E_cool_ref*3600/number_of_timesteps_per_hour
+        #     env_config['reward_fn'].reward_fn_config[agent]['heating_energy_ref'] = E_heat_ref*3600/number_of_timesteps_per_hour
+        
+        # Change the load file profiles
+        schedule_file_keys = [key for key in epJSON_object["Schedule:File"].keys()]
+        for key in schedule_file_keys:
+            epJSON_object["Schedule:File"][key]["file_name"] = self.load_profiles_folder_path + "/" + np.random.choice(os.listdir(self.load_profiles_folder_path))
         
         # Implementation of a random number of agent indicator and thermal zone
-        agent_indicator_init = np.random.randint(0,50)
-        thermal_zone_indicator = np.random.randint(0,50)
+        # TODO: Use the env_config number of maximum quantity of agents to train the model.
+        agent_indicator_init = np.random.randint(1,6)
+        agents_list = []
+        thermal_zone_indicator = np.random.randint(1,11)
         for agent in [agent for agent in env_config['agents_config'].keys()]:
             env_config['agents_config'][agent]['agent_indicator'] = agent_indicator_init
             env_config['agents_config'][agent]['thermal_zone_indicator'] = thermal_zone_indicator
-            agent_indicator_init += 1
+            agents_list.append(agent_indicator_init)
+            if agent_indicator_init >= 6:
+                if len(agents_list) >= 6:
+                    print("The agent capacity is full.")
+                else:
+                    agent_indicator_init = 0
+            else:
+                agent_indicator_init += 1
 
         # Select the weather site
         env_config = random_weather_config(env_config, self.epw_files_folder_path)
