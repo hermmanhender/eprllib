@@ -1,7 +1,5 @@
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
-from eprllib.Env.EnvConfig import EnvConfig
 from eprllib.Env.EnvConfig import EnvConfig, env_config_to_dict
-from eprllib.Env.EnvConfig import env_config_to_dict, EnvConfig
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
