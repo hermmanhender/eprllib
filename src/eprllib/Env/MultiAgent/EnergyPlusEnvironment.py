@@ -6,10 +6,11 @@ need to define the EnergyPlus Runner.
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnvUtils import obs_space, obs_space_AMA
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
+from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -75,29 +76,25 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         """
         # asigning the configuration of the environment.
         self.env_config = env_config
+        self.action_fn: ActionFunction = self.env_config['action_fn']
+        self.observation_fn: ObservationFunction = self.env_config['observation_fn']
+        self.reward_fn: RewardFunction = self.env_config['reward_fn']
+        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
         
         # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
         self._agent_ids = set([key for key in env_config['agents_config'].keys()])
+        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
+        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
         self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
         
         # asignation of environment action space.
-        if self.env_config['action_space'] != None:
-            self.action_space = self.env_config['action_space']
+        self.action_space = self.action_fn.get_action_space_dim()
         
         # asignation of the environment observation space.
         # TODO: Get the keys for the data saving here, together with the specification of the observation space.
-        if self.env_config['multi_agent_method'] == "fully_shared":
-            if type(self.env_config["number_of_agents_total"]) != int:
-                raise ValueError(f"\nThe number_of_agents_total must be specified in the env_config for the fully_shared method and must be a integer. The actual value is: {self.env_config['number_of_agents_total']}.\n")
-            self.observation_space = obs_space_AMA(self.env_config, self._thermal_zone_ids)
-        elif self.env_config['multi_agent_method'] == "centralize":
-            self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
-        elif self.env_config['multi_agent_method'] in ["independent", "custom"]:
-            self.observation_space = obs_space(self.env_config, self._thermal_zone_ids)
-        else:
-            raise ValueError("Invalid multi_agent_method specified in env_config.")
+        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config, self._agent_ids, self._thermal_zone_ids)
         
         # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
         super().__init__()
@@ -108,10 +105,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.act_queue: Optional[Queue] = None
         self.infos_queue: Optional[Queue] = None
         
-        # Episode and Reward functions
-        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
-        self.reward_fn: RewardFunction = self.env_config['reward_fn']
-        
         # ===CONTROLS=== #
         # variable for the registry of the episode number.
         self.episode = -1
@@ -121,7 +114,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.env_config['num_time_steps_in_hour'] = 0
         # dict to save the last observation and infos in the environment.
         self.last_obs = {agent: [] for agent in self._agent_ids}
-        self.last_infos = {agent: [] for agent in self._agent_ids}
+        self.last_infos = {agent: {} for agent in self._agent_ids}
 
     def reset(
         self, *,
@@ -150,15 +143,39 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
             self.env_config = self.episode_fn.get_episode_config(self.env_config)
             
+            # TODO: Add here the availability to run EnergyPlus in Parallel.
+            # Run EnergyPlus in Parallel
+            # EnergyPlus is a multi-thread application but is not optimized for parallel runs on multi-core 
+            # machines. However, multiple parametric runs can be launched in parallel if these runs are 
+            # independent. One way to do it is to create multiple folders and copy files EnergyPlus.exe, 
+            # Energy+.idd, DElight2.dll, libexpat.dll, bcvtb.dll, EPMacro.exe (if macros are used), 
+            # ExpandObjects.exe (if HVACTemplate or Compact HVAC objects are used) from the original EnergyPlus 
+            # installed folder. Inside each folder, copy IDF file as in.idf and EPW file as in.epw, then run 
+            # EnergyPlus.exe from each folder. This is better handled with a batch file. If the Energy+.ini file 
+            # exists in one of the created folders, make sure it is empty or points to the current EnergyPlus folder.
+
+            # EP-Launch now does this automatically for Group or Parametric-Preprocessor runs.
+
+            # The benefit of run time savings depends on computer configurations including number of CPUs, 
+            # CPU clock speed, amount of RAM and cache, and hard drive speed. To be time efficient, the number 
+            # of parallel EnergyPlus runs should not be more than the number of CPUs on a computer. The EnergyPlus 
+            # utility program EP-Launch is being modified to add the parallel capability for group simulations. The 
+            # long term goal is to run EnergyPlus in parallel on multi-core computers even for a single EnergyPlus 
+            # run without degradation to accuracy.
+            
+            
+            
             # Start EnergyPlusRunner whith the following configuration.
             self.energyplus_runner = EnergyPlusRunner(
-                episode=self.episode,
-                env_config=self.env_config,
-                obs_queue=self.obs_queue,
-                act_queue=self.act_queue,
-                infos_queue=self.infos_queue,
-                _agent_ids=self._agent_ids,
-                _thermal_zone_ids=self._thermal_zone_ids,
+                episode = self.episode,
+                env_config = self.env_config,
+                obs_queue = self.obs_queue,
+                act_queue = self.act_queue,
+                infos_queue = self.infos_queue,
+                _agent_ids = self._agent_ids,
+                _thermal_zone_ids = self._thermal_zone_ids,
+                observation_fn = self.observation_fn,
+                action_fn = self.action_fn
             )
             # Divide the thread in two in this point.
             self.energyplus_runner.start()
@@ -236,7 +253,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos = self.last_infos
         
         # Calculate the reward in the timestep
-        reward_dict = self.reward_fn.calculate_reward(infos, self.truncateds)
+        reward_dict = self.reward_fn.get_reward(infos, self.terminateds, self.truncateds)
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
