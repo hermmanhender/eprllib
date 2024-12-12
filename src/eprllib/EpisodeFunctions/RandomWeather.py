@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.Tools.Utils import random_weather_config
+from eprllib.Utils.random_weather import get_random_weather
 
 class RandomWeather(EpisodeFunction):
     """
@@ -11,14 +11,19 @@ class RandomWeather(EpisodeFunction):
         episode_fn_config: Dict[str,Any] = {}
         ):
         self.episode_fn_config = episode_fn_config
+        
+        # check that 'epw_files_folder_path' exist in the episode_fn_config
+        if 'epw_files_folder_path' not in self.episode_fn_config:
+            raise ValueError("The 'epw_files_folder_path' must be defined in the episode_fn_config.")
 
     def get_episode_config(self, env_config: Dict[str,Any]) -> Dict[str,Any]:
         """
-        This method returns the episode configuration for the EnergyPlus environment.
+        This method update the 'epw_path' property of the env_config Dict and returns it
+        with the change appied.
 
         Returns:
             Dict: The episode configuration.
         """
-        
-        return random_weather_config(env_config, self.episode_fn_config['epw_files_folder_path'])
+        env_config['epw_path'] = get_random_weather(self.episode_fn_config['epw_files_folder_path'])
+        return env_config
     
