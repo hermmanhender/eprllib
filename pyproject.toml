@@ -1,10 +1,11 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling==1.22.0"]
+build-backend = "hatchling.build"
 
 [project]
 name = "eprllib"
-version = "1.4.6"
+version = "1.5.01"
+metadata = "2.2"
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
@@ -20,6 +21,7 @@ dependencies = [
     "ray[all] >=2.20.0",
     "gymnasium >=0.28.1",
 ]
+license = {file = "LICENSE"}
 
 [project.urls]
 "Documentation" = "https://hermmanhender.github.io/eprllib/"
