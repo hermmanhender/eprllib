@@ -170,10 +170,6 @@ class EnergyPlusRunner:
             thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
             thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
             
-            thermal_zone_states_p, thermal_zone_infos_p = self.get_buiding_properties(state_argument, thermal_zone)
-            thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
-            thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
-            
         agent_states = {agent: {} for agent in self._agent_ids}
         agent_infos = {agent: {} for agent in self._agent_ids}
         for agent in self._agent_ids:
@@ -659,17 +655,6 @@ class EnergyPlusRunner:
                         weather_pred.update({f'tomorrow_weather_{key}_at_time_{prediction_hour_t}': prediction_variables_methods[f'tomorrow_weather_{key}_at_time']})
         
         return weather_pred, {}
-
-    def get_buiding_properties(
-        self,
-        thermal_zone: str = None
-    ) -> Tuple[Dict[str,Any],Dict[str,Any]]:
-        if not self.env_config['use_building_properties']:
-            return {}, {}
-        # Check that building_properties include all thermal_zones_id
-        assert set(self.env_config['building_properties'].keys()) == self._thermal_zone_ids, f"The building_properties must include all thermal_zones_id: {self._thermal_zone_ids}."
-        
-        return self.env_config['building_properties'][thermal_zone], {}
         
     def update_infos(
         self,
