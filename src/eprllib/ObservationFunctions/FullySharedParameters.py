@@ -47,6 +47,8 @@ class FullySharedParameters(ObservationFunction):
         super().__init__(config)
         self.number_of_agents_total: int = self.config['number_of_agents_total']
         self.number_of_thermal_zone_total: int = self.config['number_of_thermal_zone_total']
+        self.agent_obs_extra_var: Dict[str,Any] = self.config['agent_obs_extra_var']
+        self.other_agent_obs_extra_var: Dict[str,Any] = self.config['other_agent_obs_extra_var']
         self.observation_space_labels: Dict[str,List[str]] = None
     
     def get_agent_obs_dim(
@@ -84,23 +86,17 @@ class FullySharedParameters(ObservationFunction):
         # === Thermal zone state where the agent belongs ===
         # Thermal zone variables.
         obs_space_len += len(env_config['variables_thz'])
-        # Add static_variables and building properties.
+        
+        # Add static_variables.
         for thermal_zone in _thermal_zone_ids:
             lenght_vector_sv = []
-            lenght_vector_bp = []
             lenght_vector_sv.append(len([key for key in env_config['static_variables'][thermal_zone].keys()]))
-            if env_config['use_building_properties']:
-                lenght_vector_bp.append(len([key for key in env_config['building_properties'][thermal_zone].keys()]))
         # Check lenght vector elements are all the same, if don't a error happend.
         if len(set(lenght_vector_sv)) != 1:
             raise ValueError("The thermal zones have different number of static_variables.")
         # Add the lenght of the first thermal zone.
         obs_space_len += lenght_vector_sv[0]
-        if env_config['use_building_properties']:
-            # Check lenght vector elements are all the same, if don't a error happend.
-            if len(set(lenght_vector_bp)) != 1:
-                raise ValueError("The thermal zones have different number of building_properties.")
-            obs_space_len += lenght_vector_bp[0]
+        
         # zone_simulation_parameters: Count the keys in the dict that are True
         obs_space_len += len([key for key, value in env_config['zone_simulation_parameters'].items() if value])
     
@@ -124,7 +120,9 @@ class FullySharedParameters(ObservationFunction):
         if env_config['use_actuator_state']:
             obs_space_len += 1
             
-        # thermal_zone_indicator
+        # variables defined in agent_obs_extra_var
+        obs_space_len += len([key for key in self.config['agent_obs_extra_var'].keys()])
+        
         if env_config['use_thermal_zone_indicator']:
             obs_space_len += self.number_of_thermal_zone_total
             
@@ -134,8 +132,12 @@ class FullySharedParameters(ObservationFunction):
         
         # === Other agents reduce observations ===
         if self.number_of_agents_total > 1:
+            # multi-one hot-code vector
+            obs_space_len += self.number_of_agents_total
             for _ in range(self.number_of_agents_total):
-                obs_space_len += self.number_of_agents_total
+                
+                self.config['other_agent_obs_extra_var']
+                
                 # if apply, add the actuator state.
                 if env_config['use_actuator_state']:
                     obs_space_len += 1
