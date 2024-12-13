@@ -157,11 +157,6 @@ class EnvConfig:
         'zone_simulation_parameters': []
         
         * use_actuator_state: bool = False
-        * use_agent_indicator: bool = True
-        * use_thermal_zone_indicator: bool = False
-        * use_agent_type: bool = False
-        * use_building_properties: bool = False
-        * building_properties: Dict[str,Dict[str,float]] = NotImplemented
         * use_one_day_weather_prediction: bool = False
         * prediction_hours: int = 24
         * prediction_variables: Dict[str,bool] = {
@@ -266,11 +261,6 @@ class EnvConfig:
         self.infos_variables: Dict[str,List|Dict[str,List]] = NotImplemented # TODO: add actuators, weather_prediction, building_properties
         self.no_observable_variables: Dict[str,List|Dict[str,List]] = NotImplemented # TODO: add actuators, weather_prediction, building_properties
         self.use_actuator_state: bool = False
-        self.use_agent_indicator: bool = True
-        self.use_thermal_zone_indicator: bool = False
-        self.use_agent_type: bool = False
-        self.use_building_properties: bool = False
-        self.building_properties: Dict[str,Dict[str,float]] = NotImplemented
         self.use_one_day_weather_prediction: bool = False
         self.prediction_hours: int = 24
         self.prediction_variables: Dict[str,bool] = {
@@ -366,11 +356,6 @@ class EnvConfig:
         infos_variables: Dict[str,List[str]]|bool = NotImplemented,
         no_observable_variables: Dict[str,List[str]]|bool = False,
         use_actuator_state: Optional[bool] = False,
-        use_agent_indicator: Optional[bool] = True,
-        use_thermal_zone_indicator: Optional[bool] = False,
-        use_agent_type: Optional[bool] = False,
-        use_building_properties: Optional[bool] = False,
-        building_properties: Optional[Dict[str,Dict[str,float]]] = NotImplemented,
         use_one_day_weather_prediction: Optional[bool] = False,
         prediction_hours: int = 24,
         prediction_variables: Dict[str,bool]|bool = False,
@@ -380,15 +365,6 @@ class EnvConfig:
 
         Args:
             use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
-            use_agent_indicator (bool): define if agent indicator will be used as an observation for the agent. # DEPRECATED_VALUE
-            use_thermal_zone_indicator (bool): define if thermal zone indicator will be used as an observation for the agent.
-            This is recommended True for muilti-agent usage and False for single agent case.
-            use_agent_type (bool): define if the agent/actuator type will be used. This is recommended for different 
-            types of agents actuating in the same environment.
-            use_building_properties (bool): # define if the building properties will be used as an observation for 
-            the agent. This is recommended if different buildings/thermal zones will be used with the same policy.
-            building_properties (Dict[str,Dict[str,float]]): # The episode config define important aspects about the 
-            building to be simulated in the episode.
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a 
             prediction of the weathertime ahead. The variables to predict are:
             
@@ -427,13 +403,6 @@ class EnvConfig:
         
         # TODO: Al least one variable must to be defined.
         self.use_actuator_state = use_actuator_state
-        self.use_agent_indicator = use_agent_indicator
-        self.use_thermal_zone_indicator = use_thermal_zone_indicator
-        self.use_agent_type = use_agent_type
-        self.use_building_properties = use_building_properties
-        self.building_properties = building_properties
-        if self.use_building_properties and self.building_properties == NotImplemented:
-            NotImplementedError("building_properties must be defined if use_building_properties is True.")
         self.use_one_day_weather_prediction = use_one_day_weather_prediction
         if prediction_hours <= 0 or prediction_hours > 24:
             self.prediction_hours = 24
