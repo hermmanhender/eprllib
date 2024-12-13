@@ -11,12 +11,6 @@ from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
-def env_config_to_dict(EnvConfig) -> Dict:
-    """
-    Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
-    """
-    return vars(EnvConfig)
-
 class EnvConfig:
     def __init__(self):
         """
