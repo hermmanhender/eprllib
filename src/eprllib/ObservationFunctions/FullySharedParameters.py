@@ -219,7 +219,7 @@ class FullySharedParameters(ObservationFunction):
             # 1. Label: NotImplementd yet.
             # 2. Values: Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
             ag_var = np.array(list(site_state.values()), dtype='float32')
-            if agent_id_vector != None:
+            if agent_id_vector is not None:
                 ag_var = np.concatenate(
                     (
                         agent_id_vector,

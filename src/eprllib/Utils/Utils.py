@@ -588,7 +588,7 @@ def random_building_config(env_config:Dict):
             }
         }
     """
-    if env_config.get('epjson_path', False) == False:
+    if env_config.get('epjson_path', False) is False:
         env_config['epjson_path'] = ''
     
     # Define the properties of the method

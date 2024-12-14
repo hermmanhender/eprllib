@@ -386,7 +386,7 @@ class EnergyPlusRunner:
         Returns:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
-        if thermal_zone == None:
+        if thermal_zone is None:
             ValueError("The thermal zone must be defined.")
         variables = {
             key: api.exchange.get_variable_value(state_argument, handle)
@@ -410,7 +410,7 @@ class EnergyPlusRunner:
         Returns:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
-        if agent == None:
+        if agent is None:
             ValueError("The agent must be defined.")
         
         variables = {
@@ -435,7 +435,7 @@ class EnergyPlusRunner:
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
-        if thermal_zone == None:
+        if thermal_zone is None:
             ValueError("The thermal zone must be defined.")
         
         variables = {
@@ -460,7 +460,7 @@ class EnergyPlusRunner:
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
-        if agent == None:
+        if agent is None:
             ValueError("The agent must be defined.")
         variables = {
             key: api.exchange.get_meter_value(state_argument, handle)
@@ -663,7 +663,7 @@ class EnergyPlusRunner:
         reference: str = None, # thermal_zone_id, agent_id
         ) -> Dict[str,Any]:
         infos_dict: Dict[str,Any] = {}
-        if belong_to == None:
+        if belong_to is None:
             raise ValueError("The 'belong_to' argument must be specified.")
         
         elif belong_to == 'variables_env':
@@ -723,7 +723,7 @@ class EnergyPlusRunner:
         reference: str = None, # thermal_zone_id, agent_id
         ) -> Dict[str,Any]:
         
-        if belong_to == None:
+        if belong_to is None:
             raise ValueError("The 'belong_to' argument must be specified.")
         
         elif belong_to == 'variables_env':
