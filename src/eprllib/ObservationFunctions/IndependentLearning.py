@@ -7,10 +7,9 @@ from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunctio
 class IndependentLearning(ObservationFunction):
     def __init__(
         self,
-        config: Dict[str,Any]
+        obs_fn_config: Dict[str,Any]
         ):
-        self.config = config
-        super().__init__(config)
+        super().__init__(obs_fn_config)
         
     def get_agent_obs_dim(
         self,
