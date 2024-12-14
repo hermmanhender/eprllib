@@ -41,15 +41,15 @@ import gymnasium as gym
 class FullySharedParameters(ObservationFunction):
     def __init__(
         self,
-        config: Dict[str,Any]
+        obs_fn_config: Dict[str,Any]
         ):
-        self.config = config
-        super().__init__(config)
-        self.number_of_agents_total: int = self.config['number_of_agents_total']
-        self.number_of_thermal_zone_total: int = self.config['number_of_thermal_zone_total']
-        self.agent_obs_extra_var: Dict[str,Any] = self.config['agent_obs_extra_var']
-        self.other_agent_obs_extra_var: Dict[str,Any] = self.config['other_agent_obs_extra_var']
-        self.observation_space_labels: Dict[str,List[str]] = None
+        super().__init__(obs_fn_config)
+        self.number_of_agents_total: int = self.obs_fn_config['number_of_agents_total']
+        self.number_of_thermal_zone_total: int = self.obs_fn_config['number_of_thermal_zone_total']
+        self.agent_obs_extra_var: Dict[str,Dict[str,Any]] = self.obs_fn_config['agent_obs_extra_var']
+        self.other_agent_obs_extra_var: Dict[str,Dict[str,Any]] = self.obs_fn_config['other_agent_obs_extra_var']
+        self.observation_space_labels: Dict[str,List[str]] = NotImplemented
+        self._agent_indicator: Dict[str,Any] = NotImplemented
     
     def get_agent_obs_dim(
         self,
@@ -121,31 +121,24 @@ class FullySharedParameters(ObservationFunction):
             obs_space_len += 1
             
         # variables defined in agent_obs_extra_var
-        obs_space_len += len([key for key in self.config['agent_obs_extra_var'].keys()])
+        agent_obs_extra_var = []
+        for agent in _agent_ids:
+            agent_obs_extra_var.append([key for key in self.obs_fn_config['agent_obs_extra_var'][agent].keys()])
+        # check that all the elements in the list are the same
+        if len(set(map(len, agent_obs_extra_var))) != 1:
+            raise ValueError("The agents have different number of agent_obs_extra_var.")
         
-        if env_config['use_thermal_zone_indicator']:
-            obs_space_len += self.number_of_thermal_zone_total
-            
-        # agent type.
-        if env_config['use_agent_type']:
-            obs_space_len += 1
+        obs_space_len += agent_obs_extra_var[0]
         
         # === Other agents reduce observations ===
         if self.number_of_agents_total > 1:
             # multi-one hot-code vector
             obs_space_len += self.number_of_agents_total
             for _ in range(self.number_of_agents_total):
-                
-                self.config['other_agent_obs_extra_var']
-                
+                for agent in _agent_ids:
+                    obs_space_len += len([key for key in self.obs_fn_config['other_agent_obs_extra_var'][agent].keys()])
                 # if apply, add the actuator state.
                 if env_config['use_actuator_state']:
-                    obs_space_len += 1
-                # if apply, add the thermal zone indicator
-                if env_config['use_thermal_zone_indicator']:
-                    obs_space_len += self.number_of_thermal_zone_total
-                # if apply, add the agent type.
-                if env_config['use_agent_type']:
                     obs_space_len += 1
         
         # === Not observable variables === (discount them)
@@ -195,7 +188,7 @@ class FullySharedParameters(ObservationFunction):
         # Add agent indicator for the observation for each agent
         agents_obs = {agent: [] for agent in _agent_ids}
         agents_infos = {agent: {} for agent in _agent_ids}
-        agents_obs_labels = {agent: [] for agent in _agent_ids} # To assign labels to the obs vector
+        
         # Agent_indicator vector (if any)
         # Agent env observation (thermal_zone related term)
         # Obs of others agents (actions, types) (point of view of the actual agent)
@@ -219,7 +212,7 @@ class FullySharedParameters(ObservationFunction):
             # 1. Label: NotImplementd yet.
             # 2. Values: Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
             ag_var = np.array(list(site_state.values()), dtype='float32')
-            if agent_id_vector != None:
+            if agent_id_vector is not None:
                 ag_var = np.concatenate(
                     (
                         agent_id_vector,
@@ -262,30 +255,17 @@ class FullySharedParameters(ObservationFunction):
                     ),
                     dtype='float32'
                 )
-                ag_inf.update(actuator_infos[agent])
-            # if apply, add the thermal zone indicator
-            if env_config['use_thermal_zone_indicator']:
-                if self.number_of_agents_total > 1:
-                    thermal_zone_indicator = env_config['agents_config'][agent]['thermal_zone_indicator']
-                    thermal_zone_id_vector = np.array([0]*self.number_of_thermal_zone_total)
-                    thermal_zone_id_vector[thermal_zone_indicator-1] = 1
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            thermal_zone_id_vector,
-                        ),
-                        dtype='float32'
-                    )
-            # if apply, add the agent type.
-            if env_config['use_agent_type']:
-                agent_type = env_config['agents_config'][agent]['actuator_type']
-                ag_var = np.concatenate(
-                    (
-                        ag_var,
-                        [agent_type],
-                    ),
-                    dtype='float32'
-                )
+            
+            # extra obs provided in the obs_fn_config dict.
+            agent_obs_extra_var = np.array([value for value in self.obs_fn_config['agent_obs_extra_var'][agent].values()])
+            ag_var = np.concatenate(
+                (
+                    ag_var,
+                    agent_obs_extra_var,
+                ),
+                dtype='float32'
+            )
+            
             # 3. Infos: Add the agent state infos to the agent infos.
             ag_inf.update(agent_infos[agent])
             
@@ -316,28 +296,7 @@ class FullySharedParameters(ObservationFunction):
                         ),
                         dtype='float32'
                     )
-                # if apply, add the thermal zone indicator
-                if env_config['use_thermal_zone_indicator']:
-                    thermal_zone_indicator = env_config['agents_config'][agent]['thermal_zone_indicator']
-                    thermal_zone_id_vector = np.array([0]*self.number_of_thermal_zone_total)
-                    thermal_zone_id_vector[thermal_zone_indicator-1] = 1
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            thermal_zone_id_vector,
-                        ),
-                        dtype='float32'
-                    )
-                # if apply, add the agent type.
-                if env_config['use_agent_type']:
-                    agent_type = env_config['agents_config'][agent]['actuator_type']
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            [agent_type],
-                        ),
-                        dtype='float32'
-                    )
+                
                 other_agents_dict.update({agent: Tuple(ag_var)})
                 # Calculate the len of the other agents observation vector.
                 if first_agent:
@@ -371,5 +330,16 @@ class FullySharedParameters(ObservationFunction):
                     ),
                     dtype='float32'
                 )
+                
+                # extra obs provided in the obs_fn_config dict.
+                other_agent_obs_extra_var = np.array([value for value in self.obs_fn_config['other_agent_obs_extra_var'][agent].values()])
+                agents_obs[agent] = np.concatenate(
+                    (
+                        agents_obs[agent],
+                        other_agent_obs_extra_var,
+                    ),
+                    dtype='float32'
+                )
+                
                 
         return agents_obs, agents_infos

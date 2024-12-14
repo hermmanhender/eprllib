@@ -103,7 +103,7 @@ class TestRandomWeather:
             os.chmod(temp_dir, 0o000)  # Remove all permissions
             with pytest.raises(PermissionError):
                 get_random_weather(temp_dir)
-            os.chmod(temp_dir, 0o755)
+            os.chmod(temp_dir, 0o754)
 
     def test_get_random_weather_raises_error_for_empty_folder(self):
         """

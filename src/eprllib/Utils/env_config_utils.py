@@ -49,7 +49,7 @@ def to_json(
     # generate a unique number based on time
     time_id = str(int(time.time()))
     # check the implementation of output_path
-    if output_path == None:
+    if output_path is None:
         output_path = './'
     path = output_path+f'/{time_id}_env_config.json'
     # save the json string to a file

@@ -7,9 +7,9 @@ import gymnasium as gym
 class ObservationFunction:
     def __init__(
         self,
-        config: Dict[str,Any]
+        obs_fn_config: Dict[str,Any]
         ):
-        self.config = config
+        self.obs_fn_config = obs_fn_config
     
     def get_agent_obs_dim(
         self,
