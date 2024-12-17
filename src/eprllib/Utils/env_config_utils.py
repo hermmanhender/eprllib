@@ -22,8 +22,8 @@ def env_config_to_dict(MyEnvConfig: EnvConfig) -> Dict:
     """
     # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
     # class.
-    if env_config_validation(MyEnvConfig):
-        return vars(MyEnvConfig)
+    # if env_config_validation(MyEnvConfig):
+    return vars(MyEnvConfig)
 
 
 def to_json(
