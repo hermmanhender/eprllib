@@ -331,11 +331,12 @@ class EnergyPlusRunner:
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The meters and their handles.
         """
-        meter_handles: Dict[str,Dict[str, int]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        meters: Dict[str, str] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
+        meter_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self._agent_ids}
+        meters: Dict[str, List[str]] = {agent: {} for agent in self._agent_ids}
         if not len(self.env_config['meters']) == 0:
-            for thermal_zone in self._thermal_zone_ids:
-                meters.update({thermal_zone:{variable: variable for variable in self.env_config['meters']}})
+            for agent in self._agent_ids:
+                for _ in range(len(self.env_config['meters'][agent])):
+                    meters.update({agent:{variable: variable for variable in self.env_config['meters'][agent]}})
         return meters, meter_handles
 
     def set_actuators(self) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
