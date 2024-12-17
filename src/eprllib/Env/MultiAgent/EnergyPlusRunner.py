@@ -138,7 +138,8 @@ class EnergyPlusRunner:
         EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
-        dict_agents_obs, dict_agents_infos = NotImplemented
+        dict_agents_obs = {agent: [] for agent in self._agent_ids}
+        dict_agents_infos = {agent: {} for agent in self._agent_ids}
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
         if not self._init_callback(state_argument) or self.simulation_complete:
@@ -146,39 +147,55 @@ class EnergyPlusRunner:
         # Agents observe: site state, thermal zone state (only the one that it belong), specific object variables 
         # and meters, and others parameters assigned as True in the env_config.observation object.
         # Get the state of the actuators.
+        
         actuator_states, actuator_infos = self.get_actuators_state(state_argument)
-        site_state, site_infos = self.get_site_variables_state(state_argument)
-        site_state_p, site_infos_p = self.get_simulation_parameters_values(state_argument)
-        site_state.update(site_state_p)
-        site_infos.update(site_infos_p)
-        site_state_p, site_infos_p = self.get_weather_prediction(state_argument)
-        site_state.update(site_state_p)
-        site_infos.update(site_infos_p)
+        site_state = {}
+        site_infos = {}
+        if self.env_config['variables_env'] is not None:
+            site_state_p, site_infos_p = self.get_site_variables_state(state_argument)
+            site_state.update(site_state_p)
+            site_infos.update(site_infos_p)
+        if self.env_config['simulation_parameters'] is not None:
+            site_state_p, site_infos_p = self.get_simulation_parameters_values(state_argument)
+            site_state.update(site_state_p)
+            site_infos.update(site_infos_p)
+        if self.env_config['use_one_day_weather_prediction']:
+            site_state_p, site_infos_p = self.get_weather_prediction(state_argument)
+            site_state.update(site_state_p)
+            site_infos.update(site_infos_p)
         
         thermal_zone_states = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         thermal_zone_infos = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         for thermal_zone in self._thermal_zone_ids:
-            thermal_zone_states_p, thermal_zone_infos_p = self.get_thermalzone_variables_state(state_argument, thermal_zone)
-            thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
-            thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
             
-            thermal_zone_states_p, thermal_zone_infos_p = self.get_static_variables_state(state_argument, thermal_zone)
-            thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
-            thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
+            if self.env_config['variables_thz'] is not None:
+                thermal_zone_states_p, thermal_zone_infos_p = self.get_thermalzone_variables_state(state_argument, thermal_zone)
+                thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
+                thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
             
-            thermal_zone_states_p, thermal_zone_infos_p = self.get_zone_simulation_parameters_values(state_argument, thermal_zone)
-            thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
-            thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
+            if self.env_config['static_variables'] is not None:
+                thermal_zone_states_p, thermal_zone_infos_p = self.get_static_variables_state(state_argument, thermal_zone)
+                thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
+                thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
+            
+            if self.env_config['zone_simulation_parameters'] is not None:
+                thermal_zone_states_p, thermal_zone_infos_p = self.get_zone_simulation_parameters_values(state_argument, thermal_zone)
+                thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
+                thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
             
         agent_states = {agent: {} for agent in self._agent_ids}
         agent_infos = {agent: {} for agent in self._agent_ids}
         for agent in self._agent_ids:
-            agent_states_p, agent_infos_p = self.get_object_variables_state(state_argument, agent)
-            agent_states[agent].update(agent_states_p)
-            agent_infos[agent].update(agent_infos_p)
-            agent_states_p, agent_infos_p = self.get_meters_state(state_argument, agent)
-            agent_states[agent].update(agent_states_p)
-            agent_infos[agent].update(agent_infos_p)
+            
+            if self.env_config['variables_obj'] is not None:
+                agent_states_p, agent_infos_p = self.get_object_variables_state(state_argument, agent)
+                agent_states[agent].update(agent_states_p)
+                agent_infos[agent].update(agent_infos_p)
+            
+            if self.env_config['meters'] is not None:
+                agent_states_p, agent_infos_p = self.get_meters_state(state_argument, agent)
+                agent_states[agent].update(agent_states_p)
+                agent_infos[agent].update(agent_infos_p)
         
         dict_agents_obs, dict_agents_infos = self.observation_fn.set_agent_obs_and_infos(
             self.env_config,
@@ -197,10 +214,12 @@ class EnergyPlusRunner:
         for key, value in dict_agents_obs.items():
             if np.isnan(value).any() or np.isinf(value).any():
                 print(f"NaN or Inf value found in {key}: {dict_agents_obs[key]}")
-        for key, value in dict_agents_infos.items():
-            if np.isnan(value).any() or np.isinf(value).any():
-                print(f"NaN or Inf value found in {key}: {dict_agents_infos[key]}")
-
+        for agent in self._agent_ids:
+            for key, value in dict_agents_infos[agent].items():
+                if np.isnan(value).any() or np.isinf(value).any():
+                    print(f"NaN or Inf value found in {key}: {dict_agents_infos[key]}")
+        
+        
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(dict_agents_obs)
         self.obs_event.set()
@@ -234,9 +253,9 @@ class EnergyPlusRunner:
             self._collect_first_obs(state_argument)
             
         # Wait for an action.
-        event_flag = self.act_event.wait() # (self.env_config["timeout"])
+        event_flag = self.act_event.wait(self.env_config["timeout"])
         if not event_flag:
-            raise ValueError(f"The time waiting an action was over.\nThe observation event is {self.obs_event.is_set()}.\nThe infos event is {self.infos_event.is_set()}.")
+            raise ValueError("")
                 
         # Get and transform the action from the EnergyPlusEnvironment `step` method.
         dict_action = self.action_fn.transform_action(self.act_queue.get())
@@ -259,10 +278,10 @@ class EnergyPlusRunner:
             Tuple[Dict[str, Tuple [str, str]], Dict[str,Dict[str, int]]]: The environment variables and their handles.
         """
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
-        var_handles: Dict[str,Dict[str, int]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        variables: Dict[str, Tuple [str, str]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
+        var_handles: Dict[str,Dict[str, int]] = {}
+        variables: Dict[str, Tuple [str, str]] = {}
         
-        if not len(self.env_config['variables_env']) == 0:
+        if self.env_config['variables_env'] is not None:
             variables.update({variable: (variable, 'Environment') for variable in self.env_config['variables_env']})
         return variables, var_handles
 
@@ -279,7 +298,7 @@ class EnergyPlusRunner:
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
         var_handles: Dict[str,Dict[str, int]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         variables:Dict[str,Dict[str, Tuple [str, str]]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        if not len(self.env_config['variables_thz']) == 0:
+        if self.env_config['variables_thz'] is not None:
             for thermal_zone in self._thermal_zone_ids:
                 variables.update({thermal_zone:{variable: (variable, thermal_zone) for variable in self.env_config['variables_thz']}})
         return variables, var_handles
@@ -295,9 +314,9 @@ class EnergyPlusRunner:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
         """
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
-        var_handles: Dict[str,Dict[str, int]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        variables:Dict[str,Dict[str, Tuple [str, str]]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
-        if not len(self.env_config['variables_obj']) == 0:
+        var_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self._agent_ids}
+        variables:Dict[str,Dict[str, Tuple [str, str]]] = {agent: {} for agent in self._agent_ids}
+        if self.env_config['variables_obj'] is not None:
             # Check all the agents are in the variables_obj Dict.
             assert set(self.env_config['variables_obj'].keys()) == self._agent_ids, f"The variables_obj must include all agent_ids: {self._agent_ids}."
             for agent in self._agent_ids:
@@ -317,7 +336,7 @@ class EnergyPlusRunner:
         var_handles: Dict[str,Dict[str, int]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         variables:Dict[str, str] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         # Check the existency of static variables.
-        if not len(self.env_config['static_variables']) == 0:
+        if self.env_config['static_variables'] is not None:
             for thermal_zone in self._thermal_zone_ids:
                 variables.update({thermal_zone:{variable: variable for variable in self.env_config['static_variables']}})       
         return variables, var_handles
@@ -333,7 +352,7 @@ class EnergyPlusRunner:
         """
         meter_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self._agent_ids}
         meters: Dict[str, List[str]] = {agent: {} for agent in self._agent_ids}
-        if not len(self.env_config['meters']) == 0:
+        if self.env_config['meters'] is not None:
             for agent in self._agent_ids:
                 for _ in range(len(self.env_config['meters'][agent])):
                     meters.update({agent:{variable: variable for variable in self.env_config['meters'][agent]}})
@@ -566,6 +585,7 @@ class EnergyPlusRunner:
     def get_zone_simulation_parameters_values(
         self,
         state_argument: c_void_p,
+        thermal_zone:str=None,
         ) -> Tuple[Dict[str,Any],Dict[str,Any]]:
         """Get the simulation parameters values defined in the simulation parameter list.
 
@@ -588,9 +608,9 @@ class EnergyPlusRunner:
         for paramater in parameters_keys:
             if self.env_config['zone_simulation_parameters'][paramater]:
                 include.append(paramater)
-        variables = {paramater: parameter_methods[paramater] for paramater in include}
-        infos = self.update_infos(variables, 'zone_simulation_parameters')
-        variables = self.delete_not_observable_variables(variables, 'zone_simulation_parameters')
+        variables = {thermal_zone: {paramater: parameter_methods[paramater]} for paramater in include}
+        infos = self.update_infos(variables, 'zone_simulation_parameters', thermal_zone)
+        variables = self.delete_not_observable_variables(variables, 'zone_simulation_parameters', thermal_zone)
         return variables, infos
 
     def get_weather_prediction(
@@ -668,49 +688,52 @@ class EnergyPlusRunner:
             raise ValueError("The 'belong_to' argument must be specified.")
         
         elif belong_to == 'variables_env':
-            # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            for variable in self.env_config['infos_variables']['variables_env']:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'variables_env' in self.env_config['infos_variables']:
+                # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
+                for variable in self.env_config['infos_variables']['variables_env']:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         elif belong_to == 'simulation_parameters':
-            # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            for variable in self.env_config['infos_variables']['simulation_parameters']:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'simulation_parameters' in self.env_config['infos_variables']:
+                # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
+                for variable in self.env_config['infos_variables']['simulation_parameters']:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         elif belong_to == 'variables_obj':
             # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            if reference == None:
+            if reference is None:
                 raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['infos_variables']['variables_obj'][reference]:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'variables_obj' in self.env_config['infos_variables']:
+                for variable in self.env_config['infos_variables']['variables_obj'][reference]:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         elif belong_to == 'meters':
-            # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            if reference == None:
+            if reference is None:
                 raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['infos_variables']['meters'][reference]:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'meters' in self.env_config['infos_variables']:
+                # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
+                for variable in self.env_config['infos_variables']['meters'][reference]:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         elif belong_to == 'static_variables':
-            # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            if reference == None:
+            if reference is None:
                 raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['infos_variables']['static_variables'][reference]:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'static_variables' in self.env_config['infos_variables']:
+                # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
+                for variable in self.env_config['infos_variables'][reference]['static_variables']:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         elif belong_to == 'variables_thz':
-            # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['infos_variables']['variables_thz'][reference]:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'variables_thz' in self.env_config['infos_variables']:
+                # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
+                for variable in self.env_config['infos_variables']['variables_thz']:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         elif belong_to == 'zone_simulation_parameters':
-            # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['infos_variables']['zone_simulation_parameters'][reference]:
-                infos_dict.update({variable: dict_parameters[variable]})
+            if 'zone_simulation_parameters' in self.env_config['infos_variables']:
+                # add to infos_dict the variables listed in self.env_config['infos_variables']['variables_env']
+                for variable in self.env_config['infos_variables']['zone_simulation_parameters']:
+                    infos_dict.update({variable: dict_parameters[variable]})
         
         else:
             raise ValueError(f"The 'belong_to' argument must be one of the following: {self.env_config['infos_variables'].keys()}")
@@ -728,42 +751,45 @@ class EnergyPlusRunner:
             raise ValueError("The 'belong_to' argument must be specified.")
         
         elif belong_to == 'variables_env':
-            for variable in self.env_config['no_observable_variables']['variables_env']:
-                del dict_parameters[variable]
+            if 'variables_env' in self.env_config['no_observable_variables']:
+                for variable in self.env_config['no_observable_variables']['variables_env']:
+                    del dict_parameters[variable]
         
         elif belong_to == 'simulation_parameters':
-            for variable in self.env_config['no_observable_variables']['simulation_parameters']:
-                del dict_parameters[variable]
+            if 'simulation_parameters' in self.env_config['no_observable_variables']:
+                for variable in self.env_config['no_observable_variables']['simulation_parameters']:
+                    del dict_parameters[variable]
         
         elif belong_to == 'variables_obj':
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['no_observable_variables']['variables_obj'][reference]:
-                del dict_parameters[variable]
+            if 'variables_obj' in self.env_config['no_observable_variables']:
+                if reference == None:
+                    raise ValueError("The 'reference' argument must be specified.")
+                for variable in self.env_config['no_observable_variables']['variables_obj'][reference]:
+                    del dict_parameters[variable]
         
         elif belong_to == 'meters':
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['no_observable_variables']['meters'][reference]:
-                del dict_parameters[variable]
+            if 'meters' in self.env_config['no_observable_variables']:
+                if reference == None:
+                    raise ValueError("The 'reference' argument must be specified.")
+                for variable in self.env_config['no_observable_variables']['meters'][reference]:
+                    del dict_parameters[variable]
         
         elif belong_to == 'static_variables':
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['no_observable_variables']['static_variables'][reference]:
-                del dict_parameters[variable]
+            if 'static_variables' in self.env_config['no_observable_variables']:
+                if reference == None:
+                    raise ValueError("The 'reference' argument must be specified.")
+                for variable in self.env_config['no_observable_variables']['static_variables'][reference]:
+                    del dict_parameters[variable]
         
         elif belong_to == 'variables_thz':
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['no_observable_variables']['variables_thz'][reference]:
-                del dict_parameters[variable]
+            if 'variables_thz' in self.env_config['no_observable_variables']:
+                for variable in self.env_config['no_observable_variables']['variables_thz']:
+                    del dict_parameters[variable]
         
         elif belong_to == 'zone_simulation_parameters':
-            if reference == None:
-                raise ValueError("The 'reference' argument must be specified.")
-            for variable in self.env_config['no_observable_variables']['zone_simulation_parameters'][reference]:
-                del dict_parameters[variable]
+            if 'zone_simulation_parameters' in self.env_config['no_observable_variables']:
+                for variable in self.env_config['no_observable_variables']['zone_simulation_parameters']:
+                    del dict_parameters[variable]
         
         else:
             raise ValueError(f"The 'belong_to' argument must be one of the following: {self.env_config['no_observable_variables'].keys()}")
@@ -829,11 +855,11 @@ class EnergyPlusRunner:
         for agent in self._agent_ids:
             self.handle_object_variables[agent].update({
                 key: api.exchange.get_variable_handle(state_argument, *var)
-                for key, var in self.dict_object_variables.items()
+                for key, var in self.dict_object_variables[agent].items()
             })
             self.meter_handles[agent].update({
                 key: api.exchange.get_meter_handle(state_argument, meter)
-                for key, meter in self.meters.items()
+                for key, meter in self.meters[agent].items()
             })
             for handles in [
                 self.handle_object_variables[agent],
@@ -853,7 +879,7 @@ class EnergyPlusRunner:
         for thermal_zone in self._thermal_zone_ids:    
             self.handle_thermalzone_variables[thermal_zone].update({
                 key: api.exchange.get_variable_handle(state_argument, *var)
-                for key, var in self.dict_thermalzone_variables.items()
+                for key, var in self.dict_thermalzone_variables[thermal_zone].items()
             })
             self.handle_static_variables[thermal_zone].update({
                 key: api.exchange.get_internal_variable_handle(state_argument, *var)
