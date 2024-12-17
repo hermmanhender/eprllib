@@ -197,11 +197,10 @@ class EnvConfig:
 
         # observations
         self.observation_fn: ObservationFunction = NotImplemented
-        self.observation_fn_config: Dict[str, Any] = {}
         self.variables_env: List = []
         self.variables_thz: List = []
         self.variables_obj: Dict[str,Tuple[str,str]] = {} # {'agent_ID':('variable','key_object')}
-        self.meters: Dict[str,Tuple[str,str]] = {} # {'agent_ID':('variable','key_object')}
+        self.meters: Dict[str,List[str]] = {} # {'agent_ID':['meter']}
         self.static_variables: Dict[str,Tuple[str,str]] = {} # {'thermal_zone_ID':('variable','key_object')}
         self.simulation_parameters: Dict[str,bool] = {
             'actual_date_time': False,
@@ -276,7 +275,6 @@ class EnvConfig:
 
         # actions
         self.action_fn: ActionFunction = NotImplemented
-        self.action_fn_config: Dict[str, Any] = {}
         
         # rewards
         self.reward_fn: RewardFunction = NotImplemented
@@ -339,11 +337,10 @@ class EnvConfig:
     def observations(
         self,
         observation_fn: ObservationFunction = NotImplemented,
-        observation_fn_config: Dict[str, Any] = {},
         variables_env: List[str]|bool = False,
         variables_thz: List[str]|bool = False,
-        variables_obj: Dict[str,Dict[str,str]]|bool = False, # {'ThermalZoneID':{'variableID':'variableKey'}}
-        meters: List[str]|bool = False,
+        variables_obj: Dict[str,Tuple[str,str]] = {}, # {'agent_ID':('variable','key_object')}
+        meters: Dict[str,str] = False, # {'agent_ID':'meter'}
         static_variables: List = [],
         simulation_parameters: Dict[str,bool]|bool = False,
         zone_simulation_parameters: Dict[str,bool]|bool = False,
@@ -447,7 +444,6 @@ class EnvConfig:
     def actions(
         self,
         action_fn: ActionFunction = NotImplemented,
-        action_fn_config: Dict[str, Any] = {},
         ):
         """
         This method is used to modify the actions configuration of the environment.
@@ -465,7 +461,6 @@ class EnvConfig:
         if action_fn == NotImplemented:
             raise NotImplementedError("action_fn must be defined.")
         self.action_fn = action_fn
-        self.action_fn_config = action_fn_config
 
     def rewards(
         self,
