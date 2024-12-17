@@ -290,6 +290,7 @@ class EnvConfig:
         output_path:str = NotImplemented,
         ep_terminal_output:Optional[bool] = True,
         timeout:Optional[float] = 10.0,
+        evaluation:bool = False,
         ):
         """
         This method is used to modify the general configuration of the environment.
@@ -313,6 +314,7 @@ class EnvConfig:
         self.output_path = output_path
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
+        self.evaluation = evaluation
         
     def agents(
         self,
@@ -337,15 +339,15 @@ class EnvConfig:
     def observations(
         self,
         observation_fn: ObservationFunction = NotImplemented,
-        variables_env: List[str]|bool = False,
-        variables_thz: List[str]|bool = False,
-        variables_obj: Dict[str,Tuple[str,str]] = {}, # {'agent_ID':('variable','key_object')}
-        meters: Dict[str,str] = False, # {'agent_ID':'meter'}
-        static_variables: List = [],
-        simulation_parameters: Dict[str,bool]|bool = False,
-        zone_simulation_parameters: Dict[str,bool]|bool = False,
+        variables_env: List[str] = None,
+        variables_thz: List[str] = None,
+        variables_obj: Dict[str,Tuple[str,str]] = None, # {'agent_ID':('variable','key_object')}
+        meters: Dict[str,str] = None, # {'agent_ID':'meter'}
+        static_variables: Dict[str,Tuple[str,str]] = None,
+        simulation_parameters: Dict[str,bool] = None,
+        zone_simulation_parameters: Dict[str,bool] = None,
         infos_variables: Dict[str,List[str]]|bool = NotImplemented,
-        no_observable_variables: Dict[str,List[str]]|bool = False,
+        no_observable_variables: Dict[str,List[str]] = None,
         use_actuator_state: Optional[bool] = False,
         use_one_day_weather_prediction: Optional[bool] = False,
         prediction_hours: int = 24,
@@ -390,7 +392,6 @@ class EnvConfig:
         if observation_fn == NotImplemented:
             raise NotImplementedError("observation_function must be defined.")
         self.observation_fn = observation_fn
-        self.observation_fn_config = observation_fn_config
         
         # TODO: Al least one variable must to be defined.
         self.use_actuator_state = use_actuator_state
