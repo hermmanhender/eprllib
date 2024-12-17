@@ -121,22 +121,25 @@ class FullySharedParameters(ObservationFunction):
             obs_space_len += 1
             
         # variables defined in agent_obs_extra_var
-        agent_obs_extra_var = []
-        for agent in _agent_ids:
-            agent_obs_extra_var.append([key for key in self.obs_fn_config['agent_obs_extra_var'][agent].keys()])
-        # check that all the elements in the list are the same
-        if len(set(map(len, agent_obs_extra_var))) != 1:
-            raise ValueError("The agents have different number of agent_obs_extra_var.")
-        
-        obs_space_len += agent_obs_extra_var[0]
+        if self.obs_fn_config['agent_obs_extra_var'] is not None:
+            agent_obs_extra_var = []
+            for agent in _agent_ids:
+                agent_obs_extra_var.append([key for key in self.obs_fn_config['agent_obs_extra_var'][agent].keys()])
+            # check that all the elements in the list are the same
+            if len(set(map(len, agent_obs_extra_var))) != 1:
+                raise ValueError("The agents have different number of agent_obs_extra_var.")
+            
+            obs_space_len += agent_obs_extra_var[0]
         
         # === Other agents reduce observations ===
         if self.number_of_agents_total > 1:
             # multi-one hot-code vector
             obs_space_len += self.number_of_agents_total
+            
             for _ in range(self.number_of_agents_total):
                 for agent in _agent_ids:
-                    obs_space_len += len([key for key in self.obs_fn_config['other_agent_obs_extra_var'][agent].keys()])
+                    if self.obs_fn_config['other_agent_obs_extra_var'] is not None:
+                        obs_space_len += len([key for key in self.obs_fn_config['other_agent_obs_extra_var'][agent].keys()])
                 # if apply, add the actuator state.
                 if env_config['use_actuator_state']:
                     obs_space_len += 1
@@ -257,14 +260,15 @@ class FullySharedParameters(ObservationFunction):
                 )
             
             # extra obs provided in the obs_fn_config dict.
-            agent_obs_extra_var = np.array([value for value in self.obs_fn_config['agent_obs_extra_var'][agent].values()])
-            ag_var = np.concatenate(
-                (
-                    ag_var,
-                    agent_obs_extra_var,
-                ),
-                dtype='float32'
-            )
+            if self.obs_fn_config['agent_obs_extra_var'] is not None:
+                agent_obs_extra_var = np.array([value for value in self.obs_fn_config['agent_obs_extra_var'][agent].values()])
+                ag_var = np.concatenate(
+                    (
+                        ag_var,
+                        agent_obs_extra_var,
+                    ),
+                    dtype='float32'
+                )
             
             # 3. Infos: Add the agent state infos to the agent infos.
             ag_inf.update(agent_infos[agent])
@@ -332,14 +336,15 @@ class FullySharedParameters(ObservationFunction):
                 )
                 
                 # extra obs provided in the obs_fn_config dict.
-                other_agent_obs_extra_var = np.array([value for value in self.obs_fn_config['other_agent_obs_extra_var'][agent].values()])
-                agents_obs[agent] = np.concatenate(
-                    (
-                        agents_obs[agent],
-                        other_agent_obs_extra_var,
-                    ),
-                    dtype='float32'
-                )
+                if self.obs_fn_config['other_agent_obs_extra_var'] is not None:
+                    other_agent_obs_extra_var = np.array([value for value in self.obs_fn_config['other_agent_obs_extra_var'][agent].values()])
+                    agents_obs[agent] = np.concatenate(
+                        (
+                            agents_obs[agent],
+                            other_agent_obs_extra_var,
+                        ),
+                        dtype='float32'
+                    )
                 
                 
         return agents_obs, agents_infos
