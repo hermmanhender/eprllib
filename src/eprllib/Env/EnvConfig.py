@@ -179,7 +179,7 @@ class EnvConfig:
         
         * reward_fn: RewardFunction = NotImplemented
 
-        **functionalities**
+        **episodes**
         
         * cut_episode_len: int = 0
         * episode_fn: EpisodeFunction = EpisodeFunction({})
@@ -281,7 +281,7 @@ class EnvConfig:
         # rewards
         self.reward_fn: RewardFunction = NotImplemented
 
-        # functionalities
+        # episodes
         self.cut_episode_len: int = 0
         self.episode_fn: EpisodeFunction = EpisodeFunction({})
     
@@ -482,7 +482,7 @@ class EnvConfig:
             raise NotImplementedError("reward_fn must be defined.")
         self.reward_fn = reward_fn
 
-    def functionalities(
+    def episodes(
         self,
         episode_fn: EpisodeFunction = EpisodeFunction({}),
         cut_episode_len: int = 0,
