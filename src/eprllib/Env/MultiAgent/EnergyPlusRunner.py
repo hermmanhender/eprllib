@@ -255,7 +255,7 @@ class EnergyPlusRunner:
         # Wait for an action.
         event_flag = self.act_event.wait(self.env_config["timeout"])
         if not event_flag:
-            raise ValueError("")
+            return
                 
         # Get and transform the action from the EnergyPlusEnvironment `step` method.
         dict_action = self.action_fn.transform_action(self.act_queue.get())
@@ -746,6 +746,9 @@ class EnergyPlusRunner:
         belong_to: str = None, # variables_env, simulation_parameters, meters, etc.
         reference: str = None, # thermal_zone_id, agent_id
         ) -> Dict[str,Any]:
+        
+        if self.env_config['no_observable_variables'] is None:
+            return dict_parameters
         
         if belong_to is None:
             raise ValueError("The 'belong_to' argument must be specified.")
