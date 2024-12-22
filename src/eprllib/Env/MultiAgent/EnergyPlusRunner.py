@@ -256,18 +256,19 @@ class EnergyPlusRunner:
         event_flag = self.act_event.wait(self.env_config["timeout"])
         if not event_flag:
             return
-                
-        # Get and transform the action from the EnergyPlusEnvironment `step` method.
-        dict_action = self.action_fn.transform_action(self.act_queue.get())
-        # TODO: For centralize method, it is needed to descompose the junt action into the
-        # different agents. This would be included in the action_fn.
+        # Get the action from the EnergyPlusEnvironment `step` method.
+        dict_action = self.act_queue.get()
         
         # Perform the actions in EnergyPlus simulation.
         for agent in self._agent_ids:
+            
+            action = self.action_fn.transform_action(dict_action[agent], agent)
+            # TODO: For centralize method, it is needed to descompose the junt action into the
+            # different agents. This would be included in the action_fn.
             api.exchange.set_actuator_value(
                 state=state_argument,
                 actuator_handle=self.actuator_handles[agent],
-                actuator_value=dict_action[agent]
+                actuator_value=action
             )    
     
     def set_site_variables(self) -> Tuple[Dict[str, Tuple [str, str]], Dict[str,Dict[str, int]]]:
