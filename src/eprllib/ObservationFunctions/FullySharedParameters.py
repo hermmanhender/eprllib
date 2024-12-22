@@ -87,7 +87,11 @@ class FullySharedParameters(ObservationFunction):
             obs_space_len += sp_len
         # Add weather prediction.
         if env_config['use_one_day_weather_prediction']:
-            obs_space_len += env_config['prediction_hours']*env_config['prediction_variables']
+            count_variables = 0
+            for key in env_config['prediction_variables'].keys():
+                if env_config['prediction_variables'][key]:
+                    count_variables += 1
+            obs_space_len += env_config['prediction_hours']*count_variables
         
         # === Thermal zone state where the agent belongs ===
         # Thermal zone variables.
