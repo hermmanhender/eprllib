@@ -45,12 +45,13 @@ class ActionFunction:
         """
         return NotImplementedError("This method should be implemented in the child class.")
     
-    def transform_action(self, action:Dict[str,float]) -> Dict[str, Any]:
+    def transform_action(self, action:float|int, agent_id) -> Any:
         """
         This method is used to transform the actions of the agents before applying.
 
         Args:
-            action (Dict[str,float]): Action provided by the policy.
+            action (float|int): Action provided by the policy.
+            agent_id: The agent that require the action transform.
 
         Returns:
             Dict[str, Any]: A dict of transformed action for each agent in the environment.
