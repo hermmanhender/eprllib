@@ -202,7 +202,7 @@ class FullySharedParameters(ObservationFunction):
             if 'meters' in no_obs_keys:
                 for agent in _agent_ids:
                     discount_len_vector_met = []
-                    discount_len_vector_met.append(len([key for key in env_config['no_observable_variables']['meters'][agent].keys()]))
+                    discount_len_vector_met.append(len([key for key in env_config['no_observable_variables']['meters'][agent]]))
                 if len(set(discount_len_vector_met)) != 1:
                     raise ValueError("The agents in no_observable_variables have different number of meters.")
                 obs_space_len -= discount_len_vector_met[0]
