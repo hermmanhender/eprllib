@@ -1,44 +1,12 @@
 """
-Fully Shared Parameters Policy
-================================
 
-This module implements a fully shared parameters policy for the observation function.
-
-The observations are classified into:
-
-* Actuator states
-* Environment state
-    * Environment variables
-    * Simulation parameters
-    * Weather prediction
-* Thermal zone state
-    * Thermal zone variables
-    * Static variables
-    * Zone simulation parameters
-    * Building properties
-* Agent state
-    * Object variables
-    * Meters
-    
-The flat observation for each agent must be a numpy array and the size must be equal to all agents. To 
-this end, a concatenation of variables is performed.
-
-*Agent flat observation*
-
-* AgentID one-hot enconde vector
-* Environment state
-* Thermal zone state where the agent belongs
-* Agent state
-* Other agents reduce observations
 """
+import gymnasium as gym
+import numpy as np
 from typing import Any, Dict, Tuple, Set, List
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
-import numpy as np
-import random
-import gymnasium as gym
-
-class FullySharedParameters(ObservationFunction):
+class CentralizedAgent(ObservationFunction):
     def __init__(
         self,
         obs_fn_config: Dict[str,Any]
@@ -71,8 +39,8 @@ class FullySharedParameters(ObservationFunction):
         
         # === AgentID one-hot enconde vector ===
         # Add agents id vector to space dim.
-        if self.number_of_agents_total > 1:
-            obs_space_len += self.number_of_agents_total
+        # if self.number_of_agents_total > 1:
+        #     obs_space_len += self.number_of_agents_total
         
         # === Environment state ===
         # Environment variables.
@@ -140,8 +108,8 @@ class FullySharedParameters(ObservationFunction):
             obs_space_len += lenght_vector_met[0]
         
         # actuator state.
-        if env_config['use_actuator_state']:
-            obs_space_len += 1
+        # if env_config['use_actuator_state']:
+        #     obs_space_len += 1
             
         # variables defined in agent_obs_extra_var
         if self.obs_fn_config['agent_obs_extra_var'] is not None:
@@ -240,12 +208,12 @@ class FullySharedParameters(ObservationFunction):
             
             # === AgentID one-hot enconde vector ===
             # If apply, add the igent ID vector for each agent obs
-            if self.number_of_agents_total > 1:
+            # if self.number_of_agents_total > 1:
                 # 1. Label: NotImplementd yet.
                 # 2. Values:
-                agent_indicator = env_config['agents_config'][agent]['agent_indicator']
-                agent_id_vector = np.array([0]*self.number_of_agents_total)
-                agent_id_vector[agent_indicator-1] = 1
+                # agent_indicator = env_config['agents_config'][agent]['agent_indicator']
+                # agent_id_vector = np.array([0]*self.number_of_agents_total)
+                # agent_id_vector[agent_indicator-1] = 1
                 # 3. Infos: This is not useful for this part of the observation.
             
             # === Environment state ===
@@ -287,14 +255,14 @@ class FullySharedParameters(ObservationFunction):
                 dtype='float32'
             )
             # if apply, add the actuator state of this agent
-            if env_config['use_actuator_state']:
-                ag_var = np.concatenate(
-                    (
-                        ag_var,
-                        [actuator_states[agent]],
-                    ),
-                    dtype='float32'
-                )
+            # if env_config['use_actuator_state']:
+            #     ag_var = np.concatenate(
+            #         (
+            #             ag_var,
+            #             [actuator_states[agent]],
+            #         ),
+            #         dtype='float32'
+            #     )
             
             # extra obs provided in the obs_fn_config dict.
             if self.obs_fn_config['agent_obs_extra_var'] is not None:
@@ -363,6 +331,10 @@ class FullySharedParameters(ObservationFunction):
                         ),
                         dtype='float32'
                     )
-                
-                
-        return agents_obs, agents_infos
+        
+        # Reduce the dictionary to only one central agent observation
+        for agent in agents:
+            agents_obs = {"central_agent":agents_obs[agent]}
+            agents_infos = {"central_agent":agents_infos[agent]}
+            
+            return agents_obs, agents_infos

@@ -36,16 +36,16 @@ class reward_function(RewardFunction):
         Returns:
             Dict[str,float]: The calculated reward as a dictionary with the keys 'agent'.
         """
-        _agent_ids = {agent for agent in self.reward_fn_config.keys()}
+        agents = {agent for agent in self.reward_fn_config.keys()}
         _agent_rewards = {}
         
-        for agent in _agent_ids:
+        for agent in agents:
             if (infos[agent]["Heating:DistrictHeatingWater"] + infos[agent]["Cooling:DistrictCooling"]) < self.max_energy:
                 self.max_energy = (infos[agent]["Heating:DistrictHeatingWater"] + infos[agent]["Cooling:DistrictCooling"])
             if (infos[agent]["Zone Mean Air Temperature"]-22)**2 < self.max_temperature:
                 self.max_temperature = (infos[agent]["Zone Mean Air Temperature"]-22)**2
         
-        for agent in _agent_ids:    
+        for agent in agents:    
             _agent_rewards[agent] = -0.5*(infos[agent]["Heating:DistrictHeatingWater"] + infos[agent]["Cooling:DistrictCooling"])/self.max_energy - 0.5*(infos[agent]["Zone People Occupant Count"])*((infos[agent]["Zone Mean Air Temperature"]-22)**2)
 
         return _agent_rewards

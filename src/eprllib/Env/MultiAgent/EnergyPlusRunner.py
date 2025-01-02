@@ -32,7 +32,7 @@ class EnergyPlusRunner:
         obs_queue: Queue,
         act_queue: Queue,
         infos_queue: Queue,
-        _agent_ids: Set,
+        agents: List,
         _thermal_zone_ids: Set,
         observation_fn: ObservationFunction,
         action_fn: ActionFunction,
@@ -58,7 +58,7 @@ class EnergyPlusRunner:
         self.obs_queue = obs_queue
         self.act_queue = act_queue
         self.infos_queue = infos_queue
-        self._agent_ids = _agent_ids
+        self.agents = agents
         self._thermal_zone_ids = _thermal_zone_ids
         
         # The queue events are generated (To sure the coordination with EnergyPlusEnvironment).
@@ -138,8 +138,8 @@ class EnergyPlusRunner:
         EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
-        dict_agents_obs = {agent: [] for agent in self._agent_ids}
-        dict_agents_infos = {agent: {} for agent in self._agent_ids}
+        dict_agents_obs = {agent: [] for agent in self.agents}
+        dict_agents_infos = {agent: {} for agent in self.agents}
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
         if not self._init_callback(state_argument) or self.simulation_complete:
@@ -183,9 +183,9 @@ class EnergyPlusRunner:
                 thermal_zone_states[thermal_zone].update(thermal_zone_states_p)
                 thermal_zone_infos[thermal_zone].update(thermal_zone_infos_p)
             
-        agent_states = {agent: {} for agent in self._agent_ids}
-        agent_infos = {agent: {} for agent in self._agent_ids}
-        for agent in self._agent_ids:
+        agent_states = {agent: {} for agent in self.agents}
+        agent_infos = {agent: {} for agent in self.agents}
+        for agent in self.agents:
             
             if self.env_config['variables_obj'] is not None:
                 agent_states_p, agent_infos_p = self.get_object_variables_state(state_argument, agent)
@@ -199,7 +199,7 @@ class EnergyPlusRunner:
         
         dict_agents_obs, dict_agents_infos = self.observation_fn.set_agent_obs_and_infos(
             self.env_config,
-            self._agent_ids,
+            self.agents,
             self._thermal_zone_ids,
             actuator_states,
             actuator_infos,
@@ -211,13 +211,13 @@ class EnergyPlusRunner:
             agent_infos
         )
         
-        for key, value in dict_agents_obs.items():
-            if np.isnan(value).any() or np.isinf(value).any():
-                print(f"NaN or Inf value found in {key}: {dict_agents_obs[key]}")
-        for agent in self._agent_ids:
-            for key, value in dict_agents_infos[agent].items():
-                if np.isnan(value).any() or np.isinf(value).any():
-                    print(f"NaN or Inf value found in {key}: {dict_agents_infos[key]}")
+        # for key, value in dict_agents_obs.items():
+        #     if np.isnan(value).any() or np.isinf(value).any():
+        #         print(f"NaN or Inf value found in {key}: {dict_agents_obs[key]}")
+        # for agent in self.agents:
+        #     for key, value in dict_agents_infos[agent].items():
+        #         if np.isnan(value).any() or np.isinf(value).any():
+        #             print(f"NaN or Inf value found in {key}: {dict_agents_infos[key]}")
         
         
         # Set the agents observation and infos to communicate with the EPEnv.
@@ -259,10 +259,12 @@ class EnergyPlusRunner:
         # Get the action from the EnergyPlusEnvironment `step` method.
         dict_action = self.act_queue.get()
         
+        dict_action = self.action_fn.transform_action(dict_action)
+        
         # Perform the actions in EnergyPlus simulation.
-        for agent in self._agent_ids:
+        for agent in self.agents:
             
-            action = self.action_fn.transform_action(dict_action[agent], agent)
+            action = self.action_fn.get_agent_action(dict_action[agent], agent)
             # TODO: For centralize method, it is needed to descompose the junt action into the
             # different agents. This would be included in the action_fn.
             api.exchange.set_actuator_value(
@@ -315,12 +317,12 @@ class EnergyPlusRunner:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
         """
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
-        var_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self._agent_ids}
-        variables:Dict[str,Dict[str, Tuple [str, str]]] = {agent: {} for agent in self._agent_ids}
+        var_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self.agents}
+        variables:Dict[str,Dict[str, Tuple [str, str]]] = {agent: {} for agent in self.agents}
         if self.env_config['variables_obj'] is not None:
             # Check all the agents are in the variables_obj Dict.
-            assert set(self.env_config['variables_obj'].keys()) == self._agent_ids, f"The variables_obj must include all agent_ids: {self._agent_ids}."
-            for agent in self._agent_ids:
+            assert set(self.env_config['variables_obj'].keys()) == self.agents, f"The variables_obj must include all agent_ids: {self.agents}."
+            for agent in self.agents:
                 variables.update({agent:{variable: (variable, object_key) for variable, object_key in self.env_config['variables_obj'][agent].items()}})
         return variables, var_handles
 
@@ -351,10 +353,10 @@ class EnergyPlusRunner:
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The meters and their handles.
         """
-        meter_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self._agent_ids}
-        meters: Dict[str, List[str]] = {agent: {} for agent in self._agent_ids}
+        meter_handles: Dict[str,Dict[str, int]] = {agent: {} for agent in self.agents}
+        meters: Dict[str, List[str]] = {agent: {} for agent in self.agents}
         if self.env_config['meters'] is not None:
-            for agent in self._agent_ids:
+            for agent in self.agents:
                 for _ in range(len(self.env_config['meters'][agent])):
                     meters.update({agent:{variable: variable for variable in self.env_config['meters'][agent]}})
         return meters, meter_handles
@@ -368,7 +370,7 @@ class EnergyPlusRunner:
         Returns:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
         """
-        actuators: Dict[str,Tuple[str,str,str]] = {agent: self.env_config['agents_config'][agent]['ep_actuator_config'] for agent in self._agent_ids}
+        actuators: Dict[str,Tuple[str,str,str]] = {agent: self.env_config['agents_config'][agent]['ep_actuator_config'] for agent in self.agents}
         actuator_handles: Dict[str, int] = {}
         
         return actuators, actuator_handles
@@ -856,7 +858,7 @@ class EnergyPlusRunner:
             return False
         
         # Object variables and meters are consider for each agent.
-        for agent in self._agent_ids:
+        for agent in self.agents:
             self.handle_object_variables[agent].update({
                 key: api.exchange.get_variable_handle(state_argument, *var)
                 for key, var in self.dict_object_variables[agent].items()

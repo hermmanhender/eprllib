@@ -24,7 +24,7 @@ class rb_evaluation:
         self.policy_config = policy_config
         self.name = name
         self.env = EnergyPlusEnv_v0(env_config)
-        self._agent_ids = self.env.get_agent_ids()
+        self.agents = self.env.agents
         self.terminated = {}
         self.terminated = False
         self.data_queue: Optional[Queue] = None
@@ -56,11 +56,11 @@ class rb_evaluation:
         # coloca los datos en una cola
         self.data_queue.put(data)
         
-        prev_action = {agent: 0 for agent in self._agent_ids}
+        prev_action = {agent: 0 for agent in self.agents}
         while not self.terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
-            actions_dict = {agent: 0 for agent in self._agent_ids}
-            for agent in self._agent_ids:
+            actions_dict = {agent: 0 for agent in self.agents}
+            for agent in self.agents:
                 action = self.policy[agent].compute_single_action(infos[agent], prev_action[agent])
                 actions_dict[agent] = action
                 prev_action[agent] = action
@@ -71,7 +71,7 @@ class rb_evaluation:
             # The action is transformer inside the step method, but here is transformed to save the correct value
             actions_dict = self.action_fn.transform_action(actions_dict)
             
-            for agent in self._agent_ids:
+            for agent in self.agents:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
                 # coloca los datos en una cola
                 self.data_queue.put(data)

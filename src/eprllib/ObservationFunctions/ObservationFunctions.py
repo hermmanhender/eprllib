@@ -14,7 +14,7 @@ class ObservationFunction:
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
-        _agent_ids: Set,
+        agents: Set,
         _thermal_zone_ids: Set,
         ) -> Tuple[gym.Space, Dict[str,List[str]]]:
         return NotImplementedError("You must implement this method.")
@@ -22,7 +22,7 @@ class ObservationFunction:
     def set_agent_obs_and_infos(
         self,
         env_config: Dict[str,Any],
-        _agent_ids: Set,
+        agents: Set,
         _thermal_zone_ids: Set,
         actuator_states: Dict[str,Any] = NotImplemented,
         actuator_infos: Dict[str,Any] = NotImplemented,

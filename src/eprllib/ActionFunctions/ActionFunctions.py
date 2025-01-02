@@ -45,7 +45,10 @@ class ActionFunction:
         """
         return NotImplementedError("This method should be implemented in the child class.")
     
-    def transform_action(self, action:float|int, agent_id) -> Any:
+    def transform_action(self, action: Dict[str,Any]) -> Dict[str,Any]:
+        return action
+    
+    def get_agent_action(self, action:float|int, agent_id) -> Any:
         """
         This method is used to transform the actions of the agents before applying.
 
