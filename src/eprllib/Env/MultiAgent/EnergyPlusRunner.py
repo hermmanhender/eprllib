@@ -303,7 +303,7 @@ class EnergyPlusRunner:
         variables:Dict[str,Dict[str, Tuple [str, str]]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         if self.env_config['variables_thz'] is not None:
             for thermal_zone in self._thermal_zone_ids:
-                variables.update({thermal_zone:{variable: (variable, thermal_zone) for variable in self.env_config['variables_thz']}})
+                variables.update({thermal_zone:{f"{variable}:{thermal_zone}": (variable, thermal_zone) for variable in self.env_config['variables_thz']}})
         return variables, var_handles
 
     def set_object_variables(self) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
@@ -323,7 +323,7 @@ class EnergyPlusRunner:
             # Check all the agents are in the variables_obj Dict.
             assert set(self.env_config['variables_obj'].keys()) == self.agents, f"The variables_obj must include all agent_ids: {self.agents}."
             for agent in self.agents:
-                variables.update({agent:{variable: (variable, object_key) for variable, object_key in self.env_config['variables_obj'][agent].items()}})
+                variables.update({agent:{f"{variable}:{object_key}": (variable, object_key) for variable, object_key in self.env_config['variables_obj'][agent].items()}})
         return variables, var_handles
 
     def set_static_variables(self) -> Tuple[Dict[str, str], Dict[str, int]]:
