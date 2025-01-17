@@ -5,7 +5,6 @@ Python API in the version 24.1.0.
 """
 import os
 import threading
-import numpy as np
 import time
 from queue import Queue
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -14,10 +13,9 @@ from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.Env.MultiAgent.EnvUtils import EP_API_add_path
 # EnergyPlus Python API path adding
-EP_API_add_path(version="24-1-0")
+EP_API_add_path(version="24-2-0")
 from pyenergyplus.api import EnergyPlusAPI
-import time
-import time
+
 api = EnergyPlusAPI()
 
 class EnergyPlusRunner:
@@ -303,7 +301,7 @@ class EnergyPlusRunner:
         variables:Dict[str,Dict[str, Tuple [str, str]]] = {thermal_zone: {} for thermal_zone in self._thermal_zone_ids}
         if self.env_config['variables_thz'] is not None:
             for thermal_zone in self._thermal_zone_ids:
-                variables.update({thermal_zone:{f"{variable}:{thermal_zone}": (variable, thermal_zone) for variable in self.env_config['variables_thz']}})
+                variables.update({thermal_zone:{f"{variable}": (variable, thermal_zone) for variable in self.env_config['variables_thz']}})
         return variables, var_handles
 
     def set_object_variables(self) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
