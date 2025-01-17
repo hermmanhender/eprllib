@@ -75,6 +75,7 @@ class EnergyPlusRunner:
         self.obs = {}
         self.infos = {}
         self.unique_id = time.time()
+        self.actuators = []
         
         # create a variable to save the obs dict key to use in posprocess
         self.obs_keys = []
@@ -257,17 +258,17 @@ class EnergyPlusRunner:
         # Get the action from the EnergyPlusEnvironment `step` method.
         dict_action = self.act_queue.get()
         
-        dict_action = self.action_fn.transform_action(dict_action)
+        # Transform action must to consider the agents and actuators and transform agents actions to actuators actions,
+        # considering that one agent could manage more than one actuator.
+        dict_action = self.action_fn.agent_to_actuator_action(dict_action)
         
         # Perform the actions in EnergyPlus simulation.
-        for agent in self.agents:
+        for actuator in self.actuators:
             
-            action = self.action_fn.get_agent_action(dict_action[agent], agent)
-            # TODO: For centralize method, it is needed to descompose the junt action into the
-            # different agents. This would be included in the action_fn.
+            action = self.action_fn.get_actuator_action(dict_action[actuator], actuator)
             api.exchange.set_actuator_value(
                 state=state_argument,
-                actuator_handle=self.actuator_handles[agent],
+                actuator_handle=self.actuator_handles[actuator],
                 actuator_value=action
             )    
     
@@ -368,7 +369,15 @@ class EnergyPlusRunner:
         Returns:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
         """
-        actuators: Dict[str,Tuple[str,str,str]] = {agent: self.env_config['agents_config'][agent]['ep_actuator_config'] for agent in self.agents}
+        self.actuators = []
+        actuators: Dict[str,Tuple[str,str,str]] = {agent: None  for agent in self._agent_ids}
+        for agent in self.agents:
+            _ = 0
+            for actuator in self.env_config['agents_config'][agent]['ep_actuator_config']:
+                self.actuators.append(f"{agent}_{_}")
+                actuators: Dict[str,Tuple[str,str,str]] = {f"{agent}_{_}": actuator}
+                _ += 1
+            
         actuator_handles: Dict[str, int] = {}
         
         return actuators, actuator_handles
