@@ -31,7 +31,8 @@ class EnergyPlusRunner:
         act_queue: Queue,
         infos_queue: Queue,
         agents: List,
-        _thermal_zone_ids: Set,
+        actuators: List,
+        _thermal_zone_ids: List,
         observation_fn: ObservationFunction,
         action_fn: ActionFunction,
         ) -> None:
@@ -57,6 +58,7 @@ class EnergyPlusRunner:
         self.act_queue = act_queue
         self.infos_queue = infos_queue
         self.agents = agents
+        self.actuators = actuators
         self._thermal_zone_ids = _thermal_zone_ids
         
         # The queue events are generated (To sure the coordination with EnergyPlusEnvironment).
@@ -75,7 +77,6 @@ class EnergyPlusRunner:
         self.obs = {}
         self.infos = {}
         self.unique_id = time.time()
-        self.actuators = []
         
         # create a variable to save the obs dict key to use in posprocess
         self.obs_keys = []
@@ -199,6 +200,7 @@ class EnergyPlusRunner:
         dict_agents_obs, dict_agents_infos = self.observation_fn.set_agent_obs_and_infos(
             self.env_config,
             self.agents,
+            self.actuators,
             self._thermal_zone_ids,
             actuator_states,
             actuator_infos,
@@ -370,12 +372,11 @@ class EnergyPlusRunner:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
         """
         self.actuators = []
-        actuators: Dict[str,Tuple[str,str,str]] = {agent: None  for agent in self._agent_ids}
+        actuators: Dict[str,Tuple[str,str,str]] = {actuator: None for actuator in self.actuators}
         for agent in self.agents:
             _ = 0
-            for actuator in self.env_config['agents_config'][agent]['ep_actuator_config']:
-                self.actuators.append(f"{agent}_{_}")
-                actuators: Dict[str,Tuple[str,str,str]] = {f"{agent}_{_}": actuator}
+            for actuator_config in self.env_config['agents_config'][agent]['ep_actuator_config']:
+                actuators.update({f"{agent}_{_}": actuator_config})
                 _ += 1
             
         actuator_handles: Dict[str, int] = {}
