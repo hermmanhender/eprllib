@@ -25,6 +25,7 @@ class EnvConfig:
         * ep_terminal_output (bool): Indicate if the EnergyPlus outputs during simulation must print or not in the Terminal. Default is True.
         * timeout (float): Time to wait for an observation of the environment. If you habe a slow model, you can increase the value of 
         this parameter. Default is 10.0
+        * evaluation (bool): Flag for internal or external use to identify if evaluation is running or not.
 
         **agents**
         
@@ -191,6 +192,7 @@ class EnvConfig:
         self.output_path: str = NotImplemented
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
+        self.evaluation: bool = False
 
         # agents
         self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
