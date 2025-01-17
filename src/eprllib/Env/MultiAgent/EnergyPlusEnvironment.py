@@ -82,7 +82,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
         
         # Define all agent IDs that might even show up in your episodes.
-        self.possible_agents = self.env_config["possible_agents"]
+        self.possible_agents = [key for key in self.env_config["agents"]["agents_config"].keys()]
+        self.actuators = []
+        for agent in self.possible_agents:
+            for _ in range(len(self.env_config["agents"]['agents_config'][agent]["ep_actuator_config"])):
+                self.actuators.append(f"{agent}_{_}")
         
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
@@ -98,7 +102,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # asignation of the environment observation space.
         # TODO: Get the keys for the data saving here, together with the specification of the observation space.
-        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config, self.agents, self._thermal_zone_ids)
+        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config, self.agents, self.actuators, self._thermal_zone_ids)
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -178,6 +182,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 act_queue = self.act_queue,
                 infos_queue = self.infos_queue,
                 agents = self.agents,
+                actuators = self.actuators,
                 _thermal_zone_ids = self._thermal_zone_ids,
                 observation_fn = self.observation_fn,
                 action_fn = self.action_fn
