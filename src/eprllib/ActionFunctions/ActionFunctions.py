@@ -45,16 +45,53 @@ class ActionFunction:
         """
         return NotImplementedError("This method should be implemented in the child class.")
     
-    def transform_action(self, action: Dict[str,Any]) -> Dict[str,Any]:
-        return action
-    
-    def get_agent_action(self, action:float|int, agent_id) -> Any:
+    def agent_to_actuator_action(self, action: Dict[str,Any]) -> Dict[str,Any]:
         """
-        This method is used to transform the actions of the agents before applying.
+        This method is used to transform the agent dict action to actuator dict action. Consider that
+        one agent could manage more than one actuator. For that reason it is important to transformt the
+        action dict to actuator dict actions.
+        
+        The actuators are named as: agent_{n}, where n correspond with the order listed in the
+        configuration. For example, in the following code the action provide for the policy will
+        correspond to the "battery_controller" agent, but this action dict must to be transform
+        in two actions, one for the "battery_controller_0" actuator (that allows draw the battery), and
+        one for the "battery_controller_1" actuator (that charge the battery):
+        
+        ```
+        from eprllib.Env.EnvConfig import EnvConfig
+        eprllib_config = EnvConfig()
+        eprllib_config.agents(
+            agents_config = {
+                "battery_controler": {
+                    'ep_actuator_config': [
+                        ("Electrical Storage", "Power Draw Rate", "Battery"),
+                        ("Electrical Storage", "Power Charge Rate", "Battery")
+                        ],
+                    'thermal_zone': 'Thermal Zone',
+                    'agent_indicator': 1,
+                },}
+        )
+        ```
 
         Args:
-            action (float|int): Action provided by the policy.
-            agent_id: The agent that require the action transform.
+            action (Dict[str, Any]): Action provided by the policy.
+
+        Raises:
+            NotImplementedError: This method should be implemented in the child class.
+
+        Returns:
+            Dict[str, Any]: A dict of transformed action for each agent in the environment.
+        """
+        raise NotImplementedError("This method should be implemented in the child class.")
+    
+    def get_actuator_action(self, action:float|int, actuator) -> Any:
+        """
+        This method is used to get the actions of the actuators after transform the
+        agent dict action to actuator dict action with agent_to_actuator_action.
+
+        Args:
+            action (float|int): Action provided by the policy and transformed by agent_to_actuator_action.
+            actuator: The actuator that require the action.
 
         Returns:
             Dict[str, Any]: A dict of transformed action for each agent in the environment.
