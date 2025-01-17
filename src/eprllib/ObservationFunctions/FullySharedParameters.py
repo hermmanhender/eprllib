@@ -35,7 +35,6 @@ from typing import Any, Dict, Tuple, Set, List
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
 import numpy as np
-import random
 import gymnasium as gym
 
 class FullySharedParameters(ObservationFunction):
