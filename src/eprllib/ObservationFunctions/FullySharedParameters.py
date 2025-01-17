@@ -49,12 +49,14 @@ class FullySharedParameters(ObservationFunction):
         self.other_agent_obs_extra_var: Dict[str,Dict[str,Any]] = self.obs_fn_config['other_agent_obs_extra_var']
         self.observation_space_labels: Dict[str,List[str]] = NotImplemented
         self._agent_indicator: Dict[str,Any] = NotImplemented
+        self.max_actuators_per_agent = 0
     
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
-        agents: Set,
-        _thermal_zone_ids: Set,
+        agents: List,
+        actuators: List,
+        _thermal_zone_ids: List,
         ) -> gym.Space:
         """
         This method construct the observation space of the environment.
@@ -140,7 +142,12 @@ class FullySharedParameters(ObservationFunction):
         
         # actuator state.
         if env_config['use_actuator_state']:
-            obs_space_len += 1
+            if not self.number_of_agents_total > 1:
+                # count only the actuators in actuators that start with the agent name. For that, consider that the name of the agent could content a "_" in her name.
+                for agent in agents:
+                    if len(self.env_config["agents"]['agents_config'][agent]["ep_actuator_config"]) > self.max_actuators_per_agent:
+                        self.max_actuators_per_agent = len(self.env_config["agents"]['agents_config'][agent]["ep_actuator_config"])
+                obs_space_len += self.max_actuators_per_agent
             
         # variables defined in agent_obs_extra_var
         if self.obs_fn_config['agent_obs_extra_var'] is not None:
@@ -160,7 +167,7 @@ class FullySharedParameters(ObservationFunction):
         
             # if apply, add the actuator state.
             if env_config['use_actuator_state']:
-                obs_space_len += self.number_of_agents_total
+                obs_space_len += len(actuators)
             
             for _ in range(self.number_of_agents_total):
                 for agent in agents:
@@ -212,8 +219,9 @@ class FullySharedParameters(ObservationFunction):
     def set_agent_obs_and_infos(
         self,
         env_config: Dict[str,Any],
-        agents: Set,
-        _thermal_zone_ids: Set,
+        agents: List,
+        actuators: List,
+        _thermal_zone_ids: List,
         actuator_states: Dict[str,Any] = NotImplemented,
         actuator_infos: Dict[str,Any] = NotImplemented,
         site_state: Dict[str,Any] = NotImplemented,
@@ -287,13 +295,16 @@ class FullySharedParameters(ObservationFunction):
             )
             # if apply, add the actuator state of this agent
             if env_config['use_actuator_state']:
-                ag_var = np.concatenate(
-                    (
-                        ag_var,
-                        [actuator_states[agent]],
-                    ),
-                    dtype='float32'
-                )
+                if not self.number_of_agents_total > 1:
+                    for actuator in actuators:
+                        if actuator.startswith(agent):
+                            ag_var = np.concatenate(
+                                (
+                                    ag_var,
+                                    [actuator_states[actuator]],
+                                ),
+                                dtype='float32'
+                            )
             
             # extra obs provided in the obs_fn_config dict.
             if self.obs_fn_config['agent_obs_extra_var'] is not None:
@@ -338,19 +349,15 @@ class FullySharedParameters(ObservationFunction):
             
             # if apply, add the actuator state.
             if env_config['use_actuator_state']:
-                ag_var = np.array([0]*self.number_of_agents_total)
-                for agent in agents:
-                    agent_indicator = env_config['agents_config'][agent]['agent_indicator']
-                    ag_var[agent_indicator-1] = actuator_states[agent]
-                for agent in agents:
+                for actuator in actuators:
                     agents_obs[agent] = np.concatenate(
                         (
                             agents_obs[agent],
-                            ag_var,
+                            [actuator_states[actuator]],
                         ),
                         dtype='float32'
                     )
-                
+                    
             # extra obs provided in the obs_fn_config dict.
             if self.obs_fn_config['other_agent_obs_extra_var'] is not None:
                 other_agent_obs_extra_var = np.array([value for value in self.obs_fn_config['other_agent_obs_extra_var'][agent].values()])
