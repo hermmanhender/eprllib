@@ -22,8 +22,9 @@ class CentralizedAgent(ObservationFunction):
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
-        agents: Set,
-        _thermal_zone_ids: Set,
+        agents: List,
+        actuators: List,
+        _thermal_zone_ids: List,
         ) -> gym.Space:
         """
         This method construct the observation space of the environment.
@@ -108,8 +109,9 @@ class CentralizedAgent(ObservationFunction):
             obs_space_len += lenght_vector_met[0]
         
         # actuator state.
-        # if env_config['use_actuator_state']:
-        #     obs_space_len += 1
+        if env_config['use_actuator_state']:
+            if not self.number_of_agents_total > 1:
+                obs_space_len += len(actuators)
             
         # variables defined in agent_obs_extra_var
         if self.obs_fn_config['agent_obs_extra_var'] is not None:
@@ -181,8 +183,9 @@ class CentralizedAgent(ObservationFunction):
     def set_agent_obs_and_infos(
         self,
         env_config: Dict[str,Any],
-        agents: Set,
-        _thermal_zone_ids: Set,
+        agents: List,
+        actuators: List,
+        _thermal_zone_ids: List,
         actuator_states: Dict[str,Any] = NotImplemented,
         actuator_infos: Dict[str,Any] = NotImplemented,
         site_state: Dict[str,Any] = NotImplemented,
