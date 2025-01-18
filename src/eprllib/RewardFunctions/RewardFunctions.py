@@ -11,6 +11,14 @@ and indexing a arrangement may change.
 
 from typing import Dict, Any
 
+class RewardSpec:
+    """
+    RewardSpec is the base class for an reward specification to safe configuration of the object.
+    """
+    def __init__(self):
+        reward_fn: RewardFunction = None
+        reward_fn_config: Dict[str, Any] = {}
+
 class RewardFunction:
     """
     This class is the base class for the reward function.
@@ -23,7 +31,7 @@ class RewardFunction:
     
     def get_reward(
         self,
-        infos: Dict[str,Dict[str,Any]],
+        infos: Dict[str,Any],
         terminated: bool,
         truncated: bool,
         ) -> Dict[str,float]:
