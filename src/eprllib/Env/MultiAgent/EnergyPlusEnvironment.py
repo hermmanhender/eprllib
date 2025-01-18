@@ -74,35 +74,37 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         for the EnergyPlus multi-agent environment, preparing it for running simulations 
         and interacting with agents.
         """
-        # asigning the configuration of the environment.
         self.env_config = env_config
-        self.action_fn: ActionFunction = self.env_config['action_fn']
-        self.observation_fn: ObservationFunction = self.env_config['observation_fn']
-        self.reward_fn: RewardFunction = self.env_config['reward_fn']
-        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
         
         # Define all agent IDs that might even show up in your episodes.
-        self.possible_agents = [key for key in self.env_config["agents"]["agents_config"].keys()]
-        self.actuators = []
-        for agent in self.possible_agents:
-            for _ in range(len(self.env_config["agents"]['agents_config'][agent]["ep_actuator_config"])):
-                self.actuators.append(f"{agent}_{_}")
-        
+        self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
         self.agents = self.possible_agents
         # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
         # currently "alive" agents are.
         
-        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
-        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self.agents])
+        # asigning the configuration of the environment.
+        
+        self.action_fn: Dict[str, ActionFunction] = {}
+        self.reward_fn: Dict[str, RewardFunction] = {}
+        for agent in self.agents:
+            self.action_fn[agent] = self.env_config["agents_config"][agent]['action_fn'].__init__(self.env_config["action_fn_config"])
+            self.reward_fn[agent] = self.env_config["agents_config"][agent]['reward_fn'].__init__(self.env_config["reward_fn_config"])
+        
+        self.observation_fn: ObservationFunction = self.env_config['observation_fn']
+        self.observation_fn = self.observation_fn.__init__(self.env_config["observation_fn_config"])
+        
+        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
+        self.episode_fn = self.episode_fn.__init__(self.env_config["episode_fn_config"])
         
         # asignation of environment action space.
-        self.action_space = self.action_fn.get_action_space_dim()
+        self.action_space = {agent for agent in self.agents}
+        for agent in self.agents:
+            self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
         
         # asignation of the environment observation space.
-        # TODO: Get the keys for the data saving here, together with the specification of the observation space.
-        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config, self.agents, self.actuators, self._thermal_zone_ids)
+        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config)
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -266,7 +268,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos = self.last_infos
         
         # Calculate the reward in the timestep
-        reward_dict = self.reward_fn.get_reward(infos, self.terminateds, self.truncateds)
+        reward_dict = {}
+        for agent in self.agents:
+            reward_dict.update({agent: self.reward_fn[agent].get_reward(infos[agent], self.terminateds, self.truncateds)})
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
