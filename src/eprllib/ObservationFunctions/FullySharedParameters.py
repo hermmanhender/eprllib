@@ -145,8 +145,8 @@ class FullySharedParameters(ObservationFunction):
             if not self.number_of_agents_total > 1:
                 # count only the actuators in actuators that start with the agent name. For that, consider that the name of the agent could content a "_" in her name.
                 for agent in agents:
-                    if len(self.env_config["agents"]['agents_config'][agent]["ep_actuator_config"]) > self.max_actuators_per_agent:
-                        self.max_actuators_per_agent = len(self.env_config["agents"]['agents_config'][agent]["ep_actuator_config"])
+                    if len(env_config['agents_config'][agent]["ep_actuator_config"]) > self.max_actuators_per_agent:
+                        self.max_actuators_per_agent = len(env_config['agents_config'][agent]["ep_actuator_config"])
                 obs_space_len += self.max_actuators_per_agent
             
         # variables defined in agent_obs_extra_var
