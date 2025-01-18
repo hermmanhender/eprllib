@@ -14,8 +14,17 @@ ActionFunction must be define in the EnvConfig definition to create the environm
 called in the EnergyPlusEnvironment.EnergyPlusEnv_v0 class and used in the EnergyPlusRunner.EnergyPlusRunner class
 to transform the dict of agent actions to actuator values.
 """
-from typing import Dict, Any
+from typing import Dict, Any, List, Tuple
 import gymnasium as gym
+
+class ActionSpec:
+    """
+    ActionSpec is the base class for an action specification to safe configuration of the object.
+    """
+    def __init__(self):
+        actuators: List[Tuple] = None
+        action_fn: ActionFunction = None
+        action_fn_config: Dict[str, Any] = {}
 
 class ActionFunction:
     """
@@ -45,7 +54,7 @@ class ActionFunction:
         """
         return NotImplementedError("This method should be implemented in the child class.")
     
-    def agent_to_actuator_action(self, action: Dict[str,Any]) -> Dict[str,Any]:
+    def agent_to_actuator_action(self, action: Any, actuator_list: List) -> Dict[str,Any]:
         """
         This method is used to transform the agent dict action to actuator dict action. Consider that
         one agent could manage more than one actuator. For that reason it is important to transformt the
