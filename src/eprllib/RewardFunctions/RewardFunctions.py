@@ -11,14 +11,6 @@ and indexing a arrangement may change.
 
 from typing import Dict, Any
 
-class RewardSpec:
-    """
-    RewardSpec is the base class for an reward specification to safe configuration of the object.
-    """
-    def __init__(self):
-        reward_fn: RewardFunction = None
-        reward_fn_config: Dict[str, Any] = {}
-
 class RewardFunction:
     """
     This class is the base class for the reward function.
@@ -45,3 +37,22 @@ class RewardFunction:
             Dict[str,float]: The calculated reward as a dictionary with the keys 'agent'.
         """
         return NotImplementedError("This method must be implemented in the subclass.")
+
+class RewardSpec:
+    """
+    RewardSpec is the base class for an reward specification to safe configuration of the object.
+    """
+    def __init__(
+        self,
+        reward_fn: RewardFunction = None,
+        reward_fn_config: Dict[str, Any] = {},
+        ):
+        self.reward_fn = reward_fn
+        self.reward_fn_config = reward_fn_config
+        
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+        

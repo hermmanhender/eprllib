@@ -1,4 +1,6 @@
-"""# ENERGYPLUS RLLIB ENVIRONMENT
+"""
+Multi-Agent Environment for EnergyPlus in RLlib
+================================================
 
 This script define the environment of EnergyPlus implemented in RLlib. To works 
 need to define the EnergyPlus Runner.
@@ -86,22 +88,21 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # asigning the configuration of the environment.
         
-        self.action_fn: Dict[str, ActionFunction] = {}
-        self.reward_fn: Dict[str, RewardFunction] = {}
+        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
+        self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
         for agent in self.agents:
-            self.action_fn[agent] = self.env_config["agents_config"][agent]['action_fn'].__init__(self.env_config["action_fn_config"])
-            self.reward_fn[agent] = self.env_config["agents_config"][agent]['reward_fn'].__init__(self.env_config["reward_fn_config"])
+            self.action_fn.update({agent: self.env_config["agents_config"][agent]["action"]['action_fn'](self.env_config["agents_config"][agent]["action"]["action_fn_config"])})
+            self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
         
-        self.observation_fn: ObservationFunction = self.env_config['observation_fn']
-        self.observation_fn = self.observation_fn.__init__(self.env_config["observation_fn_config"])
-        
-        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
-        self.episode_fn = self.episode_fn.__init__(self.env_config["episode_fn_config"])
+        self.observation_fn: ObservationFunction = self.env_config['observation_fn'](self.env_config["observation_fn_config"])
+        self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
         
         # asignation of environment action space.
-        self.action_space = {agent for agent in self.agents}
-        for agent in self.agents:
-            self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
+        # self.action_space = {agent: None for agent in self.agents}
+        # for agent in self.agents:
+        #     self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
+        
+        self.action_space = self.action_fn[self.agents[0]].get_action_space_dim()
         
         # asignation of the environment observation space.
         self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config)
@@ -184,8 +185,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 act_queue = self.act_queue,
                 infos_queue = self.infos_queue,
                 agents = self.agents,
-                actuators = self.actuators,
-                _thermal_zone_ids = self._thermal_zone_ids,
                 observation_fn = self.observation_fn,
                 action_fn = self.action_fn
             )

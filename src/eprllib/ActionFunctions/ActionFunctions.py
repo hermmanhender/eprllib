@@ -17,15 +17,6 @@ to transform the dict of agent actions to actuator values.
 from typing import Dict, Any, List, Tuple
 import gymnasium as gym
 
-class ActionSpec:
-    """
-    ActionSpec is the base class for an action specification to safe configuration of the object.
-    """
-    def __init__(self):
-        actuators: List[Tuple] = None
-        action_fn: ActionFunction = None
-        action_fn_config: Dict[str, Any] = {}
-
 class ActionFunction:
     """
     Base class to create action transformer functions.
@@ -54,7 +45,7 @@ class ActionFunction:
         """
         return NotImplementedError("This method should be implemented in the child class.")
     
-    def agent_to_actuator_action(self, action: Any, actuator_list: List) -> Dict[str,Any]:
+    def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent dict action to actuator dict action. Consider that
         one agent could manage more than one actuator. For that reason it is important to transformt the
@@ -93,7 +84,7 @@ class ActionFunction:
         """
         raise NotImplementedError("This method should be implemented in the child class.")
     
-    def get_actuator_action(self, action:float|int, actuator) -> Any:
+    def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the
         agent dict action to actuator dict action with agent_to_actuator_action.
@@ -106,3 +97,23 @@ class ActionFunction:
             Dict[str, Any]: A dict of transformed action for each agent in the environment.
         """
         return action
+
+class ActionSpec:
+    """
+    ActionSpec is the base class for an action specification to safe configuration of the object.
+    """
+    def __init__(
+        self,
+        actuators: List[Tuple] = None,
+        action_fn: ActionFunction = None,
+        action_fn_config: Dict[str, Any] = {},
+        ):
+        self.actuators = actuators
+        self.action_fn = action_fn
+        self.action_fn_config = action_fn_config
+    
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)

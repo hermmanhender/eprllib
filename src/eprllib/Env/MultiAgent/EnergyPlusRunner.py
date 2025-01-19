@@ -1,7 +1,9 @@
-"""# ENERGYPLUS RUNNER
+"""
+EnergyPlus Runner
+==================
 
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
-Python API in the version 24.1.0.
+Python API in the version 24.2.0.
 """
 import os
 import threading
@@ -31,8 +33,6 @@ class EnergyPlusRunner:
         act_queue: Queue,
         infos_queue: Queue,
         agents: List,
-        actuators: List,
-        _thermal_zone_ids: List,
         observation_fn: ObservationFunction,
         action_fn: Dict[str, ActionFunction],
         ) -> None:
@@ -58,8 +58,6 @@ class EnergyPlusRunner:
         self.act_queue = act_queue
         self.infos_queue = infos_queue
         self.agents = agents
-        self.actuators = actuators
-        self._thermal_zone_ids = _thermal_zone_ids
         
         # The queue events are generated (To sure the coordination with EnergyPlusEnvironment).
         self.obs_event = threading.Event()
@@ -75,12 +73,12 @@ class EnergyPlusRunner:
         self.simulation_complete = False
         self.first_observation = True
         self.obs = {}
-        self.infos = {}
+        self.infos = {agent: {} for agent in self.agents}
         self.unique_id = time.time()
         
         # create a variable to save the obs dict key to use in posprocess
-        self.obs_keys = []
-        self.infos_keys = []
+        # self.obs_keys = []
+        # self.infos_keys = []
         
         # Define the action and observation functions.
         self.action_fn = action_fn
@@ -88,13 +86,18 @@ class EnergyPlusRunner:
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
+        self.agent_variables_and_handles = {}
         for agent in self.agents:
-            self.agent_variables_and_handles = {
-                f"{agent}_variables": self.set_variables(agent),
-                f"{agent}_internal_variables": self.set_internal_variables(agent),
-                f"{agent}_meters": self.set_meters(agent),
-                f"{agent}_actuators": self.set_actuators(agent),
-            }
+            variables, variables_handles = self.set_variables(agent)
+            internal_variables, internal_variables_handles = self.set_internal_variables(agent)
+            meters, meters_handles = self.set_meters(agent)
+            actuators, actuators_handles = self.set_actuators(agent)
+            self.agent_variables_and_handles.update({
+                f"{agent}_variables": [variables, variables_handles],
+                f"{agent}_internal_variables": [internal_variables, internal_variables_handles],
+                f"{agent}_meters": [meters, meters_handles],
+                f"{agent}_actuators": [actuators, actuators_handles]
+            })
         
     def start(self) -> None:
         """
@@ -140,6 +143,7 @@ class EnergyPlusRunner:
         values and enqueue them to the EnergyPlus Environment thread.
         """
         dict_agents_obs = {agent: [] for agent in self.agents}
+        self.infos = {agent: {} for agent in self.agents}
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
         if not self._init_callback(state_argument) or self.simulation_complete:
@@ -149,13 +153,13 @@ class EnergyPlusRunner:
         # Get the state of the actuators.
         agent_states = {agent: {} for agent in self.agents}
         for agent in self.agents:
-            agent_states.update(self.get_variables_state(state_argument, agent))
-            agent_states.update(self.get_internal_variables_state(state_argument, agent))
-            agent_states.update(self.get_meters_state(state_argument, agent))
-            agent_states.update(self.get_actuators_state(state_argument, agent))
-            agent_states.update(self.get_simulation_parameters_values(state_argument, agent))
-            agent_states.update(self.get_zone_simulation_parameters_values(state_argument, agent))
-            agent_states.update(self.get_weather_prediction(state_argument, agent))
+            agent_states[agent].update(self.get_variables_state(state_argument, agent))
+            agent_states[agent].update(self.get_internal_variables_state(state_argument, agent))
+            agent_states[agent].update(self.get_meters_state(state_argument, agent))
+            agent_states[agent].update(self.get_actuators_state(state_argument, agent))
+            agent_states[agent].update(self.get_simulation_parameters_values(state_argument, agent))
+            agent_states[agent].update(self.get_zone_simulation_parameters_values(state_argument, agent))
+            agent_states[agent].update(self.get_weather_prediction(state_argument, agent))
         
         dict_agents_obs = self.observation_fn.set_agent_obs(
             self.env_config,
@@ -204,11 +208,13 @@ class EnergyPlusRunner:
         for agent in self.agents:
             # Transform action must to consider the agents and actuators and transform agents actions to actuators actions,
             # considering that one agent could manage more than one actuator.
-            dict_action = self.action_fn[agent].agent_to_actuator_action(dict_action[agent], self.agent_variables_and_handles[f"{agent}_actuators"][1].keys())
+            actuator_list = [actuator for actuator in self.agent_variables_and_handles[f"{agent}_actuators"][0].keys()]
+            
+            actuator_actions = self.action_fn[agent].agent_to_actuator_action(dict_action[agent], actuator_list)
             
             # Perform the actions in EnergyPlus simulation.
-            for actuator in self.agent_variables_and_handles[f"{agent}_actuators"][1].keys():
-                action = self.action_fn[agent].get_actuator_action(dict_action[actuator], actuator)
+            for actuator in actuator_list:
+                action = self.action_fn[agent].get_actuator_action(actuator_actions[actuator], actuator)
                 api.exchange.set_actuator_value(
                     state=state_argument,
                     actuator_handle=self.agent_variables_and_handles[f"{agent}_actuators"][1][actuator],
@@ -228,8 +234,8 @@ class EnergyPlusRunner:
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
-        if self.env_config["agent_config"][agent]['observation']["variables"] is not None:
-            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agent_config"][agent]['observation']["variables"]})
+        if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
+            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agents_config"][agent]['observation']["variables"]})
         return variables, var_handles
 
     def set_internal_variables(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
@@ -245,8 +251,8 @@ class EnergyPlusRunner:
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
         # Check the existency of internal variables.
-        if self.env_config["agent_config"][agent]['observation']["internal_variables"] is not None:
-            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agent_config"][agent]['observation']["internal_variables"]})   
+        if self.env_config["agents_config"][agent]['observation']["internal_variables"] is not None:
+            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agents_config"][agent]['observation']["internal_variables"]})   
         return variables, var_handles
 
     def set_meters(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
@@ -260,8 +266,8 @@ class EnergyPlusRunner:
         """
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
-        if self.env_config["agent_config"][agent]['observation']["meters"] is not None:
-            variables.update({f"{agent}: {variable}": variable for variable in self.env_config["agent_config"][agent]['observation']["meters"]})
+        if self.env_config["agents_config"][agent]['observation']["meters"] is not None:
+            variables.update({f"{agent}: {variable}": variable for variable in self.env_config["agents_config"][agent]['observation']["meters"]})
         return variables, var_handles
 
     def set_actuators(self, agent) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str, int]]:
@@ -276,9 +282,9 @@ class EnergyPlusRunner:
         actuators: Dict[str,Tuple[str,str,str]] = {}
         actuator_handles: Dict[str, int] = {}
         
-        if self.env_config["agent_config"][agent]["action"]["actuators"] is not None:
-            for actuator_config in self.env_config["agent_config"][agent]["actuators"]:
-                actuators.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]} :{actuator_config[2]}": actuator_config})
+        if self.env_config["agents_config"][agent]["action"]["actuators"] is not None:
+            for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"]:
+                actuators.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": actuator_config})
         
         return actuators, actuator_handles
      
@@ -302,7 +308,7 @@ class EnergyPlusRunner:
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_variables"][1].items()
         }
-        self.infos.update({agent: variables})
+        self.infos[agent].update(variables)
         
         return variables
     
@@ -326,7 +332,7 @@ class EnergyPlusRunner:
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_internal_variables"][1].items()
         }
-        self.infos.update({agent: variables})
+        self.infos[agent].update(variables)
         
         return variables
 
@@ -351,7 +357,7 @@ class EnergyPlusRunner:
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_meters"][1].items()
         }
-        self.infos.update({agent: variables})
+        self.infos[agent].update(variables)
         
         return variables
         
@@ -376,7 +382,7 @@ class EnergyPlusRunner:
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_actuators"][1].items()
         }
-        self.infos.update({agent: variables})
+        self.infos[agent].update(variables)
         
         return variables
     
@@ -444,15 +450,15 @@ class EnergyPlusRunner:
             'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
         }
         variables = {}
-        if self.env_config["agent_config"][agent]['observation']["simulation_parameters"] is not None:
+        if self.env_config["agents_config"][agent]['observation']["simulation_parameters"] is not None:
             # Return the dictionary with variables names and output values of the methods used.
             include = []
             parameters_keys = [key for key in parameter_methods.keys()]
             for paramater in parameters_keys:
-                if self.env_config["agent_config"][agent]['observation']["simulation_parameters"][paramater]:
+                if self.env_config["agents_config"][agent]['observation']["simulation_parameters"][paramater]:
                     include.append(paramater)
             variables = {f"{agent}: {paramater}": parameter_methods[paramater] for paramater in include}
-            self.infos.update({agent: variables})
+            self.infos[agent].update(variables)
         
         return variables
 
@@ -477,15 +483,15 @@ class EnergyPlusRunner:
             'zone_time_step_number': api.exchange.zone_time_step_number(state_argument), # The current zone time step index, from 1 to the number of zone time steps per hour
         }
         variables = {}
-        if self.env_config["agent_config"][agent]['observation']["zone_simulation_parameters"] is not None:
+        if self.env_config["agents_config"][agent]['observation']["zone_simulation_parameters"] is not None:
             # Return the dictionary with variables names and output values of the methods used.
             include = []
             parameters_keys = [key for key in parameter_methods.keys()]
             for paramater in parameters_keys:
-                if self.env_config['zone_simulation_parameters'][paramater]:
+                if self.env_config["agents_config"][agent]['observation']['zone_simulation_parameters'][paramater]:
                     include.append(paramater)
             variables = {f"{agent}: {paramater}": parameter_methods[paramater] for paramater in include}
-            self.infos.update({agent: variables})
+            self.infos[agent].update(variables)
         
         return variables
 
@@ -494,7 +500,7 @@ class EnergyPlusRunner:
         state_argument: c_void_p,
         agent:str=None
     ) -> Dict[str,Any]:
-        if not self.env_config['use_one_day_weather_prediction']:
+        if not self.env_config["agents_config"][agent]['observation']['use_one_day_weather_prediction']:
             return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
         hour = api.exchange.hour(state_argument)
@@ -531,9 +537,9 @@ class EnergyPlusRunner:
             'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
         }
         variables = {}
-        if self.env_config["agent_config"][agent]['observation']["prediction_variables"] is not None:
-            prediction_variables:Dict[str,bool] = self.env_config["agent_config"][agent]['observation']['prediction_variables']
-            for h in range(self.env_config['prediction_hours']):
+        if self.env_config["agents_config"][agent]['observation']["prediction_variables"] is not None:
+            prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
+            for h in range(self.env_config["agents_config"][agent]['observation']['prediction_hours']):
                 # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
                 prediction_hour = hour+1 + h
                 if prediction_hour < 24:
@@ -545,7 +551,7 @@ class EnergyPlusRunner:
                     for key in prediction_variables.keys():
                         if prediction_variables[key]:
                             variables.update({f'{agent}: tomorrow_weather_{key}_at_time_{prediction_hour_t}': prediction_variables_methods[f'tomorrow_weather_{key}_at_time']})
-            self.infos.update({agent: variables})
+            self.infos[agent].update(variables)
         return variables
         
     def _init_callback(self, state_argument) -> bool:

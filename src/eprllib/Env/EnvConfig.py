@@ -1,6 +1,6 @@
 """
 Environment Configuration
-=========================
+==========================
 
 This module contain the class and methods used to configure the environment.
 """
@@ -10,6 +10,7 @@ from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+
 from eprllib.Agents.AgentSpec import AgentSpec
 
 class EnvConfig:
@@ -197,7 +198,7 @@ class EnvConfig:
         self.observation_fn_config: Dict[str, Any] = {}
 
         # agents
-        self.agents_config: Dict[str,AgentSpec] = NotImplemented
+        self.agents_config: Dict[str, AgentSpec] = NotImplemented
 
         # episodes
         self.episode_fn: EpisodeFunction = EpisodeFunction
