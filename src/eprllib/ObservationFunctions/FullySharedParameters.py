@@ -7,8 +7,6 @@ This module implements a fully shared parameters policy for the observation func
 The flat observation for each agent must be a numpy array and the size must be equal to all agents. To 
 this end, a concatenation of variables is performed.
 
-*Agent flat observation*
-
 * AgentID one-hot enconde vector
 * Agent state
 * Actuators state (include other agents)
@@ -39,7 +37,9 @@ class FullySharedParameters(ObservationFunction):
         """
         super().__init__(obs_fn_config)
         self.number_of_agents_total: int = self.obs_fn_config['number_of_agents_total']
+        self.number_of_actuators_total: int = self.obs_fn_config['number_of_actuators_total']
         self.agent_ids = None
+        self.actuator_ids = None
     
     def get_agent_obs_dim(
         self,
@@ -110,10 +110,16 @@ class FullySharedParameters(ObservationFunction):
                 use_actuator_state_flag = True
                 break
         if use_actuator_state_flag:
-            # Check the agent that have the most actuators
+            # Save the total amount of actuators in the environment to create a vector in set_agent_obs
+            actuators = 0
             for agent in agent_list:
-                obs_space_len_shared += len(env_config['agents_config'][agent]["action"]["actuators"])
-            
+                actuators += len(env_config['agents_config'][agent]["action"]["actuators"])
+            # chack that actuators is equal or minor to self.number_of_actuators_total
+            if actuators > self.number_of_actuators_total:
+                raise ValueError("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
+            else:
+                obs_space_len_shared += self.number_of_actuators_total
+                
         # construct the observation space.
         return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len_shared,))
         
@@ -122,20 +128,27 @@ class FullySharedParameters(ObservationFunction):
         env_config: Dict[str,Any],
         agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
         ) -> Tuple[Dict[str,Any],Dict[str, Dict[str,Any]]]:
+        # Add the ID vectors if it's needed
+        id = 0
+        if self.agent_ids is None:
+            self.agent_ids = {agent: id for agent in [key for key in env_config['agents_config'].keys()]}
+            id += 1
         
-        agent_list = [key for key in env_config["agents_config"].keys()]
+        id = 0
+        if self.actuator_ids is None:
+            for agent in env_config['agents_config'].keys():
+                self.actuator_ids = {f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": id for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]}
+                id += 1
+        
+        # agents in this timestep
+        agent_list = [key for key in agent_states.keys()]
+        # Add agent indicator for the observation for each agent
+        agents_obs = {agent: [] for agent in agent_list}
         
         if len(agent_list) < self.number_of_agents_total:
             raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
         
-        # Add agent indicator for the observation for each agent
-        agents_obs = {agent: [] for agent in agent_list}
         
-        _ = 0
-        if self.agent_ids is None:
-            self.agent_ids = {agent: _ for agent in agent_list}
-            _ += 1
-            
         for agent in agent_list:
             # Agent properties
             agent_id_vector = None
@@ -171,16 +184,21 @@ class FullySharedParameters(ObservationFunction):
                 agent_list_copy = agent_list.copy()
                 agent_list_copy.remove(agent)
                 
+                actuator_id_vector = np.array([0]*self.number_of_actuators_total)
+                 = 1
                 
                 for agent3 in agent_list_copy:
                     for actuator_config in env_config["agents_config"][agent3]["action"]["actuators"]:
-                        ag_var = np.concatenate(
-                            (
-                                ag_var,
-                                [agent_states[agent3][f"{agent3}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}"]],
-                            ),
-                            dtype='float32'
-                        )
+                        actuator_name = f"{agent3}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}"
+                        actuator_id_vector[self.actuator_ids[actuator_name]] = agent_states[agent3][actuator_name]
+                        
+                ag_var = np.concatenate(
+                    (
+                        ag_var,
+                        actuator_id_vector,
+                    ),
+                    dtype='float32'
+                )
             
             agents_obs[agent] = ag_var
             
