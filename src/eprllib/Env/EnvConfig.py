@@ -1,6 +1,6 @@
 """
 Environment Configuration
-=========================
+==========================
 
 This module contain the class and methods used to configure the environment.
 """
@@ -10,6 +10,8 @@ from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+
+from eprllib.Agents.AgentSpec import AgentSpec
 
 class EnvConfig:
     def __init__(self):
@@ -193,97 +195,16 @@ class EnvConfig:
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
         self.evaluation: bool = False
+        self.observation_fn: ObservationFunction = NotImplemented
+        self.observation_fn_config: Dict[str, Any] = {}
 
         # agents
-        self.agents_config: Dict[str,Dict[str,Any]] = NotImplemented
-
-        # observations
-        self.observation_fn: ObservationFunction = NotImplemented
-        self.variables_env: List = []
-        self.variables_thz: List = []
-        self.variables_obj: Dict[str,Tuple[str,str]] = {} # {'agent_ID':('variable','key_object')}
-        self.meters: Dict[str,List[str]] = {} # {'agent_ID':['meter']}
-        self.static_variables: Dict[str,Tuple[str,str]] = {} # {'thermal_zone_ID':('variable','key_object')}
-        self.simulation_parameters: Dict[str,bool] = {
-            'actual_date_time': False,
-            'actual_time': False,
-            'current_time': False,
-            'day_of_month': False,
-            'day_of_week': False,
-            'day_of_year': False,
-            'holiday_index': False,
-            'hour': False,
-            'minutes': False,
-            'month': False,
-            'num_time_steps_in_hour': False,
-            'year': False,
-            'is_raining': False,
-            'sun_is_up': False,
-            'today_weather_albedo_at_time': False,
-            'today_weather_beam_solar_at_time': False,
-            'today_weather_diffuse_solar_at_time': False,
-            'today_weather_horizontal_ir_at_time': False,
-            'today_weather_is_raining_at_time': False,
-            'today_weather_is_snowing_at_time': False,
-            'today_weather_liquid_precipitation_at_time': False,
-            'today_weather_outdoor_barometric_pressure_at_time': False,
-            'today_weather_outdoor_dew_point_at_time': False,
-            'today_weather_outdoor_dry_bulb_at_time': False,
-            'today_weather_outdoor_relative_humidity_at_time': False,
-            'today_weather_sky_temperature_at_time': False,
-            'today_weather_wind_direction_at_time': False,
-            'today_weather_wind_speed_at_time': False,
-            'tomorrow_weather_albedo_at_time': False,
-            'tomorrow_weather_beam_solar_at_time': False,
-            'tomorrow_weather_diffuse_solar_at_time': False,
-            'tomorrow_weather_horizontal_ir_at_time': False,
-            'tomorrow_weather_is_raining_at_time': False,
-            'tomorrow_weather_is_snowing_at_time': False,
-            'tomorrow_weather_liquid_precipitation_at_time': False,
-            'tomorrow_weather_outdoor_barometric_pressure_at_time': False,
-            'tomorrow_weather_outdoor_dew_point_at_time': False,
-            'tomorrow_weather_outdoor_dry_bulb_at_time': False,
-            'tomorrow_weather_outdoor_relative_humidity_at_time': False,
-            'tomorrow_weather_sky_temperature_at_time': False,
-            'tomorrow_weather_wind_direction_at_time': False,
-            'tomorrow_weather_wind_speed_at_time': False,
-        }
-        self.zone_simulation_parameters: Dict[str,bool] = {
-            'system_time_step': False,
-            'zone_time_step': False,
-            'zone_time_step_number': False,
-        }
-        self.infos_variables: Dict[str,List|Dict[str,List]] = NotImplemented # TODO: add actuators, weather_prediction, building_properties
-        self.no_observable_variables: Dict[str,List|Dict[str,List]] = NotImplemented # TODO: add actuators, weather_prediction, building_properties
-        self.use_actuator_state: bool = False
-        self.use_one_day_weather_prediction: bool = False
-        self.prediction_hours: int = 24
-        self.prediction_variables: Dict[str,bool] = {
-            'albedo': False,
-            'beam_solar': False,
-            'diffuse_solar': False,
-            'horizontal_ir': False,
-            'is_raining': False,
-            'is_snowing': False,
-            'liquid_precipitation': False,
-            'outdoor_barometric_pressure': False,
-            'outdoor_dew_point': False,
-            'outdoor_dry_bulb': False,
-            'outdoor_relative_humidity': False,
-            'sky_temperature': False,
-            'wind_direction': False,
-            'wind_speed': False,
-        }
-
-        # actions
-        self.action_fn: ActionFunction = NotImplemented
-        
-        # rewards
-        self.reward_fn: RewardFunction = NotImplemented
+        self.agents_config: Dict[str, AgentSpec] = NotImplemented
 
         # episodes
+        self.episode_fn: EpisodeFunction = EpisodeFunction
+        self.episode_fn_config: Dict[str,Any] = {}
         self.cut_episode_len: int = 0
-        self.episode_fn: EpisodeFunction = EpisodeFunction({})
     
     def generals(
         self, 
@@ -293,6 +214,8 @@ class EnvConfig:
         ep_terminal_output:Optional[bool] = True,
         timeout:Optional[float] = 10.0,
         evaluation:bool = False,
+        observation_fn: ObservationFunction = NotImplemented,
+        observation_fn_config: Dict[str, Any] = {},
         ):
         """
         This method is used to modify the general configuration of the environment.
@@ -318,9 +241,14 @@ class EnvConfig:
         self.timeout = timeout
         self.evaluation = evaluation
         
+        if observation_fn == NotImplemented:
+            raise NotImplementedError("observation_function must be defined.")
+        self.observation_fn = observation_fn
+        self.observation_fn_config = observation_fn_config
+        
     def agents(
         self,
-        agents_config:Dict[str,Dict[str,Any]] = NotImplemented,
+        agents_config:Dict[str,AgentSpec] = NotImplemented,
         ):
         """
         This method is used to modify the agents configuration of the environment.
@@ -337,7 +265,29 @@ class EnvConfig:
             raise NotImplementedError("agents_config must be defined.")
 
         self.agents_config = agents_config
-    
+
+    def episodes(
+        self,
+        episode_fn: EpisodeFunction = EpisodeFunction,
+        episode_fn_config: Dict[str,Any] = {},
+        cut_episode_len: int = 0,
+        ):
+        """
+        This method configure special functions to improve the use of eprllib.
+
+        Args:
+            episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it 
+            with modifications.
+            episode_config (Dict): NotDescribed
+            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, 
+            an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will 
+            truncate the, for example, annual simulation into 365 episodes. If ypu set to 0, no cut will be apply.
+        """
+        self.episode_fn = episode_fn
+        self.episode_fn_config = episode_fn_config
+        self.cut_episode_len = cut_episode_len
+
+    #  OldAPI
     def observations(
         self,
         observation_fn: ObservationFunction = NotImplemented,
@@ -401,6 +351,7 @@ class EnvConfig:
         if prediction_hours <= 0 or prediction_hours > 24:
             self.prediction_hours = 24
             raise ValueError(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
+
         else:
             self.prediction_hours = prediction_hours
         if self.use_one_day_weather_prediction:
@@ -443,7 +394,7 @@ class EnvConfig:
             raise NotImplementedError("infos_variables must be defined. The variables defined here are used in the reward function.")
         self.infos_variables = infos_variables
         self.no_observable_variables = no_observable_variables
-    
+    #  OldAPI
     def actions(
         self,
         action_fn: ActionFunction = NotImplemented,
@@ -464,7 +415,7 @@ class EnvConfig:
         if action_fn == NotImplemented:
             raise NotImplementedError("action_fn must be defined.")
         self.action_fn = action_fn
-
+    #  OldAPI
     def rewards(
         self,
         reward_fn: RewardFunction = NotImplemented,
@@ -479,22 +430,3 @@ class EnvConfig:
         if reward_fn == NotImplemented:
             raise NotImplementedError("reward_fn must be defined.")
         self.reward_fn = reward_fn
-
-    def episodes(
-        self,
-        episode_fn: EpisodeFunction = EpisodeFunction({}),
-        cut_episode_len: int = 0,
-        ):
-        """
-        This method configure special functions to improve the use of eprllib.
-
-        Args:
-            episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it 
-            with modifications.
-            episode_config (Dict): NotDescribed
-            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, 
-            an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will 
-            truncate the, for example, annual simulation into 365 episodes. If ypu set to 0, no cut will be apply.
-        """
-        self.episode_fn = episode_fn
-        self.cut_episode_len = cut_episode_len
