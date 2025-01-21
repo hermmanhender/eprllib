@@ -23,7 +23,7 @@ class ObservationSpec:
         prediction_hours: int = 24,
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
-        other_obs: Dict[str, float|int] = None
+        other_obs: Dict[str, float|int] = {}
         ):
         """
         Construction method.
