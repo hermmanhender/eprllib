@@ -44,9 +44,20 @@ class RewardSpec:
     """
     def __init__(
         self,
-        reward_fn: RewardFunction = None,
+        reward_fn: RewardFunction = NotImplemented,
         reward_fn_config: Dict[str, Any] = {},
         ):
+        """
+        _Description_
+        
+        Args:
+            reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos 
+            dictionary. As a return, gives a float number as reward. See eprllib.RewardFunctions for examples.
+            
+        """
+        if reward_fn == NotImplemented:
+            raise NotImplementedError("reward_fn must be defined.")
+        
         self.reward_fn = reward_fn
         self.reward_fn_config = reward_fn_config
         
