@@ -160,6 +160,7 @@ class EnergyPlusRunner:
             agent_states[agent].update(self.get_simulation_parameters_values(state_argument, agent))
             agent_states[agent].update(self.get_zone_simulation_parameters_values(state_argument, agent))
             agent_states[agent].update(self.get_weather_prediction(state_argument, agent))
+            agent_states[agent].update(self.get_other_obs(self.env_config, agent))
         
         dict_agents_obs = self.observation_fn.set_agent_obs(
             self.env_config,
@@ -252,7 +253,7 @@ class EnergyPlusRunner:
         variables: Dict[str, Tuple [str, str]] = {}
         # Check the existency of internal variables.
         if self.env_config["agents_config"][agent]['observation']["internal_variables"] is not None:
-            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agents_config"][agent]['observation']["internal_variables"]})   
+            variables.update({f"{agent}: {variable}": variable for variable in self.env_config["agents_config"][agent]['observation']["internal_variables"]})   
         return variables, var_handles
 
     def set_meters(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
@@ -554,6 +555,27 @@ class EnergyPlusRunner:
             self.infos[agent].update(variables)
         return variables
         
+    def get_other_obs(
+        self,
+        env_config: Dict[str,Any],
+        agent:str = None
+        ) -> Dict[str,Any]:
+        """Get the static variable values defined in the static variable dict names and handles.
+
+        Args:
+            env_config (Dict[str,Any]): Environment coniguration.
+
+        Returns:
+            Dict[str,Any]: Static value dict values for the actual timestep.
+        """
+        if agent is None:
+            ValueError("The agent must be defined.")
+        
+        variables = env_config["agent_config"][agent]["observation"]["other_obs"]
+        self.infos[agent].update(variables)
+        
+        return variables
+    
     def _init_callback(self, state_argument) -> bool:
         """
         Initialize EnergyPlus handles and checks if simulation runtime is ready.
