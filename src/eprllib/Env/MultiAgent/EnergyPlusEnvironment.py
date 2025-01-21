@@ -5,6 +5,7 @@ Multi-Agent Environment for EnergyPlus in RLlib
 This script define the environment of EnergyPlus implemented in RLlib. To works 
 need to define the EnergyPlus Runner.
 """
+from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
@@ -98,11 +99,13 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
         
         # asignation of environment action space.
-        # self.action_space = {agent: None for agent in self.agents}
-        # for agent in self.agents:
-        #     self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
+        self.action_space = {agent: None for agent in self.agents}
+        for agent in self.agents:
+            self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
         
-        self.action_space = self.action_fn[self.agents[0]].get_action_space_dim()
+        self.action_space = spaces.Dict(self.action_space)
+        
+        # self.action_space = self.action_fn[self.agents[0]].get_action_space_dim()
         
         # asignation of the environment observation space.
         self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config)
