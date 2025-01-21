@@ -184,8 +184,7 @@ class FullySharedParameters(ObservationFunction):
                 agent_list_copy = agent_list.copy()
                 agent_list_copy.remove(agent)
                 
-                actuator_id_vector = np.array([0]*self.number_of_actuators_total)
-                 = 1
+                actuator_id_vector = np.array([-2]*self.number_of_actuators_total)
                 
                 for agent3 in agent_list_copy:
                     for actuator_config in env_config["agents_config"][agent3]["action"]["actuators"]:
