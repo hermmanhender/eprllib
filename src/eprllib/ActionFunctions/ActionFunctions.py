@@ -104,10 +104,39 @@ class ActionSpec:
     """
     def __init__(
         self,
-        actuators: List[Tuple] = None,
+        actuators: List[Tuple[str,str,str]] = NotImplemented,
         action_fn: ActionFunction = None,
         action_fn_config: Dict[str, Any] = {},
         ):
+        """
+        _Description_
+        
+        Args:
+            actuators (List[Tuple[str,str,str]]): Actuators are the way that users modify the program at 
+            runtime using custom logic and calculations. Not every variable inside EnergyPlus can be 
+            actuated. This is intentional, because opening that door could allow the program to run at 
+            unrealistic conditions, with flowimbalances or energy imbalances, and many other possible problems.
+            Instead, a specific set of items are available to actuate, primarily control functions, 
+            flow requests, and environmental boundary conditions. These actuators, when used in conjunction 
+            with the runtime API and data exchange variables, allow a user to read data, make decisions and 
+            perform calculations, then actuate control strategies for subsequent time steps.
+            Actuator functions are similar, but not exactly the same, as for variables. An actuator
+            handle/ID is still looked up, but it takes the actuator type, component name, and control
+            type, since components may have more than one control type available for actuation. The
+            actuator can then be “actuated” by calling a set-value function, which overrides an internal
+            value, and informs EnergyPlus that this value is currently being externally controlled. To
+            allow EnergyPlus to resume controlling that value, there is an actuator reset function as well.
+            One agent can manage several actuators.
+            
+            action_fn (ActionFunction): In the definition of the action space, usualy is use the discrete form of the 
+            gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the 
+            objective to transform appropiately the discret action into a value action for EP we define the action_fn. 
+            This function take the arguments agent_id and action. You can find examples in eprllib.ActionFunctions.
+            
+            action_fn_config (Dict[str, Any]):
+        """
+        if actuators == NotImplemented:
+            raise NotImplementedError("actuators must be defined.")
         self.actuators = actuators
         self.action_fn = action_fn
         self.action_fn_config = action_fn_config
