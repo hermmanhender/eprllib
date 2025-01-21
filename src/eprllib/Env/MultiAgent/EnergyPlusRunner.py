@@ -142,7 +142,7 @@ class EnergyPlusRunner:
         EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
-        dict_agents_obs = {agent: [] for agent in self.agents}
+        dict_agents_obs = {agent: {} for agent in self.agents}
         self.infos = {agent: {} for agent in self.agents}
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
@@ -151,7 +151,7 @@ class EnergyPlusRunner:
         # Agents observe: site state, thermal zone state (only the one that it belong), specific object variables 
         # and meters, and others parameters assigned as True in the env_config.observation object.
         # Get the state of the actuators.
-        agent_states = {agent: {} for agent in self.agents}
+        agent_states: Dict[str, Dict[str, Any]] = {agent: {} for agent in self.agents}
         for agent in self.agents:
             agent_states[agent].update(self.get_variables_state(state_argument, agent))
             agent_states[agent].update(self.get_internal_variables_state(state_argument, agent))
@@ -283,9 +283,8 @@ class EnergyPlusRunner:
         actuators: Dict[str,Tuple[str,str,str]] = {}
         actuator_handles: Dict[str, int] = {}
         
-        if self.env_config["agents_config"][agent]["action"]["actuators"] is not None:
-            for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"]:
-                actuators.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": actuator_config})
+        for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"]:
+            actuators.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": actuator_config})
         
         return actuators, actuator_handles
      
@@ -467,7 +466,7 @@ class EnergyPlusRunner:
         self,
         state_argument: c_void_p,
         agent:str=None,
-        ) -> Tuple[Dict[str,Any],Dict[str,Any]]:
+        ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
 
         Args:
@@ -571,7 +570,7 @@ class EnergyPlusRunner:
         if agent is None:
             ValueError("The agent must be defined.")
         
-        variables = env_config["agent_config"][agent]["observation"]["other_obs"]
+        variables = env_config["agents_config"][agent]["observation"]["other_obs"]
         self.infos[agent].update(variables)
         
         return variables
