@@ -496,10 +496,10 @@ class TestEnergyplusrunner:
         assert runner._thermal_zone_ids == _thermal_zone_ids
         assert runner.observation_fn == observation_fn
         assert runner.action_fn == action_fn
-        assert runner.initialized == False
-        assert runner.init_handles == False
-        assert runner.simulation_complete == False
-        assert runner.first_observation == True
+        assert runner.initialized is False
+        assert runner.init_handles is False
+        assert runner.simulation_complete is False
+        assert runner.first_observation is True
         assert isinstance(runner.obs_event, threading.Event)
         assert isinstance(runner.act_event, threading.Event)
         assert isinstance(runner.infos_event, threading.Event)
@@ -601,7 +601,7 @@ class TestEnergyplusrunner:
 
         # Assert
         runner._collect_obs.assert_not_called()
-        assert runner.first_observation == False
+        assert runner.first_observation is False
 
     def test__collect_first_obs_2(self):
         """
@@ -629,7 +629,7 @@ class TestEnergyplusrunner:
 
         # Assert
         runner._collect_obs.assert_called_once_with(state_argument)
-        assert runner.first_observation == False
+        assert runner.first_observation is False
 
     def test__collect_first_obs_when_not_first_observation(self):
         """
@@ -1117,7 +1117,7 @@ class TestEnergyplusrunner:
         result = EnergyPlusRunner._init_callback(mock_energyplus_runner_7, mock_state_argument)
 
         # Assert
-        assert result == False
+        assert result is False
         assert mock_energyplus_runner_7.init_handles == True
         assert mock_energyplus_runner_7.initialized == False
 
@@ -1135,7 +1135,7 @@ class TestEnergyplusrunner:
         result = EnergyPlusRunner._init_callback(mock_energyplus_runner_7, mock_state_argument)
 
         # Assert
-        assert result == False
+        assert result is False
         assert mock_energyplus_runner_7.init_handles == False
         assert mock_energyplus_runner_7.initialized == False
 
@@ -1167,9 +1167,9 @@ class TestEnergyplusrunner:
         result = EnergyPlusRunner._init_callback(mock_energyplus_runner_7, mock_state_argument)
 
         # Assert
-        assert result == True
-        assert mock_energyplus_runner_7.init_handles == True
-        assert mock_energyplus_runner_7.initialized == True
+        assert result is True
+        assert mock_energyplus_runner_7.init_handles is True
+        assert mock_energyplus_runner_7.initialized is True
         mock_energyplus_runner_7._init_handles.assert_called_once_with(mock_state_argument)
         mock_api.exchange.warmup_flag.assert_called_once_with(mock_state_argument)
 
@@ -1254,7 +1254,7 @@ class TestEnergyplusrunner:
             result = runner._init_handles(mock_state)
 
         # Assert the expected behavior
-        assert result == False
+        assert result is False
         assert runner.actuator_handles == {'agent1': -1}
 
     def test__init_handles_3(self):
@@ -1298,7 +1298,7 @@ class TestEnergyplusrunner:
             result = runner._init_handles(mock_state)
 
         # Assert the result
-        assert result == False
+        assert result is False
 
         # Verify that the error message was created (we can't check if it was raised because it's not actually raised in the method)
         assert any([v == -1 for v in runner.actuator_handles.values()])
@@ -1325,7 +1325,7 @@ class TestEnergyplusrunner:
         result = EnergyPlusRunner._init_handles(runner, MagicMock())
 
         # Assertions
-        assert result == False
+        assert result is False
         mock_api.exchange.api_data_fully_ready.assert_called_once()
         mock_api.exchange.get_variable_handle.assert_called()
         mock_api.exchange.list_available_api_data_csv.assert_called_once()
@@ -1358,7 +1358,7 @@ class TestEnergyplusrunner:
         result = EnergyPlusRunner._init_handles(runner, MagicMock())
 
         # Assertions
-        assert result == False
+        assert result is False
         api.exchange.api_data_fully_ready.assert_called_once()
         api.exchange.get_actuator_handle.assert_called_once()
         api.exchange.get_variable_handle.assert_called()
@@ -1414,7 +1414,7 @@ class TestEnergyplusrunner:
         result = runner._init_handles(mock_state)
 
         # Assert the result
-        assert result == False
+        assert result is False
 
         # Verify that the appropriate methods were called
         api.exchange.api_data_fully_ready.assert_called_once_with(mock_state)
@@ -1432,7 +1432,7 @@ class TestEnergyplusrunner:
             
             result = mock_energyplus_runner_8._init_handles(state_argument)
             
-            assert result == False
+            assert result is False
             mock_api.exchange.api_data_fully_ready.assert_called_once_with(state_argument)
 
     def test__init_handles_data_not_ready(self):
@@ -1468,10 +1468,10 @@ class TestEnergyplusrunner:
             result = runner._init_handles(mock_state)
         
         # Assert that the method returns False when api_data is not fully ready
-        assert result == False
+        assert result is False
 
         # Verify that the init_handles attribute remains False
-        assert runner.init_handles == False
+        assert runner.init_handles is False
 
     def test__init_handles_invalid_actuator_handle(self, mock_energyplus_runner_8):
         """
@@ -1559,7 +1559,7 @@ class TestEnergyplusrunner:
             
             result = mock_energyplus_runner_8._init_handles(state_argument)
             
-            assert result == True
+            assert result is True
             mock_api.exchange.api_data_fully_ready.assert_called_once_with(state_argument)
             mock_api.exchange.get_actuator_handle.assert_called()
             mock_api.exchange.get_variable_handle.assert_called()
@@ -1582,7 +1582,7 @@ class TestEnergyplusrunner:
             mock_energyplus_runner_9._run_energyplus()
             
         assert mock_energyplus_runner_9.sim_results == 1
-        assert mock_energyplus_runner_9.simulation_complete == True
+        assert mock_energyplus_runner_9.simulation_complete is True
 
     def test__run_energyplus_invalid_epw_path(self, mock_energyplus_runner_9):
         """Test _run_energyplus with an invalid EPW file path"""
@@ -1592,7 +1592,7 @@ class TestEnergyplusrunner:
             mock_energyplus_runner_9._run_energyplus()
             
         assert mock_energyplus_runner_9.sim_results == 1
-        assert mock_energyplus_runner_9.simulation_complete == True
+        assert mock_energyplus_runner_9.simulation_complete is True
 
     def test__run_energyplus_invalid_state(self, mock_energyplus_runner_9):
         """Test _run_energyplus with an invalid EnergyPlus state"""
@@ -1609,7 +1609,7 @@ class TestEnergyplusrunner:
             mock_energyplus_runner_9._run_energyplus()
             
         assert mock_energyplus_runner_9.sim_results == 1
-        assert mock_energyplus_runner_9.simulation_complete == True
+        assert mock_energyplus_runner_9.simulation_complete is True
 
     @patch('eprllib.Env.MultiAgent.EnergyPlusRunner.api')
     def test__run_energyplus_successful_execution(self, mock_api):
@@ -1629,7 +1629,7 @@ class TestEnergyplusrunner:
         mock_runner.make_eplus_args.assert_called_once()
         mock_api.runtime.run_energyplus.assert_called_once_with("mock_state", ["-w", "weather.epw", "-d", "output_dir", "input.epjson"])
         assert mock_runner.sim_results == 0
-        assert mock_runner.simulation_complete == True
+        assert mock_runner.simulation_complete is True
 
     def test__send_actions_first_observation(self, mock_runner_3):
         mock_runner_3.first_observation = True
@@ -1924,7 +1924,7 @@ class TestEnergyplusrunner:
         runner.sim_results = 1
         
         # Check that failed() returns True
-        assert runner.failed() == True
+        assert runner.failed() is True
 
     def test_failed_simulation_results_bool(self):
         """
@@ -1932,7 +1932,7 @@ class TestEnergyplusrunner:
         """
         runner = EnergyPlusRunner({}, 1, None, None, None, set(), set(), None, None)
         runner.sim_results = True
-        assert runner.failed() == True
+        assert runner.failed() is True
 
     def test_failed_simulation_results_float(self):
         """
@@ -1940,7 +1940,7 @@ class TestEnergyplusrunner:
         """
         runner = EnergyPlusRunner({}, 1, None, None, None, set(), set(), None, None)
         runner.sim_results = 1.5
-        assert runner.failed() == True
+        assert runner.failed() is True
 
     def test_failed_simulation_results_large_integer(self):
         """
@@ -1948,7 +1948,7 @@ class TestEnergyplusrunner:
         """
         runner = EnergyPlusRunner({}, 1, None, None, None, set(), set(), None, None)
         runner.sim_results = 1000000000
-        assert runner.failed() == True
+        assert runner.failed() is True
 
     def test_failed_simulation_results_negative(self):
         """
@@ -1956,7 +1956,7 @@ class TestEnergyplusrunner:
         """
         runner = EnergyPlusRunner({}, 1, None, None, None, set(), set(), None, None)
         runner.sim_results = -1
-        assert runner.failed() == True
+        assert runner.failed() is True
 
     def test_failed_simulation_results_non_zero(self):
         """
@@ -1964,7 +1964,7 @@ class TestEnergyplusrunner:
         """
         runner = EnergyPlusRunner({}, 1, None, None, None, set(), set(), None, None)
         runner.sim_results = 1
-        assert runner.failed() == True
+        assert runner.failed() is True
 
     def test_failed_simulation_results_none(self):
         """
@@ -1990,7 +1990,7 @@ class TestEnergyplusrunner:
         """
         runner = EnergyPlusRunner({}, 1, None, None, None, set(), set(), None, None)
         runner.sim_results = 0
-        assert runner.failed() == False
+        assert runner.failed() is False
 
     @patch('eprllib.Env.MultiAgent.EnergyPlusRunner.api')
     def test_get_actuators_state_1(self, mock_api):
@@ -4160,7 +4160,7 @@ class TestEnergyplusrunner:
         """Test that stop method resets first_observation flag"""
         mock_runner_11.first_observation = False
         mock_runner_11.stop()
-        assert mock_runner_11.first_observation == True
+        assert mock_runner_11.first_observation is True
 
     def test_stop_sets_exec_thread_to_none(self, mock_runner_11):
         """Test that stop method sets execution thread to None"""
@@ -4206,12 +4206,12 @@ class TestEnergyplusrunner:
             runner.stop()
 
             # Assertions
-            assert runner.simulation_complete == True
+            assert runner.simulation_complete is True
             mock_sleep.assert_called_once_with(0.5)
             mock_api.runtime.stop_simulation.assert_called_once_with(runner.energyplus_state)
             runner.energyplus_exec_thread.join.assert_called_once()
             assert runner.energyplus_exec_thread is None
-            assert runner.first_observation == True
+            assert runner.first_observation is True
             mock_api.runtime.clear_callbacks.assert_called_once()
             mock_api.state_manager.delete_state.assert_called_once_with(runner.energyplus_state)
 
@@ -4256,7 +4256,7 @@ class TestEnergyplusrunner:
             runner.stop()
 
             # Assertions
-            assert runner.simulation_complete == True
+            assert runner.simulation_complete is True
             mock_sleep.assert_called_once_with(0.5)
             mock_stop_simulation.assert_called_once_with(runner.energyplus_state)
             runner.energyplus_exec_thread.join.assert_called_once()
@@ -4280,7 +4280,7 @@ class TestEnergyplusrunner:
         """Test stop method when simulation is not complete"""
         mock_runner_11.simulation_complete = False
         mock_runner_11.stop()
-        assert mock_runner_11.simulation_complete == True
+        assert mock_runner_11.simulation_complete is True
 
     def test_successful_simulation(self):
         """
@@ -4303,7 +4303,7 @@ class TestEnergyplusrunner:
         runner.sim_results = 0
         
         # Check that failed() returns False
-        assert runner.failed() == False
+        assert runner.failed() is False
 
     def test_update_infos_2(self):
         """

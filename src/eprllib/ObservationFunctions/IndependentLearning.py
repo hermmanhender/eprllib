@@ -3,19 +3,19 @@
 """
 from typing import Any, Dict, Tuple, Set
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+import numpy as np
 
 class IndependentLearning(ObservationFunction):
     def __init__(
         self,
-        config: Dict[str,Any]
+        obs_fn_config: Dict[str,Any]
         ):
-        self.config = config
-        super().__init__(config)
+        super().__init__(obs_fn_config)
         
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
-        _agent_ids: Set,
+        agents: Set,
         _thermal_zone_ids: Set,
         ) -> int:
         return NotImplementedError("You must implement this method.")
@@ -23,7 +23,7 @@ class IndependentLearning(ObservationFunction):
     def set_agent_obs_and_infos(
         self,
         env_config: Dict[str,Any],
-        _agent_ids: Set,
+        agents: Set,
         _thermal_zone_ids: Set,
         actuator_states: Dict[str,Any] = NotImplemented,
         actuator_infos: Dict[str,Any] = NotImplemented,
@@ -44,10 +44,10 @@ class IndependentLearning(ObservationFunction):
         infos_tz,
         agent_actions: Dict = NotImplemented):
         # Se asignan observaciones y infos a cada agente.
-        agents_obs = {agent: [] for agent in self._agent_ids}
-        agents_infos = {agent: {} for agent in self._agent_ids}
+        agents_obs = {agent: [] for agent in self.agents}
+        agents_infos = {agent: {} for agent in self.agents}
         
-        for agent in self._agent_ids:
+        for agent in self.agents:
             # Agent properties
             agent_thermal_zone = self.env_config['agents_config'][agent]['thermal_zone']
             

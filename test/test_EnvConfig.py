@@ -332,7 +332,7 @@ class TestEnvconfig:
         assert result['epjson_path'] == "path/to/epjson"
         assert result['epw_path'] == "path/to/epw"
         assert result['output_path'] == "path/to/output"
-        assert result['ep_terminal_output'] == False
+        assert result['ep_terminal_output'] is False
         assert result['timeout'] == 15.0
         assert 'agents_config' in result
         assert 'observation_fn' in result
@@ -548,7 +548,7 @@ class TestEnvconfig:
         assert env_config.epjson_path == epjson_path
         assert env_config.epw_path == epw_path
         assert env_config.output_path == output_path
-        assert env_config.ep_terminal_output == True
+        assert env_config.ep_terminal_output is True
         assert env_config.timeout == 10.0
 
     def test_generals_empty_paths(self):
@@ -628,7 +628,7 @@ class TestEnvconfig:
         assert env_config.epjson_path == new_epjson_path
         assert env_config.epw_path == "/initial/weather.epw"
         assert env_config.output_path == "/initial/output"
-        assert env_config.ep_terminal_output == True
+        assert env_config.ep_terminal_output is True
         assert env_config.timeout == new_timeout
 
     def test_generals_set_all_parameters(self):
@@ -667,7 +667,7 @@ class TestEnvconfig:
         assert env_config.epjson_path == NotImplemented
         assert env_config.epw_path == NotImplemented
         assert env_config.output_path == NotImplemented
-        assert env_config.ep_terminal_output == True
+        assert env_config.ep_terminal_output is True
         assert env_config.timeout == 10.0
 
         # Check agents configuration
@@ -861,7 +861,7 @@ class TestEnvconfig:
         )
 
         assert env_config.observation_fn is not None
-        assert env_config.use_actuator_state == True
+        assert env_config.use_actuator_state is True
         assert env_config.use_agent_indicator == False
         assert env_config.use_thermal_zone_indicator == True
         assert env_config.use_agent_type == True
@@ -1349,7 +1349,7 @@ class TestEnvconfig:
             infos_variables={}
         )
 
-        assert env_config.simulation_parameters['year'] == True
+        assert env_config.simulation_parameters['year'] is True
 
     def test_observations_updates_zone_simulation_parameters(self):
         """
@@ -1364,7 +1364,7 @@ class TestEnvconfig:
             infos_variables={}
         )
 
-        assert env_config.zone_simulation_parameters['zone_time_step'] == True
+        assert env_config.zone_simulation_parameters['zone_time_step'] is True
 
     def test_rewards_raises_error_for_not_implemented(self):
         """

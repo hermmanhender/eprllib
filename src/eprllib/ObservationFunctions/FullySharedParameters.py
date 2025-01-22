@@ -4,58 +4,46 @@ Fully Shared Parameters Policy
 
 This module implements a fully shared parameters policy for the observation function.
 
-The observations are classified into:
-
-* Actuator states
-* Environment state
-    * Environment variables
-    * Simulation parameters
-    * Weather prediction
-* Thermal zone state
-    * Thermal zone variables
-    * Static variables
-    * Zone simulation parameters
-    * Building properties
-* Agent state
-    * Object variables
-    * Meters
-    
 The flat observation for each agent must be a numpy array and the size must be equal to all agents. To 
 this end, a concatenation of variables is performed.
 
-*Agent flat observation*
-
 * AgentID one-hot enconde vector
-* Environment state
-* Thermal zone state where the agent belongs
 * Agent state
-* Other agents reduce observations
+* Actuators state (include other agents)
 """
-from typing import Any, Dict, Tuple, Set, List
+# DEVELOP NOTES
+# TODO: The number of actuators for the case of other agents is variable. Change the actuator state for agent action or see how
+# could be possible to expand the observation space to addap it to different observations size.
+
+import time
+from typing import Any, Dict, Tuple
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
 import numpy as np
-import random
 import gymnasium as gym
 
 class FullySharedParameters(ObservationFunction):
     def __init__(
         self,
-        config: Dict[str,Any]
+        obs_fn_config: Dict[str,Any]
         ):
-        self.config = config
-        super().__init__(config)
-        self.number_of_agents_total: int = self.config['number_of_agents_total']
-        self.number_of_thermal_zone_total: int = self.config['number_of_thermal_zone_total']
-        self.agent_obs_extra_var: Dict[str,Any] = self.config['agent_obs_extra_var']
-        self.other_agent_obs_extra_var: Dict[str,Any] = self.config['other_agent_obs_extra_var']
-        self.observation_space_labels: Dict[str,List[str]] = None
+        """This class implements a fully shared parameters policy for the observation function.
+
+        Args:
+            obs_fn_config (Dict[str,Any]): The configuration dictionary for the observation function.
+            This must to contain the key 'number_of_agents_total', that represent the maximal
+            quantity to wich the policy is prepared. It is related with the unitary vector.
+            
+        """
+        super().__init__(obs_fn_config)
+        self.number_of_agents_total: int = self.obs_fn_config['number_of_agents_total']
+        self.number_of_actuators_total: int = self.obs_fn_config['number_of_actuators_total']
+        self.agent_ids = None
+        self.actuator_ids = None
     
     def get_agent_obs_dim(
         self,
-        env_config: Dict[str,Any],
-        _agent_ids: Set,
-        _thermal_zone_ids: Set,
+        env_config: Dict[str,Any]
         ) -> gym.Space:
         """
         This method construct the observation space of the environment.
@@ -66,310 +54,157 @@ class FullySharedParameters(ObservationFunction):
         Returns:
             space.Box: The observation space of the environment.
         """
-        # Variable to save the obs_space dim.
-        obs_space_len = 0
+        agent_list = [key for key in env_config["agents_config"].keys()]
+        obs_space_len: Dict[str,int] = {agent:0 for agent in agent_list}
         
-        # === AgentID one-hot enconde vector ===
-        # Add agents id vector to space dim.
-        if self.number_of_thermal_zone_total > 1:
-            obs_space_len += self.number_of_thermal_zone_total
+        if len(agent_list) < self.number_of_agents_total:
+            raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
         
-        # === Environment state ===
-        # Environment variables.
-        obs_space_len += len(env_config['variables_env'])
-        # simulation_parameters: Count the keys in the dict that are True
-        obs_space_len += len([key for key, value in env_config['simulation_parameters'].items() if value])
-        # Add weather prediction.
-        if env_config['use_one_day_weather_prediction']:
-            obs_space_len += env_config['prediction_hours']*env_config['prediction_variables']
-        
-        # === Thermal zone state where the agent belongs ===
-        # Thermal zone variables.
-        obs_space_len += len(env_config['variables_thz'])
-        
-        # Add static_variables.
-        for thermal_zone in _thermal_zone_ids:
-            lenght_vector_sv = []
-            lenght_vector_sv.append(len([key for key in env_config['static_variables'][thermal_zone].keys()]))
-        # Check lenght vector elements are all the same, if don't a error happend.
-        if len(set(lenght_vector_sv)) != 1:
-            raise ValueError("The thermal zones have different number of static_variables.")
-        # Add the lenght of the first thermal zone.
-        obs_space_len += lenght_vector_sv[0]
-        
-        # zone_simulation_parameters: Count the keys in the dict that are True
-        obs_space_len += len([key for key, value in env_config['zone_simulation_parameters'].items() if value])
-    
-        # === Agent state ===
-        # Object variables and meters variables.
-        # Check all the agents have the same lengt.
-        for agent in _agent_ids:
-            lenght_vector_obj = []
-            lenght_vector_met = []
-            lenght_vector_obj.append(len([key for key in env_config['variables_obj'][agent].keys()]))
-            lenght_vector_met.append(len([key for key in env_config['meters'][agent].keys()]))
-        # Check lenght vector elements are all the same, if don't a error happend.
-        if len(set(lenght_vector_obj)) != 1:
-            raise ValueError("The agents have different number of variables_obj.")
-        if len(set(lenght_vector_met)) != 1:
-            raise ValueError("The agents have different number of meters.")
-        # Add the lenght of the first agent.
-        obs_space_len += lenght_vector_obj[0]
-        obs_space_len += lenght_vector_met[0]
-        # actuator state.
-        if env_config['use_actuator_state']:
-            obs_space_len += 1
+        for agent in agent_list:
+            if self.number_of_agents_total > 1:
+                obs_space_len[agent] += self.number_of_agents_total
             
-        # variables defined in agent_obs_extra_var
-        obs_space_len += len([key for key in self.config['agent_obs_extra_var'].keys()])
-        
-        if env_config['use_thermal_zone_indicator']:
-            obs_space_len += self.number_of_thermal_zone_total
-            
-        # agent type.
-        if env_config['use_agent_type']:
-            obs_space_len += 1
-        
-        # === Other agents reduce observations ===
-        if self.number_of_agents_total > 1:
-            # multi-one hot-code vector
-            obs_space_len += self.number_of_agents_total
-            for _ in range(self.number_of_agents_total):
+            if env_config["agents_config"][agent]["observation"]['variables'] is not None:
+                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['variables'])
                 
-                self.config['other_agent_obs_extra_var']
+            if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
+                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
                 
-                # if apply, add the actuator state.
-                if env_config['use_actuator_state']:
-                    obs_space_len += 1
-                # if apply, add the thermal zone indicator
-                if env_config['use_thermal_zone_indicator']:
-                    obs_space_len += self.number_of_thermal_zone_total
-                # if apply, add the agent type.
-                if env_config['use_agent_type']:
-                    obs_space_len += 1
-        
-        # === Not observable variables === (discount them)
-        if env_config['no_observable_variables']:
-            obs_space_len -= len(env_config['no_observable_variables']['variables_env'])
-            obs_space_len -= len(env_config['no_observable_variables']['variables_thz'])
-            obs_space_len -= len(env_config['no_observable_variables']['simulation_parameters'])
-            obs_space_len -= len(env_config['no_observable_variables']['zone_simulation_parameters'])
+            if env_config["agents_config"][agent]["observation"]['meters'] is not None:
+                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['meters'])
+                
+                
+            if env_config["agents_config"][agent]["observation"]['simulation_parameters'] is not None:
+                sp_len = 0
+                for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
+                    if value:
+                        sp_len += 1
+                obs_space_len[agent] += sp_len
+            if env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'] is not None:
+                sp_len = 0
+                for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
+                    if value:
+                        sp_len += 1
+                obs_space_len[agent] += sp_len
+                
+            if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
+                count_variables = 0
+                for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
+                    if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
+                        count_variables += 1
+                obs_space_len[agent] += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
             
-            for thermal_zone in _thermal_zone_ids:
-                discount_len_vector = []
-                discount_len_vector.append(len([key for key in env_config['no_observable_variables']['static_variables'][thermal_zone].keys()]))
-            if len(set(lenght_vector_sv)) != 1:
-                raise ValueError("The thermal zones in no_observable_variables have different number of static_variables.")    
-            obs_space_len -= lenght_vector_sv[0]
-            
-            for agent in _agent_ids:
-                discount_len_vector_obj = []
-                discount_len_vector_met = []
-                discount_len_vector_obj.append(len([key for key in env_config['no_observable_variables']['variables_obj'][agent].keys()]))
-                discount_len_vector_met.append(len([key for key in env_config['no_observable_variables']['meters'][agent].keys()]))
-            if len(set(discount_len_vector_obj)) != 1:
-                raise ValueError("The agents in no_observable_variables have different number of variables_obj.")
-            if len(set(discount_len_vector_met)) != 1:
-                raise ValueError("The agents in no_observable_variables have different number of meters.")
-            obs_space_len -= discount_len_vector_obj[0]
-            obs_space_len -= discount_len_vector_met[0]
+            if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
+                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['other_obs'])
         
-        # construct the observation space.
-        return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len,))
+        # check if all the agents has the same len in the obs_space_len
+        if len(set(obs_space_len.values())) > 1:
+            raise ValueError("The agents must have the same observation space length.")
         
-    def set_agent_obs_and_infos(
+        obs_space_len_shared = obs_space_len[agent_list[0]]
+        # Add the actuator state to all the agents obs_space_len
+        # Check if at least one agent request the use_actuator_state
+        use_actuator_state_flag = False
+        for agent in agent_list:
+            if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
+                use_actuator_state_flag = True
+                break
+        if use_actuator_state_flag:
+            # Save the total amount of actuators in the environment to create a vector in set_agent_obs
+            actuators = 0
+            for agent in agent_list:
+                actuators += len(env_config['agents_config'][agent]["action"]["actuators"])
+            # chack that actuators is equal or minor to self.number_of_actuators_total
+            if actuators > self.number_of_actuators_total:
+                raise ValueError("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
+            else:
+                obs_space_len_shared += self.number_of_actuators_total
+        
+        return gym.spaces.Dict(
+            {
+                agent: gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len_shared, )) 
+                for agent 
+                in agent_list
+            }
+        )
+        
+    def set_agent_obs(
         self,
         env_config: Dict[str,Any],
-        _agent_ids: Set,
-        _thermal_zone_ids: Set,
-        actuator_states: Dict[str,Any] = NotImplemented,
-        actuator_infos: Dict[str,Any] = NotImplemented,
-        site_state: Dict[str,Any] = NotImplemented,
-        site_infos: Dict[str,Any] = NotImplemented,
-        thermal_zone_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        thermal_zone_infos: Dict[str, Dict[str,Any]] = NotImplemented,
         agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        agent_infos: Dict[str, Dict[str,Any]] = NotImplemented,
-        ) -> Tuple[Dict[str,Any],Dict[Dict[str,Any]]]:
+        ) -> Tuple[Dict[str,Any],Dict[str, Dict[str,Any]]]:
+        # Add the ID vectors if it's needed
+        id = 0
+        if self.agent_ids is None:
+            self.agent_ids = {agent: id for agent in [key for key in env_config['agents_config'].keys()]}
+            id += 1
         
+        id = 0
+        if self.actuator_ids is None:
+            self.actuator_ids = {}
+            for agent in env_config['agents_config'].keys():
+                for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
+                    self.actuator_ids.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": id})
+                    id += 1
+        
+        # agents in this timestep
+        agent_list = [key for key in agent_states.keys()]
         # Add agent indicator for the observation for each agent
-        agents_obs = {agent: [] for agent in _agent_ids}
-        agents_infos = {agent: {} for agent in _agent_ids}
-        agents_obs_labels = {agent: [] for agent in _agent_ids} # To assign labels to the obs vector
-        # Agent_indicator vector (if any)
-        # Agent env observation (thermal_zone related term)
-        # Obs of others agents (actions, types) (point of view of the actual agent)
+        agents_obs = {agent: [] for agent in agent_list}
         
-        for agent in _agent_ids:
+        if len(agent_list) < self.number_of_agents_total:
+            raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
+        
+        actuator_names = {agent: {} for agent in agent_list}
+        
+        for agent in agent_list:
             # Agent properties
-            agent_thermal_zone = env_config['agents_config'][agent]['thermal_zone']
             agent_id_vector = None
             
-            # === AgentID one-hot enconde vector === (this is applied latter but possisioning and the begining of the observation space)
+            # === AgentID one-hot enconde vector ===
             # If apply, add the igent ID vector for each agent obs
             if self.number_of_agents_total > 1:
                 # 1. Label: NotImplementd yet.
                 # 2. Values:
-                agent_indicator = env_config['agents_config'][agent]['agent_indicator']
                 agent_id_vector = np.array([0]*self.number_of_agents_total)
-                agent_id_vector[agent_indicator-1] = 1
+                agent_id_vector[self.agent_ids[agent]] = 1
                 # 3. Infos: This is not useful for this part of the observation.
             
-            # === Environment state ===
-            # 1. Label: NotImplementd yet.
-            # 2. Values: Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            ag_var = np.array(list(site_state.values()), dtype='float32')
-            if agent_id_vector != None:
-                ag_var = np.concatenate(
+            # Remove from agent_states and save the actuator items.
+            for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
+                actuator_name = f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}"
+                actuator_names[agent].update({actuator_name: agent_states[agent].pop(actuator_name)})
+                
+            if agent_id_vector is not None:
+                agents_obs[agent] = np.concatenate(
                     (
                         agent_id_vector,
-                        ag_var
+                        np.array(list(agent_states[agent].values()), dtype='float32')
                     ),
                     dtype='float32'
                 )
-            # 3. Infos: Add the site infos to the agent infos.
-            ag_inf = site_infos
             
-            # === Thermal zone state where the agent belongs ===
-            # 1. Label: NotImplementd yet.
-            # 2. Values: Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            ag_var = np.concatenate(
-                (
-                    ag_var,
-                    np.array(list(thermal_zone_states[agent_thermal_zone].values()), dtype='float32')
-                ),
-                dtype='float32'
-            )
-            # 3. Infos: Add the thermal zone state infos to the agent infos.
-            ag_inf.update(thermal_zone_infos[agent_thermal_zone])
-            
-            # === Agent state ===
-            # 1. Label: NotImplementd yet.
-            # 2. Values: Transform the observation in a numpy array to meet the condition expected in a RLlib Environment
-            ag_var = np.concatenate(
-                (
-                    ag_var,
-                    np.array(list(agent_states[agent].values()), dtype='float32')
-                ),
-                dtype='float32'
-            )
-            # if apply, add the actuator state of this agent
-            if env_config['use_actuator_state']:
-                ag_var = np.concatenate(
-                    (
-                        ag_var,
-                        [actuator_states[agent]],
-                    ),
-                    dtype='float32'
-                )
-                ag_inf.update(actuator_infos[agent])
-            # if apply, add the thermal zone indicator
-            if env_config['use_thermal_zone_indicator']:
-                if self.number_of_agents_total > 1:
-                    thermal_zone_indicator = env_config['agents_config'][agent]['thermal_zone_indicator']
-                    thermal_zone_id_vector = np.array([0]*self.number_of_thermal_zone_total)
-                    thermal_zone_id_vector[thermal_zone_indicator-1] = 1
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            thermal_zone_id_vector,
-                        ),
-                        dtype='float32'
-                    )
-            # if apply, add the agent type.
-            if env_config['use_agent_type']:
-                agent_type = env_config['agents_config'][agent]['actuator_type']
-                ag_var = np.concatenate(
-                    (
-                        ag_var,
-                        [agent_type],
-                    ),
-                    dtype='float32'
-                )
-            # 3. Infos: Add the agent state infos to the agent infos.
-            ag_inf.update(agent_infos[agent])
-            
-        # === Other agents reduce observations ===
-        # For this first the singular agent observation and infos are saved. After, if apply, the
-        # others agents reduced observation is calculated and added at the end of the observation and
-        # infos array of each agent.
-            agents_infos[agent] = ag_inf
-            agents_obs[agent] = ag_var
-            
-        # Create the general observation
-        if self.number_of_agents_total > 1:
-            
-            first_agent = True
-            other_agents_dict = {agent: [] for agent in _agent_ids}
-            for agent in _agent_ids:
-                # Identify the agent ID.
-                agent_indicator = env_config['agents_config'][agent]['agent_indicator']
-                ag_var = np.array([0]*self.number_of_agents_total)
-                ag_var[agent_indicator-1] = 1
+        # if apply, add the actuator state as a vector of all agents.
+        use_actuator_state_flag = False
+        for agent in agent_list:
+            if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
+                use_actuator_state_flag = True
                 
-                # if apply, add the actuator state.
-                if env_config['use_actuator_state']:
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            [actuator_states[agent]],
-                        ),
-                        dtype='float32'
-                    )
-                # if apply, add the thermal zone indicator
-                if env_config['use_thermal_zone_indicator']:
-                    thermal_zone_indicator = env_config['agents_config'][agent]['thermal_zone_indicator']
-                    thermal_zone_id_vector = np.array([0]*self.number_of_thermal_zone_total)
-                    thermal_zone_id_vector[thermal_zone_indicator-1] = 1
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            thermal_zone_id_vector,
-                        ),
-                        dtype='float32'
-                    )
-                # if apply, add the agent type.
-                if env_config['use_agent_type']:
-                    agent_type = env_config['agents_config'][agent]['actuator_type']
-                    ag_var = np.concatenate(
-                        (
-                            ag_var,
-                            [agent_type],
-                        ),
-                        dtype='float32'
-                    )
-                other_agents_dict.update({agent: Tuple(ag_var)})
-                # Calculate the len of the other agents observation vector.
-                if first_agent:
-                    first_agent = False
-                    length_agent_in_poll = np.array([0]*len(ag_var))
+        if use_actuator_state_flag:
             
-            # Add emptly vector for others agents observations that are not present.
-            ag_pool = []
-            if self.number_of_agents_total-len(ag_pool) > 0:
-                for _ in range(self.number_of_agents_total-len(ag_pool)):
-                    ag_pool.append(tuple(length_agent_in_poll))
+            actuator_id_vector = np.array([-2]*self.number_of_actuators_total)
             
-            for agent in _agent_ids:
-                obs_list = []
-                # Add the other agents observations.
-                for other_agent in _agent_ids:
-                    if agent != other_agent:
-                        ag_pool.append(other_agents_dict[other_agent])
+            for agent in agent_list:
+                for actuator in actuator_names[agent]:
+                    actuator_id_vector[self.actuator_ids[actuator]] = actuator_names[agent][actuator]
             
-                # Shuffle the others agents obs to improve the generalization of the model.
-                shuffled_ag_pool = random.sample(ag_pool, len(ag_pool))  # This shuffles the list
-                for embedding in shuffled_ag_pool:
-                    obs_list.append(np.array(embedding, dtype='float32'))
-                    
-                # Concatenamos todas las observaciones en un solo NDArray
-                obs = np.concatenate(obs_list, dtype='float32')
+            for agent in agent_list:        
                 agents_obs[agent] = np.concatenate(
                     (
                         agents_obs[agent],
-                        obs,
+                        actuator_id_vector,
                     ),
                     dtype='float32'
                 )
-                
-        return agents_obs, agents_infos
+            
+        return agents_obs

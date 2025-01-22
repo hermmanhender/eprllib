@@ -100,8 +100,8 @@ class TestEnergyplusenvironment:
         # Assertions
         assert env.episode == 0  # Episode should be incremented
         assert env.timestep == 0  # Timestep should be reset
-        assert env.terminateds == False
-        assert env.truncateds == False
+        assert env.terminateds is False
+        assert env.truncateds is False
         assert obs == env.last_obs
         assert infos == env.last_infos
 
@@ -161,5 +161,5 @@ class TestEnergyplusenvironment:
         mock_runner.infos_event.wait.assert_called_once()
         assert obs == expected_obs
         assert infos == expected_infos
-        assert env.terminateds == False
-        assert env.truncateds == False
+        assert env.terminateds is False
+        assert env.truncateds is False

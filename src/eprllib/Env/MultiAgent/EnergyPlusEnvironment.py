@@ -1,8 +1,11 @@
-"""# ENERGYPLUS RLLIB ENVIRONMENT
+"""
+Multi-Agent Environment for EnergyPlus in RLlib
+================================================
 
 This script define the environment of EnergyPlus implemented in RLlib. To works 
 need to define the EnergyPlus Runner.
 """
+from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional
@@ -56,7 +59,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             configuration settings for the environment, such as agent IDs, action 
             spaces, observable variables, actuators, meters, and other EnergyPlus-related 
             settings.
-            * 2. It sets the _agent_ids attribute as a set of agent IDs from the env_config.
+            * 2. It sets the agents attribute as a set of agent IDs from the env_config.
             * 3. It assigns the action_space attribute from the env_config.
             * 4. It calculates the length of the observation space based on the number of 
             observable variables, meters, actuators, time variables, weather variables, 
@@ -74,29 +77,40 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         for the EnergyPlus multi-agent environment, preparing it for running simulations 
         and interacting with agents.
         """
-        # asigning the configuration of the environment.
         self.env_config = env_config
-        self.action_fn: ActionFunction = self.env_config['action_fn']
-        self.observation_fn: ObservationFunction = self.env_config['observation_fn']
-        self.reward_fn: RewardFunction = self.env_config['reward_fn']
-        self.episode_fn: EpisodeFunction = self.env_config['episode_fn']
         
-        # define the _agent_ids property. This is neccesary in the RLlib configuration of MultiAgnetEnv.
-        self._agent_ids = set([key for key in env_config['agents_config'].keys()])
-        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
-        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
+        # Define all agent IDs that might even show up in your episodes.
+        self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
+        # If your agents never change throughout the episode, set
+        # `self.agents` to the same list as `self.possible_agents`.
+        self.agents = self.possible_agents
+        # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
+        # currently "alive" agents are.
         
-        # Define the _thermal_zone_ids set. TODO: abstract the definition to avoid user errors.
-        self._thermal_zone_ids = set([self.env_config['agents_config'][agent]['thermal_zone'] for agent in self._agent_ids])
+        # asigning the configuration of the environment.
+        
+        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
+        self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
+        for agent in self.agents:
+            self.action_fn.update({agent: self.env_config["agents_config"][agent]["action"]['action_fn'](self.env_config["agents_config"][agent]["action"]["action_fn_config"])})
+            self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
+        
+        self.observation_fn: ObservationFunction = self.env_config['observation_fn'](self.env_config["observation_fn_config"])
+        self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
         
         # asignation of environment action space.
-        self.action_space = self.action_fn.get_action_space_dim()
+        self.action_space = {agent: None for agent in self.agents}
+        for agent in self.agents:
+            self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
+        
+        self.action_space = spaces.Dict(self.action_space)
+        
+        # self.action_space = self.action_fn[self.agents[0]].get_action_space_dim()
         
         # asignation of the environment observation space.
-        # TODO: Get the keys for the data saving here, together with the specification of the observation space.
-        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config, self._agent_ids, self._thermal_zone_ids)
+        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config)
         
-        # super init of the base class (after the previos definition to avoid errors with _agent_ids argument).
+        # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
@@ -113,8 +127,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.truncateds = False
         self.env_config['num_time_steps_in_hour'] = 0
         # dict to save the last observation and infos in the environment.
-        self.last_obs = {agent: [] for agent in self._agent_ids}
-        self.last_infos = {agent: {} for agent in self._agent_ids}
+        self.last_obs = {agent: [] for agent in self.agents}
+        self.last_infos = {agent: {} for agent in self.agents}
 
     def reset(
         self, *,
@@ -142,6 +156,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             # episode_config_fn: Function that take the env_config as argument and upgrade the value
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
             self.env_config = self.episode_fn.get_episode_config(self.env_config)
+            self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
             
             # TODO: Add here the availability to run EnergyPlus in Parallel.
             # Run EnergyPlus in Parallel
@@ -172,8 +187,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 obs_queue = self.obs_queue,
                 act_queue = self.act_queue,
                 infos_queue = self.infos_queue,
-                _agent_ids = self._agent_ids,
-                _thermal_zone_ids = self._thermal_zone_ids,
+                agents = self.agents,
                 observation_fn = self.observation_fn,
                 action_fn = self.action_fn
             )
@@ -236,6 +250,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 # Send the action to the EnergyPlus Runner flow.
                 self.act_queue.put(action)
                 self.energyplus_runner.act_event.set()
+                # Modify the quantity of agents in the environment for this timestep, if apply.
+                self.energyplus_runner.agents = self.episode_fn.get_timestep_agents(self.env_config, self.possible_agents)
+                
                 # Get the return observation and infos after the action is applied.
                 self.energyplus_runner.obs_event.wait(timeout=timeout)
                 obs = self.obs_queue.get(timeout=timeout)
@@ -253,7 +270,9 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos = self.last_infos
         
         # Calculate the reward in the timestep
-        reward_dict = self.reward_fn.get_reward(infos, self.terminateds, self.truncateds)
+        reward_dict = {}
+        for agent in self.agents:
+            reward_dict.update({agent: self.reward_fn[agent].get_reward(infos[agent], self.terminateds, self.truncateds)})
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds

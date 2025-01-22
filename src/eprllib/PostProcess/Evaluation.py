@@ -30,7 +30,7 @@ class drl_evaluation:
         self.policy = Policy.from_checkpoint(checkpoint_path)
         print(f"Checkpoint path restore: {checkpoint_path}")
         self.env = EnergyPlusEnv_v0(env_config)
-        self._agent_ids = self.env.get_agent_ids()
+        self.agents = self.env.agents
         self.terminated = False
         self.data_queue: Optional[Queue] = None
         self.data_processing: Optional[step_processing] = None
@@ -66,8 +66,8 @@ class drl_evaluation:
         
         while not self.terminated: # se ejecuta un paso de tiempo hasta terminar el episodio
             # se calculan las acciones convencionales de cada elemento
-            actions_dict = {agent: 0 for agent in self._agent_ids}
-            for agent in self._agent_ids:
+            actions_dict = {agent: 0 for agent in self.agents}
+            for agent in self.agents:
                 if self.use_RNN:
                     action, state, _ = self.policy['shared_policy'].compute_single_action(obs_dict[agent], state)
                 else:
@@ -80,7 +80,7 @@ class drl_evaluation:
             # The action is transformer inside the step method, but here is transformed to save the correct value
             actions_dict = self.action_fn.transform_action(actions_dict)
                 
-            for agent in self._agent_ids:
+            for agent in self.agents:
                 data = [agent, self.timestep] + list(obs_dict[agent]) + [actions_dict[agent], reward[agent], terminated["__all__"], truncated["__all__"]] + [value for value in infos[agent].values()]
                 # coloca los datos en una cola
                 self.data_queue.put(data)
