@@ -41,18 +41,18 @@ from eprllib.Env.MultiAgent.EnergyPlusEnv import EnergyPlusEnv_v0
 # Configure eprllib.
 BuildingModel = EnvConfig()
 BuildingModel.generals(
-    epjson_path=‘path_to_epJSON_file’,
-    epw_path=‘path_to_EPW_file’,
-    output_path=‘path_to_output_folder’,
+    epjson_path='path_to_epJSON_file',
+    epw_path='path_to_EPW_file',
+    output_path='path_to_output_folder',
 )
 BuildingModel.agents(
    agents_config = {
-       ‘Thermal Zone: Room1’:{
-           ‘Agent 1 in Room 1’: {
-               ‘ep_actuator_config’: (),
-               ‘thermal_zone’: ‘Thermal Zone: Room 1’,
-               ‘actuator_type’: 3 ,
-               ‘agent_id’: 1,
+       'Thermal Zone: Room1':{
+           'Agent 1 in Room 1': {
+               'ep_actuator_config': (),
+               'thermal_zone': 'Thermal Zone: Room 1',
+               'actuator_type': 3 ,
+               'agent_id': 1,
        },
    }
 )

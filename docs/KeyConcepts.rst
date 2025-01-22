@@ -1,14 +1,13 @@
 Key Concepts
-============
+=============
 
-The main parts of eprllib.
+eprllib serves the environment to use later on RLlib. To conigurate the environment the class `EnvConfig` is
+used. Two methods in this class allow the correct configuration of the general parameters of a EnergyPlus model
+and the agents specifics variables: observations, actions, and rewards.
 
-Parts of eprllib.
+Aditionaly, four classes are stablished to provide flexibility in the environment configuration:
 
-eprllib as an environment for DRL
-
-Reward functions
-
-Action functions
-
-Episode functions
+    * `RewardFuntions`
+    * `ActionFuntions`
+    * `ObservationFuntions`
+    * `EpisodeFunctions`
