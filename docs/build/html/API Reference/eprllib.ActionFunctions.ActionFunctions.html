@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=790ca08a"></script>
+    <script src="../_static/documentation_options.js?v=44d4fe32"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -44,7 +44,7 @@
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/API Reference/eprllib.ActionFunctions.ActionFunctions.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="eprllib.ActionFunctions.DualSetPointThermostat" href="eprllib.ActionFunctions.DualSetPointThermostat.html" />
+    <link rel="next" title="eprllib.Agents" href="eprllib.Agents.html" />
     <link rel="prev" title="eprllib.ActionFunctions" href="eprllib.ActionFunctions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -170,15 +170,10 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="eprllib.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">eprllib.ActionFunctions.ActionFunctions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.ActionFunctions.DualSetPointThermostat.html">eprllib.ActionFunctions.DualSetPointThermostat</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.ConventionalAgent.html">eprllib.Agents.ConventionalAgent</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.OnOffAirConditionerControl.html">eprllib.Agents.OnOffAirConditionerControl</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.WindowOpeningControl.html">eprllib.Agents.WindowOpeningControl</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.WindowShadeControl.html">eprllib.Agents.WindowShadeControl</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -198,16 +193,12 @@
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.PostProcess.html">eprllib.PostProcess</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Conventional.html">eprllib.PostProcess.Conventional</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.EnergyTemperature.html">eprllib.RewardFunctions.EnergyTemperature</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.Nygard1990.html">eprllib.RewardFunctions.Nygard1990</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.henderson_2024.html">eprllib.RewardFunctions.henderson_2024</a></li>
 </ul>
 </details></li>
 </ul>
@@ -456,9 +447,6 @@ to transform the dict of agent actions to actuator values.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ActionFunction</span></code>([action_fn_config])</p></td>
 <td><p>Base class to create action transformer functions.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ActionSpec</span></code>([actuators, action_fn, ...])</p></td>
-<td><p>ActionSpec is the base class for an action specification to safe configuration of the object.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -485,11 +473,11 @@ to transform the dict of agent actions to actuator values.</p>
       </div>
     </a>
     <a class="right-next"
-       href="eprllib.ActionFunctions.DualSetPointThermostat.html"
+       href="eprllib.Agents.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">eprllib.ActionFunctions.DualSetPointThermostat</p>
+        <p class="prev-next-title">eprllib.Agents</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

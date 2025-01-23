@@ -1,4 +1,4 @@
-eprllib.ActionFunctions
+﻿eprllib.ActionFunctions
 =======================
 
 .. automodule:: eprllib.ActionFunctions
@@ -11,4 +11,3 @@ eprllib.ActionFunctions
    :recursive:
 
    ActionFunctions
-   DualSetPointThermostat

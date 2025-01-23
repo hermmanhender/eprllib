@@ -11,7 +11,3 @@
    :recursive:
 
    AgentSpec
-   ConventionalAgent
-   OnOffAirConditionerControl
-   WindowOpeningControl
-   WindowShadeControl

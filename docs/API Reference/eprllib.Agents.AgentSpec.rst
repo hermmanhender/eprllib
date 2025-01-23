@@ -8,5 +8,8 @@ eprllib.Agents.AgentSpec
 
    .. autosummary::
    
+      ActionSpec
       AgentSpec
+      ObservationSpec
+      RewardSpec
    
