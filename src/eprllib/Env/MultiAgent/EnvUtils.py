@@ -10,7 +10,7 @@ from gymnasium.spaces import Box, Discrete
 import numpy as np
 import sys
 
-def EP_API_add_path(version:Optional[str]="23-2-0", path:Optional[str]=None):
+def EP_API_add_path(version:Optional[str]="24-2-0", path:Optional[str]=None):
     """
     This method add the EnergyPlus Python API to the system path. This allow to use the 
     EnergyPlus program in Python. The minimal version of EnergyPlus is 9.3.0 and the default

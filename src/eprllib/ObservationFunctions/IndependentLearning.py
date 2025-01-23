@@ -1,5 +1,8 @@
 """
+Independent Agents Policy
+==========================
 
+Work in progress...
 """
 from typing import Any, Dict, Tuple, Set
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction

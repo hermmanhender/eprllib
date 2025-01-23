@@ -38,32 +38,3 @@ class RewardFunction:
         """
         return NotImplementedError("This method must be implemented in the subclass.")
 
-class RewardSpec:
-    """
-    RewardSpec is the base class for an reward specification to safe configuration of the object.
-    """
-    def __init__(
-        self,
-        reward_fn: RewardFunction = NotImplemented,
-        reward_fn_config: Dict[str, Any] = {},
-        ):
-        """
-        _Description_
-        
-        Args:
-            reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos 
-            dictionary. As a return, gives a float number as reward. See eprllib.RewardFunctions for examples.
-            
-        """
-        if reward_fn == NotImplemented:
-            raise NotImplementedError("reward_fn must be defined.")
-        
-        self.reward_fn = reward_fn
-        self.reward_fn_config = reward_fn_config
-        
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
-        

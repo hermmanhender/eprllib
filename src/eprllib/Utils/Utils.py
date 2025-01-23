@@ -1,4 +1,8 @@
-"""Utils to use.
+"""
+General utilities
+==================
+
+Work in progress...
 """
 from typing import Set, Dict, List
 
