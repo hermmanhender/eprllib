@@ -1,5 +1,8 @@
 """
+Centralized Agent Policy
+=========================
 
+Work in progress...
 """
 import gymnasium as gym
 import numpy as np

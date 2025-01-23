@@ -1,4 +1,4 @@
-eprllib.Agents
+﻿eprllib.Agents
 ==============
 
 .. automodule:: eprllib.Agents
@@ -10,6 +10,7 @@ eprllib.Agents
    :toctree:
    :recursive:
 
+   AgentSpec
    ConventionalAgent
    OnOffAirConditionerControl
    WindowOpeningControl

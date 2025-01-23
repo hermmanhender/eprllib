@@ -174,6 +174,7 @@
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.ConventionalAgent.html">eprllib.Agents.ConventionalAgent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.OnOffAirConditionerControl.html">eprllib.Agents.OnOffAirConditionerControl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.WindowOpeningControl.html">eprllib.Agents.WindowOpeningControl</a></li>
@@ -183,6 +184,8 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusEnvironment.html">eprllib.Env.MultiAgent.EnergyPlusEnvironment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusRunner.html">eprllib.Env.MultiAgent.EnergyPlusRunner</a></li>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnvUtils.html">eprllib.Env.MultiAgent.EnvUtils</a></li>
 </ul>
 </details></li>
@@ -191,13 +194,18 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.EpisodeFunctions.html">eprllib.EpisodeFunctions.EpisodeFunctions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.GeneralBuilding.html">eprllib.EpisodeFunctions.GeneralBuilding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.PostProcess.html">eprllib.PostProcess</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Conventional.html">eprllib.PostProcess.Conventional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.EnergyTemperature.html">eprllib.RewardFunctions.EnergyTemperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.Nygard1990.html">eprllib.RewardFunctions.Nygard1990</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.henderson_2024.html">eprllib.RewardFunctions.henderson_2024</a></li>
 </ul>
@@ -393,9 +401,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -411,14 +417,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eprllib">eprllib</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -431,15 +429,7 @@ document.write(`
   <section id="api-reference">
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
 <p>Here is the reference documentation to the eprllib API.</p>
-<section id="eprllib">
-<span id="module-eprllib"></span><h2>eprllib<a class="headerlink" href="#eprllib" title="Link to this heading">#</a></h2>
-<p>The package <cite>eprllib</cite> provides a set of tools for the development of energy performance
-research in the context of the Python programming language. The package is structured
-as follows:</p>
-<div class="toctree-wrapper compound">
-</div>
-</section>
-<p class="rubric">Modules</p>
+<p class="rubric" id="module-eprllib">Modules</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="eprllib.ActionFunctions.html#module-eprllib.ActionFunctions" title="eprllib.ActionFunctions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ActionFunctions</span></code></a></p></td>
@@ -500,21 +490,6 @@ as follows:</p>
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eprllib">eprllib</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

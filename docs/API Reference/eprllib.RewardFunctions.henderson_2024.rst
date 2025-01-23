@@ -9,4 +9,5 @@ eprllib.RewardFunctions.henderson\_2024
    .. autosummary::
    
       henderson_2024
+      henderson_2024b
    

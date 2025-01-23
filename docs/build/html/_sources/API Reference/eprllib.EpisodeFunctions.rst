@@ -1,4 +1,4 @@
-eprllib.EpisodeFunctions
+﻿eprllib.EpisodeFunctions
 ========================
 
 .. automodule:: eprllib.EpisodeFunctions
@@ -12,3 +12,4 @@ eprllib.EpisodeFunctions
 
    EpisodeFunctions
    GeneralBuilding
+   RandomWeather

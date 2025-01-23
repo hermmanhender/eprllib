@@ -1,4 +1,9 @@
+"""
+Julian day transformer
+=======================
 
+Work in progress...
+"""
 
 def from_julian_day(julian_day:int):
     """

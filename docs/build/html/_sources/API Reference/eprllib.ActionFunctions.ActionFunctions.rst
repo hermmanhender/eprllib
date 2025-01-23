@@ -1,4 +1,4 @@
-eprllib.ActionFunctions.ActionFunctions
+﻿eprllib.ActionFunctions.ActionFunctions
 =======================================
 
 .. automodule:: eprllib.ActionFunctions.ActionFunctions
@@ -9,4 +9,5 @@ eprllib.ActionFunctions.ActionFunctions
    .. autosummary::
    
       ActionFunction
+      ActionSpec
    

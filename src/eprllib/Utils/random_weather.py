@@ -1,4 +1,9 @@
+"""
+Weather utilities
+==================
 
+Work in progress...
+"""
 import os
 import numpy as np
 

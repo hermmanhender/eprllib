@@ -1,4 +1,9 @@
+"""
+Utilities for the environment configuration
+============================================
 
+Work in progress...
+"""
 
 from typing import Dict
 import inspect

@@ -1,6 +1,6 @@
 """
 Trial Name
-==========
+===========
 
 This utility method create a name for the RLlib trial experiment.
 """
