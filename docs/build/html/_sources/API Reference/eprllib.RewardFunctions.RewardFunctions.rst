@@ -9,5 +9,4 @@ eprllib.RewardFunctions.RewardFunctions
    .. autosummary::
    
       RewardFunction
-      RewardSpec
    
