@@ -174,6 +174,7 @@
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.ConventionalAgent.html">eprllib.Agents.ConventionalAgent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.OnOffAirConditionerControl.html">eprllib.Agents.OnOffAirConditionerControl</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.WindowOpeningControl.html">eprllib.Agents.WindowOpeningControl</a></li>
@@ -183,6 +184,8 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusEnvironment.html">eprllib.Env.MultiAgent.EnergyPlusEnvironment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusRunner.html">eprllib.Env.MultiAgent.EnergyPlusRunner</a></li>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnvUtils.html">eprllib.Env.MultiAgent.EnvUtils</a></li>
 </ul>
 </details></li>
@@ -191,13 +194,18 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.EpisodeFunctions.html">eprllib.EpisodeFunctions.EpisodeFunctions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.GeneralBuilding.html">eprllib.EpisodeFunctions.GeneralBuilding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.PostProcess.html">eprllib.PostProcess</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Conventional.html">eprllib.PostProcess.Conventional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.EnergyTemperature.html">eprllib.RewardFunctions.EnergyTemperature</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.Nygard1990.html">eprllib.RewardFunctions.Nygard1990</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.henderson_2024.html">eprllib.RewardFunctions.henderson_2024</a></li>
 </ul>
@@ -432,15 +440,24 @@ document.write(`
 <span id="eprllib-actionfunctions-actionfunctions"></span><h1>eprllib.ActionFunctions.ActionFunctions<a class="headerlink" href="#module-eprllib.ActionFunctions.ActionFunctions" title="Link to this heading">#</a></h1>
 <section id="action-function-base-class">
 <h2>Action Function Base Class<a class="headerlink" href="#action-function-base-class" title="Link to this heading">#</a></h2>
-<p>This module contain the base class to create action transformer functions.
-Action transformer functions are used to transform the actions of the agents.
-They are used in the EnvConfig class to create the environment.</p>
+<p>This module contain the base class to create action transformer functions and define
+the action space dimention in the environment.</p>
+<p>Action transformer functions are used to adapt the action given for the neural network,
+normally an integral for discrete spaces and a float for continuos spaces as Box. The actions
+must be adecuated to values required for the actuators in EnergyPlus. Each agent has the
+capacity to control one actuator.</p>
+<p>ActionFunction must be define in the EnvConfig definition to create the environment and is
+called in the EnergyPlusEnvironment.EnergyPlusEnv_v0 class and used in the EnergyPlusRunner.EnergyPlusRunner class
+to transform the dict of agent actions to actuator values.</p>
 </section>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ActionFunction</span></code>([action_fn_config])</p></td>
 <td><p>Base class to create action transformer functions.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ActionSpec</span></code>([actuators, action_fn, ...])</p></td>
+<td><p>ActionSpec is the base class for an action specification to safe configuration of the object.</p></td>
 </tr>
 </tbody>
 </table>

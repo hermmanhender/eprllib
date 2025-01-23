@@ -10,5 +10,7 @@
    :toctree:
    :recursive:
 
+   EnergyTemperature
+   Nygard1990
    RewardFunctions
    henderson_2024
