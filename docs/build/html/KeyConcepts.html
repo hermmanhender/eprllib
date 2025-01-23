@@ -420,12 +420,18 @@ document.write(`
                   
   <section id="key-concepts">
 <h1>Key Concepts<a class="headerlink" href="#key-concepts" title="Link to this heading">#</a></h1>
-<p>The main parts of eprllib.</p>
-<p>Parts of eprllib.</p>
-<p>eprllib as an environment for DRL</p>
-<p>Reward functions</p>
-<p>Action functions</p>
-<p>Episode functions</p>
+<p>eprllib serves the environment to use later on RLlib. To conigurate the environment the class <cite>EnvConfig</cite> is
+used. Two methods in this class allow the correct configuration of the general parameters of a EnergyPlus model
+and the agents specifics variables: observations, actions, and rewards.</p>
+<p>Aditionaly, four classes are stablished to provide flexibility in the environment configuration:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>RewardFuntions</cite></p></li>
+<li><p><cite>ActionFuntions</cite></p></li>
+<li><p><cite>ObservationFuntions</cite></p></li>
+<li><p><cite>EpisodeFunctions</cite></p></li>
+</ul>
+</div></blockquote>
 </section>
 
 
