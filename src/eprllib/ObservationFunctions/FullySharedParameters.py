@@ -15,7 +15,6 @@ this end, a concatenation of variables is performed.
 # TODO: The number of actuators for the case of other agents is variable. Change the actuator state for agent action or see how
 # could be possible to expand the observation space to addap it to different observations size.
 
-import time
 from typing import Any, Dict, Tuple
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
@@ -99,6 +98,9 @@ class FullySharedParameters(ObservationFunction):
         
         # check if all the agents has the same len in the obs_space_len
         if len(set(obs_space_len.values())) > 1:
+            print("The observation dimension of each agent is:")
+            for agent in agent_list:
+                print(f"{agent}: {obs_space_len[agent]}")
             raise ValueError("The agents must have the same observation space length.")
         
         obs_space_len_shared = obs_space_len[agent_list[0]]
@@ -152,7 +154,8 @@ class FullySharedParameters(ObservationFunction):
         # Add agent indicator for the observation for each agent
         agents_obs = {agent: [] for agent in agent_list}
         
-        if len(agent_list) < self.number_of_agents_total:
+        if len(agent_list) > self.number_of_agents_total:
+            print(f"The agents found were: {agent_list} with a total of {len(agent_list)}, that are greather than {self.number_of_agents_total}.")
             raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
         
         actuator_names = {agent: {} for agent in agent_list}

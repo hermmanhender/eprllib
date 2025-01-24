@@ -88,13 +88,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # currently "alive" agents are.
         
         # asigning the configuration of the environment.
-        
-        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
         self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
+        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_fn.update({agent: self.env_config["agents_config"][agent]["action"]['action_fn'](self.env_config["agents_config"][agent]["action"]["action_fn_config"])})
-            self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
-        
+            
         self.observation_fn: ObservationFunction = self.env_config['observation_fn'](self.env_config["observation_fn_config"])
         self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
         
@@ -114,7 +112,6 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         super().__init__()
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
-        self.runner_class = EnergyPlusRunner
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
         self.obs_queue: Optional[Queue] = None
         self.act_queue: Optional[Queue] = None
@@ -159,6 +156,10 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             self.env_config = self.episode_fn.get_episode_config(self.env_config)
             self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
             
+            for agent in self.agents:
+                self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
+            
+            
             # TODO: Add here the availability to run EnergyPlus in Parallel.
             # Run EnergyPlus in Parallel
             # EnergyPlus is a multi-thread application but is not optimized for parallel runs on multi-core 
@@ -182,7 +183,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             
             
             # Start EnergyPlusRunner whith the following configuration.
-            self.energyplus_runner = self.runner_class(
+            self.energyplus_runner = EnergyPlusRunner(
                 episode = self.episode,
                 env_config = self.env_config,
                 obs_queue = self.obs_queue,

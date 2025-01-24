@@ -215,6 +215,11 @@ class EnergyPlusRunner:
             
             actuator_actions = self.action_fn[agent].agent_to_actuator_action(dict_action[agent], actuator_list)
             
+            # Check if there is an actuator_dict_actions value equal to None.
+            for actuator in actuator_list:
+                if actuator_actions[actuator] is None:
+                    raise ValueError(f"The actuator {actuator} is not in the list of actuators.\n{actuator_actions}")
+                
             # Perform the actions in EnergyPlus simulation.
             for actuator in actuator_list:
                 action = self.action_fn[agent].get_actuator_action(actuator_actions[actuator], actuator)
@@ -242,20 +247,20 @@ class EnergyPlusRunner:
         return variables, var_handles
 
     def set_internal_variables(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
-        """Set the internal variables to handle and get the values in the environment.
+        """
+        Set the internal variables to handle and get the values in the environment.
 
         Args:
-            env_config (Dict[str, Any]): Environment configuration dictionary.
+            env_config (Dict[str, Any]): The EnvConfig dictionary.
 
         Returns:
-            Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: Return the static variables names dictionary and their handles IDs.
+            Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
         """
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
-        # Check the existency of internal variables.
         if self.env_config["agents_config"][agent]['observation']["internal_variables"] is not None:
-            variables.update({f"{agent}: {variable}": variable for variable in self.env_config["agents_config"][agent]['observation']["internal_variables"]})   
+            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agents_config"][agent]['observation']["internal_variables"]})
         return variables, var_handles
 
     def set_meters(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
