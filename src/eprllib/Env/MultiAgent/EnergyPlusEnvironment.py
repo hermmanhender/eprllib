@@ -114,6 +114,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         super().__init__()
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
+        self.runner_class = EnergyPlusRunner
         self.energyplus_runner: Optional[EnergyPlusRunner] = None
         self.obs_queue: Optional[Queue] = None
         self.act_queue: Optional[Queue] = None
@@ -181,7 +182,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             
             
             # Start EnergyPlusRunner whith the following configuration.
-            self.energyplus_runner = EnergyPlusRunner(
+            self.energyplus_runner = self.runner_class(
                 episode = self.episode,
                 env_config = self.env_config,
                 obs_queue = self.obs_queue,
