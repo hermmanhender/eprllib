@@ -142,12 +142,14 @@ class EnergyPlusRunner:
         EnergyPlus callback that collects output variables, meters and actuator actions
         values and enqueue them to the EnergyPlus Environment thread.
         """
-        dict_agents_obs = {agent: {} for agent in self.agents}
-        self.infos = {agent: {} for agent in self.agents}
         # To not perform observations when the callbacks and the 
         # warming period are not complete.
         if not self._init_callback(state_argument) or self.simulation_complete:
             return
+        
+        dict_agents_obs = {agent: {} for agent in self.agents}
+        self.infos = {agent: {} for agent in self.agents}
+        
         # Agents observe: site state, thermal zone state (only the one that it belong), specific object variables 
         # and meters, and others parameters assigned as True in the env_config.observation object.
         # Get the state of the actuators.
