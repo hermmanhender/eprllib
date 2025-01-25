@@ -1,6 +1,6 @@
 """
 Reward Funtion
-==============
+===============
 
 This module contains the base reward function.
 
@@ -26,15 +26,16 @@ class RewardFunction:
         infos: Dict[str,Any],
         terminated: bool,
         truncated: bool,
-        ) -> Dict[str,float]:
+        ) -> float:
         """
         This method must be implemented in the subclass.
 
         Args:
-            infos (Dict[str,Dict[str,Any]]): The infos dictionary containing the necessary information for calculating the reward.
+            infos (Dict[str,Any]): The infos dictionary containing the necessary information for calculating the reward.
+            terminated (bool): terminated condition of the episode.
+            truncated (bool): truncated condition of the episode.
 
         Returns:
-            Dict[str,float]: The calculated reward as a dictionary with the keys 'agent'.
+            float: The calculated reward.
         """
         return NotImplementedError("This method must be implemented in the subclass.")
-
