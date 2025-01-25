@@ -1,7 +1,12 @@
 EnergyPlus as an Environment for DRL
 ====================================
 
-How work the standard environment in DRL.
+Work in progres...
+
+How work the standard environment in DRL
+-----------------------------------------
+
+Work in progres...
 
 Implementation in RLlib.
 
