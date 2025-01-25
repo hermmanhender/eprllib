@@ -5,9 +5,37 @@ Utilities for the environment configuration
 Work in progress...
 """
 
-from typing import Dict
+from typing import Dict, Optional
 import inspect
 from eprllib.Env.EnvConfig import EnvConfig
+from gymnasium.spaces import Box, Discrete
+import sys
+
+def EP_API_add_path(version:Optional[str]="24-2-0", path:Optional[str]=None):
+    """
+    This method add the EnergyPlus Python API to the system path. This allow to use the 
+    EnergyPlus program in Python. The minimal version of EnergyPlus is 9.3.0 and the default
+    version (and the stable one) for eprllib is 23-2-0.
+
+    Args:
+        version (str, optional): Numeric version of EnergyPlus. Defaults to "23-2-0".
+        path (Optional[str], optional): Complete path to the EnergyPlus installation directory 
+        if this is different that the default installation. Defaults to None.
+    """
+    new_path = None
+    if path is not None:
+        new_path = path
+    else:
+        os_platform = sys.platform
+        if os_platform == "linux":
+            new_path = f"/usr/local/EnergyPlus-{version}"
+        else:
+            new_path = f"C:/EnergyPlusV{version}"
+
+    # Check if the new path is already in sys.path
+    if new_path not in sys.path:
+        sys.path.insert(0, new_path)
+        print(f"EnergyPlus API path added: {new_path}")
 
 def env_config_validation(MyEnvConfig: EnvConfig) -> bool:
     """
@@ -79,3 +107,21 @@ def from_json(
     env_config_dict = json.loads(env_config_json)
     env_config = EnvConfig(**env_config_dict)
     return env_config
+
+def continuous_action_space():
+    """
+    This method construct the action space of the environment.
+    
+    Returns:
+        gym.Box: Continuous action space with limits between [0,1].
+    """
+    return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+
+def discrete_action_space(n:int=2):
+    """
+    This method construct the action space of the environment.
+    
+    Returns:
+        gym.Discrete: Discrete action space with limits between [0,10] and a step of 1.
+    """
+    return Discrete(n)
