@@ -14,7 +14,7 @@ ActionFunction must be define in the EnvConfig definition to create the environm
 called in the EnergyPlusEnvironment.EnergyPlusEnv_v0 class and used in the EnergyPlusRunner.EnergyPlusRunner class
 to transform the dict of agent actions to actuator values.
 """
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 import gymnasium as gym
 
 class ActionFunction:
