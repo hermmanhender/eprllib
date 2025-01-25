@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Welcome to eprllib’s documentation! &#8212; eprllib: use EnergyPlus as an environment for DRL control</title>
+    <title>eprllib: EnergyPlus as RLlib multi-agent environment &#8212; eprllib: use EnergyPlus as an environment for DRL control</title>
   
   
   
@@ -44,7 +44,7 @@
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/index.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Overview" href="Overview.html" />
+    <link rel="next" title="Overview" href="1-Overview.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -158,25 +158,18 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with eprllib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="KeyConcepts.html">Key Concepts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Environment.html">EnergyPlus as an Environment for DRL</a></li>
-<li class="toctree-l1"><a class="reference internal" href="RewardFunction.html">Reward functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ActionFunction.html">Action space and action functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="EpisodeFunction.html">Dinamic episode properties</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Agents.html">Conventional Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1-Overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2-GettingStarted.html">Getting Started with eprllib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3-KeyConcepts.html">Key Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4-Environment.html">EnergyPlus as an Environment for DRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5-Agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6-Actions.html">Actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="7-Observations.html">Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="8-Rewards.html">Reward functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="9-Episodes.html">Dinamic episode properties</a></li>
 <li class="toctree-l1"><a class="reference internal" href="UserGuides/IntroductionGuides.html">User Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples/IntroductionExamples.html">Examples</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="API%20Reference/eprllib.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.ActionFunctions.html">eprllib.ActionFunctions.ActionFunctions</a></li>
-</ul>
-</details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
-</ul>
-</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="API%20Reference/eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -186,19 +179,44 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.ActionFunctions.html">eprllib.ActionFunctions.ActionFunctions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.html">eprllib.ObservationFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.CentralizedAgent.html">eprllib.ObservationFunctions.CentralizedAgent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.FullySharedParameters.html">eprllib.ObservationFunctions.FullySharedParameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.ObservationFunctions.html">eprllib.ObservationFunctions.ObservationFunctions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.EpisodeFunctions.html">eprllib.EpisodeFunctions.EpisodeFunctions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.GeneralBuilding.html">eprllib.EpisodeFunctions.GeneralBuilding</a></li>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
 </ul>
 </details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Utils.html">eprllib.Utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.Utils.html">eprllib.Utils.Utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.env_config_utils.html">eprllib.Utils.env_config_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.episode_fn_utils.html">eprllib.Utils.episode_fn_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.from_julian_day.html">eprllib.Utils.from_julian_day</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.observation_utils.html">eprllib.Utils.observation_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.random_weather.html">eprllib.Utils.random_weather</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.run_period_change.html">eprllib.Utils.run_period_change</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.trial_str_creator.html">eprllib.Utils.trial_str_creator</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.html">eprllib.PostProcess</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
-</ul>
-</details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
 </ul>
 </details></li>
 </ul>
@@ -405,7 +423,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Welcome to eprllib’s documentation!</h1>
+    <h1>eprllib: EnergyPlus as RLlib multi-agent environment</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -427,8 +445,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="welcome-to-eprllib-s-documentation">
-<h1>Welcome to eprllib’s documentation!<a class="headerlink" href="#welcome-to-eprllib-s-documentation" title="Link to this heading">#</a></h1>
+  <section id="eprllib-energyplus-as-rllib-multi-agent-environment">
+<h1>eprllib: EnergyPlus as RLlib multi-agent environment<a class="headerlink" href="#eprllib-energyplus-as-rllib-multi-agent-environment" title="Link to this heading">#</a></h1>
 <p>The development of deep reinforcement learning (DRL) for optimal building control requires
 accurate models for correct learning of control policies for various devices.</p>
 <p>eprllib has been developed to facilitate the implementation of DRL in models generated with
@@ -443,26 +461,38 @@ EnergyPlus. For this purpose, RLlib is used as a framework for DRL.</p>
 <div class="toctree-wrapper compound">
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Overview.html">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Overview.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Overview.html#usage">Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Overview.html#example-configuration">Example configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1-Overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1-Overview.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="1-Overview.html#usage">Usage</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="GettingStarted.html">Getting Started with eprllib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="KeyConcepts.html">Key Concepts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Environment.html">EnergyPlus as an Environment for DRL</a></li>
-<li class="toctree-l1"><a class="reference internal" href="RewardFunction.html">Reward functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ActionFunction.html">Action space and action functions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="EpisodeFunction.html">Dinamic episode properties</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Agents.html">Conventional Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2-GettingStarted.html">Getting Started with eprllib</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="2-GettingStarted.html#how-to-install-eprllib">How to install eprllib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2-GettingStarted.html#running-a-simple-experiment-with-eprllib-and-rllib">Running a simple experiment with eprllib and RLlib</a></li>
+<li class="toctree-l2"><a class="reference internal" href="2-GettingStarted.html#running-with-tune">Running with Tune</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="3-KeyConcepts.html">Key Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4-Environment.html">EnergyPlus as an Environment for DRL</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="4-Environment.html#how-work-the-standard-environment-in-drl">How work the standard environment in DRL</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="5-Agents.html">Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6-Actions.html">Actions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="6-Actions.html#action-argument-in-agent-definitions">action argument in agent definitions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="7-Observations.html">Observations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="8-Rewards.html">Reward functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="9-Episodes.html">Dinamic episode properties</a></li>
 <li class="toctree-l1"><a class="reference internal" href="UserGuides/IntroductionGuides.html">User Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Examples/IntroductionExamples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="API%20Reference/eprllib.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.html#eprllib">eprllib</a></li>
-<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html#action-functions">Action Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.ActionFunctions.html">eprllib.ActionFunctions.ActionFunctions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.Env.html">eprllib.Env</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.html#environments">Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.Agents.html">eprllib.Agents</a><ul>
@@ -470,10 +500,21 @@ EnergyPlus. For this purpose, RLlib is used as a framework for DRL.</p>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.Env.html">eprllib.Env</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.html#environments">Environments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html#action-functions">Action Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.ActionFunctions.html">eprllib.ActionFunctions.ActionFunctions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.html">eprllib.ObservationFunctions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.html#observation-functions">Observation Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.CentralizedAgent.html">eprllib.ObservationFunctions.CentralizedAgent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.FullySharedParameters.html">eprllib.ObservationFunctions.FullySharedParameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.ObservationFunctions.html">eprllib.ObservationFunctions.ObservationFunctions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html#reward-functions">Reward Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><ul>
@@ -483,15 +524,22 @@ EnergyPlus. For this purpose, RLlib is used as a framework for DRL.</p>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.Utils.html">eprllib.Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.html#utilities">Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.Utils.html">eprllib.Utils.Utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.env_config_utils.html">eprllib.Utils.env_config_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.episode_fn_utils.html">eprllib.Utils.episode_fn_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.from_julian_day.html">eprllib.Utils.from_julian_day</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.observation_utils.html">eprllib.Utils.observation_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.random_weather.html">eprllib.Utils.random_weather</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.run_period_change.html">eprllib.Utils.run_period_change</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Utils.trial_str_creator.html">eprllib.Utils.trial_str_creator</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.html">eprllib.PostProcess</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.html#post-process-functions">Post Process Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html#reward-functions">Reward Functions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
 </ul>
 </li>
 </ul>
@@ -513,7 +561,7 @@ EnergyPlus. For this purpose, RLlib is used as a framework for DRL.</p>
                   
 <div class="prev-next-area">
     <a class="right-next"
-       href="Overview.html"
+       href="1-Overview.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>

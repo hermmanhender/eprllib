@@ -1,4 +1,4 @@
-﻿eprllib.Env.MultiAgent
+eprllib.Env.MultiAgent
 ======================
 
 .. automodule:: eprllib.Env.MultiAgent

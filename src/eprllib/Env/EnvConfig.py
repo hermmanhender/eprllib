@@ -8,6 +8,7 @@ This module contain the class and methods used to configure the environment.
 from typing import Optional, Dict, Any
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from eprllib.ObservationFunctions.independent import independent
 from eprllib.Agents.AgentSpec import AgentSpec
 
 class EnvConfig:
@@ -23,7 +24,7 @@ class EnvConfig:
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
         self.evaluation: bool = False
-        self.observation_fn: ObservationFunction = NotImplemented
+        self.observation_fn: ObservationFunction = independent
         self.observation_fn_config: Dict[str, Any] = {}
 
         # agents
@@ -67,18 +68,34 @@ class EnvConfig:
             policy. The value must be equal or greater than the number of agents configured in the agents
             section.
         """
-        self.epjson_path = epjson_path
-        self.epw_path = epw_path
-        self.output_path = output_path
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
         self.evaluation = evaluation
         
-        if observation_fn == NotImplemented:
-            raise NotImplementedError("observation_function must be defined.")
+        if epjson_path == NotImplemented:
+            raise NotImplementedError("epjson_path must be defined.")
+        if epjson_path.endswith(".epJSON") or epjson_path.endswith(".idf"):
+            pass
+        else:
+            raise ValueError("The epjson_path must be a path to a epJSON or idf file.")
+        if epw_path == NotImplemented:
+            raise NotImplementedError("epw_path must be defined.")
+        if epw_path.endswith(".epw"):
+            pass
+        else:
+            raise ValueError("The epw_path must be a path to a epw file.")
+        if output_path == NotImplemented:
+            raise NotImplementedError("output_path must be defined.")
         
-        self.observation_fn = observation_fn
-        self.observation_fn_config = observation_fn_config
+        self.epjson_path = epjson_path
+        self.epw_path = epw_path
+        self.output_path = output_path
+        
+        if observation_fn == NotImplemented:
+            print("The observation function is not defined. The default observation function will be used.")
+        else:
+            self.observation_fn = observation_fn
+            self.observation_fn_config = observation_fn_config
         
     def agents(
         self,
@@ -100,7 +117,7 @@ class EnvConfig:
 
     def episodes(
         self,
-        episode_fn: EpisodeFunction = EpisodeFunction,
+        episode_fn: EpisodeFunction = NotImplemented,
         episode_fn_config: Dict[str,Any] = {},
         cut_episode_len: int = 0,
         ):
@@ -117,6 +134,11 @@ class EnvConfig:
             an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will 
             truncate the, for example, annual simulation into 365 episodes. If ypu set to 0, no cut will be apply.
         """
-        self.episode_fn = episode_fn
-        self.episode_fn_config = episode_fn_config
         self.cut_episode_len = cut_episode_len
+        
+        if episode_fn == NotImplemented:
+            print("The episode function is not defined. The default episode function will be used.")
+        else:
+            self.episode_fn = episode_fn
+            self.episode_fn_config = episode_fn_config
+        

@@ -1,4 +1,4 @@
-﻿eprllib.Env.EnvConfig
+eprllib.Env.EnvConfig
 =====================
 
 .. automodule:: eprllib.Env.EnvConfig

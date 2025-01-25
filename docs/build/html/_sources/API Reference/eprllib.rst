@@ -1,5 +1,5 @@
 ﻿API Reference
-=============
+==============
 
 Here is the reference documentation to the eprllib API.
 
@@ -12,9 +12,11 @@ Here is the reference documentation to the eprllib API.
    :toctree:
    :recursive:
 
-   ActionFunctions
-   Agents
    Env
-   EpisodeFunctions
-   PostProcess
+   Agents
+   ActionFunctions
+   ObservationFunctions
    RewardFunctions
+   EpisodeFunctions
+   Utils
+   PostProcess
