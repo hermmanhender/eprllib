@@ -13,7 +13,18 @@ from typing import Any, Dict, List, Optional, Tuple
 from ctypes import c_void_p
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
-from eprllib.Env.MultiAgent.EnvUtils import EP_API_add_path
+from eprllib.Utils.env_config_utils import EP_API_add_path
+from eprllib.Utils.observation_utils import (
+    get_actuator_name,
+    get_internal_variable_name,
+    get_meter_name,
+    get_parameter_name,
+    get_other_obs_name,
+    get_variable_name,
+    get_parameter_prediction_name
+)
+
+    
 # EnergyPlus Python API path adding
 EP_API_add_path(version="24-2-0")
 from pyenergyplus.api import EnergyPlusAPI
@@ -243,7 +254,11 @@ class EnergyPlusRunner:
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
         if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
-            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agents_config"][agent]['observation']["variables"]})
+            variables.update({
+                get_variable_name(agent,variable[0],variable[1]): variable
+                for variable 
+                in self.env_config["agents_config"][agent]['observation']["variables"]
+            })
         return variables, var_handles
 
     def set_internal_variables(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
@@ -260,7 +275,11 @@ class EnergyPlusRunner:
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
         if self.env_config["agents_config"][agent]['observation']["internal_variables"] is not None:
-            variables.update({f"{agent}: {variable[1]}: {variable[0]}": variable for variable in self.env_config["agents_config"][agent]['observation']["internal_variables"]})
+            variables.update({
+                get_internal_variable_name(agent,variable[0],variable[1]): variable
+                for variable 
+                in self.env_config["agents_config"][agent]['observation']["internal_variables"]
+            })
         return variables, var_handles
 
     def set_meters(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
@@ -275,7 +294,11 @@ class EnergyPlusRunner:
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
         if self.env_config["agents_config"][agent]['observation']["meters"] is not None:
-            variables.update({f"{agent}: {variable}": variable for variable in self.env_config["agents_config"][agent]['observation']["meters"]})
+            variables.update({
+                get_meter_name(agent,variable): variable 
+                for variable 
+                in self.env_config["agents_config"][agent]['observation']["meters"]
+            })
         return variables, var_handles
 
     def set_actuators(self, agent) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str, int]]:
@@ -291,7 +314,9 @@ class EnergyPlusRunner:
         actuator_handles: Dict[str, int] = {}
         
         for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"]:
-            actuators.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": actuator_config})
+            actuators.update({
+                get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): actuator_config
+            })
         
         return actuators, actuator_handles
      
@@ -457,15 +482,19 @@ class EnergyPlusRunner:
             'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
         }
         variables = {}
-        if self.env_config["agents_config"][agent]['observation']["simulation_parameters"] is not None:
-            # Return the dictionary with variables names and output values of the methods used.
-            include = []
-            parameters_keys = [key for key in parameter_methods.keys()]
-            for paramater in parameters_keys:
-                if self.env_config["agents_config"][agent]['observation']["simulation_parameters"][paramater]:
-                    include.append(paramater)
-            variables = {f"{agent}: {paramater}": parameter_methods[paramater] for paramater in include}
-            self.infos[agent].update(variables)
+        
+        # Return the dictionary with variables names and output values of the methods used.
+        include = []
+        parameters_keys = [key for key in parameter_methods.keys()]
+        for paramater in parameters_keys:
+            if self.env_config["agents_config"][agent]['observation']["simulation_parameters"][paramater]:
+                include.append(paramater)
+        variables = {
+            get_parameter_name(agent,paramater): parameter_methods[paramater] 
+            for paramater 
+            in include
+        }
+        self.infos[agent].update(variables)
         
         return variables
 
@@ -490,15 +519,19 @@ class EnergyPlusRunner:
             'zone_time_step_number': api.exchange.zone_time_step_number(state_argument), # The current zone time step index, from 1 to the number of zone time steps per hour
         }
         variables = {}
-        if self.env_config["agents_config"][agent]['observation']["zone_simulation_parameters"] is not None:
-            # Return the dictionary with variables names and output values of the methods used.
-            include = []
-            parameters_keys = [key for key in parameter_methods.keys()]
-            for paramater in parameters_keys:
-                if self.env_config["agents_config"][agent]['observation']['zone_simulation_parameters'][paramater]:
-                    include.append(paramater)
-            variables = {f"{agent}: {paramater}": parameter_methods[paramater] for paramater in include}
-            self.infos[agent].update(variables)
+        
+        # Return the dictionary with variables names and output values of the methods used.
+        include = []
+        parameters_keys = [key for key in parameter_methods.keys()]
+        for paramater in parameters_keys:
+            if self.env_config["agents_config"][agent]['observation']['zone_simulation_parameters'][paramater]:
+                include.append(paramater)
+        variables = {
+            get_parameter_name(agent,paramater): parameter_methods[paramater] 
+            for paramater 
+            in include
+        }
+        self.infos[agent].update(variables)
         
         return variables
 
@@ -511,54 +544,58 @@ class EnergyPlusRunner:
             return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
         hour = api.exchange.hour(state_argument)
-        zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
         
         prediction_variables_methods: Dict[str,Any] = {
-            'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time,
+            'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time,
+            'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time,
+            'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time,
+            'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time,
+            'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time,
+            'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time,
+            'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time,
+            'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time,
+            'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time,
+            'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time,
+            'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time,
+            'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time,
+            'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time,
+            'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time,
+            'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time,
+            'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time,
+            'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time,
+            'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time,
+            'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time,
+            'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time,
+            'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time,
+            'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time,
+            'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time,
+            'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time,
+            'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time,
+            'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time,
+            'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time,
         }
+        
         variables = {}
-        if self.env_config["agents_config"][agent]['observation']["prediction_variables"] is not None:
-            prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
-            for h in range(self.env_config["agents_config"][agent]['observation']['prediction_hours']):
-                # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
-                prediction_hour = hour+1 + h
-                if prediction_hour < 24:
-                    for key in prediction_variables.keys():
-                        if prediction_variables[key]:
-                            variables.update({f'{agent}: today_weather_{key}_at_time_{prediction_hour}': prediction_variables_methods[f'today_weather_{key}_at_time']})
-                else:
-                    prediction_hour_t = prediction_hour - 24
-                    for key in prediction_variables.keys():
-                        if prediction_variables[key]:
-                            variables.update({f'{agent}: tomorrow_weather_{key}_at_time_{prediction_hour_t}': prediction_variables_methods[f'tomorrow_weather_{key}_at_time']})
-            self.infos[agent].update(variables)
+        prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
+        for h in range(self.env_config["agents_config"][agent]['observation']['prediction_hours']):
+            # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
+            prediction_hour = hour+1 + h
+            if prediction_hour < 24:
+                for key in prediction_variables.keys():
+                    if prediction_variables[key]:
+                        variables.update({
+                            get_parameter_prediction_name(agent,key,prediction_hour): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,0)
+                        })
+            else:
+                prediction_hour_t = prediction_hour - 24
+                for key in prediction_variables.keys():
+                    if prediction_variables[key]:
+                        variables.update({
+                            get_parameter_prediction_name(agent,key,prediction_hour_t): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,0)
+                        })
+        self.infos[agent].update(variables)
+        
         return variables
         
     def get_other_obs(
@@ -577,7 +614,13 @@ class EnergyPlusRunner:
         if agent is None:
             ValueError("The agent must be defined.")
         
-        variables = env_config["agents_config"][agent]["observation"]["other_obs"]
+        variables = {}
+        variables.update({
+            get_other_obs_name(agent,key): value 
+            for key, value
+            in env_config["agents_config"][agent]["observation"]["other_obs"].items()
+        })
+        env_config["agents_config"][agent]["observation"]["other_obs"]
         self.infos[agent].update(variables)
         
         return variables
