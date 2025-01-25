@@ -457,8 +457,44 @@ can control more than one actuator.</p>
 <section id="action-argument-in-agent-definitions">
 <h2>action argument in agent definitions<a class="headerlink" href="#action-argument-in-agent-definitions" title="Link to this heading">#</a></h2>
 <p>The action argument inside the AgentSpec is defined with help of the ActionSpec class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eprllib.Agent.AgentSpec</span> <span class="kn">import</span> <span class="n">ActionSpec</span>
+<span class="kn">from</span> <span class="nn">eprllib.ActionFuntions.ActionFuntions</span> <span class="kn">import</span> <span class="n">ActionFunction</span>
+<span class="kn">from</span> <span class="nn">eprllib.ActionFuntions.setpoin_control</span> <span class="kn">import</span> <span class="n">discrete_dual_setpoint_and_availability</span>
+
+<span class="n">action</span> <span class="o">=</span> <span class="n">ActionSpec</span><span class="p">(</span>
+    <span class="n">actuators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span> <span class="c1"># (component_type, control_type, actuator_key)</span>
+        <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;heating_setpoint&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;cooling_setpoint&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_OnOff&quot;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">action_fn</span><span class="p">:</span> <span class="n">ActionFunction</span> <span class="o">=</span> <span class="n">discrete_dual_setpoint_and_availability</span><span class="p">,</span>
+    <span class="n">action_fn_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;agent_name&#39;</span><span class="p">:</span> <span class="s2">&quot;Setpoint_agent&quot;</span><span class="p">,</span>
+        <span class="s1">&#39;temperature_range&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span>
+        <span class="s1">&#39;actuator_for_cooling&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;cooling_setpoint&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;actuator_for_heating&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;heating_setpoint&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;availability_actuator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_OnOff&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p>Action functions has a main rolle in eprllib. They give flexibility to the environment configuration
 throug three methods called in the simulation process:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="k">class</span> <span class="nc">ActionFunction</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_fn_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_fn_config</span> <span class="o">=</span> <span class="n">action_fn_config</span>
+
+    <span class="k">def</span> <span class="nf">get_action_space_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gym</span><span class="o">.</span><span class="n">Space</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method should be implemented in the child class.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">agent_to_actuator_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">actuators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method should be implemented in the child class.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_actuator_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span><span class="nb">float</span><span class="o">|</span><span class="nb">int</span><span class="p">,</span> <span class="n">actuator</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">action</span>
+</pre></div>
+</div>
 <p>Work in progres…</p>
 </section>
 </section>
