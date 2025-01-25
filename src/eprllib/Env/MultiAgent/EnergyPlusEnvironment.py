@@ -88,13 +88,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # currently "alive" agents are.
         
         # asigning the configuration of the environment.
-        
-        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
         self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
+        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_fn.update({agent: self.env_config["agents_config"][agent]["action"]['action_fn'](self.env_config["agents_config"][agent]["action"]["action_fn_config"])})
-            self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
-        
+            
         self.observation_fn: ObservationFunction = self.env_config['observation_fn'](self.env_config["observation_fn_config"])
         self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
         
@@ -157,6 +155,10 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
             self.env_config = self.episode_fn.get_episode_config(self.env_config)
             self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
+            
+            for agent in self.agents:
+                self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
+            
             
             # TODO: Add here the availability to run EnergyPlus in Parallel.
             # Run EnergyPlus in Parallel
