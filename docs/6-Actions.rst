@@ -7,32 +7,36 @@ can control more than one actuator.
 
 action argument in agent definitions
 -------------------------------------
-An agent is defined as:
-
-.. code-block:: python
-    from eprllib.Agent.AgentSpec import AgentSpec
-
-    agent = AgentSpec( # define the action specification here.
-        observation = ...,
-        action = ...,
-        reward = ...
-    )
 
 The action argument inside the AgentSpec is defined with help of the ActionSpec class:
 
 .. code-block:: python
     from eprllib.Agent.AgentSpec import ActionSpec
+    from eprllib.ActionFuntions.ActionFuntions import ActionFunction
+    from eprllib.ActionFuntions.setpoin_control import discrete_dual_setpoint_and_availability
 
     action = ActionSpec(
-        actuators: List[Tuple[str,str,str]] = ...,
-        action_fn: ActionFunction = ...,
-        action_fn_config: Dict[str, Any] = ...
+        actuators: List[Tuple[str,str,str]] = [ # (component_type, control_type, actuator_key)
+            ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
+            ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
+            ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
+        ],
+        action_fn: ActionFunction = discrete_dual_setpoint_and_availability,
+        action_fn_config: Dict[str, Any] = {
+            'agent_name': "Setpoint_agent",
+            'temperature_range': (18, 28),
+            'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
+            'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
+            'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
     )
 
 Action functions has a main rolle in eprllib. They give flexibility to the environment configuration 
 throug three methods called in the simulation process:
 
 .. code-block:: python
+    from typing import Dict, Any, List
+    import gymnasium as gym
+
     class ActionFunction:
         def __init__(self, action_fn_config: Dict[str,Any] = {}):
             self.action_fn_config = action_fn_config
