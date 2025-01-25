@@ -10,9 +10,13 @@ EnergyPlus. For this purpose, RLlib is used as a framework for DRL.
 Key Features
 -------------
 
-* Integration of EnergyPlus and RLlib: This package facilitates setting up a Reinforcement Learning environment using EnergyPlus as the base, allowing for experimentation with energy control policies in buildings.
-* Simplified Configuration: To use this environment, you simply need to provide a configuration in the form of a dictionary that includes state variables, metrics, actuators (which will also serve as agents in the environment), and other optional features.
-* Flexibility and Compatibility: EnergyPlusRL easily integrates with RLlib, a popular framework for Reinforcement Learning, enabling smooth setup and training of control policies for actionable elements in buildings.
+* Integration of EnergyPlus and RLlib: This package facilitates setting up a Reinforcement Learning environment 
+  using EnergyPlus as the base, allowing for experimentation with energy control policies in buildings.
+* Simplified Configuration: To use this environment, you simply need to provide a configuration in the form of a 
+  dictionary that includes state variables, metrics, actuators (which will also serve as agents in the environment), 
+  and other optional features.
+* Flexibility and Compatibility: EnergyPlusRL easily integrates with RLlib, a popular framework for Reinforcement 
+  Learning, enabling smooth setup and training of control policies for actionable elements in buildings.
 
 .. toctree::
    :maxdepth: 3

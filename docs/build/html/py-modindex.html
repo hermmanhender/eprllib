@@ -35,7 +35,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=6a3dfefe"></script>
+    <script src="_static/documentation_options.js?v=6e7820ec"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -186,16 +186,21 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.ActionFunctions.html">eprllib.ActionFunctions.ActionFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.setpoint_control.html">eprllib.ActionFunctions.setpoint_control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.window_opening_control.html">eprllib.ActionFunctions.window_opening_control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ActionFunctions.window_shading_control.html">eprllib.ActionFunctions.window_shading_control</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.html">eprllib.ObservationFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.CentralizedAgent.html">eprllib.ObservationFunctions.CentralizedAgent</a></li>
-<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.FullySharedParameters.html">eprllib.ObservationFunctions.FullySharedParameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.ObservationFunctions.html">eprllib.ObservationFunctions.ObservationFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.centralized.html">eprllib.ObservationFunctions.centralized</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.fully_shared_parameters.html">eprllib.ObservationFunctions.fully_shared_parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.ObservationFunctions.independent.html">eprllib.ObservationFunctions.independent</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.RewardFunctions.energy_and_cen15251.html">eprllib.RewardFunctions.energy_and_cen15251</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -401,6 +406,21 @@ document.write(`
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
+       <a href="API%20Reference/eprllib.ActionFunctions.setpoint_control.html#module-eprllib.ActionFunctions.setpoint_control"><code class="xref">eprllib.ActionFunctions.setpoint_control</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="API%20Reference/eprllib.ActionFunctions.window_opening_control.html#module-eprllib.ActionFunctions.window_opening_control"><code class="xref">eprllib.ActionFunctions.window_opening_control</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="API%20Reference/eprllib.ActionFunctions.window_shading_control.html#module-eprllib.ActionFunctions.window_shading_control"><code class="xref">eprllib.ActionFunctions.window_shading_control</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
        <a href="API%20Reference/eprllib.Agents.html#module-eprllib.Agents"><code class="xref">eprllib.Agents</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
@@ -461,12 +481,17 @@ document.write(`
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="API%20Reference/eprllib.ObservationFunctions.CentralizedAgent.html#module-eprllib.ObservationFunctions.CentralizedAgent"><code class="xref">eprllib.ObservationFunctions.CentralizedAgent</code></a></td><td>
+       <a href="API%20Reference/eprllib.ObservationFunctions.centralized.html#module-eprllib.ObservationFunctions.centralized"><code class="xref">eprllib.ObservationFunctions.centralized</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&#160;&#160;&#160;
-       <a href="API%20Reference/eprllib.ObservationFunctions.FullySharedParameters.html#module-eprllib.ObservationFunctions.FullySharedParameters"><code class="xref">eprllib.ObservationFunctions.FullySharedParameters</code></a></td><td>
+       <a href="API%20Reference/eprllib.ObservationFunctions.fully_shared_parameters.html#module-eprllib.ObservationFunctions.fully_shared_parameters"><code class="xref">eprllib.ObservationFunctions.fully_shared_parameters</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="API%20Reference/eprllib.ObservationFunctions.independent.html#module-eprllib.ObservationFunctions.independent"><code class="xref">eprllib.ObservationFunctions.independent</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
@@ -492,6 +517,11 @@ document.write(`
        <td></td>
        <td>&#160;&#160;&#160;
        <a href="API%20Reference/eprllib.RewardFunctions.html#module-eprllib.RewardFunctions"><code class="xref">eprllib.RewardFunctions</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="cg-1">
+       <td></td>
+       <td>&#160;&#160;&#160;
+       <a href="API%20Reference/eprllib.RewardFunctions.energy_and_cen15251.html#module-eprllib.RewardFunctions.energy_and_cen15251"><code class="xref">eprllib.RewardFunctions.energy_and_cen15251</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>

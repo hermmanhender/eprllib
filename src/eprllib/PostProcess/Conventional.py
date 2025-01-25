@@ -6,7 +6,6 @@ This script execute the conventional controls in the evaluation scenario.
 """
 import os
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
-from eprllib.Agents.ConventionalAgent import ConventionalAgent
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 import pandas as pd
 import threading
@@ -18,7 +17,7 @@ class rb_evaluation:
     def __init__(
         self,
         env_config: Dict[str, Any],
-        policy_config: Dict[str, ConventionalAgent],
+        policy_config: Dict[str, Any],
         name: str,
     ) -> None:
         

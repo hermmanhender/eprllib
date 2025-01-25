@@ -11,3 +11,4 @@
    :recursive:
 
    RewardFunctions
+   energy_and_cen15251

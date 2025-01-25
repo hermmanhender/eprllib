@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=6a3dfefe"></script>
+    <script src="../_static/documentation_options.js?v=6e7820ec"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -44,8 +44,8 @@
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/API Reference/eprllib.ObservationFunctions.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="eprllib.ObservationFunctions.CentralizedAgent" href="eprllib.ObservationFunctions.CentralizedAgent.html" />
-    <link rel="prev" title="eprllib.ActionFunctions.ActionFunctions" href="eprllib.ActionFunctions.ActionFunctions.html" />
+    <link rel="next" title="eprllib.ObservationFunctions.ObservationFunctions" href="eprllib.ObservationFunctions.ObservationFunctions.html" />
+    <link rel="prev" title="eprllib.ActionFunctions.window_shading_control" href="eprllib.ActionFunctions.window_shading_control.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -184,16 +184,21 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.ActionFunctions.ActionFunctions.html">eprllib.ActionFunctions.ActionFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.ActionFunctions.setpoint_control.html">eprllib.ActionFunctions.setpoint_control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.ActionFunctions.window_opening_control.html">eprllib.ActionFunctions.window_opening_control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.ActionFunctions.window_shading_control.html">eprllib.ActionFunctions.window_shading_control</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">eprllib.ObservationFunctions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.ObservationFunctions.CentralizedAgent.html">eprllib.ObservationFunctions.CentralizedAgent</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.ObservationFunctions.FullySharedParameters.html">eprllib.ObservationFunctions.FullySharedParameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.ObservationFunctions.ObservationFunctions.html">eprllib.ObservationFunctions.ObservationFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.ObservationFunctions.centralized.html">eprllib.ObservationFunctions.centralized</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.ObservationFunctions.fully_shared_parameters.html">eprllib.ObservationFunctions.fully_shared_parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.ObservationFunctions.independent.html">eprllib.ObservationFunctions.independent</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_and_cen15251.html">eprllib.RewardFunctions.energy_and_cen15251</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -453,14 +458,17 @@ document.write(`
 <p class="rubric">Modules</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.ObservationFunctions.CentralizedAgent.html#module-eprllib.ObservationFunctions.CentralizedAgent" title="eprllib.ObservationFunctions.CentralizedAgent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentralizedAgent</span></code></a></p></td>
-<td><p>Centralized Agent Policy</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="eprllib.ObservationFunctions.FullySharedParameters.html#module-eprllib.ObservationFunctions.FullySharedParameters" title="eprllib.ObservationFunctions.FullySharedParameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FullySharedParameters</span></code></a></p></td>
-<td><p>Fully Shared Parameters Policy</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="eprllib.ObservationFunctions.ObservationFunctions.html#module-eprllib.ObservationFunctions.ObservationFunctions" title="eprllib.ObservationFunctions.ObservationFunctions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ObservationFunctions</span></code></a></p></td>
 <td><p>Observaton Functions</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="eprllib.ObservationFunctions.centralized.html#module-eprllib.ObservationFunctions.centralized" title="eprllib.ObservationFunctions.centralized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">centralized</span></code></a></p></td>
+<td><p>Centralized Agent Policy</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.ObservationFunctions.fully_shared_parameters.html#module-eprllib.ObservationFunctions.fully_shared_parameters" title="eprllib.ObservationFunctions.fully_shared_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fully_shared_parameters</span></code></a></p></td>
+<td><p>Fully Shared Parameters Policy</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="eprllib.ObservationFunctions.independent.html#module-eprllib.ObservationFunctions.independent" title="eprllib.ObservationFunctions.independent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">independent</span></code></a></p></td>
+<td><p>Independent Agents Policy</p></td>
 </tr>
 </tbody>
 </table>
@@ -479,20 +487,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="eprllib.ActionFunctions.ActionFunctions.html"
+       href="eprllib.ActionFunctions.window_shading_control.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">eprllib.ActionFunctions.ActionFunctions</p>
+        <p class="prev-next-title">eprllib.ActionFunctions.window_shading_control</p>
       </div>
     </a>
     <a class="right-next"
-       href="eprllib.ObservationFunctions.CentralizedAgent.html"
+       href="eprllib.ObservationFunctions.ObservationFunctions.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">eprllib.ObservationFunctions.CentralizedAgent</p>
+        <p class="prev-next-title">eprllib.ObservationFunctions.ObservationFunctions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

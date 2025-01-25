@@ -10,7 +10,7 @@
    :toctree:
    :recursive:
 
-   CentralizedAgent
-   FullySharedParameters
-   IndependentLearning
    ObservationFunctions
+   centralized
+   fully_shared_parameters
+   independent
