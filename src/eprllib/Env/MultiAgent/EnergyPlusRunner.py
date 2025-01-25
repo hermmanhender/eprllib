@@ -169,10 +169,10 @@ class EnergyPlusRunner:
             agent_states[agent].update(self.get_variables_state(state_argument, agent))
             agent_states[agent].update(self.get_internal_variables_state(state_argument, agent))
             agent_states[agent].update(self.get_meters_state(state_argument, agent))
-            agent_states[agent].update(self.get_actuators_state(state_argument, agent))
             agent_states[agent].update(self.get_simulation_parameters_values(state_argument, agent))
             agent_states[agent].update(self.get_zone_simulation_parameters_values(state_argument, agent))
             agent_states[agent].update(self.get_weather_prediction(state_argument, agent))
+            agent_states[agent].update(self.get_actuators_state(state_argument, agent))
             agent_states[agent].update(self.get_other_obs(self.env_config, agent))
         
         dict_agents_obs = self.observation_fn.set_agent_obs(

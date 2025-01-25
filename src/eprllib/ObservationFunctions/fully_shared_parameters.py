@@ -15,13 +15,14 @@ this end, a concatenation of variables is performed.
 # TODO: The number of actuators for the case of other agents is variable. Change the actuator state for agent action or see how
 # could be possible to expand the observation space to addap it to different observations size.
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from eprllib.Utils.observation_utils import get_actuator_name
 
 import numpy as np
 import gymnasium as gym
 
-class FullySharedParameters(ObservationFunction):
+class fully_shared_parameters(ObservationFunction):
     def __init__(
         self,
         obs_fn_config: Dict[str,Any]
@@ -134,7 +135,7 @@ class FullySharedParameters(ObservationFunction):
         self,
         env_config: Dict[str,Any],
         agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        ) -> Tuple[Dict[str,Any],Dict[str, Dict[str,Any]]]:
+        ) -> Dict[str,Any]:
         # Add the ID vectors if it's needed
         id = 0
         if self.agent_ids is None:
@@ -146,7 +147,7 @@ class FullySharedParameters(ObservationFunction):
             self.actuator_ids = {}
             for agent in env_config['agents_config'].keys():
                 for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                    self.actuator_ids.update({f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}": id})
+                    self.actuator_ids.update({get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
                     id += 1
         
         # agents in this timestep
@@ -167,15 +168,12 @@ class FullySharedParameters(ObservationFunction):
             # === AgentID one-hot enconde vector ===
             # If apply, add the igent ID vector for each agent obs
             if self.number_of_agents_total > 1:
-                # 1. Label: NotImplementd yet.
-                # 2. Values:
                 agent_id_vector = np.array([0]*self.number_of_agents_total)
                 agent_id_vector[self.agent_ids[agent]] = 1
-                # 3. Infos: This is not useful for this part of the observation.
             
             # Remove from agent_states and save the actuator items.
             for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                actuator_name = f"{agent}: {actuator_config[0]}: {actuator_config[1]}: {actuator_config[2]}"
+                actuator_name = get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
                 actuator_names[agent].update({actuator_name: agent_states[agent].pop(actuator_name)})
                 
             if agent_id_vector is not None:

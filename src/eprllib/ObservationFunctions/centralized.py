@@ -12,10 +12,10 @@ access to the thermal zone mean air temperature, only declares this parameter in
 """
 import gymnasium as gym
 import numpy as np
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
-class CentralizedAgent(ObservationFunction):
+class centralized(ObservationFunction):
     def __init__(
         self,
         obs_fn_config: Dict[str,Any]
@@ -83,7 +83,7 @@ class CentralizedAgent(ObservationFunction):
         self,
         env_config: Dict[str,Any],
         agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        ) -> Tuple[Dict[str,Any],Dict[str, Dict[str,Any]]]:
+        ) -> Dict[str,Any]:
         
         # agents in this timestep
         agent_list = [key for key in agent_states.keys()]
