@@ -116,43 +116,23 @@ class ObservationSpec:
             
             other_obs (Dict[str, float|int]):
         """
-        # User must define in concordance with the model.
-        self.variables= variables
-        self.internal_variables = internal_variables
-        self.meters = meters
+        counter = 0
+        # Variables
+        if variables is not None:
+            self.variables= variables
+            counter += len(variables)
         
-        # Prediction weather.
-        self.prediction_variables: Dict[str, bool] = {
-            'albedo': False,
-            'beam_solar': False,
-            'diffuse_solar': False,
-            'horizontal_ir': False,
-            'is_raining': False,
-            'is_snowing': False,
-            'liquid_precipitation': False,
-            'outdoor_barometric_pressure': False,
-            'outdoor_dew_point': False,
-            'outdoor_dry_bulb': False,
-            'outdoor_relative_humidity': False,
-            'sky_temperature': False,
-            'wind_direction': False,
-            'wind_speed': False,
-        }
+        # Internal variables
+        if internal_variables is not None:
+            self.internal_variables = internal_variables
+            counter += len(internal_variables)
         
-        self.use_one_day_weather_prediction = use_one_day_weather_prediction
-        if self.use_one_day_weather_prediction:
-            admissible_values = [values for values in self.prediction_variables.keys()]
-            for key in prediction_variables.keys():
-                if key not in admissible_values:
-                    raise ValueError(f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}")
-            # Update the boolean values in the self.simulation_parameters Dict.
-            self.prediction_variables.update(prediction_variables)
+        # Meters
+        if meters is not None:
+            self.meters = meters
+            counter += len(meters)
         
-            if prediction_hours <= 0 or prediction_hours > 24:
-                self.prediction_hours = 24
-                raise ValueError(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
-            self.prediction_hours = prediction_hours
-        
+        # Simulation parameters
         self.simulation_parameters: Dict[str, bool] = {
             'actual_date_time': False,
             'actual_time': False,
@@ -197,16 +177,17 @@ class ObservationSpec:
             'tomorrow_weather_wind_direction_at_time': False,
             'tomorrow_weather_wind_speed_at_time': False,
         }
-        
-            # Check that the keys introduced in the Dict are admissible values.
-        
+        # Check that the keys introduced in the Dict are admissible values.
         admissible_values = [values for values in self.simulation_parameters.keys()]
         for key in simulation_parameters.keys():
             if key not in admissible_values:
                 raise ValueError(f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}")
         # Update the boolean values in the self.simulation_parameters Dict.
         self.simulation_parameters.update(simulation_parameters)
+        # Count the variables introduced.
+        counter += sum([1 for value in simulation_parameters.values() if value])
         
+        # Zone simulation parameters.
         self.zone_simulation_parameters: Dict[str, bool] = {
             'system_time_step': False,
             'zone_time_step': False,
@@ -220,12 +201,55 @@ class ObservationSpec:
                 raise ValueError(f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}")
         # Update the boolean values in the self.zone_simulation_parameters Dict.
         self.zone_simulation_parameters.update(zone_simulation_parameters)
+        # Count the variables introduced.
+        counter += sum([1 for value in zone_simulation_parameters.values() if value])
+        
+        # Prediction weather.
+        self.prediction_variables: Dict[str, bool] = {
+            'albedo': False,
+            'beam_solar': False,
+            'diffuse_solar': False,
+            'horizontal_ir': False,
+            'is_raining': False,
+            'is_snowing': False,
+            'liquid_precipitation': False,
+            'outdoor_barometric_pressure': False,
+            'outdoor_dew_point': False,
+            'outdoor_dry_bulb': False,
+            'outdoor_relative_humidity': False,
+            'sky_temperature': False,
+            'wind_direction': False,
+            'wind_speed': False,
+        }
+        
+        self.use_one_day_weather_prediction = use_one_day_weather_prediction
+        if self.use_one_day_weather_prediction:
+            admissible_values = [values for values in self.prediction_variables.keys()]
+            for key in prediction_variables.keys():
+                if key not in admissible_values:
+                    raise ValueError(f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}")
+            # Update the boolean values in the self.simulation_parameters Dict.
+            self.prediction_variables.update(prediction_variables)
+        
+            if prediction_hours <= 0 or prediction_hours > 24:
+                self.prediction_hours = 24
+                raise ValueError(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
+            self.prediction_hours = prediction_hours
+            # Count prediction parameters.
+            counter += sum([1 for value in prediction_variables.values() if value])
         
         # Actuator value in the observation.
         self.use_actuator_state = use_actuator_state
+        if self.use_actuator_state:
+            counter += 1
         
         # Custom observation dict.
         self.other_obs = other_obs
+        counter += len(self.other_obs)
+        
+        # Check that at least one parameter were defined in the observation.
+        if counter == 0:
+            raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
     
     def __getitem__(self, key):
         return getattr(self, key)
@@ -240,7 +264,7 @@ class ActionSpec:
     def __init__(
         self,
         actuators: List[Tuple[str,str,str]] = NotImplemented,
-        action_fn: ActionFunction = None,
+        action_fn: ActionFunction = NotImplemented,
         action_fn_config: Dict[str, Any] = {},
         ):
         """
@@ -272,6 +296,9 @@ class ActionSpec:
         """
         if actuators == NotImplemented:
             raise NotImplementedError("actuators must be defined.")
+        if action_fn == NotImplemented:
+            raise NotImplementedError("action_fn must be deffined.")
+        
         self.actuators = actuators
         self.action_fn = action_fn
         self.action_fn_config = action_fn_config
@@ -292,6 +319,13 @@ class AgentSpec:
         action: ActionSpec = NotImplemented,
         reward: RewardSpec = NotImplemented,
         **kwargs):
+        
+        if observation == NotImplemented:
+            raise NotImplementedError("observation must be deffined.")
+        if action == NotImplemented:
+            raise NotImplementedError("action must be deffined.")
+        if reward == NotImplemented:
+            raise NotImplementedError("reward must be deffined.")
         
         self.observation = observation
         self.action = action
