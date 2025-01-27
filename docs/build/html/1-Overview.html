@@ -460,8 +460,8 @@ following image.</p>
 <a class="reference internal image-reference" href="_images/markov_decision_process.png"><img alt="_images/markov_decision_process.png" src="_images/markov_decision_process.png" style="width: 400px;" />
 </a>
 <p>During the learning process, an algorithm attempts to predict the cumulative reward that the agents will
-receive if they follow a certain policy. This prediction is represented by a Value function <cite>V(obs)</cite> or an
-Action-Value function <cite>Q(obs,act)</cite>. A modern approach to predicting the <cite>V</cite> or <cite>Q</cite> functions involves using deep neural
+receive if they follow a certain policy. This prediction is represented by a Value function <code class="docutils literal notranslate"><span class="pre">V(obs)</span></code> or an
+Action-Value function <code class="docutils literal notranslate"><span class="pre">Q(obs,act)</span></code>. A modern approach to predicting the <code class="docutils literal notranslate"><span class="pre">V</span></code> or <code class="docutils literal notranslate"><span class="pre">Q</span></code> functions involves using deep neural
 networks (DNN) to approximate these values. When DNNs are used, the methodology is referred to as Deep
 Reinforcement Learning (DRL), and the DNN model is known as the policy.</p>
 <p>In <strong>eprllib</strong>, we use EnergyPlus to model the environment and RLlib as a framework for DRL to train, evaluate,
@@ -478,7 +478,7 @@ save, and restore policies.</p>
 <ol class="arabic simple">
 <li><p>Import eprllib.</p></li>
 <li><dl class="simple">
-<dt>Configure an EnvConfig object to feed EnergyPlus Python API and RLlib with the environment configuration based on the EnergyPlus model,</dt><dd><p>specifying the parameters required (see eprllib.Env.EnvConfig).</p>
+<dt>Configure an EnvConfig object to feed EnergyPlus Python API and RLlib with the environment configuration based on the EnergyPlus model,</dt><dd><p>specifying the parameters required (see <code class="docutils literal notranslate"><span class="pre">eprllib.Env.EnvConfig</span></code>).</p>
 </dd>
 </dl>
 </li>
