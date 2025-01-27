@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=6e7820ec"></script>
+    <script src="_static/documentation_options.js?v=d584a2f1"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -441,7 +441,52 @@ document.write(`
                   
   <section id="observations">
 <h1>Observations<a class="headerlink" href="#observations" title="Link to this heading">#</a></h1>
-<p>Work in progress…</p>
+<p>The observations are the variables, parameters, meters, and others that the agent is
+capable to sense. The following code-block present an example of an observation configuration
+with the help of <code class="docutils literal notranslate"><span class="pre">ObservationSpec</span></code> to show how is the correct way of set this agent property.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eprllib.Agent.AgentSpec</span> <span class="kn">import</span> <span class="n">ObservationSpec</span>
+
+<span class="n">observation</span> <span class="o">=</span> <span class="n">ObservationSpec</span><span class="p">(</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;Site Outdoor Air Drybulb Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Environment&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Site Wind Speed&quot;</span><span class="p">,</span> <span class="s2">&quot;Environment&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Site Outdoor Air Relative Humidity&quot;</span><span class="p">,</span> <span class="s2">&quot;Environment&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Mean Air Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone: Room1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Air Relative Humidity&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone: Room1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone People Occupant Count&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone: Room1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status&quot;</span><span class="p">,</span> <span class="s2">&quot;Room1 Occupancy&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status&quot;</span><span class="p">,</span> <span class="s2">&quot;Room1 Occupancy&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status&quot;</span><span class="p">,</span> <span class="s2">&quot;Room1 Occupancy&quot;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">internal_variables</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Air Volume&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone: Room1&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Zone Floor Area&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone: Room1&quot;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">simulation_parameters</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;today_weather_horizontal_ir_at_time&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">meters</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;Electricity:Building&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Heating:DistrictHeatingWater&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Cooling:DistrictCooling&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">use_one_day_weather_prediction</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">prediction_hours</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">prediction_variables</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;outdoor_dry_bulb&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">use_actuator_state</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">other_obs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;WWR-North&quot;</span><span class="p">:</span> <span class="p">((</span><span class="mf">2.39</span><span class="o">-</span><span class="mf">0.01</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">2.28</span><span class="o">-</span><span class="mf">1.48</span><span class="p">))</span><span class="o">/</span><span class="p">((</span><span class="mf">3.08</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">2.4</span><span class="p">)),</span> <span class="c1"># WWR: Window-Wall Ratio</span>
+        <span class="s2">&quot;WWR-South&quot;</span><span class="p">:</span> <span class="p">((</span><span class="mf">2.39</span><span class="o">-</span><span class="mf">0.01</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">2.28</span><span class="o">-</span><span class="mf">1.48</span><span class="p">))</span><span class="o">/</span><span class="p">((</span><span class="mf">3.08</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">2.4</span><span class="p">)),</span>
+        <span class="s2">&quot;WWR-East&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;WWR-West&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">),</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">observation_fn</span></code> is not part of the observation capabilities of the agent. The observation
+function is defined in the environment because it defines the relationship between agents as well.</p>
 </section>
 
 
