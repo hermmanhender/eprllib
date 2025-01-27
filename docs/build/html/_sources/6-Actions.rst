@@ -5,8 +5,8 @@ Actions are taken by the agents in every timestep. The final action is implement
 an EnergyPlus actuator that must be defined inside the agent configuration. An agent
 can control more than one actuator.
 
-action argument in agent definitions
--------------------------------------
+``action`` argument in agent definitions
+-----------------------------------------
 
 The action argument inside the AgentSpec is defined with help of the ActionSpec class:
 
