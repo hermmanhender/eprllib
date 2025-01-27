@@ -1,4 +1,4 @@
-eprllib.ActionFunctions.setpoint\_control
+﻿eprllib.ActionFunctions.setpoint\_control
 =========================================
 
 .. automodule:: eprllib.ActionFunctions.setpoint_control
@@ -8,5 +8,6 @@ eprllib.ActionFunctions.setpoint\_control
 
    .. autosummary::
    
+      availability
       discrete_dual_setpoint_and_availability
    
