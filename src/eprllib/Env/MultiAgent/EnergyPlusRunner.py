@@ -585,14 +585,14 @@ class EnergyPlusRunner:
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
                         variables.update({
-                            get_parameter_prediction_name(agent,key,prediction_hour): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,0)
+                            get_parameter_prediction_name(agent,key,prediction_hour): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,1)
                         })
             else:
                 prediction_hour_t = prediction_hour - 24
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
                         variables.update({
-                            get_parameter_prediction_name(agent,key,prediction_hour_t): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,0)
+                            get_parameter_prediction_name(agent,key,prediction_hour_t): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,1)
                         })
         self.infos[agent].update(variables)
         
@@ -635,7 +635,9 @@ class EnergyPlusRunner:
         Returns:
             bool: True if the simulation is ready to perform actions.
         """
-        self.init_handles = self._init_handles(state_argument)
+        if not self.init_handles:
+            self.init_handles = self._init_handles(state_argument)
+        
         self.initialized = self.init_handles and not api.exchange.warmup_flag(state_argument)
         
         return self.initialized
