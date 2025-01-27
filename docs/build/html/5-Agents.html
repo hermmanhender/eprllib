@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=6e7820ec"></script>
+    <script src="_static/documentation_options.js?v=d584a2f1"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -441,7 +441,73 @@ document.write(`
                   
   <section id="agents">
 <h1>Agents<a class="headerlink" href="#agents" title="Link to this heading">#</a></h1>
-<p>Work in progres…</p>
+<p>The agents in <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> are defined by its elementary componentes:</p>
+<ol class="arabic simple">
+<li><p>The capability of <strong>observation</strong>.</p></li>
+<li><p>The <strong>action</strong> or control habilities.</p></li>
+<li><p>And the <strong>reward</strong>, compensation or penalty by its actions given an observation.</p></li>
+</ol>
+<a class="reference internal image-reference" href="_images/agents.png"><img alt="_images/agents.png" src="_images/agents.png" style="width: 400px;" />
+</a>
+<p>The image shows the main paramenters inside an agent. All of them must be defined. The <code class="docutils literal notranslate"><span class="pre">AgentSpec</span></code> class
+help to construct the agents. To use it just import the class with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eprllib.Agent.AgentSpec</span> <span class="kn">import</span> <span class="n">AgentSpec</span>
+</pre></div>
+</div>
+<p>For example, for a simple thermostat definition that take the Zone Mean Air Temperature and put the HVAC on or off:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eprllib.Agent.AgentSpec</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AgentSpec</span><span class="p">,</span>
+    <span class="n">ActionSpec</span><span class="p">,</span>
+    <span class="n">ObservationSpec</span><span class="p">,</span>
+    <span class="n">RewardSpec</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">eprllib.ActionFunctions.setpoint_control</span> <span class="kn">import</span> <span class="n">availability</span>
+<span class="kn">from</span> <span class="nn">eprllib.RewardFunctions.energy_and_cen15251</span> <span class="kn">import</span> <span class="n">reward_fn</span>
+
+<span class="n">HVAC_agent</span> <span class="o">=</span> <span class="n">AgentSpec</span><span class="p">(</span>
+    <span class="n">observation</span> <span class="o">=</span> <span class="n">ObservationSpec</span><span class="p">(</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;Zone Mean Air Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">),</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">ActionSpec</span><span class="p">(</span>
+        <span class="n">actuators</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_availability&quot;</span><span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">action_fn</span> <span class="o">=</span> <span class="n">SetpointAgentActions</span><span class="p">,</span>
+        <span class="n">action_fn_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;agent_name&#39;</span><span class="p">:</span> <span class="s1">&#39;HVAC_agent&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;availability_actuator&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_availability&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">),</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="n">RewardSpec</span><span class="p">(</span>
+        <span class="n">reward_fn</span> <span class="o">=</span> <span class="n">reward_fn</span><span class="p">,</span>
+        <span class="n">reward_fn_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;agent_name&quot;</span><span class="p">:</span> <span class="s2">&quot;HVAC_agent&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;thermal_zone&quot;</span><span class="p">:</span> <span class="s2">&quot;Thermal Zone&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;beta&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+            <span class="s1">&#39;people_name&#39;</span><span class="p">:</span> <span class="s2">&quot;Room1 Occupancy&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;cooling_name&#39;</span><span class="p">:</span> <span class="s2">&quot;Cooling:DistrictCooling&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;heating_name&#39;</span><span class="p">:</span> <span class="s2">&quot;Heating:DistrictHeatingWater&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;cooling_energy_ref&#39;</span><span class="p">:</span> <span class="mi">1500000</span><span class="p">,</span>
+            <span class="s1">&#39;heating_energy_ref&#39;</span><span class="p">:</span> <span class="mi">1500000</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The agent defined as before is called inside the method <code class="docutils literal notranslate"><span class="pre">EnvConfig.agents()</span></code> in the argument
+<code class="docutils literal notranslate"><span class="pre">agents_config</span></code> as the value for the dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eprllib.Env.EnvConfig</span> <span class="kn">import</span> <span class="n">EnvConfig</span>
+
+<span class="n">EnvironmentConfig</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">()</span>
+<span class="n">EnvironmentConfig</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
+    <span class="n">agents_config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;HVAC_agent&#39;</span><span class="p">:</span> <span class="n">HVAC_agent</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>See the sections of Actions, Observations and Rewards to learn how to configurate each of them.</p>
 </section>
 
 
