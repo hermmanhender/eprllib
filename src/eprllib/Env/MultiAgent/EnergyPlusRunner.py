@@ -635,7 +635,9 @@ class EnergyPlusRunner:
         Returns:
             bool: True if the simulation is ready to perform actions.
         """
-        self.init_handles = self._init_handles(state_argument)
+        if not self.init_handles:
+            self.init_handles = self._init_handles(state_argument)
+        
         self.initialized = self.init_handles and not api.exchange.warmup_flag(state_argument)
         
         return self.initialized
