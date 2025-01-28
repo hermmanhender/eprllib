@@ -61,7 +61,6 @@ class HerarchicalEnergyPlusRunner(EnergyPlusRunner):
             action_fn
         )
         
-        self.top_level_agent_name: str = env_config["top_level_agent_name"]
         self.top_level_temporal_scale: int = env_config["top_level_temporal_scale"]
         self.timestep_runner: int = 0
         self.top_level_goal: int|List = None
