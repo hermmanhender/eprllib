@@ -6,7 +6,6 @@ This module contain the class and methods used to configure the environment.
 """
 
 from typing import Optional, Dict, Any
-from ray.rllib.utils.annotations import override
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.ObservationFunctions.independent import independent
