@@ -15,7 +15,7 @@ class HolonicEnvConfig(EnvConfig):
         super.__init__()
         
         self.top_level_temporal_scale: int = 48
-        self.top_level_agent_name: str = 'meta_controller'
+        self.top_level_agent_name: str = NotImplemented
         
     @override
     def generals(
@@ -82,9 +82,23 @@ class HolonicEnvConfig(EnvConfig):
             self.observation_fn = observation_fn
             self.observation_fn_config = observation_fn_config
             
-        if top_level_agent_name == NotImplemented:
-            print(f"The top_level_agent_name was not defined in the HerarchicalEnvConfig.general method. The default of 'meta_controller' name is used.")
-        
         if top_level_temporal_scale == NotImplemented:
             print(f"The top_level_temporal_scale was not defined in the HerarchicalEnvConfig.general method. The default of 48 timesteps is used.")
-    
+
+        if top_level_agent_name == NotImplemented:
+            raise NotImplementedError(f"One of the agents defined in the agent_config argument in the HerarchicalEnvConfig.agents method must be assigned as top_level_agent_name.")
+        elif type(top_level_agent_name) != str:
+            raise ValueError(f"The agent name must be an string. The input was: {top_level_agent_name}")
+        else:
+            self.top_level_agent_name = top_level_agent_name
+          
+    def build_herarchical(self) -> Dict:
+        """
+        Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
+        """
+        # Check the parameters defined.
+        if self.top_level_agent_name not in self.agents_config.keys():
+            raise ValueError(f"The agent {self.top_level_agent_name} must be defined.")
+        
+        # After check the herarchical conditions, build the configuration.
+        return self.build()
