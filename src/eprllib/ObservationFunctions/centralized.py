@@ -14,6 +14,7 @@ import gymnasium as gym
 import numpy as np
 from typing import Any, Dict
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from eprllib.Utils.annotations import override
 
 class centralized(ObservationFunction):
     def __init__(
@@ -30,6 +31,7 @@ class centralized(ObservationFunction):
         """
         super().__init__(obs_fn_config)
     
+    @override(ObservationFunction)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any]
@@ -78,7 +80,8 @@ class centralized(ObservationFunction):
                 obs_space_len += len(env_config["agents_config"][agent]["action"]['actuators'])
         
         return gym.spaces.Dict({"central_agent": gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))})
-        
+    
+    @override(ObservationFunction)   
     def set_agent_obs(
         self,
         env_config: Dict[str,Any],

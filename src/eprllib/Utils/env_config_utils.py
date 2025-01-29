@@ -53,9 +53,11 @@ def env_config_to_dict(MyEnvConfig: EnvConfig) -> Dict:
     """
     Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
     """
+    # TODO: Check that all the variables defined in the coniguration exist in the EnvConfig object.
     # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
     # class.
     # if env_config_validation(MyEnvConfig):
+    # TODO: Transform also the AgentSpec, ObservationSpec, ActionSpec and RewardSpec to a dictionary.
     return vars(MyEnvConfig)
 
 

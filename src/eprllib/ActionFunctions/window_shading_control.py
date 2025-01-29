@@ -23,6 +23,7 @@ from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.Utils.observation_utils import (
     get_actuator_name,
 )
+from eprllib.Utils.annotations import override
 
 class shading_actions(ActionFunction):
     def __init__(self, action_fn_config:Dict[str,Any]):
@@ -43,7 +44,8 @@ class shading_actions(ActionFunction):
             action_fn_config['shading_actuator'][1],
             action_fn_config['shading_actuator'][2]
         )
-        
+    
+    @override(ActionFunction)    
     def get_action_space_dim(self) -> gym.Space:
         """
         Get the action space of the environment.
@@ -54,6 +56,7 @@ class shading_actions(ActionFunction):
         
         return gym.spaces.Discrete(11)
     
+    @override(ActionFunction)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -74,6 +77,7 @@ class shading_actions(ActionFunction):
             actuator_dict_actions.update({self.shading_actuator: 3})
         return actuator_dict_actions
     
+    @override(ActionFunction)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the

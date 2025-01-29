@@ -9,6 +9,7 @@ from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.Utils.observation_utils import (
     get_actuator_name,
 )
+from eprllib.Utils.annotations import override
 
 class discrete_opening(ActionFunction):
     def __init__(self, action_fn_config:Dict[str,Any]):
@@ -28,7 +29,8 @@ class discrete_opening(ActionFunction):
             action_fn_config['window_actuator'][1],
             action_fn_config['window_actuator'][2]
         )
-        
+    
+    @override(ActionFunction)    
     def get_action_space_dim(self) -> gym.Space:
         """
         Get the action space of the environment.
@@ -39,6 +41,7 @@ class discrete_opening(ActionFunction):
         
         return gym.spaces.Discrete(11)
     
+    @override(ActionFunction)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         
@@ -49,5 +52,6 @@ class discrete_opening(ActionFunction):
         
         return actuator_dict_actions
     
+    @override(ActionFunction)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         return action

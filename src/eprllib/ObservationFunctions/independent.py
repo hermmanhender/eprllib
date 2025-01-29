@@ -7,7 +7,7 @@ without modifications considering only the agent_states provided in the EnergyPl
 """
 from typing import Any, Dict
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
-
+from eprllib.Utils.annotations import override
 import numpy as np
 import gymnasium as gym
 
@@ -24,6 +24,7 @@ class independent(ObservationFunction):
         """
         super().__init__(obs_fn_config)
     
+    @override(ObservationFunction)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any]
@@ -90,7 +91,8 @@ class independent(ObservationFunction):
                 in agent_list
             }
         )
-        
+    
+    @override(ObservationFunction)
     def set_agent_obs(
         self,
         env_config: Dict[str,Any],

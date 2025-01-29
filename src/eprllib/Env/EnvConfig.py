@@ -141,4 +141,12 @@ class EnvConfig:
         else:
             self.episode_fn = episode_fn
             self.episode_fn_config = episode_fn_config
-        
+
+    def build(self) -> Dict:
+        """
+        Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
+        """
+        # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
+        # class.
+        # if env_config_validation(MyEnvConfig):
+        return vars(self)

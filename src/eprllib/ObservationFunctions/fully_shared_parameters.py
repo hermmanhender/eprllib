@@ -18,6 +18,7 @@ this end, a concatenation of variables is performed.
 from typing import Any, Dict
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.Utils.observation_utils import get_actuator_name
+from eprllib.Utils.annotations import override
 
 import numpy as np
 import gymnasium as gym
@@ -41,6 +42,7 @@ class fully_shared_parameters(ObservationFunction):
         self.agent_ids = None
         self.actuator_ids = None
     
+    @override(ObservationFunction)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any]
@@ -130,7 +132,8 @@ class fully_shared_parameters(ObservationFunction):
                 in agent_list
             }
         )
-        
+    
+    @override(ObservationFunction)
     def set_agent_obs(
         self,
         env_config: Dict[str,Any],
