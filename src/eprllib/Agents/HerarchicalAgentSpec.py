@@ -4,9 +4,10 @@ Herarchical Agent Spec
 
 This module implement the base for an agent specification to safe configuration of the object.
 """
-
-from gymnasium.spaces import Discrete, MultiDiscrete
 from eprllib.Agents.AgentSpec import RewardSpec, ObservationSpec
+from eprllib.ActionFunctions.ActionFunctions import HerarchicalActionFunction
+from typing import Any
+from typing import Dict
 
 
 class HerarchicalActionSpec:
@@ -17,26 +18,18 @@ class HerarchicalActionSpec:
     """
     def __init__(
         self,
-        action_space: Discrete|MultiDiscrete = NotImplemented
+        action_fn: HerarchicalActionFunction = NotImplemented,
+        action_fn_config: Dict[str, Any] = {},
         ):
-        
-        if action_space == NotImplemented:
-            raise NotImplementedError("action_space must be defined.")
-        if type(action_space) not in [Discrete, MultiDiscrete]:
-            raise ValueError(f"The action space must be a Discrete or MultiDiscrete space, but {type(action_space)} was used.")
-        
-        self.action_space = action_space
-        self.action_fn = self.herarchical_action_fn
-        self.action_fn_config = {}
-    
-    def herarchical_action_fn(self, action_fn_config={}):
-        return self.action_space
+        self.action_fn = action_fn
+        self.action_fn_config = action_fn_config
     
     def __getitem__(self, key):
         return getattr(self, key)
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
+
 
 class HerarchicalAgentSpec:
     """
