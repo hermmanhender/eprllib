@@ -6,7 +6,7 @@ This module contain the class and methods used to configure the herarchical envi
 """
 
 from typing import Optional, Dict, Any
-from ray.rllib.utils.annotations import override
+from eprllib.Utils.annotations import override
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.Env.EnvConfig import EnvConfig
         
@@ -17,7 +17,7 @@ class HolonicEnvConfig(EnvConfig):
         self.top_level_temporal_scale: int = 48
         self.top_level_agent_name: str = NotImplemented
         
-    @override
+    @override(EnvConfig)
     def generals(
         self, 
         epjson_path:str = NotImplemented,

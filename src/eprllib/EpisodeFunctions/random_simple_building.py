@@ -1,8 +1,8 @@
 """
-Generalization Building Model
+Random Simple Building Model
 =============================
 
-The `GeneralBuilding` class is a part of the `EpisodeFunction` module, which is responsible for 
+# The ``random_simple_building_episode`` class is a part of the ``EpisodeFunction`` module, which is responsible for 
 defining the properties and configurations of a building episode. The class has the following main 
 functionalities:
 
@@ -37,8 +37,9 @@ from typing import Dict, Any, Tuple
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.Utils.Utils import building_dimension
 from eprllib.Utils.random_weather import get_random_weather
+from eprllib.Utils.annotations import override
 
-class GeneralBuilding(EpisodeFunction):
+class random_simple_building_episode(EpisodeFunction):
     def __init__(
         self, episode_fn_config:Dict[str,Any]
     ):
@@ -71,6 +72,7 @@ class GeneralBuilding(EpisodeFunction):
         self.epw_files_folder_path: str = episode_fn_config['epw_files_folder_path']
         self.load_profiles_folder_path: str = episode_fn_config['load_profiles_folder_path']
     
+    @override(EpisodeFunction)
     def get_episode_config(self, env_config:Dict[str,Any]) -> Dict[str,Any]:
         """
         This method define the properties of the episode. Changing some properties as weather or 

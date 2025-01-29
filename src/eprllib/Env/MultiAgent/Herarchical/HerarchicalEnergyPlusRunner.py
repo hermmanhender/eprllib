@@ -9,7 +9,7 @@ import numpy as np
 from queue import Queue
 from typing import Any, Dict, List
 from ctypes import c_void_p
-from ray.rllib.utils.annotations import override
+from eprllib.Utils.annotations import override
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
@@ -67,7 +67,7 @@ class HerarchicalEnergyPlusRunner(EnergyPlusRunner):
         self.top_level_goal: int|List = None
         self.top_level_reward: Dict[str,List[float|int]] = {}
     
-    @override
+    @override(EnergyPlusRunner)
     def _collect_obs(
         self,
         state_argument: c_void_p

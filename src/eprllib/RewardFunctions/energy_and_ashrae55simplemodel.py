@@ -8,7 +8,7 @@ from typing import Any, Dict
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.RewardFunctions.energy_rewards import energy_with_meters, herarchical_energy_with_meters
 from eprllib.RewardFunctions.comfort_rewards import ashrae55simplemodel, herarchical_ashrae55simplemodel
-
+from eprllib.Utils.annotations import override
 
 class reward_fn(RewardFunction):
     def __init__(
@@ -58,6 +58,7 @@ class reward_fn(RewardFunction):
         })
         self.beta = reward_fn_config['beta']
     
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -131,6 +132,7 @@ class herarchical_reward_fn(RewardFunction):
         })
         self.beta = reward_fn_config['beta']
     
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,

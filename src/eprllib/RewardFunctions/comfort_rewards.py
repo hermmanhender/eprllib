@@ -17,6 +17,7 @@ from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.Utils.observation_utils import (
     get_variable_name
 )
+from eprllib.Utils.annotations import override
 
 class ashrae55simplemodel(RewardFunction):
     def __init__(
@@ -61,6 +62,7 @@ class ashrae55simplemodel(RewardFunction):
             reward_fn_config['thermal_zone']
         )
     
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -164,7 +166,8 @@ class cen15251(RewardFunction):
             "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
             people
         )
-        
+    
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -254,6 +257,7 @@ class herarchical_ashrae55simplemodel(RewardFunction):
             reward_fn_config['thermal_zone']
         )
     
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -337,6 +341,7 @@ class herarchical_cen15251(RewardFunction):
             people
         )
         
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -383,3 +388,4 @@ class herarchical_cen15251(RewardFunction):
                 else:
                     reward += 0
         return reward
+    

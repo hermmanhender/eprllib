@@ -17,6 +17,7 @@ from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.Utils.observation_utils import (
     get_meter_name
 )
+from eprllib.Utils.annotations import override
 
 class energy_with_meters(RewardFunction):
     def __init__(
@@ -62,6 +63,7 @@ class energy_with_meters(RewardFunction):
             reward_fn_config['heating_name']
         )
     
+    @override(RewardFunction)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -133,7 +135,8 @@ class herarchical_energy_with_meters:
             agent_name,
             reward_fn_config['heating_name']
         )
-        
+    
+    @override(RewardFunction)
     def get_reward(
         self,
         infos: Dict[str,Any] = None,

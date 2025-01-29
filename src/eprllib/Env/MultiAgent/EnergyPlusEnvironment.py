@@ -14,6 +14,7 @@ from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.Utils.annotations import override
 
 class EnergyPlusEnv_v0(MultiAgentEnv):
     """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
@@ -128,6 +129,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.last_obs = {agent: [] for agent in self.agents}
         self.last_infos = {agent: {} for agent in self.agents}
 
+    @override(MultiAgentEnv)
     def reset(
         self, *,
         seed: Optional[int] = None,
@@ -210,6 +212,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             
         return obs, infos
 
+    @override(MultiAgentEnv)
     def step(self, action):
         # increment the timestep in 1.
         self.timestep += 1
@@ -282,9 +285,11 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         #     print(f"Action: {action}\nReward: {reward_dict}")
         return obs, reward_dict, terminated, truncated, infos
 
+    @override(MultiAgentEnv)
     def close(self):
         if self.energyplus_runner is not None:
             self.energyplus_runner.stop()
     
+    @override(MultiAgentEnv)
     def render(self, mode="human"):
         pass

@@ -9,9 +9,7 @@ need to define the EnergyPlus Runner.
 from queue import Queue
 from typing import Any, Dict, Optional
 from eprllib.Env.MultiAgent.Herarchical.HerarchicalEnergyPlusRunner import HerarchicalEnergyPlusRunner
-
-
-from ray.rllib.utils.annotations import override
+from eprllib.Utils.annotations import override
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
 
 class HerachicalEnergyPlusEnv(EnergyPlusEnv_v0):
@@ -21,7 +19,7 @@ class HerachicalEnergyPlusEnv(EnergyPlusEnv_v0):
     ) -> None:
         super.__init__(env_config)
         
-    @override
+    @override(EnergyPlusEnv_v0)
     def reset(
         self, *,
         seed: Optional[int] = None,
@@ -80,3 +78,4 @@ class HerachicalEnergyPlusEnv(EnergyPlusEnv_v0):
         self.truncateds = False
             
         return obs, infos
+    
