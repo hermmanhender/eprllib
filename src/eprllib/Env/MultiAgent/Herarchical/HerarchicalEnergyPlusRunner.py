@@ -61,9 +61,11 @@ class HerarchicalEnergyPlusRunner(EnergyPlusRunner):
             action_fn
         )
         
+        self.top_level_agent_name: str = env_config["top_level_agent_name"]
         self.top_level_temporal_scale: int = env_config["top_level_temporal_scale"]
         self.timestep_runner: int = 0
         self.top_level_goal: int|List = None
+        self.top_level_reward: Dict[str,List[float|int]] = {}
     
     @override
     def _collect_obs(
@@ -96,12 +98,15 @@ class HerarchicalEnergyPlusRunner(EnergyPlusRunner):
             agent_states[agent].update(self.get_actuators_state(state_argument, agent))
             agent_states[agent].update(self.get_other_obs(self.env_config, agent))
         
+        # Add reward variables of infos to self.top_level_reward dict.
+        self.save_top_level_reward(self.infos[self.top_level_agent_name])
+        
         # Send the flat observation to the top_level_agent when the timestep is right or when the episode is ending.
         if self.top_level_temporal_scale % self.timestep_runner == 0:
             # Set the agents observation and infos to communicate with the EPEnv.
             self.obs_queue.put({self.top_level_agent_name: np.array(list(agent_states[self.top_level_agent_name].values()))})
             self.obs_event.set()
-            self.infos_queue.put({self.top_level_agent_name: self.infos[self.top_level_agent_name]})
+            self.infos_queue.put({self.top_level_agent_name: self.get_top_level_reward()})
             self.infos_event.set()
             # Wait for a goal selection
             event_flag = self.act_event.wait(self.env_config["timeout"])
@@ -111,9 +116,10 @@ class HerarchicalEnergyPlusRunner(EnergyPlusRunner):
             # Get the action from the EnergyPlusEnvironment `step` method.
             self.top_level_goal = self.act_queue.get()
         
-            
-        # Delete the top_level_agent observation from the agent_states
+        # Delete the top_level_agent observation from the agent_states and infos
         del agent_states[self.top_level_agent_name]
+        del self.infos[self.top_level_agent_name]
+        
         # Add the goal to the observation of all the other agents.
         if self.top_level_goal is None:
             raise ValueError("The top_level_agent must be called in the first timestep.")
@@ -145,3 +151,21 @@ class HerarchicalEnergyPlusRunner(EnergyPlusRunner):
         self.infos_event.set()
         
         self.timestep_runner += 1
+
+    def save_top_level_reward(
+        self,
+        infos: Dict[str,float|int]
+        ):
+        for key in infos.keys():
+            if key not in self.top_level_reward.keys():
+                self.top_level_reward[key] = []
+            self.top_level_reward[key].append(infos[key])
+            
+    def get_top_level_reward(
+        self
+        ):
+        top_level_reward_copy = self.top_level_reward.copy()
+        self.top_level_reward = {}
+        return top_level_reward_copy
+            
+        
