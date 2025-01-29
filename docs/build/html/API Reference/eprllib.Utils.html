@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=d584a2f1"></script>
+    <script src="../_static/documentation_options.js?v=9f22230f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="eprllib.Utils.Utils" href="eprllib.Utils.Utils.html" />
-    <link rel="prev" title="eprllib.EpisodeFunctions.RandomWeather" href="eprllib.EpisodeFunctions.RandomWeather.html" />
+    <link rel="prev" title="eprllib.EpisodeFunctions.random_weather" href="eprllib.EpisodeFunctions.random_weather.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -171,15 +171,18 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="eprllib.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Env.HerarchicalEnvConfig.html">eprllib.Env.HerarchicalEnvConfig</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusEnvironment.html">eprllib.Env.MultiAgent.EnergyPlusEnvironment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusRunner.html">eprllib.Env.MultiAgent.EnergyPlusRunner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.Herarchical.html">eprllib.Env.MultiAgent.Herarchical</a></li>
 </ul>
 </details></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.HerarchicalAgentSpec.html">eprllib.Agents.HerarchicalAgentSpec</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -198,17 +201,21 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.comfort_rewards.html">eprllib.RewardFunctions.comfort_rewards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_and_ashrae55simplemodel.html">eprllib.RewardFunctions.energy_and_ashrae55simplemodel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_and_cen15251.html">eprllib.RewardFunctions.energy_and_cen15251</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_rewards.html">eprllib.RewardFunctions.energy_rewards</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.EpisodeFunctions.html">eprllib.EpisodeFunctions.EpisodeFunctions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.GeneralBuilding.html">eprllib.EpisodeFunctions.GeneralBuilding</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.random_simple_building.html">eprllib.EpisodeFunctions.random_simple_building</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.random_weather.html">eprllib.EpisodeFunctions.random_weather</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">eprllib.Utils</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.Utils.html">eprllib.Utils.Utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.annotations.html">eprllib.Utils.annotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.env_config_utils.html">eprllib.Utils.env_config_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.episode_fn_utils.html">eprllib.Utils.episode_fn_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.from_julian_day.html">eprllib.Utils.from_julian_day</a></li>
@@ -222,6 +229,7 @@
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Conventional.html">eprllib.PostProcess.Conventional</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.shap.html">eprllib.PostProcess.shap</a></li>
 </ul>
 </details></li>
 </ul>
@@ -462,25 +470,28 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.Utils.html#module-eprllib.Utils.Utils" title="eprllib.Utils.Utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Utils</span></code></a></p></td>
 <td><p>General utilities</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.env_config_utils.html#module-eprllib.Utils.env_config_utils" title="eprllib.Utils.env_config_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">env_config_utils</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.annotations.html#module-eprllib.Utils.annotations" title="eprllib.Utils.annotations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">annotations</span></code></a></p></td>
+<td><p>Annotations</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.env_config_utils.html#module-eprllib.Utils.env_config_utils" title="eprllib.Utils.env_config_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">env_config_utils</span></code></a></p></td>
 <td><p>Utilities for the environment configuration</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.episode_fn_utils.html#module-eprllib.Utils.episode_fn_utils" title="eprllib.Utils.episode_fn_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">episode_fn_utils</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.episode_fn_utils.html#module-eprllib.Utils.episode_fn_utils" title="eprllib.Utils.episode_fn_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">episode_fn_utils</span></code></a></p></td>
 <td><p>Episode Functions Utils</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.from_julian_day.html#module-eprllib.Utils.from_julian_day" title="eprllib.Utils.from_julian_day"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_julian_day</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.from_julian_day.html#module-eprllib.Utils.from_julian_day" title="eprllib.Utils.from_julian_day"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_julian_day</span></code></a></p></td>
 <td><p>Julian day transformer</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.observation_utils.html#module-eprllib.Utils.observation_utils" title="eprllib.Utils.observation_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation_utils</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.observation_utils.html#module-eprllib.Utils.observation_utils" title="eprllib.Utils.observation_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observation_utils</span></code></a></p></td>
 <td><p>Observation utilities</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.random_weather.html#module-eprllib.Utils.random_weather" title="eprllib.Utils.random_weather"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_weather</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.random_weather.html#module-eprllib.Utils.random_weather" title="eprllib.Utils.random_weather"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_weather</span></code></a></p></td>
 <td><p>Weather utilities</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.run_period_change.html#module-eprllib.Utils.run_period_change" title="eprllib.Utils.run_period_change"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_period_change</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.run_period_change.html#module-eprllib.Utils.run_period_change" title="eprllib.Utils.run_period_change"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_period_change</span></code></a></p></td>
 <td><p>Run period change</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="eprllib.Utils.trial_str_creator.html#module-eprllib.Utils.trial_str_creator" title="eprllib.Utils.trial_str_creator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trial_str_creator</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="eprllib.Utils.trial_str_creator.html#module-eprllib.Utils.trial_str_creator" title="eprllib.Utils.trial_str_creator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trial_str_creator</span></code></a></p></td>
 <td><p>Trial Name</p></td>
 </tr>
 </tbody>
@@ -500,12 +511,12 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="eprllib.EpisodeFunctions.RandomWeather.html"
+       href="eprllib.EpisodeFunctions.random_weather.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">eprllib.EpisodeFunctions.RandomWeather</p>
+        <p class="prev-next-title">eprllib.EpisodeFunctions.random_weather</p>
       </div>
     </a>
     <a class="right-next"

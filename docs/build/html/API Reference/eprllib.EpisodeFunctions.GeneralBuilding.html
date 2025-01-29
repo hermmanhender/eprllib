@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=d584a2f1"></script>
+    <script src="../_static/documentation_options.js?v=9f22230f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -44,8 +44,6 @@
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/API Reference/eprllib.EpisodeFunctions.GeneralBuilding.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="eprllib.EpisodeFunctions.RandomWeather" href="eprllib.EpisodeFunctions.RandomWeather.html" />
-    <link rel="prev" title="eprllib.EpisodeFunctions.EpisodeFunctions" href="eprllib.EpisodeFunctions.EpisodeFunctions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -108,6 +106,8 @@
       
       
       
+        
+      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -156,7 +156,7 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../1-Overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2-GettingStarted.html">Getting Started with eprllib</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../3-KeyConcepts.html">Key Concepts</a></li>
@@ -168,18 +168,21 @@
 <li class="toctree-l1"><a class="reference internal" href="../9-Episodes.html">Dinamic episode properties</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../UserGuides/IntroductionGuides.html">User Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Examples/IntroductionExamples.html">Examples</a></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="eprllib.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="eprllib.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Env.HerarchicalEnvConfig.html">eprllib.Env.HerarchicalEnvConfig</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusEnvironment.html">eprllib.Env.MultiAgent.EnergyPlusEnvironment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusRunner.html">eprllib.Env.MultiAgent.EnergyPlusRunner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.Herarchical.html">eprllib.Env.MultiAgent.Herarchical</a></li>
 </ul>
 </details></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.HerarchicalAgentSpec.html">eprllib.Agents.HerarchicalAgentSpec</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -198,17 +201,21 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.comfort_rewards.html">eprllib.RewardFunctions.comfort_rewards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_and_ashrae55simplemodel.html">eprllib.RewardFunctions.energy_and_ashrae55simplemodel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_and_cen15251.html">eprllib.RewardFunctions.energy_and_cen15251</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_rewards.html">eprllib.RewardFunctions.energy_rewards</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.EpisodeFunctions.html">eprllib.EpisodeFunctions.EpisodeFunctions</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">eprllib.EpisodeFunctions.GeneralBuilding</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.random_simple_building.html">eprllib.EpisodeFunctions.random_simple_building</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.random_weather.html">eprllib.EpisodeFunctions.random_weather</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Utils.html">eprllib.Utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.Utils.html">eprllib.Utils.Utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.annotations.html">eprllib.Utils.annotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.env_config_utils.html">eprllib.Utils.env_config_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.episode_fn_utils.html">eprllib.Utils.episode_fn_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.from_julian_day.html">eprllib.Utils.from_julian_day</a></li>
@@ -222,6 +229,7 @@
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Conventional.html">eprllib.PostProcess.Conventional</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.shap.html">eprllib.PostProcess.shap</a></li>
 </ul>
 </details></li>
 </ul>
@@ -415,9 +423,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -433,14 +439,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generalization-building-model">Generalization Building Model</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -450,44 +448,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-eprllib.EpisodeFunctions.GeneralBuilding">
-<span id="eprllib-episodefunctions-generalbuilding"></span><h1>eprllib.EpisodeFunctions.GeneralBuilding<a class="headerlink" href="#module-eprllib.EpisodeFunctions.GeneralBuilding" title="Link to this heading">#</a></h1>
-<section id="generalization-building-model">
-<h2>Generalization Building Model<a class="headerlink" href="#generalization-building-model" title="Link to this heading">#</a></h2>
-<p>The <cite>GeneralBuilding</cite> class is a part of the <cite>EpisodeFunction</cite> module, which is responsible for
-defining the properties and configurations of a building episode. The class has the following main
-functionalities:</p>
-<p>1. <strong>Building Dimensions</strong> : The code generates random dimensions for the building, including height,
-width, and length, within a specified range. It also calculates the building area and aspect ratio
-based on these dimensions.
-2. <strong>Window Area Ratio</strong> : The code randomly assigns window area ratios for each side of the building
-(north, east, south, and west) within a specified range.
-3. <strong>Construction Materials</strong> : The code defines the properties of the construction materials used
-for the building’s walls, roof, and internal mass. These properties include thickness, conductivity,
-density, specific heat, thermal absorptance, and solar absorptance. The values for these properties
-are randomly generated within specified ranges.
-4. <strong>Window Properties</strong> : The code randomly assigns values for the window’s U-factor and solar heat
-gain coefficient within specified ranges.
-5. <strong>Internal Mass</strong> : The code randomly assigns surface areas for the internal mass components of the
-building.
-6. <strong>HVAC Capacity</strong> : The code randomly sets the maximum sensible heating and total cooling capacities
-for the HVAC system within specified ranges.</p>
-<p>The code reads an initial EnergyPlus JSON (epJSON) file and modifies its properties based on the randomly
-generated values. This modified epJSON object can then be used to simulate the building’s energy performance
-using EnergyPlus.</p>
-<p>It’s important to note that the code uses random number generation extensively to create variations in the
-building properties for each episode. This approach is likely used for training or testing purposes in the
-context of a reinforcement learning environment.</p>
-</section>
-<p class="rubric">Classes</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeneralBuilding</span></code>(episode_fn_config)</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</div>
+  <section id="eprllib-episodefunctions-generalbuilding">
+<h1>eprllib.EpisodeFunctions.GeneralBuilding<a class="headerlink" href="#eprllib-episodefunctions-generalbuilding" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -501,45 +463,12 @@ context of a reinforcement learning environment.</p>
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="eprllib.EpisodeFunctions.EpisodeFunctions.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">eprllib.EpisodeFunctions.EpisodeFunctions</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="eprllib.EpisodeFunctions.RandomWeather.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">eprllib.EpisodeFunctions.RandomWeather</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generalization-building-model">Generalization Building Model</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

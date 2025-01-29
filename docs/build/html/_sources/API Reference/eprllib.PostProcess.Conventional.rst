@@ -1,4 +1,4 @@
-﻿eprllib.PostProcess.Conventional
+eprllib.PostProcess.Conventional
 ================================
 
 .. automodule:: eprllib.PostProcess.Conventional

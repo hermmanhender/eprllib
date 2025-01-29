@@ -11,4 +11,5 @@
    :recursive:
 
    EnvConfig
+   HerarchicalEnvConfig
    MultiAgent

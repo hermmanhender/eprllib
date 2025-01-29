@@ -11,6 +11,7 @@
    :recursive:
 
    Utils
+   annotations
    env_config_utils
    episode_fn_utils
    from_julian_day

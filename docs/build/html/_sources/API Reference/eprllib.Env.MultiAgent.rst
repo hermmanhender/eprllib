@@ -12,3 +12,4 @@ eprllib.Env.MultiAgent
 
    EnergyPlusEnvironment
    EnergyPlusRunner
+   Herarchical
