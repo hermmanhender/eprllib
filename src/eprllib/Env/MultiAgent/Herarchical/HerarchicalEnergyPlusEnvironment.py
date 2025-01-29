@@ -12,7 +12,7 @@ from eprllib.Env.MultiAgent.Herarchical.HerarchicalEnergyPlusRunner import Herar
 from eprllib.Utils.annotations import override
 from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
 
-class HerachicalEnergyPlusEnv(EnergyPlusEnv_v0):
+class HerarchicalEnergyPlusEnv(EnergyPlusEnv_v0):
     def __init__(
         self,
         env_config: Dict[str,Any]
