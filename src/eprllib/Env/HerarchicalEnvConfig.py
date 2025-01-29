@@ -10,7 +10,7 @@ from eprllib.Utils.annotations import override
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.Env.EnvConfig import EnvConfig
         
-class HolonicEnvConfig(EnvConfig):
+class HerarchicalEnvConfig(EnvConfig):
     def __init__(self):
         super.__init__()
         
