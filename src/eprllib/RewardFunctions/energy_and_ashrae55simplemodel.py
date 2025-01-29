@@ -1,35 +1,13 @@
 """
-Energy and CEN 15251 reward function
-=====================================
+Energy and ASHRAE 55 Simple Model reward function
+==================================================
 
-The standard CEN 15251 stablish three categories of acceptability of the thermal condition
-as is show in table below.
-
-.. list-table:: Title
-   :widths: 25 75
-   :header-rows: 1
-
-   * - Category
-     - Explanation
-   * - Category I (90%) Acceptability 
-     - High level of expectation and is recommended for spaces occupied by very sensitive and fragile 
-       persons with special requirements like handicapped, sick, very joung children and elderly persons.
-   * - Category II (80%) Acceptability 
-     - Normal level of expectation and should be used for new buildings and renovations.
-   * - Category III (65%) Acceptability
-     - An acceptable, moderate level of expectation and may be used for existing buildings.
-   * - Cat. IV
-     - Values outside the criteria for the above categories. This category should only be accepted for a 
-       limited part of the year.
-
-See Engineering Reference of EnergyPlus documentation 19.1.6 Adaptive Comfort Model Based on European Standard
-EN15251-2007 for more information.
 
 """
 from typing import Any, Dict
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.RewardFunctions.energy_rewards import energy_with_meters, herarchical_energy_with_meters
-from eprllib.RewardFunctions.comfort_rewards import cen15251, herarchical_cen15251
+from eprllib.RewardFunctions.comfort_rewards import ashrae55simplemodel, herarchical_ashrae55simplemodel
 
 
 class reward_fn(RewardFunction):
@@ -67,10 +45,9 @@ class reward_fn(RewardFunction):
             Dict[str,float]: The reward value for each agent in the timestep.
         """
         super().__init__(reward_fn_config)
-        self.comfort_reward = cen15251({
+        self.comfort_reward = ashrae55simplemodel({
             "agent_name": reward_fn_config["agent_name"],
-            "thermal_zone": reward_fn_config['thermal_zone'],
-            "people_name": reward_fn_config['people_name']
+            "thermal_zone": reward_fn_config['thermal_zone']
         })
         self.energy_reward = energy_with_meters({
             "agent_name": reward_fn_config["agent_name"],
@@ -141,10 +118,9 @@ class herarchical_reward_fn(RewardFunction):
             Dict[str,float]: The reward value for each agent in the timestep.
         """
         super().__init__(reward_fn_config)
-        self.comfort_reward = herarchical_cen15251({
+        self.comfort_reward = herarchical_ashrae55simplemodel({
             "agent_name": reward_fn_config["agent_name"],
-            "thermal_zone": reward_fn_config['thermal_zone'],
-            "people_name": reward_fn_config['people_name']
+            "thermal_zone": reward_fn_config['thermal_zone']
         })
         self.energy_reward = herarchical_energy_with_meters({
             "agent_name": reward_fn_config["agent_name"],
