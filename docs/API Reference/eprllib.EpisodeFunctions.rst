@@ -11,5 +11,5 @@
    :recursive:
 
    EpisodeFunctions
-   GeneralBuilding
-   RandomWeather
+   random_simple_building
+   random_weather

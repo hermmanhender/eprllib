@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=d584a2f1"></script>
+    <script src="../_static/documentation_options.js?v=9f22230f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -44,8 +44,8 @@
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/API Reference/eprllib.RewardFunctions.energy_and_cen15251.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="eprllib.EpisodeFunctions" href="eprllib.EpisodeFunctions.html" />
-    <link rel="prev" title="eprllib.RewardFunctions.RewardFunctions" href="eprllib.RewardFunctions.RewardFunctions.html" />
+    <link rel="next" title="eprllib.RewardFunctions.energy_rewards" href="eprllib.RewardFunctions.energy_rewards.html" />
+    <link rel="prev" title="eprllib.RewardFunctions.energy_and_ashrae55simplemodel" href="eprllib.RewardFunctions.energy_and_ashrae55simplemodel.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -171,15 +171,18 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="eprllib.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Env.html">eprllib.Env</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Env.EnvConfig.html">eprllib.Env.EnvConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Env.HerarchicalEnvConfig.html">eprllib.Env.HerarchicalEnvConfig</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="eprllib.Env.MultiAgent.html">eprllib.Env.MultiAgent</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusEnvironment.html">eprllib.Env.MultiAgent.EnergyPlusEnvironment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.EnergyPlusRunner.html">eprllib.Env.MultiAgent.EnergyPlusRunner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eprllib.Env.MultiAgent.Herarchical.html">eprllib.Env.MultiAgent.Herarchical</a></li>
 </ul>
 </details></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Agents.HerarchicalAgentSpec.html">eprllib.Agents.HerarchicalAgentSpec</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.ActionFunctions.html">eprllib.ActionFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -198,17 +201,21 @@
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="eprllib.RewardFunctions.html">eprllib.RewardFunctions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.RewardFunctions.html">eprllib.RewardFunctions.RewardFunctions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.comfort_rewards.html">eprllib.RewardFunctions.comfort_rewards</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_and_ashrae55simplemodel.html">eprllib.RewardFunctions.energy_and_ashrae55simplemodel</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">eprllib.RewardFunctions.energy_and_cen15251</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.RewardFunctions.energy_rewards.html">eprllib.RewardFunctions.energy_rewards</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.EpisodeFunctions.html">eprllib.EpisodeFunctions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.EpisodeFunctions.html">eprllib.EpisodeFunctions.EpisodeFunctions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.GeneralBuilding.html">eprllib.EpisodeFunctions.GeneralBuilding</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.RandomWeather.html">eprllib.EpisodeFunctions.RandomWeather</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.random_simple_building.html">eprllib.EpisodeFunctions.random_simple_building</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.EpisodeFunctions.random_weather.html">eprllib.EpisodeFunctions.random_weather</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="eprllib.Utils.html">eprllib.Utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.Utils.html">eprllib.Utils.Utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.annotations.html">eprllib.Utils.annotations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.env_config_utils.html">eprllib.Utils.env_config_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.episode_fn_utils.html">eprllib.Utils.episode_fn_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.Utils.from_julian_day.html">eprllib.Utils.from_julian_day</a></li>
@@ -222,6 +229,7 @@
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Conventional.html">eprllib.PostProcess.Conventional</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Evaluation.html">eprllib.PostProcess.Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.Plots.html">eprllib.PostProcess.Plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eprllib.PostProcess.shap.html">eprllib.PostProcess.shap</a></li>
 </ul>
 </details></li>
 </ul>
@@ -456,13 +464,45 @@ document.write(`
 <h2>Energy and CEN 15251 reward function<a class="headerlink" href="#energy-and-cen-15251-reward-function" title="Link to this heading">#</a></h2>
 <p>The standard CEN 15251 stablish three categories of acceptability of the thermal condition
 as is show in table below.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id1">
+<caption><span class="caption-text">Title</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>Explanation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Category I (90%) Acceptability</p></td>
+<td><p>High level of expectation and is recommended for spaces occupied by very sensitive and fragile
+persons with special requirements like handicapped, sick, very joung children and elderly persons.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Category II (80%) Acceptability</p></td>
+<td><p>Normal level of expectation and should be used for new buildings and renovations.</p></td>
+</tr>
+<tr class="row-even"><td><p>Category III (65%) Acceptability</p></td>
+<td><p>An acceptable, moderate level of expectation and may be used for existing buildings.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cat. IV</p></td>
+<td><p>Values outside the criteria for the above categories. This category should only be accepted for a
+limited part of the year.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <p>See Engineering Reference of EnergyPlus documentation 19.1.6 Adaptive Comfort Model Based on European Standard
 EN15251-2007 for more information.</p>
 </section>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reward_fn</span></code>(reward_fn_config)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">herarchical_reward_fn</span></code>(reward_fn_config)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reward_fn</span></code>(reward_fn_config)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -482,20 +522,20 @@ EN15251-2007 for more information.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="eprllib.RewardFunctions.RewardFunctions.html"
+       href="eprllib.RewardFunctions.energy_and_ashrae55simplemodel.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">eprllib.RewardFunctions.RewardFunctions</p>
+        <p class="prev-next-title">eprllib.RewardFunctions.energy_and_ashrae55simplemodel</p>
       </div>
     </a>
     <a class="right-next"
-       href="eprllib.EpisodeFunctions.html"
+       href="eprllib.RewardFunctions.energy_rewards.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">eprllib.EpisodeFunctions</p>
+        <p class="prev-next-title">eprllib.RewardFunctions.energy_rewards</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

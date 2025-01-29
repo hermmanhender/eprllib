@@ -8,5 +8,6 @@ eprllib.RewardFunctions.energy\_and\_cen15251
 
    .. autosummary::
    
+      herarchical_reward_fn
       reward_fn
    
