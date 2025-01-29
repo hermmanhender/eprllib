@@ -1,4 +1,4 @@
-from eprllib.EpisodeFunctions.RandomWeather import RandomWeather
+from eprllib.EpisodeFunctions.random_weather import RandomWeather
 from unittest.mock import patch
 import pytest
 
