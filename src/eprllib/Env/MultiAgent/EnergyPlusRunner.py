@@ -88,6 +88,7 @@ class EnergyPlusRunner:
         self.obs = {}
         self.infos = {agent: {} for agent in self.agents}
         self.unique_id = time.time()
+        self.is_last_timestep: bool = False
         
         # create a variable to save the obs dict key to use in posprocess
         # self.obs_keys = []
@@ -112,7 +113,10 @@ class EnergyPlusRunner:
                 f"{agent}_meters": [meters, meters_handles],
                 f"{agent}_actuators": [actuators, actuators_handles]
             })
-        
+    def progress_handler(self, progress: int) -> None:
+        if progress >= 99:
+            self.is_last_timestep = True
+            
     def start(self) -> None:
         """
         This method inicialize EnergyPlus. First the episode is configurate, the calling functions
@@ -130,6 +134,7 @@ class EnergyPlusRunner:
         #         )
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
+        api.runtime.callback_progress(self.energyplus_state, self.progress_handler)
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
         
         def _run_energyplus():
@@ -194,7 +199,8 @@ class EnergyPlusRunner:
             self.env_config,
             agent_states,
             dict_agents_obs,
-            self.infos
+            self.infos,
+            self.is_last_timestep
         )
 
         # Set the agents observation and infos to communicate with the EPEnv.
