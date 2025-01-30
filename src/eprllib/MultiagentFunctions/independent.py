@@ -5,16 +5,16 @@ Independent Agents Policy
 This is the default observation function. Here each agent has his oown observation space and is returned
 without modifications considering only the agent_states provided in the EnergyPlusRunner class.
 """
-from typing import Any, Dict
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from typing import Any, Dict, Tuple
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
 from eprllib.Utils.annotations import override
 import numpy as np
 import gymnasium as gym
 
-class independent(ObservationFunction):
+class independent(MultiagentFunction):
     def __init__(
         self,
-        obs_fn_config: Dict[str,Any] = {}
+        multiagent_fn_config: Dict[str,Any] = {}
         ):
         """This class implements an independent observation space for each agent.
 
@@ -22,9 +22,9 @@ class independent(ObservationFunction):
             obs_fn_config (Dict[str,Any]): An emptly dict.
             
         """
-        super().__init__(obs_fn_config)
+        super().__init__(multiagent_fn_config)
     
-    @override(ObservationFunction)
+    @override(MultiagentFunction)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any]
@@ -92,12 +92,14 @@ class independent(ObservationFunction):
             }
         )
     
-    @override(ObservationFunction)
-    def set_agent_obs(
+    @override(MultiagentFunction)
+    def set_multiagent_obs_before_send(
         self,
-        env_config: Dict[str,Any],
-        agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        ) -> Dict[str,Any]:
+        env_config: Dict[str, Any],
+        agent_states: Dict[str,Dict[str,Any]],
+        dict_agents_obs: Dict[str,Any],
+        infos: Dict[str, Dict[str, Any]]
+    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         
         # Agents in this timestep
         agent_list = [key for key in agent_states.keys()]
@@ -107,4 +109,4 @@ class independent(ObservationFunction):
         for agent in agent_list:
             agents_obs[agent] = np.array(list(agent_states[agent].values()), dtype='float32')
             
-        return agents_obs
+        return agents_obs, infos, False

@@ -12,14 +12,14 @@ access to the thermal zone mean air temperature, only declares this parameter in
 """
 import gymnasium as gym
 import numpy as np
-from typing import Any, Dict
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from typing import Any, Dict, Tuple
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
 from eprllib.Utils.annotations import override
 
-class centralized(ObservationFunction):
+class centralized(MultiagentFunction):
     def __init__(
         self,
-        obs_fn_config: Dict[str,Any]
+        multiagent_fn_config: Dict[str,Any]
         ):
         """This class implements a centralized policy for the observation function.
 
@@ -29,9 +29,9 @@ class centralized(ObservationFunction):
             quantity to wich the policy is prepared. It is related with the unitary vector.
             
         """
-        super().__init__(obs_fn_config)
+        super().__init__(multiagent_fn_config)
     
-    @override(ObservationFunction)
+    @override(MultiagentFunction)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any]
@@ -81,12 +81,14 @@ class centralized(ObservationFunction):
         
         return gym.spaces.Dict({"central_agent": gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))})
     
-    @override(ObservationFunction)   
-    def set_agent_obs(
+    @override(MultiagentFunction)   
+    def set_top_level_obs(
         self,
-        env_config: Dict[str,Any],
-        agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        ) -> Dict[str,Any]:
+        env_config: Dict[str, Any],
+        agent_states: Dict[str,Dict[str,Any]],
+        dict_agents_obs: Dict[str,Any],
+        infos: Dict[str, Dict[str, Any]]
+    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         
         # agents in this timestep
         agent_list = [key for key in agent_states.keys()]
@@ -102,4 +104,4 @@ class centralized(ObservationFunction):
                 dtype='float32'
             )
             
-        return agents_obs
+        return agents_obs, infos, True

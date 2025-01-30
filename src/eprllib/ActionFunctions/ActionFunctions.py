@@ -98,35 +98,3 @@ class ActionFunction:
             Dict[str, Any]: A dict of transformed action for each agent in the environment.
         """
         return action
-
-class HerarchicalActionFunction(ActionFunction):
-    def __init__(
-        self,
-        action_fn_config: dict = {}
-    ):
-        super.__init__(action_fn_config)
-        
-    def get_action_space_dim(self) -> gym.Space:
-        """This method is used to get the action space of the environment.
-
-        Raises:
-            NotImplementedError: This method should be implemented in the child class.
-
-        Returns:
-            gym.Space: Action space of the environment.
-        """
-        return NotImplementedError("This method should be implemented in the child class.")
-    
-    @override(ActionFunction)
-    def agent_to_actuator_action(self, action: Any, actuators: List[str]):
-        """
-        This method is used not used in top_level_agent.
-        """
-        raise ValueError("This method should not be called.")
-    
-    @override(ActionFunction)
-    def get_actuator_action(self, action:float|int, actuator: str):
-        """
-        This method is used not used in top_level_agent.
-        """
-        raise ValueError("This method should not be called.")

@@ -15,18 +15,19 @@ this end, a concatenation of variables is performed.
 # TODO: The number of actuators for the case of other agents is variable. Change the actuator state for agent action or see how
 # could be possible to expand the observation space to addap it to different observations size.
 
-from typing import Any, Dict
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from typing import Any, Dict, Tuple
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
+from eprllib.Utils.annotations import override
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 
 import numpy as np
 import gymnasium as gym
 
-class fully_shared_parameters(ObservationFunction):
+class fully_shared_parameters(MultiagentFunction):
     def __init__(
         self,
-        obs_fn_config: Dict[str,Any]
+        multiagent_fn_config: Dict[str,Any]
         ):
         """This class implements a fully shared parameters policy for the observation function.
 
@@ -36,13 +37,13 @@ class fully_shared_parameters(ObservationFunction):
             quantity to wich the policy is prepared. It is related with the unitary vector.
             
         """
-        super().__init__(obs_fn_config)
-        self.number_of_agents_total: int = self.obs_fn_config['number_of_agents_total']
-        self.number_of_actuators_total: int = self.obs_fn_config['number_of_actuators_total']
+        super().__init__(multiagent_fn_config)
+        self.number_of_agents_total: int = multiagent_fn_config['number_of_agents_total']
+        self.number_of_actuators_total: int = multiagent_fn_config['number_of_actuators_total']
         self.agent_ids = None
         self.actuator_ids = None
     
-    @override(ObservationFunction)
+    @override(MultiagentFunction)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any]
@@ -133,12 +134,14 @@ class fully_shared_parameters(ObservationFunction):
             }
         )
     
-    @override(ObservationFunction)
-    def set_agent_obs(
+    @override(MultiagentFunction)
+    def set_top_level_obs(
         self,
-        env_config: Dict[str,Any],
-        agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
-        ) -> Dict[str,Any]:
+        env_config: Dict[str, Any],
+        agent_states: Dict[str,Dict[str,Any]],
+        dict_agents_obs: Dict[str,Any],
+        infos: Dict[str, Dict[str, Any]]
+    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         # Add the ID vectors if it's needed
         id = 0
         if self.agent_ids is None:
@@ -211,4 +214,4 @@ class fully_shared_parameters(ObservationFunction):
                     dtype='float32'
                 )
             
-        return agents_obs
+        return agents_obs, infos, True
