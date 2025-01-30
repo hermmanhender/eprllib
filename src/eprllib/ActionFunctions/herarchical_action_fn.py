@@ -8,10 +8,11 @@ This class used a discrete action space. The size of it must be specified in the
 
 from gymnasium import Space
 from gymnasium.spaces import Discrete
-from eprllib.ActionFunctions.ActionFunctions import HerarchicalActionFunction
+from typing import Any, List
+from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.Utils.annotations import override
 
-class discrete_n_space(HerarchicalActionFunction):
+class discrete_n_space(ActionFunction):
     def __init__(
         self,
         action_fn_config: dict = {}
@@ -23,7 +24,7 @@ class discrete_n_space(HerarchicalActionFunction):
         if type(self.action_space_dim) != int:
             raise ValueError("The action space dimension must be an integer.")
     
-    @override(HerarchicalActionFunction)
+    @override(ActionFunction)
     def get_action_space_dim(self) -> Space:
         """This method is used to get the action space of the environment.
 
@@ -34,3 +35,17 @@ class discrete_n_space(HerarchicalActionFunction):
             gym.Space: Action space of the environment.
         """
         return Discrete(self.action_space_dim)
+
+    @override(ActionFunction)
+    def agent_to_actuator_action(self, action: Any, actuators: List[str]):
+        """
+        This method is used not used in top_level_agent.
+        """
+        raise ValueError("This method should not be called.")
+    
+    @override(ActionFunction)
+    def get_actuator_action(self, action:float|int, actuator: str):
+        """
+        This method is used not used in top_level_agent.
+        """
+        raise ValueError("This method should not be called.")
