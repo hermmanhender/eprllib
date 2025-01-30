@@ -93,7 +93,7 @@ class independent(MultiagentFunction):
         )
     
     @override(MultiagentFunction)
-    def set_multiagent_obs_before_send(
+    def set_top_level_obs(
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str,Dict[str,Any]],
