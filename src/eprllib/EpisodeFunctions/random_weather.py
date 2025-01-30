@@ -18,7 +18,7 @@ class random_weather_episode(EpisodeFunction):
         self,
         episode_fn_config: Dict[str,Any] = {}
         ):
-        self.episode_fn_config = episode_fn_config
+        super().__init__(episode_fn_config)
         
         # check that 'epw_files_folder_path' exist in the episode_fn_config
         if 'epw_files_folder_path' not in self.episode_fn_config:

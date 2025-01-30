@@ -95,6 +95,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         
         # asigning the configuration of the environment.
         self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
+        
         self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
         self.observation_fn: Dict[str, ObservationFunction] = {agent: None for agent in self.agents}
         for agent in self.agents:
@@ -106,7 +107,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         self.observation_space = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
-            self.observation_space[agent] = self.observation_fn[agent].get_agent_obs_dim(self.env_config, self.multiagent_fn)
+            self.observation_space[agent] = self.observation_fn[agent].get_agent_obs_dim(self.env_config, self.multiagent_fn, agent)
         
         self.action_space = spaces.Dict(self.action_space)
         self.observation_space = spaces.Dict(self.observation_space)
@@ -278,8 +279,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos = self.last_infos
         
         # Calculate the reward in the timestep
-        reward_dict = {}
-        for agent in self.agents:
+        reward_dict = {agent: None for agent in obs.keys()}
+        for agent in obs.keys():
             reward_dict.update({agent: self.reward_fn[agent].get_reward(infos[agent], self.terminateds, self.truncateds)})
         
         terminated["__all__"] = self.terminateds

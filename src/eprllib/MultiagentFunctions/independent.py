@@ -27,7 +27,8 @@ class independent(MultiagentFunction):
     @override(MultiagentFunction)
     def get_agent_obs_dim(
         self,
-        env_config: Dict[str,Any]
+        env_config: Dict[str,Any],
+        agent: str = None
         ) -> gym.Space:
         """
         This method construct the observation space of the environment.
@@ -38,59 +39,51 @@ class independent(MultiagentFunction):
         Returns:
             space.Box: The observation space of the environment.
         """
-        agent_list = [key for key in env_config["agents_config"].keys()]
-        obs_space_len: Dict[str,int] = {agent:0 for agent in agent_list}
+        obs_space_len: int = 0
         
-        for agent in agent_list:
-            # Variables
-            if env_config["agents_config"][agent]["observation"]['variables'] is not None:
-                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['variables'])
-            
-            # Internal variables
-            if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
-                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
-            
-            # Meters
-            if env_config["agents_config"][agent]["observation"]['meters'] is not None:
-                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['meters'])
-            
-            # Simulation parameters
-            sp_len = 0
-            for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
-                if value:
-                    sp_len += 1
-            obs_space_len[agent] += sp_len
-            
-            # Zone simulation parameters
-            sp_len = 0
-            for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
-                if value:
-                    sp_len += 1
-            obs_space_len[agent] += sp_len
-            
-            # One day weather prediction
-            if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
-                count_variables = 0
-                for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
-                    if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
-                        count_variables += 1
-                obs_space_len[agent] += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
-            
-            # Actuators state
-            if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
-                obs_space_len[agent] += len(env_config['agents_config'][agent]["action"]["actuators"])
-            
-            # Other obs
-            if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
-                obs_space_len[agent] += len(env_config["agents_config"][agent]["observation"]['other_obs'])
+        # Variables
+        if env_config["agents_config"][agent]["observation"]['variables'] is not None:
+            obs_space_len += len(env_config["agents_config"][agent]["observation"]['variables'])
         
-        return gym.spaces.Dict(
-            {
-                agent: gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len[agent], )) 
-                for agent 
-                in agent_list
-            }
-        )
+        # Internal variables
+        if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
+            obs_space_len += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
+        
+        # Meters
+        if env_config["agents_config"][agent]["observation"]['meters'] is not None:
+            obs_space_len += len(env_config["agents_config"][agent]["observation"]['meters'])
+        
+        # Simulation parameters
+        sp_len = 0
+        for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
+            if value:
+                sp_len += 1
+        obs_space_len += sp_len
+        
+        # Zone simulation parameters
+        sp_len = 0
+        for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
+            if value:
+                sp_len += 1
+        obs_space_len += sp_len
+        
+        # One day weather prediction
+        if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
+            count_variables = 0
+            for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
+                if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
+                    count_variables += 1
+            obs_space_len += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
+        
+        # Actuators state
+        if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
+            obs_space_len += len(env_config['agents_config'][agent]["action"]["actuators"])
+        
+        # Other obs
+        if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
+            obs_space_len += len(env_config["agents_config"][agent]["observation"]['other_obs'])
+        
+        return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
     
     @override(MultiagentFunction)
     def set_top_level_obs(

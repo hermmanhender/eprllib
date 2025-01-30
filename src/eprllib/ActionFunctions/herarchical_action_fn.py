@@ -17,7 +17,7 @@ class discrete_n_space(ActionFunction):
         self,
         action_fn_config: dict = {}
     ):
-        super.__init__(action_fn_config)
+        super().__init__(action_fn_config)
         self.action_space_dim = action_fn_config.get('action_space_dim', False)
         if not self.action_space_dim:
             raise ValueError("The action space dimension must be provided.")

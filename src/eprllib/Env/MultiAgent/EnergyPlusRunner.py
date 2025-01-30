@@ -190,7 +190,7 @@ class EnergyPlusRunner:
         # method is ended here. If there are more than one shape of agents, the action (goal) will be requested and the
         # observations of the next shape will be request. This is implemented until reach the lowest level of the herarchy
         # if any.
-        dict_agents_obs, infos_agents, is_lowest_level = self.multiagent_fn.set_top_level_obs(
+        top_level_agents_obs, top_level_agents_infos, is_lowest_level = self.multiagent_fn.set_top_level_obs(
             self.env_config,
             agent_states,
             dict_agents_obs,
@@ -198,9 +198,9 @@ class EnergyPlusRunner:
         )
 
         # Set the agents observation and infos to communicate with the EPEnv.
-        self.obs_queue.put(dict_agents_obs)
+        self.obs_queue.put(top_level_agents_obs)
         self.obs_event.set()
-        self.infos_queue.put(infos_agents)
+        self.infos_queue.put(top_level_agents_infos)
         self.infos_event.set()
         
         # Implementation for herarchical agents.
@@ -208,12 +208,11 @@ class EnergyPlusRunner:
             # Wait for a goal selection
             event_flag = self.act_event.wait(self.env_config["timeout"])
             if not event_flag:
-                print(f"The time waiting for a goal was exceded.")
                 return
             # Get the action from the EnergyPlusEnvironment `step` method.
             goals = self.act_queue.get()
             
-            dict_agents_obs, infos_agents, is_lowest_level = self.multiagent_fn.set_low_level_obs(
+            low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.multiagent_fn.set_low_level_obs(
                 self.env_config,
                 agent_states,
                 dict_agents_obs,
@@ -222,9 +221,9 @@ class EnergyPlusRunner:
             )
         
             # Set the agents observation and infos to communicate with the EPEnv.
-            self.obs_queue.put(dict_agents_obs)
+            self.obs_queue.put(low_level_agents_obs)
             self.obs_event.set()
-            self.infos_queue.put(infos_agents)
+            self.infos_queue.put(low_level_agents_infos)
             self.infos_event.set()
         
 
@@ -259,9 +258,9 @@ class EnergyPlusRunner:
         if not event_flag:
             return
         # Get the action from the EnergyPlusEnvironment `step` method.
-        dict_action = self.act_queue.get()
+        dict_action: Dict[str, Any] = self.act_queue.get()
         
-        for agent in self.agents:
+        for agent in dict_action.keys():
             # Transform action must to consider the agents and actuators and transform agents actions to actuators actions,
             # considering that one agent could manage more than one actuator.
             actuator_list = [actuator for actuator in self.agent_variables_and_handles[f"{agent}_actuators"][0].keys()]

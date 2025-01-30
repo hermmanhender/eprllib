@@ -24,8 +24,9 @@ class MultiagentFunction:
     
     def get_agent_obs_dim(
         self,
-        env_config: Dict[str,Any]
-        ) -> Dict[str, Space]:
+        env_config: Dict[str,Any],
+        agent:str = None
+        ) -> Space:
         """
         Get the agent observation dimension.
 
