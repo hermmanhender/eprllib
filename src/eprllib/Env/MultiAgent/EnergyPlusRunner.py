@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from ctypes import c_void_p
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
 from eprllib.Utils.env_config_utils import EP_API_add_path
 from eprllib.Utils.observation_utils import (
     get_actuator_name,
@@ -44,8 +45,9 @@ class EnergyPlusRunner:
         act_queue: Queue,
         infos_queue: Queue,
         agents: List,
-        observation_fn: ObservationFunction,
+        observation_fn: Dict[str,ObservationFunction],
         action_fn: Dict[str, ActionFunction],
+        multiagent_fn: MultiagentFunction
         ) -> None:
         """
         The object has an intensive interaction with EnergyPlus Environment script, exchange information
@@ -94,6 +96,7 @@ class EnergyPlusRunner:
         # Define the action and observation functions.
         self.action_fn = action_fn
         self.observation_fn = observation_fn
+        self.multiagent_fn = multiagent_fn
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
@@ -159,7 +162,7 @@ class EnergyPlusRunner:
             return
         
         dict_agents_obs = {agent: {} for agent in self.agents}
-        self.infos = {agent: {} for agent in self.agents}
+        self.infos: Dict[str, Dict[str, Any]] = {agent: {} for agent in self.agents}
         
         # Agents observe: site state, thermal zone state (only the one that it belong), specific object variables 
         # and meters, and others parameters assigned as True in the env_config.observation object.
@@ -175,16 +178,55 @@ class EnergyPlusRunner:
             agent_states[agent].update(self.get_actuators_state(state_argument, agent))
             agent_states[agent].update(self.get_other_obs(self.env_config, agent))
         
-        dict_agents_obs = self.observation_fn.set_agent_obs(
-            self.env_config,
-            agent_states
-        )
+        dict_agents_obs = {agent: None for agent in self.agents}
+        for agent in self.agents:
+            dict_agents_obs.update({
+                agent: self.observation_fn[agent].set_agent_obs(
+                    self.env_config,
+                    agent_states[agent]
+                )})
         
+        # First is send the observation of the top-level agents. If there is only one shape of agents, the _collect_obs
+        # method is ended here. If there are more than one shape of agents, the action (goal) will be requested and the
+        # observations of the next shape will be request. This is implemented until reach the lowest level of the herarchy
+        # if any.
+        dict_agents_obs, infos_agents, is_lowest_level = self.multiagent_fn.set_top_level_obs(
+            self.env_config,
+            agent_states,
+            dict_agents_obs,
+            self.infos
+        )
+
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(dict_agents_obs)
         self.obs_event.set()
-        self.infos_queue.put(self.infos)
+        self.infos_queue.put(infos_agents)
         self.infos_event.set()
+        
+        # Implementation for herarchical agents.
+        while not is_lowest_level:
+            # Wait for a goal selection
+            event_flag = self.act_event.wait(self.env_config["timeout"])
+            if not event_flag:
+                print(f"The time waiting for a goal was exceded.")
+                return
+            # Get the action from the EnergyPlusEnvironment `step` method.
+            goals = self.act_queue.get()
+            
+            dict_agents_obs, infos_agents, is_lowest_level = self.multiagent_fn.set_low_level_obs(
+                self.env_config,
+                agent_states,
+                dict_agents_obs,
+                self.infos,
+                goals
+            )
+        
+            # Set the agents observation and infos to communicate with the EPEnv.
+            self.obs_queue.put(dict_agents_obs)
+            self.obs_event.set()
+            self.infos_queue.put(infos_agents)
+            self.infos_event.set()
+        
 
     def _collect_first_obs(self, state_argument):
         """
