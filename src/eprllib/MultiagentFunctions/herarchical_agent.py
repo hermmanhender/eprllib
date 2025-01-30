@@ -95,7 +95,8 @@ class herarchical_agent(MultiagentFunction):
         env_config: Dict[str, Any],
         agent_states: Dict[str,Dict[str,Any]],
         dict_agents_obs: Dict[str,Any],
-        infos: Dict[str, Dict[str, Any]]
+        infos: Dict[str, Dict[str, Any]],
+        is_last_timestep: bool = False
     ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         """
         Set the multiagent observation.
@@ -117,7 +118,8 @@ class herarchical_agent(MultiagentFunction):
         
         # Send the flat observation to the top_level_agent when the timestep is right or when the episode is ending.
         if self.timestep_runner % self.top_level_temporal_scale == 0 \
-            or self.top_level_goal is None:
+            or self.top_level_goal is None \
+                or is_last_timestep:
             # Set the agents observation and infos to communicate with the EPEnv.
             top_level_obs = {self.top_level_agent: np.array(list(agent_states[self.top_level_agent].values()), dtype='float32')}
             top_level_infos = {self.top_level_agent: self.top_level_trayectory}
