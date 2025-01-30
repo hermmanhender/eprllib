@@ -5,7 +5,9 @@ Observaton Functions
 Work in progress...
 """
 from typing import Any, Dict
+import numpy as np
 import gymnasium as gym
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
 
 class ObservationFunction:
     def __init__(
@@ -17,14 +19,19 @@ class ObservationFunction:
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
+        multiagent_fn: MultiagentFunction,
+        agent: str = None
         ) -> Dict[str, gym.Space]:
-        return NotImplementedError("You must implement this method.")
+        """
+        This method construct the observation space. Now is implemented in the multiagent function. Not modify this method.
+        """
+        return multiagent_fn.get_agent_obs_dim(env_config, agent)
         
     def set_agent_obs(
         self,
         env_config: Dict[str,Any],
-        agent_states: Dict[str, Dict[str,Any]] = NotImplemented,
+        agent_states: Dict[str,Any] = NotImplemented,
         ) -> Dict[str,Any]:
         
-        return NotImplementedError("You must implement this method.")
+        return np.array(list(agent_states.values()), dtype='float32')
     

@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Tuple
 
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 
 class RewardSpec:
     """
@@ -46,6 +47,8 @@ class ObservationSpec:
     """
     def __init__(
         self,
+        observation_fn: ObservationFunction = None,
+        observation_fn_config: Dict[str,Any] = {},
         variables: List[Tuple[str,str]] = None,
         internal_variables: List[str] = None,
         meters: List[str] = None,
@@ -116,6 +119,13 @@ class ObservationSpec:
             
             other_obs (Dict[str, float|int]):
         """
+        if observation_fn is None:
+            print(f"The observation function was not provided. Default observation function will be used.")
+            self.observation_fn = ObservationFunction
+            self.observation_fn_config = {}
+        else:
+            self.observation_fn = observation_fn
+            self.observation_fn_config = observation_fn_config
         counter = 0
         # Variables
         if variables is not None:

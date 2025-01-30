@@ -124,7 +124,7 @@ class herarchical_energy_with_meters:
             All this variables start with the name of the agent and then
             the value of the reference name.
         """
-        super().__init__(reward_fn_config)
+        self.reward_fn_config = reward_fn_config
         
         agent_name = reward_fn_config["agent_name"]
         self.cooling = get_meter_name(
