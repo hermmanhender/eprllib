@@ -42,7 +42,8 @@ class MultiagentFunction:
         env_config: Dict[str, Any],
         agent_states: Dict[str,Dict[str,Any]],
         dict_agents_obs: Dict[str,Any],
-        infos: Dict[str, Dict[str, Any]]
+        infos: Dict[str, Dict[str, Any]],
+        is_last_timestep: bool = False
     ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         """
         Set the multiagent observation.
