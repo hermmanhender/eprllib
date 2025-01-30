@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional
 from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
 from eprllib.RewardFunctions.RewardFunctions import RewardFunction
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
 from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
 from eprllib.ActionFunctions.ActionFunctions import ActionFunction
 from eprllib.Utils.annotations import override
@@ -88,26 +89,27 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
         # currently "alive" agents are.
         
+        # Episode and multiagent functions
+        self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+        self.multiagent_fn: MultiagentFunction = self.env_config['multiagent_fn'](self.env_config["multiagent_fn_config"])
+        
         # asigning the configuration of the environment.
         self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
         self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
+        self.observation_fn: Dict[str, ObservationFunction] = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_fn.update({agent: self.env_config["agents_config"][agent]["action"]['action_fn'](self.env_config["agents_config"][agent]["action"]["action_fn_config"])})
-            
-        self.observation_fn: ObservationFunction = self.env_config['observation_fn'](self.env_config["observation_fn_config"])
-        self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+            self.observation_fn.update({agent: self.env_config["agents_config"][agent]["observation"]['observation_fn'](self.env_config["agents_config"][agent]["observation"]["observation_fn_config"])})
         
         # asignation of environment action space.
         self.action_space = {agent: None for agent in self.agents}
+        self.observation_space = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
+            self.observation_space[agent] = self.observation_fn[agent].get_agent_obs_dim(self.env_config, self.multiagent_fn)
         
         self.action_space = spaces.Dict(self.action_space)
-        
-        # self.action_space = self.action_fn[self.agents[0]].get_action_space_dim()
-        
-        # asignation of the environment observation space.
-        self.observation_space = self.observation_fn.get_agent_obs_dim(self.env_config)
+        self.observation_space = spaces.Dict(self.observation_space)
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -193,7 +195,8 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
                 infos_queue = self.infos_queue,
                 agents = self.agents,
                 observation_fn = self.observation_fn,
-                action_fn = self.action_fn
+                action_fn = self.action_fn,
+                multiagent_fn = self.multiagent_fn
             )
             # Divide the thread in two in this point.
             self.energyplus_runner.start()
