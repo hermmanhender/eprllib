@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eprllib"
-version = "1.5.8"
+version = "1.5.9"
 metadata = "2.2"
 authors = [
   { name="Germán Rodolfo Henderson"},
@@ -20,6 +20,9 @@ classifiers = [
 dependencies = [
     "ray[all] >=2.20.0",
     "gymnasium >=0.28.1",
+    "torch >=2.5.1",
+    "shap >=0.46.0",
+    "matplotlib >=3.8.0"
 ]
 license = {file = "LICENSE"}
 
