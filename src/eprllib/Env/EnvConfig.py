@@ -7,8 +7,8 @@ This module contain the class and methods used to configure the environment.
 
 from typing import Optional, Dict, Any
 from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
-from eprllib.ObservationFunctions.independent import independent
+from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
+from eprllib.MultiagentFunctions.independent import independent
 from eprllib.Agents.AgentSpec import AgentSpec
 
 class EnvConfig:
@@ -24,11 +24,11 @@ class EnvConfig:
         self.ep_terminal_output: bool = True
         self.timeout: float = 10.0
         self.evaluation: bool = False
-        self.observation_fn: ObservationFunction = independent
-        self.observation_fn_config: Dict[str, Any] = {}
 
         # agents
         self.agents_config: Dict[str, AgentSpec] = NotImplemented
+        self.multiagent_fn: MultiagentFunction = independent
+        self.multiagent_fn_config: Dict[str, Any] = {}
 
         # episodes
         self.episode_fn: EpisodeFunction = EpisodeFunction
@@ -43,8 +43,6 @@ class EnvConfig:
         ep_terminal_output:Optional[bool] = True,
         timeout:Optional[float] = 10.0,
         evaluation:bool = False,
-        observation_fn: ObservationFunction = NotImplemented,
-        observation_fn_config: Dict[str, Any] = {},
         ):
         """
         This method is used to modify the general configuration of the environment.
@@ -91,15 +89,11 @@ class EnvConfig:
         self.epw_path = epw_path
         self.output_path = output_path
         
-        if observation_fn == NotImplemented:
-            print("The observation function is not defined. The default observation function will be used.")
-        else:
-            self.observation_fn = observation_fn
-            self.observation_fn_config = observation_fn_config
-        
     def agents(
         self,
         agents_config:Dict[str,AgentSpec] = NotImplemented,
+        multiagent_fn: MultiagentFunction = NotImplemented,
+        multiagent_fn_config: Dict[str, Any] = {},
         ):
         """
         This method is used to modify the agents configuration of the environment.
@@ -114,6 +108,12 @@ class EnvConfig:
             raise NotImplementedError("agents_config must be defined.")
 
         self.agents_config = agents_config
+        
+        if multiagent_fn == NotImplemented:
+            print("The multiagent function is not defined. The default function (independent learning) will be used.")
+        else:
+            self.multiagent_fn = multiagent_fn
+            self.multiagent_fn_config = multiagent_fn_config
 
     def episodes(
         self,
