@@ -25,7 +25,8 @@ class herarchical_agent(MultiagentFunction):
         self.top_level_temporal_scale: int = multiagent_fn_config["top_level_temporal_scale"]
         
         self.timestep_runner: int = 0
-        self.top_level_goal: int|List = None
+        self.top_level_goal: int|List = -1
+        self.top_level_obs: Dict[str, Any] = None
         self.top_level_trayectory: Dict[str,List[float|int]] = {}
         
     @override(MultiagentFunction)
@@ -86,7 +87,7 @@ class herarchical_agent(MultiagentFunction):
             if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
                 obs_space_len += len(env_config['agents_config'][agent]["action"]["actuators"])
         
-            return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
+            return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len + 1, ))
         
         
     @override(MultiagentFunction)
@@ -115,20 +116,24 @@ class herarchical_agent(MultiagentFunction):
             if key not in self.top_level_trayectory.keys():
                 self.top_level_trayectory[key] = []
             self.top_level_trayectory[key].append(agent_states[self.top_level_agent][key])
+        # add the goal to the infos of the top level agent
+        self.top_level_trayectory["goal"] = self.top_level_goal
+        
         
         # Send the flat observation to the top_level_agent when the timestep is right or when the episode is ending.
         if self.timestep_runner % self.top_level_temporal_scale == 0 \
-            or self.top_level_goal is None \
+            or self.top_level_goal == -1 \
                 or is_last_timestep:
             # Set the agents observation and infos to communicate with the EPEnv.
-            top_level_obs = {self.top_level_agent: np.array(list(agent_states[self.top_level_agent].values()), dtype='float32')}
+            self.top_level_obs = {self.top_level_agent: np.array(list(agent_states[self.top_level_agent].values()), dtype='float32')}
             top_level_infos = {self.top_level_agent: self.top_level_trayectory}
             self.top_level_trayectory = {}
             self.timestep_runner += 1
             is_lowest_level = False
-            return top_level_obs, top_level_infos, is_lowest_level
+            return self.top_level_obs, top_level_infos, is_lowest_level
         
         else:
+            self.top_level_obs = {self.top_level_agent: np.array(list(agent_states[self.top_level_agent].values()), dtype='float32')}
             return self.set_low_level_obs(
                 env_config,
                 agent_states,
