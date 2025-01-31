@@ -32,7 +32,7 @@ from eprllib.RewardFunctions.energy_rewards import energy_with_meters, herarchic
 from eprllib.RewardFunctions.comfort_rewards import cen15251, herarchical_cen15251
 from eprllib.Utils.annotations import override
 
-class reward_fn(RewardFunction):
+class energy_and_cen15251(RewardFunction):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
@@ -67,13 +67,14 @@ class reward_fn(RewardFunction):
             Dict[str,float]: The reward value for each agent in the timestep.
         """
         super().__init__(reward_fn_config)
+        self.agent_name = reward_fn_config['agent_name']
         self.comfort_reward = cen15251({
-            "agent_name": reward_fn_config["agent_name"],
+            "agent_name": self.agent_name,
             "thermal_zone": reward_fn_config['thermal_zone'],
             "people_name": reward_fn_config['people_name']
         })
         self.energy_reward = energy_with_meters({
-            "agent_name": reward_fn_config["agent_name"],
+            "agent_name": self.agent_name,
             "cooling_name": reward_fn_config['cooling_name'],
             "heating_name": reward_fn_config['heating_name'],
             "cooling_energy_ref": reward_fn_config['cooling_energy_ref'],
@@ -100,6 +101,8 @@ class reward_fn(RewardFunction):
         Returns:
             float: reward normalize value
         """
+        self.beta = infos["goal"]
+        self.beta = (self.beta)/10
         reward = 0.
         reward += (1-self.beta) * self.comfort_reward.get_reward(infos, terminated_flag, truncated_flag)
         reward += self.beta * self.energy_reward.get_reward(infos, terminated_flag, truncated_flag)
@@ -107,7 +110,7 @@ class reward_fn(RewardFunction):
 
 # === Herarchical version ===
 
-class herarchical_reward_fn(RewardFunction):
+class herarchical_energy_and_cen15251(RewardFunction):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
@@ -142,20 +145,20 @@ class herarchical_reward_fn(RewardFunction):
             Dict[str,float]: The reward value for each agent in the timestep.
         """
         super().__init__(reward_fn_config)
+        self.agent_name = reward_fn_config["agent_name"]
         self.comfort_reward = herarchical_cen15251({
-            "agent_name": reward_fn_config["agent_name"],
+            "agent_name": self.agent_name,
             "thermal_zone": reward_fn_config['thermal_zone'],
             "people_name": reward_fn_config['people_name']
         })
         self.energy_reward = herarchical_energy_with_meters({
-            "agent_name": reward_fn_config["agent_name"],
+            "agent_name": self.agent_name,
             "cooling_name": reward_fn_config['cooling_name'],
             "heating_name": reward_fn_config['heating_name'],
             "cooling_energy_ref": reward_fn_config['cooling_energy_ref'],
             "heating_energy_ref": reward_fn_config['heating_energy_ref']
         })
-        self.beta = reward_fn_config['beta']
-    
+        
     @override(RewardFunction)
     def get_reward(
     self,
@@ -175,8 +178,11 @@ class herarchical_reward_fn(RewardFunction):
         Returns:
             float: reward normalize value
         """
+        
+        beta = 0.1
         reward = 0.
-        reward += (1-self.beta) * self.comfort_reward.get_reward(infos, terminated_flag, truncated_flag)
-        reward += self.beta * self.energy_reward.get_reward(infos, terminated_flag, truncated_flag)
+        reward += (1-beta) * self.comfort_reward.get_reward(infos, terminated_flag, truncated_flag)
+        reward += beta * self.energy_reward.get_reward(infos, terminated_flag, truncated_flag)
+        
         return reward
     
