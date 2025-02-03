@@ -2,22 +2,23 @@
 Environment Configuration
 ==========================
 
-This module contain the class and methods used to configure the environment.
+This module contains the class and methods used to configure the environment.
 """
 
 from typing import Optional, Dict, Any
-from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
-from eprllib.MultiagentFunctions.independent import independent
+from eprllib.Episodes.BaseEpisode import BaseEpisode
+from eprllib.Episodes.DefaultEpisode import DefaultEpisode
+from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 from eprllib.Agents.AgentSpec import AgentSpec
+from eprllib.Utils.Utils import validate_properties
 
 class EnvConfig:
     def __init__(self):
         """
-        This is the main object that it is used to relate the EnergyPlus model and the RLlib policy training execution.
-        
+        This is the main object that is used to relate the EnergyPlus model and the RLlib policy training execution.
         """
-        # generals
+        # General configuration
         self.epjson_path: str = NotImplemented
         self.epw_path: str = NotImplemented
         self.output_path: str = NotImplemented
@@ -25,47 +26,39 @@ class EnvConfig:
         self.timeout: float = 10.0
         self.evaluation: bool = False
 
-        # agents
-        self.agents_config: Dict[str, AgentSpec] = NotImplemented
-        self.multiagent_fn: MultiagentFunction = independent
-        self.multiagent_fn_config: Dict[str, Any] = {}
+        # Agents configuration
+        self.agents_config: Dict[str, AgentSpec | Dict] = NotImplemented
+        self.connector_fn: BaseConnector = DefaultConnector
+        self.connector_fn_config: Dict[str, Any] = {}
 
-        # episodes
-        self.episode_fn: EpisodeFunction = EpisodeFunction
-        self.episode_fn_config: Dict[str,Any] = {}
+        # Episodes configuration
+        self.episode_fn: BaseEpisode = DefaultEpisode
+        self.episode_fn_config: Dict[str, Any] = {}
         self.cut_episode_len: int = 0
     
     def generals(
         self, 
-        epjson_path:str = NotImplemented,
-        epw_path:str = NotImplemented,
-        output_path:str = NotImplemented,
-        ep_terminal_output:Optional[bool] = True,
-        timeout:Optional[float] = 10.0,
-        evaluation:bool = False,
-        ):
+        epjson_path: str = NotImplemented,
+        epw_path: str = NotImplemented,
+        output_path: str = NotImplemented,
+        ep_terminal_output: Optional[bool] = True,
+        timeout: Optional[float] = 10.0,
+        evaluation: bool = False,
+    ):
         """
         This method is used to modify the general configuration of the environment.
 
         Args:
             epjson_path (str): The path to the EnergyPlus model in the format of epJSON file.
-            
-            epw_path (str): The path to the EnergyPlus weather file in the format of epw file.
-            
-            output_path (str): The path to the output directory for the EnergyPlus simulation.
-            
-            ep_terminal_output (bool): For dubugging is better to print in the terminal the outputs 
-            of the EnergyPlus simulation process.
-            
-            timeout (float): timeout define the time that the environment wait for an observation 
-            and the time that the environment wait to apply an action in the EnergyPlus simulation.
-            After that time, the episode is finished. If your environment is time consuming, you 
-            can increase this limit. By default the value is 10 seconds.
-            
-            number_of_agents_total (int): The total amount of agents allow to interact in the cooperative
-            policy. The value must be equal or greater than the number of agents configured in the agents
-            section.
+            epw_path (str): The path to the weather file in the format of epw file.
+            output_path (str): The path to the output directory.
+            ep_terminal_output (Optional[bool]): Flag to enable or disable terminal output from EnergyPlus.
+            timeout (Optional[float]): Timeout for the simulation.
+            evaluation (bool): Flag to indicate if the environment is in evaluation mode.
         """
+        self.epjson_path = epjson_path
+        self.epw_path = epw_path
+        self.output_path = output_path
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
         self.evaluation = evaluation
@@ -85,15 +78,11 @@ class EnvConfig:
         if output_path == NotImplemented:
             raise NotImplementedError("output_path must be defined.")
         
-        self.epjson_path = epjson_path
-        self.epw_path = epw_path
-        self.output_path = output_path
-        
     def agents(
         self,
-        agents_config:Dict[str,AgentSpec] = NotImplemented,
-        multiagent_fn: MultiagentFunction = NotImplemented,
-        multiagent_fn_config: Dict[str, Any] = {},
+        agents_config:Dict[str,AgentSpec|Dict] = NotImplemented,
+        connector_fn: BaseConnector = NotImplemented,
+        connector_fn_config: Dict[str, Any] = {},
         ):
         """
         This method is used to modify the agents configuration of the environment.
@@ -109,15 +98,15 @@ class EnvConfig:
 
         self.agents_config = agents_config
         
-        if multiagent_fn == NotImplemented:
+        if connector_fn == NotImplemented:
             print("The multiagent function is not defined. The default function (independent learning) will be used.")
         else:
-            self.multiagent_fn = multiagent_fn
-            self.multiagent_fn_config = multiagent_fn_config
+            self.connector_fn = connector_fn
+            self.connector_fn_config = connector_fn_config
 
     def episodes(
         self,
-        episode_fn: EpisodeFunction = NotImplemented,
+        episode_fn: BaseEpisode = None,
         episode_fn_config: Dict[str,Any] = {},
         cut_episode_len: int = 0,
         ):
@@ -136,7 +125,7 @@ class EnvConfig:
         """
         self.cut_episode_len = cut_episode_len
         
-        if episode_fn == NotImplemented:
+        if episode_fn is None:
             print("The episode function is not defined. The default episode function will be used.")
         else:
             self.episode_fn = episode_fn
@@ -145,8 +134,58 @@ class EnvConfig:
     def build(self) -> Dict:
         """
         Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
+        Also this method chek that all the variables are well defined and add some constant parameters to use after in 
+        the program (like agents unique ID).
         """
         # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
         # class.
         # if env_config_validation(MyEnvConfig):
+        
+        
+        # generals
+        # Chech that the variables defined in EnvConfig are the allowed in the EnvConfig base
+        # class.
+        expected_types = {
+            'epjson_path': str,
+            'epw_path': str,
+            'output_path': str,
+            'ep_terminal_output': bool,
+            'timeout': float,
+            'evaluation': bool,
+            'agents_config': Dict[str,Dict|AgentSpec],
+            'connector_fn': BaseConnector,
+            'connector_fn_config': Dict[str,Any],
+            'episode_fn': BaseEpisode,
+            'episode_fn_config': Dict[str,Any],
+            'cut_episode_len': int
+        }
+        
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+                
+        
+        if self.epjson_path.endswith(".epJSON") or self.epjson_path.endswith(".idf"):
+            pass
+        else:
+            raise ValueError("The epjson_path must be a path to a epJSON or idf file.")
+        
+        if self.epw_path.endswith(".epw"):
+            pass
+        else:
+            raise ValueError("The epw_path must be a path to a epw file.")
+
+        # agents
+        ix = 0
+        for agent, config in self.agents_config.items():
+            if type(config) == AgentSpec:
+                self.agents_config[agent] = config.build()
+            
+            self.agents_config[agent].update({'agent_id': ix})
+            ix += 1
+        
         return vars(self)
