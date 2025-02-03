@@ -24,11 +24,11 @@ Key Features
   including hierarchical architectures. This allows for modeling scenarios where multiple agents 
   interact with each other and the building environment. It also supports the use of individual 
   agents for simpler cases.
-* **Flexibility and Configurability**: The library offers configurable modules for `Filters <https://hermmanhender.github.io/eprllib/build/html/7-Filters.htlm>`_, 
-  `triggers <https://hermmanhender.github.io/eprllib/build/html/6-Triggers.htlm>`_, and `rewards <https://hermmanhender.github.io/eprllib/build/html/8-Rewards.htlm>`_. 
+* **Flexibility and Configurability**: The library offers configurable modules for Filters , 
+  Triggers, and Rewards. 
   This allows users to customize the learning environment to suit their specific needs and explore different control strategies.
-* **Inter-Agent Communication and Coordination**: ``eprllib`` includes a dedicated module for `communication 
-  and coordination between agents <https://hermmanhender.github.io/eprllib/build/html/9-Connectors.htlm>`_. This is 
+* **Inter-Agent Communication and Coordination**: ``eprllib`` includes a dedicated module for communication 
+  and coordination between agents. This is 
   essential for implementing collaborative strategies and solving complex problems that require the interaction of multiple agents.
 * **Deep Integration with EnergyPlus**: Thanks to its close integration with the EnergyPlus API, ``eprllib`` 
   allows access to all the variables, metrics, parameters, and actuators that EnergyPlus offers. This 
