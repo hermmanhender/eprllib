@@ -26,6 +26,7 @@ Key Features
   agents for simpler cases.
 * **Flexibility and Configurability**: The library offers configurable modules for Filters , 
   Triggers, and Rewards. 
+
   This allows users to customize the learning environment to suit their specific needs and explore different control strategies.
 * **Inter-Agent Communication and Coordination**: ``eprllib`` includes a dedicated module for communication 
   and coordination between agents. This is 
