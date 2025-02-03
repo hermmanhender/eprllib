@@ -1,4 +1,0 @@
-Examples
-=========
-
-Work in progres...
