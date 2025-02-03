@@ -49,18 +49,6 @@ def env_config_validation(MyEnvConfig: EnvConfig) -> bool:
             raise ValueError(f"The variable {var} is not allowed in EnvConfig. Allowed variables are {allowed_vars}")
     return True
 
-def env_config_to_dict(MyEnvConfig: EnvConfig) -> Dict:
-    """
-    Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
-    """
-    # TODO: Check that all the variables defined in the coniguration exist in the EnvConfig object.
-    # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
-    # class.
-    # if env_config_validation(MyEnvConfig):
-    # TODO: Transform also the AgentSpec, ObservationSpec, ActionSpec and RewardSpec to a dictionary.
-    return vars(MyEnvConfig)
-
-
 def to_json(
     MyEnvConfig: EnvConfig,
     output_path: str = None
@@ -76,11 +64,9 @@ def to_json(
     """
     import json
     import time
-    if env_config_validation(MyEnvConfig):
-        env_config_json = json.dumps(env_config_to_dict(MyEnvConfig))
-    else:
-        return
     
+    env_config_json = json.dumps(MyEnvConfig.build())
+
     # generate a unique number based on time
     time_id = str(int(time.time()))
     # check the implementation of output_path
@@ -90,6 +76,9 @@ def to_json(
     # save the json string to a file
     with open(path, 'x') as f:
         f.write(env_config_json)
+    
+    print(f"EnvConfig saved to {path}")
+    
     return path
 
 def from_json(
