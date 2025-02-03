@@ -1,5 +1,5 @@
-EnergyPlus as an Environment for DRL
-====================================
+Environment API
+================
 
 Work in progres...
 
