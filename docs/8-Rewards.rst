@@ -1,5 +1,5 @@
-Reward functions
-================
+Rewards API
+============
 
 Work in progres...
 
