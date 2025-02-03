@@ -11,4 +11,6 @@
    :recursive:
 
    AgentSpec
-   HerarchicalAgentSpec
+   Filters
+   Rewards
+   Triggers

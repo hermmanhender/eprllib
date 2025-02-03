@@ -1,4 +1,4 @@
-eprllib.Agents.AgentSpec
+﻿eprllib.Agents.AgentSpec
 ========================
 
 .. automodule:: eprllib.Agents.AgentSpec
@@ -10,6 +10,8 @@ eprllib.Agents.AgentSpec
    
       ActionSpec
       AgentSpec
+      FilterSpec
       ObservationSpec
       RewardSpec
+      TriggerSpec
    

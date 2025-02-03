@@ -24,8 +24,9 @@ Key Features
   including hierarchical architectures. This allows for modeling scenarios where multiple agents 
   interact with each other and the building environment. It also supports the use of individual 
   agents for simpler cases.
-* **Flexibility and Configurability**: The library offers configurable modules for Filters, 
-  triggers, and rewards. 
+* **Flexibility and Configurability**: The library offers configurable modules for Filters , 
+  Triggers, and Rewards. 
+
   This allows users to customize the learning environment to suit their specific needs and explore different control strategies.
 * **Inter-Agent Communication and Coordination**: ``eprllib`` includes a dedicated module for communication 
   and coordination between agents. This is 
