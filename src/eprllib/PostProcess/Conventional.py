@@ -5,8 +5,8 @@ RUN CONVENTIONAL CONTROLS
 This script execute the conventional controls in the evaluation scenario.
 """
 import os
-from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
-from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.Env.BaseEnvironment import BaseEnvironment
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import pandas as pd
 import threading
 from queue import Queue, Empty
@@ -24,7 +24,7 @@ class rb_evaluation:
         self.env_config = env_config
         self.policy_config = policy_config
         self.name = name
-        self.env = EnergyPlusEnv_v0(env_config)
+        self.env = BaseEnvironment(env_config)
         self.agents = self.env.agents
         self.terminated = {}
         self.terminated = False
@@ -33,7 +33,7 @@ class rb_evaluation:
         self.timestep = 0
         
         self.policy = {agent: config for agent, config in self.policy_config.items()}
-        self.action_fn:ActionFunction = self.env_config['action_fn']
+        self.trigger_fn:BaseTrigger = self.env_config['agents_config']['rule_base_agent']['trigger']['trigger_fn']
         
         if not os.path.exists(env_config['output_path']):
             os.makedirs(env_config['output_path'])
@@ -50,8 +50,8 @@ class rb_evaluation:
         obs_dict, infos = self.env.reset()
         
         # Create an empty DataFrame to store the data
-        obs_keys = self.env.energyplus_runner.obs_keys
-        infos_keys = self.env.energyplus_runner.infos_keys
+        obs_keys = self.env.runner.obs_keys
+        infos_keys = self.env.runner.infos_keys
         
         data = ['agent_id']+['timestep']+obs_keys+['Action']+['Reward']+['Terminated']+['Truncated']+infos_keys
         # coloca los datos en una cola
