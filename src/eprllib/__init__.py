@@ -2,7 +2,9 @@
 eprllib
 ========
 
-**eprllib** provides a set of methods to establish the computational loop of EnergyPlus within a Markov Decision Process (MDP), 
-treating it as a multi-agent environment compatible with RLlib. The main goal is to offer a simple configuration of 
-EnergyPlus as a standard environment for experimentation with Deep Reinforcement Learning.
+``eprllib`` was born out of the need to bridge the gap between building modeling with 
+**EnergyPlus** and Reinforcement Learning (**RL**). Traditionally, integrating these two 
+disciplines has been complex and laborious. ``eprllib`` aims to simplify this process, 
+offering an intuitive and flexible interface for developing intelligent agents that 
+interact with building simulations.
 """

@@ -1,5 +1,5 @@
-Agents and multiagents
-=======================
+Agents API
+===========
 
 The agents in ``eprllib`` are defined by its elementary componentes:
 
@@ -76,10 +76,10 @@ The agent defined as before is called inside the method ``EnvConfig.agents()`` i
 
 See the sections of Actions, Observations and Rewards to learn how to configurate each of them.
 
-Multiagent functions
----------------------
+AgentsConnector API
+--------------------
 
-A ``MultiagentFunction`` is provided to allow agents cooperate or acting in differents ways, like in a herarchy or 
+A ``AgentsConnector`` API is provided to allow agents cooperate or acting in differents ways, like in a hierarchy or 
 in a cooperative manner.
 
 Work in progres...

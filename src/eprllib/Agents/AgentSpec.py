@@ -1,15 +1,24 @@
 """
-Agent Spec
-===========
+Defining agents
+================
 
-This module implement the base for an agent specification to safe configuration of the object.
+This module implements the classes to define agents. Agents are defined by the ``AgentSpec`` class. This class
+contains the observation, filter, action, trigger, and reward specifications. The observation is defined by the
+``ObservationSpec`` class. The filter is defined by the ``FilterSpec`` class. The action is defined by the ``ActionSpec`` class.
+The trigger is defined by the ``TriggerSpec`` class. The reward is defined by the ``RewardSpec`` class.
+
+The ``AgentSpec`` class has a method called ``build`` that is used to build the ``AgentSpec`` object. This method is used to
+validate the properties of the object and to return the object as a dictionary. It is used internally when you build
+the environment to provide it to RLlib.
 """
 
 from typing import Dict, Any, List, Tuple
 
-from eprllib.RewardFunctions.RewardFunctions import RewardFunction
-from eprllib.ActionFunctions.ActionFunctions import ActionFunction
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
+from eprllib.Agents.Rewards.BaseReward import BaseReward
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.Filters.BaseFilter import BaseFilter
+from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
+from eprllib.Utils.Utils import validate_properties
 
 class RewardSpec:
     """
@@ -17,39 +26,51 @@ class RewardSpec:
     """
     def __init__(
         self,
-        reward_fn: RewardFunction = NotImplemented,
+        reward_fn: BaseReward = NotImplemented,
         reward_fn_config: Dict[str, Any] = {},
         ):
         """
-        _Description_
+        Construction method.
         
         Args:
-            reward_fn (RewardFunction): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos 
-            dictionary. As a return, gives a float number as reward. See eprllib.RewardFunctions for examples.
+            reward_fn (BaseReward): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos 
+            dictionary. As a return, gives a float number as reward. See eprllib.Agents.Rewards for examples.
             
         """
         if reward_fn == NotImplemented:
-            raise NotImplementedError("reward_fn must be defined.")
-        
+            raise NotImplementedError("reward_fn must be implemented")
+            
         self.reward_fn = reward_fn
         self.reward_fn_config = reward_fn_config
+    
+    def build(self) -> Dict:
+        """
+        This method is used to build the ActionSpec object.
+        """
+        # Check that the variables defined in RewardSpec are the allowed in the RewardSpec base
+        # class.
+        expected_types = {
+            'reward_fn': BaseReward,
+            'reward_fn_config': (Dict[str, Any]),
+        }
         
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+            
+        return vars(self)
         
-
 class ObservationSpec:
     """
     ObservationSpec is the base class for an observation specification to safe configuration of the object.
     """
     def __init__(
         self,
-        observation_fn: ObservationFunction = None,
-        observation_fn_config: Dict[str,Any] = {},
-        variables: List[Tuple[str,str]] = None,
+        variables: List[Tuple[str, str]] = None,
         internal_variables: List[str] = None,
         meters: List[str] = None,
         simulation_parameters: Dict[str, bool] = {},
@@ -58,13 +79,13 @@ class ObservationSpec:
         prediction_hours: int = 24,
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
-        other_obs: Dict[str, float|int] = {}
-        ):
+        other_obs: Dict[str, float | int] = {}
+    ):
         """
         Construction method.
         
         Args:
-            variables (List[Tuple[str,str]]): Variables represent time series output variables in the simulation. There are thousands
+            variables (List[Tuple[str, str]]): Variables represent time series output variables in the simulation. There are thousands
             of variables made available based on the specific configuration. A user typically requests
             variables to be in their output files by adding Output:Variable objects to the input file. It
             is important to note that if the user does not request these variables, they are not tracked,
@@ -74,7 +95,7 @@ class ObservationSpec:
             They are internal in that they access information about the input file from inside EnergyPlus. Internal variables 
             are automatically made available. The EDD file lists the specific internal variable types, their unique
             identifying names, and the units. The rest of this section provides information about specific internal variables.
-            To see the EDD file, run the simulation to generate the output files and conigure an object in Output:EnergyManagementSystem
+            To see the EDD file, run the simulation to generate the output files and configure an object in Output:EnergyManagementSystem
             with "Internal Variable Availability Dictionary Reporting" to Verbose.
             
             meters (List[str]): Meters represent groups of variables which are collected together, much like a meter on
@@ -104,7 +125,7 @@ class ObservationSpec:
                 'system_time_step', 'zone_time_step', 'zone_time_step_number'
             
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a 
-            prediction of the weathertime ahead. You can specify the `prediction_hours` and the prediction variables
+            prediction of the weather time ahead. You can specify the `prediction_hours` and the prediction variables
             listed on `prediction_variables`.
             
             prediction_hours (int): Default is 24
@@ -117,29 +138,22 @@ class ObservationSpec:
             
             use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
             
-            other_obs (Dict[str, float|int]):
+            other_obs (Dict[str, float | int]): Custom observation dictionary.
         """
-        if observation_fn is None:
-            print(f"The observation function was not provided. Default observation function will be used.")
-            self.observation_fn = ObservationFunction
-            self.observation_fn_config = {}
-        else:
-            self.observation_fn = observation_fn
-            self.observation_fn_config = observation_fn_config
         counter = 0
         # Variables
-        if variables is not None:
-            self.variables= variables
+        self.variables = variables
+        if self.variables is not None:
             counter += len(variables)
-        
+    
         # Internal variables
-        if internal_variables is not None:
-            self.internal_variables = internal_variables
+        self.internal_variables = internal_variables
+        if self.internal_variables is not None:
             counter += len(internal_variables)
         
         # Meters
+        self.meters = meters
         if meters is not None:
-            self.meters = meters
             counter += len(meters)
         
         # Simulation parameters
@@ -188,7 +202,7 @@ class ObservationSpec:
             'tomorrow_weather_wind_speed_at_time': False,
         }
         # Check that the keys introduced in the Dict are admissible values.
-        admissible_values = [values for values in self.simulation_parameters.keys()]
+        admissible_values = list(self.simulation_parameters.keys())
         for key in simulation_parameters.keys():
             if key not in admissible_values:
                 raise ValueError(f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}")
@@ -205,7 +219,7 @@ class ObservationSpec:
         }
         
         # Check that the keys introduced in the Dict are admissible values.
-        admissible_values = [values for values in self.zone_simulation_parameters.keys()]
+        admissible_values = list(self.zone_simulation_parameters.keys())
         for key in zone_simulation_parameters.keys():
             if key not in admissible_values:
                 raise ValueError(f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}")
@@ -234,11 +248,11 @@ class ObservationSpec:
         
         self.use_one_day_weather_prediction = use_one_day_weather_prediction
         if self.use_one_day_weather_prediction:
-            admissible_values = [values for values in self.prediction_variables.keys()]
+            admissible_values = list(self.prediction_variables.keys())
             for key in prediction_variables.keys():
                 if key not in admissible_values:
                     raise ValueError(f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}")
-            # Update the boolean values in the self.simulation_parameters Dict.
+            # Update the boolean values in the self.prediction_variables Dict.
             self.prediction_variables.update(prediction_variables)
         
             if prediction_hours <= 0 or prediction_hours > 24:
@@ -261,11 +275,81 @@ class ObservationSpec:
         if counter == 0:
             raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
     
-    def __getitem__(self, key):
-        return getattr(self, key)
+    def build(self) -> Dict:
+        """
+        This method is used to build the ObservationSpec object.
+        """
+        # Check that the variables defined in ObservationSpec are the allowed in the ObservationSpec base
+        # class.
+        expected_types = {
+            'variables': (List[Tuple[str, str]], None),
+            'internal_variables': (List[str], None),
+            'meters': (List[str], None),
+            'simulation_parameters': (Dict[str, bool]),
+            'zone_simulation_parameters': (Dict[str, bool]),
+            'use_one_day_weather_prediction': bool,
+            'prediction_hours': int,
+            'prediction_variables': (Dict[str, bool]),
+            'use_actuator_state': bool,
+            'other_obs': (Dict[str, float | int])
+        }
+        
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+            
+        return vars(self)
 
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
+class FilterSpec:
+    """
+    FilterSpec is the base class for a filter specification to safe configuration of the object.
+    """
+    def __init__(
+        self,
+        filter_fn: BaseFilter = None,
+        filter_fn_config: Dict[str, Any] = {}
+    ):
+        """
+        Construction method.
+        
+        Args:
+            filter_fn (BaseFilter): The filter function takes the arguments agent_id, observation and returns the
+            observation filtered. See ``eprllib.Agents.Filters`` for examples.
+            
+            filter_fn_config (Dict[str, Any]): The configuration of the filter function.
+        """
+        if filter_fn is None:
+            print("No filter provided. Default filter will be used.")
+            self.filter_fn = DefaultFilter
+            self.filter_fn_config = {}
+        else:
+            self.filter_fn = filter_fn
+            self.filter_fn_config = filter_fn_config
+    
+    def build(self) -> Dict:
+        """
+        This method is used to build the FilterSpec object.
+        """
+        # Check that the variables defined in FilterSpec are the allowed in the FilterSpec base
+        # class.
+        expected_types = {
+            'filter_fn': (BaseFilter, None),
+            'filter_fn_config': (Dict[str, Any])
+        }
+        
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+            
+        return vars(self)
 
 class ActionSpec:
     """
@@ -273,18 +357,16 @@ class ActionSpec:
     """
     def __init__(
         self,
-        actuators: List[Tuple[str,str,str]] = NotImplemented,
-        action_fn: ActionFunction = NotImplemented,
-        action_fn_config: Dict[str, Any] = {},
-        ):
+        actuators: List[Tuple[str, str, str]] = NotImplemented,
+    ):
         """
-        _Description_
+        Construction method.
         
         Args:
-            actuators (List[Tuple[str,str,str]]): Actuators are the way that users modify the program at 
+            actuators (List[Tuple[str, str, str]]): Actuators are the way that users modify the program at 
             runtime using custom logic and calculations. Not every variable inside EnergyPlus can be 
             actuated. This is intentional, because opening that door could allow the program to run at 
-            unrealistic conditions, with flowimbalances or energy imbalances, and many other possible problems.
+            unrealistic conditions, with flow imbalances or energy imbalances, and many other possible problems.
             Instead, a specific set of items are available to actuate, primarily control functions, 
             flow requests, and environmental boundary conditions. These actuators, when used in conjunction 
             with the runtime API and data exchange variables, allow a user to read data, make decisions and 
@@ -296,28 +378,76 @@ class ActionSpec:
             value, and informs EnergyPlus that this value is currently being externally controlled. To
             allow EnergyPlus to resume controlling that value, there is an actuator reset function as well.
             One agent can manage several actuators.
-            
-            action_fn (ActionFunction): In the definition of the action space, usualy is use the discrete form of the 
-            gym spaces. In general, we don't use actions from 0 to n directly in the EnergyPlus simulation. With the 
-            objective to transform appropiately the discret action into a value action for EP we define the action_fn. 
-            This function take the arguments agent_id and action. You can find examples in eprllib.ActionFunctions.
-            
-            action_fn_config (Dict[str, Any]):
         """
         if actuators == NotImplemented:
             raise NotImplementedError("actuators must be defined.")
-        if action_fn == NotImplemented:
-            raise NotImplementedError("action_fn must be deffined.")
         
         self.actuators = actuators
-        self.action_fn = action_fn
-        self.action_fn_config = action_fn_config
     
-    def __getitem__(self, key):
-        return getattr(self, key)
+    def build(self) -> Dict:
+        """
+        This method is used to build the ActionSpec object.
+        """
+        # Check that the variables defined in ActionSpec are the allowed in the ActionSpec base
+        # class.
+        expected_types = {
+            'actuators': List[Tuple[str, str, str]]
+        }
+        
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+            
+        return vars(self)
 
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
+class TriggerSpec:
+    """
+    TriggerSpec is the base class for a trigger specification to safe configuration of the object.
+    """
+    def __init__(
+        self,
+        trigger_fn: BaseTrigger = NotImplemented,
+        trigger_fn_config: Dict[str, Any] = {},
+    ):
+        """
+        Construction method.
+        
+        Args:
+            trigger_fn (BaseTrigger): The trigger function takes the arguments agent_id, observation and returns the
+            observation filtered. See ``eprllib.Agents.Triggers`` for examples.
+            
+            trigger_fn_config (Dict[str, Any]): The configuration of the trigger function.
+        """
+        if trigger_fn == NotImplemented:
+            raise NotImplementedError("trigger_fn must be defined.")
+        
+        self.trigger_fn = trigger_fn
+        self.trigger_fn_config = trigger_fn_config
+    
+    def build(self) -> Dict:
+        """
+        This method is used to build the TriggerSpec object.
+        """
+        # Check that the variables defined in TriggerSpec are the allowed in the TriggerSpec base
+        # class.
+        expected_types = {
+            'trigger_fn': BaseTrigger,
+            'trigger_fn_config': Dict[str, Any]
+        }
+        
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+            
+        return vars(self)
 
 class AgentSpec:
     """
@@ -326,9 +456,27 @@ class AgentSpec:
     def __init__(
         self,
         observation: ObservationSpec = NotImplemented,
+        filter: FilterSpec = None,
         action: ActionSpec = NotImplemented,
+        trigger: TriggerSpec = None,
         reward: RewardSpec = NotImplemented,
         **kwargs):
+        """
+        Contruction method for the AgentSpec class.
+
+        Args:
+            observation (ObservationSpec, optional): Defines the observation of the agent using
+            the ObservationSpec class or a Dict. Defaults to NotImplemented.
+            filter (FilterSpec, optional): Defines the filter for this agent using FilterSpec or a Dict. Defaults to None.
+            action (ActionSpec, optional): Defines the action characteristics of the agent using ActionSpec or a Dict. Defaults to NotImplemented.
+            trigger (TriggerSpec, optional): Defines the trigger for the agent using TriggerSpec or a Dict. Defaults to None.
+            reward (RewardSpec, optional): Defines the reward elements of the agent using RewardSpec or a Dict. Defaults to NotImplemented.
+
+        Raises:
+            NotImplementedError: _description_
+            NotImplementedError: _description_
+            NotImplementedError: _description_
+        """
         
         if observation == NotImplemented:
             raise NotImplementedError("observation must be deffined.")
@@ -338,14 +486,55 @@ class AgentSpec:
             raise NotImplementedError("reward must be deffined.")
         
         self.observation = observation
+        if filter is None:
+            self.filter = FilterSpec()
+        else:
+            self.filter = filter
         self.action = action
+        if self.trigger is None:
+            self.trigger = TriggerSpec()
+        else:
+            self.trigger = trigger
         self.reward = reward
         
         for key, value in kwargs.items():
             setattr(self, key, value)
     
-    def __getitem__(self, key):
-        return getattr(self, key)
+    def build(self) -> Dict:
+        """
+        This method is used to build the AgentSpec object.
+        """
+        # Check that the variables defined in AgentSpec are the allowed in the AgentSpec base
+        # class.
+        expected_types = {
+            'observation': (Dict, ObservationSpec),
+            'filter': (Dict, FilterSpec, None),
+            'action': (Dict, ActionSpec),
+            'trigger': (Dict, TriggerSpec, None),
+            'reward': (Dict, RewardSpec)
+        }
+        
+        is_valid, errors = validate_properties(self, expected_types)
+        if is_valid:
+            print("All properties have correct types")
+        else:
+            print("Validation errors:")
+            for error in errors:
+                print(f"- {error}")
+        
+        if isinstance(self.observation, ObservationSpec):
+            self.observation = self.observation.build()
 
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
+        if isinstance(self.filter, FilterSpec):
+            self.filter = self.filter.build()
+
+        if isinstance(self.action, ActionSpec):
+            self.action = self.action.build()
+
+        if isinstance(self.trigger, TriggerSpec):
+            self.trigger = self.trigger.build()
+
+        if isinstance(self.reward, RewardSpec):
+            self.reward = self.reward.build()
+            
+        return vars(self)

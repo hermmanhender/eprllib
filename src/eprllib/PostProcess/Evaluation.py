@@ -6,8 +6,8 @@ This script execute the conventional controls in the evaluation scenario.
 """
 import os
 from ray.rllib.policy.policy import Policy
-from eprllib.Env.MultiAgent.EnergyPlusEnvironment import EnergyPlusEnv_v0
-from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from eprllib.Env.BaseEnvironment import BaseEnvironment
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import numpy as np
 import pandas as pd
 import threading
@@ -31,15 +31,16 @@ class drl_evaluation:
         self.lstm_cell_size = lstm_cell_size
         self.policy = Policy.from_checkpoint(checkpoint_path)
         print(f"Checkpoint path restore: {checkpoint_path}")
-        self.env = EnergyPlusEnv_v0(env_config)
+        self.env = BaseEnvironment(env_config)
         self.agents = self.env.agents
         self.terminated = False
         self.data_queue: Optional[Queue] = None
         self.data_processing: Optional[step_processing] = None
         self.timestep = 0
         
-        
-        self.action_fn: ActionFunction = self.env_config['action_fn']
+        self.trigger_fn: Dict[str, BaseTrigger] = {agent: None for agent in self.agents}
+        for agent in self.agents:
+            self.trigger_fn[agent] = self.env_config['agents_config'][agent]['trigger']['trigger_fn'](self.env_config['agents_config'][agent]['trigger']['trigger_fn_config'])
         
         if not os.path.exists(env_config['output_path']):
             os.makedirs(env_config['output_path'])
@@ -59,8 +60,8 @@ class drl_evaluation:
             state = [np.zeros([self.lstm_cell_size], np.float32) for _ in range(2)]
         
         # Create an empty DataFrame to store the data
-        obs_keys = self.env.energyplus_runner.obs_keys
-        infos_keys = self.env.energyplus_runner.infos_keys
+        obs_keys = self.env.runner.obs_keys
+        infos_keys = self.env.runner.infos_keys
         
         data = ['agent_id']+['timestep']+obs_keys+['Action']+['Reward']+['Terminated']+['Truncated']+infos_keys
         # coloca los datos en una cola

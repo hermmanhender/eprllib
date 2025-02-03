@@ -27,10 +27,11 @@ Key Features
    3-KeyConcepts
    4-Environment
    5-Agents
-   6-Actions
-   7-Observations
+   6-Triggers
+   7-Filters
    8-Rewards
-   9-Episodes
+   9-Connectors
+   10-Episodes
    UserGuides/IntroductionGuides
    Examples/IntroductionExamples
    API Reference/eprllib

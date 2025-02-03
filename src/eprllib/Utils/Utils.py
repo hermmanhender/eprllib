@@ -27,6 +27,57 @@ def variable_checking(
     """
     pass
 
+def validate_properties(obj, expected_types):
+    """
+    Enhanced version that supports Union types and optional properties
+    
+    Args:
+        obj: The object to validate
+        expected_types: A dictionary mapping property names to either:
+                       - A type
+                       - A tuple of types (Union)
+                       - (type, bool) tuple where bool indicates if property is optional
+    """
+    errors = []
+    is_valid = True
+    
+    for prop_name, type_spec in expected_types.items():
+        # Handle optional properties
+        is_optional = False
+        expected_type = type_spec
+        
+        if isinstance(type_spec, tuple) and len(type_spec) == 2:
+            expected_type, is_optional = type_spec
+            
+        # Check if property exists
+        if not hasattr(obj, prop_name):
+            if not is_optional:
+                errors.append(f"Missing required property: {prop_name}")
+                is_valid = False
+            continue
+            
+        actual_value = getattr(obj, prop_name)
+        
+        # Handle None for optional properties
+        if actual_value is None and is_optional:
+            continue
+            
+        # Handle union types
+        valid_types = (expected_type,) if isinstance(expected_type, type) else expected_type
+        
+        if not isinstance(actual_value, valid_types):
+            errors.append(
+                f"Property '{prop_name}' has incorrect type. "
+                f"Expected {' or '.join(t.__name__ for t in valid_types)}, "
+                f"got {type(actual_value).__name__}"
+            )
+            is_valid = False
+    
+    return is_valid, errors
+
+
+
+
 def inertial_mass_calculation(env_config:Dict) -> float:
     """
     The function reads the epjson file path from the env_config dictionary. If the epjson
