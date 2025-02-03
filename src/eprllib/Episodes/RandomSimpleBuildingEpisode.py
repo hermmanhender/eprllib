@@ -1,26 +1,26 @@
 """
-Random Simple Building Model
-=============================
+Random Simple Building Episode
+===============================
 
-# The ``random_simple_building_episode`` class is a part of the ``EpisodeFunction`` module, which is responsible for 
+The ``RandomSimpleBuildingEpisode`` class is a part of the ``EpisodeFunction`` module, which is responsible for 
 defining the properties and configurations of a building episode. The class has the following main 
 functionalities:
 
-1. **Building Dimensions** : The code generates random dimensions for the building, including height, 
-width, and length, within a specified range. It also calculates the building area and aspect ratio 
-based on these dimensions.
-2. **Window Area Ratio** : The code randomly assigns window area ratios for each side of the building 
-(north, east, south, and west) within a specified range.
-3. **Construction Materials** : The code defines the properties of the construction materials used 
-for the building's walls, roof, and internal mass. These properties include thickness, conductivity, 
-density, specific heat, thermal absorptance, and solar absorptance. The values for these properties 
-are randomly generated within specified ranges.
-4. **Window Properties** : The code randomly assigns values for the window's U-factor and solar heat
-gain coefficient within specified ranges.
-5. **Internal Mass** : The code randomly assigns surface areas for the internal mass components of the 
-building.
-6. **HVAC Capacity** : The code randomly sets the maximum sensible heating and total cooling capacities 
-for the HVAC system within specified ranges.
+1. **Building Dimensions**: The code generates random dimensions for the building, including height, 
+   width, and length, within a specified range. It also calculates the building area and aspect ratio 
+   based on these dimensions.
+2. **Window Area Ratio**: The code randomly assigns window area ratios for each side of the building 
+   (north, east, south, and west) within a specified range.
+3. **Construction Materials**: The code defines the properties of the construction materials used 
+   for the building's walls, roof, and internal mass. These properties include thickness, conductivity, 
+   density, specific heat, thermal absorptance, and solar absorptance. The values for these properties 
+   are randomly generated within specified ranges.
+4. **Window Properties**: The code randomly assigns values for the window's U-factor and solar heat
+   gain coefficient within specified ranges.
+5. **Internal Mass**: The code randomly assigns surface areas for the internal mass components of the 
+   building.
+6. **HVAC Capacity**: The code randomly sets the maximum sensible heating and total cooling capacities 
+   for the HVAC system within specified ranges.
 
 The code reads an initial EnergyPlus JSON (epJSON) file and modifies its properties based on the randomly 
 generated values. This modified epJSON object can then be used to simulate the building's energy performance 
@@ -33,53 +33,42 @@ context of a reinforcement learning environment.
 import os
 import json
 import numpy as np
-from typing import Dict, Any, Tuple
-from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
+from typing import Dict, Any, Tuple, List
+from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.Utils import building_dimension
 from eprllib.Utils.random_weather import get_random_weather
 from eprllib.Utils.annotations import override
 
-class random_simple_building_episode(EpisodeFunction):
+class RandomSimpleBuildingEpisode(BaseEpisode):
     def __init__(
         self, episode_fn_config:Dict[str,Any]
     ):
         """
-        This method initialize the GeneralBuilding class. It reads the initial epJSON file and
+        Initializes the RandomSimpleBuildingEpisode class. It reads the initial epJSON file and
         modifies its properties based on the randomly generated values.
 
         The episode_fn_config dictionary should contain the following keys:
         - epjson_files_folder_path (str): The path to the folder containing the epJSON files.
         - epw_files_folder_path (str): The path to the folder containing the EPW weather files.
 
-        The method calls the parent class's __init__ method and initializes the class attributes
-        based on the provided episode_fn_config dictionary.
-        
-        If you set `EnvConfig.generals(epjson_path='auto')` the default GeneralBuildingModel epJSON
-        file is called.
-
-        Example:
-            episode_fn_config = {
-                'epjson_files_folder_path': 'path/to/epjson/files',
-                'epw_files_folder_path': 'path/to/epw/files'
-            }
-            episode_fn = GeneralBuilding(episode_fn_config)
-
         Args:
-            episode_fn_config (Dict[str,Any]): Dictionary to configurate the episode_fn.
+            episode_fn_config (Dict[str, Any]): Configuration dictionary for the episode function.
         """
         super().__init__(episode_fn_config)
         self.epjson_files_folder_path: str = episode_fn_config['epjson_files_folder_path']
         self.epw_files_folder_path: str = episode_fn_config['epw_files_folder_path']
         self.load_profiles_folder_path: str = episode_fn_config['load_profiles_folder_path']
     
-    @override(EpisodeFunction)
+    @override(BaseEpisode)
     def get_episode_config(self, env_config:Dict[str,Any]) -> Dict[str,Any]:
         """
-        This method define the properties of the episode. Changing some properties as weather or 
-        Run Time Period, and defining others fix properties as volumen or window area relation.
-        
-        Return:
-            dict: The method returns the env_config with modifications.
+        Returns the episode configuration for the EnergyPlus environment.
+
+        Args:
+            env_config (Dict[str, Any]): The environment configuration.
+
+        Returns:
+            Dict[str, Any]: The episode configuration.
         """
         # select the model:
         model_window_configs = {
@@ -307,3 +296,32 @@ class random_simple_building_episode(EpisodeFunction):
             raise ValueError('Invalid month')
         return max_day
     
+    @override(BaseEpisode)
+    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+        """
+        Returns the agents for the episode configuration in the EnergyPlus environment.
+
+        Args:
+            env_config (Dict[str, Any]): The environment configuration.
+            possible_agents (List[str]): List of possible agents.
+
+        Returns:
+            Dict[str, Any]: The agents that are acting for the episode configuration. Default: possible_agents list.
+        """
+        # Implement the logic to select the agents for the episode
+        return super().get_episode_agents(env_config, possible_agents)
+    
+    @override(BaseEpisode)
+    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+        """
+        Returns the agents for the timestep configuration in the EnergyPlus environment.
+
+        Args:
+            env_config (Dict[str, Any]): The environment configuration.
+            possible_agents (List[str]): List of possible agents.
+
+        Returns:
+            Dict[str, Any]: The agents that are acting for the timestep configuration. Default: possible_agents list.
+        """
+        # Implement the logic to select the agents for each timestep
+        return super().get_timestep_agents(env_config, possible_agents)

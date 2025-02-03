@@ -1,5 +1,5 @@
 """
-EnergyPlus Runner
+Runner Base Class
 ==================
 
 This script contain the EnergyPlus Runner that execute EnergyPlus from its 
@@ -11,9 +11,9 @@ import time
 from queue import Queue
 from typing import Any, Dict, List, Optional, Tuple
 from ctypes import c_void_p
-from eprllib.ActionFunctions.ActionFunctions import ActionFunction
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
-from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.Filters.BaseFilter import BaseFilter
+from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.env_config_utils import EP_API_add_path
 from eprllib.Utils.observation_utils import (
     get_actuator_name,
@@ -32,7 +32,7 @@ from pyenergyplus.api import EnergyPlusAPI
 
 api = EnergyPlusAPI()
 
-class EnergyPlusRunner:
+class BaseRunner:
     """
     This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
@@ -45,24 +45,23 @@ class EnergyPlusRunner:
         act_queue: Queue,
         infos_queue: Queue,
         agents: List,
-        observation_fn: Dict[str,ObservationFunction],
-        action_fn: Dict[str, ActionFunction],
-        multiagent_fn: MultiagentFunction
+        filter_fn: Dict[str,BaseFilter],
+        trigger_fn: Dict[str, BaseTrigger],
+        connector_fn: BaseConnector
         ) -> None:
         """
-        The object has an intensive interaction with EnergyPlus Environment script, exchange information
-        between two threads. For a good coordination queue events are stablished and different canals of
-        information are defined.
+        Initializes the BaseRunner object.
 
         Args:
-            episode (int): Episode number.
-            env_config (Dict[str, Any]): Environment configuration defined in the call to the EnergyPlus Environment.
-            obs_queue (Queue): Queue object definition.
-            act_queue (Queue): Queue object definition.
-            infos_queue (Queue): Queue object definition.
-        
-        Return:
-            None.
+            env_config (Dict[str, Any]): Configuration settings for the environment.
+            episode (int): The current episode number.
+            obs_queue (Queue): Queue for sending observations.
+            act_queue (Queue): Queue for receiving actions.
+            infos_queue (Queue): Queue for sending additional information.
+            agents (List): List of agents in the environment.
+            filter_fn (Dict[str, BaseFilter]): Dictionary of filter functions for each agent.
+            trigger_fn (Dict[str, BaseTrigger]): Dictionary of trigger functions for each agent.
+            connector_fn (BaseConnector): Connector function for combining agent observations.
         """
         # Asignation of variables.
         self.env_config = env_config
@@ -95,9 +94,9 @@ class EnergyPlusRunner:
         # self.infos_keys = []
         
         # Define the action and observation functions.
-        self.action_fn = action_fn
-        self.observation_fn = observation_fn
-        self.multiagent_fn = multiagent_fn
+        self.trigger_fn = trigger_fn
+        self.filter_fn = filter_fn
+        self.connector_fn = connector_fn
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
@@ -113,14 +112,14 @@ class EnergyPlusRunner:
                 f"{agent}_meters": [meters, meters_handles],
                 f"{agent}_actuators": [actuators, actuators_handles]
             })
+    
     def progress_handler(self, progress: int) -> None:
         if progress >= 99:
             self.is_last_timestep = True
             
     def start(self) -> None:
         """
-        This method inicialize EnergyPlus. First the episode is configurate, the calling functions
-        established and the thread is generated here.
+        Starts the EnergyPlus simulation.
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state:c_void_p = api.state_manager.new_state()
@@ -186,16 +185,16 @@ class EnergyPlusRunner:
         dict_agents_obs = {agent: None for agent in self.agents}
         for agent in self.agents:
             dict_agents_obs.update({
-                agent: self.observation_fn[agent].set_agent_obs(
+                agent: self.filter_fn[agent].set_agent_obs(
                     self.env_config,
                     agent_states[agent]
                 )})
         
         # First is send the observation of the top-level agents. If there is only one shape of agents, the _collect_obs
         # method is ended here. If there are more than one shape of agents, the action (goal) will be requested and the
-        # observations of the next shape will be request. This is implemented until reach the lowest level of the herarchy
+        # observations of the next shape will be request. This is implemented until reach the lowest level of the hierarchy
         # if any.
-        top_level_agents_obs, top_level_agents_infos, is_lowest_level = self.multiagent_fn.set_top_level_obs(
+        top_level_agents_obs, top_level_agents_infos, is_lowest_level = self.connector_fn.set_top_level_obs(
             self.env_config,
             agent_states,
             dict_agents_obs,
@@ -209,7 +208,7 @@ class EnergyPlusRunner:
         self.infos_queue.put(top_level_agents_infos)
         self.infos_event.set()
         
-        # Implementation for herarchical agents.
+        # Implementation for hierarchical agents.
         while not is_lowest_level:
             # Wait for a goal selection
             event_flag = self.act_event.wait(self.env_config["timeout"])
@@ -218,7 +217,7 @@ class EnergyPlusRunner:
             # Get the action from the EnergyPlusEnvironment `step` method.
             goals = self.act_queue.get()
             
-            low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.multiagent_fn.set_low_level_obs(
+            low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
                 self.env_config,
                 agent_states,
                 dict_agents_obs,
@@ -271,7 +270,7 @@ class EnergyPlusRunner:
             # considering that one agent could manage more than one actuator.
             actuator_list = [actuator for actuator in self.agent_variables_and_handles[f"{agent}_actuators"][0].keys()]
             
-            actuator_actions = self.action_fn[agent].agent_to_actuator_action(dict_action[agent], actuator_list)
+            actuator_actions = self.trigger_fn[agent].agent_to_actuator_action(dict_action[agent], actuator_list)
             
             # Check if there is an actuator_dict_actions value equal to None.
             for actuator in actuator_list:
@@ -280,7 +279,7 @@ class EnergyPlusRunner:
                 
             # Perform the actions in EnergyPlus simulation.
             for actuator in actuator_list:
-                action = self.action_fn[agent].get_actuator_action(actuator_actions[actuator], actuator)
+                action = self.trigger_fn[agent].get_actuator_action(actuator_actions[actuator], actuator)
                 api.exchange.set_actuator_value(
                     state=state_argument,
                     actuator_handle=self.agent_variables_and_handles[f"{agent}_actuators"][1][actuator],

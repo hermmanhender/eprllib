@@ -1,6 +1,6 @@
 """
-Multi-Agent Environment for EnergyPlus in RLlib
-================================================
+Base Environment
+=================
 
 This script define the environment of EnergyPlus implemented in RLlib. To works 
 need to define the EnergyPlus Runner.
@@ -8,76 +8,59 @@ need to define the EnergyPlus Runner.
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
-from typing import Any, Dict, Optional
-from eprllib.Env.MultiAgent.EnergyPlusRunner import EnergyPlusRunner
-from eprllib.RewardFunctions.RewardFunctions import RewardFunction
-from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
-from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
-from eprllib.ObservationFunctions.ObservationFunctions import ObservationFunction
-from eprllib.ActionFunctions.ActionFunctions import ActionFunction
+from typing import Any, Dict, Optional, Tuple
+from eprllib.Env.BaseRunner import BaseRunner
+from eprllib.Agents.Rewards.BaseReward import BaseReward
+from eprllib.Agents.Filters.BaseFilter import BaseFilter
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
 
-class EnergyPlusEnv_v0(MultiAgentEnv):
-    """The EnergyPlusEnv_v0 class represents a multi-agent environment for 
+class BaseEnvironment(MultiAgentEnv):
+    """
+    The BaseEnvironment class represents a multi-agent environment for 
     reinforcement learning tasks related to building energy simulation using 
     EnergyPlus software. It inherits from the MultiAgentEnv class, which 
     suggests that it supports multiple agents interacting with the environment.
 
-    The class initializes with an env_config dictionary that contains various 
-    configuration settings for the environment, such as the list of agent IDs, 
-    action spaces, observable variables, actuators, meters, and other 
-    EnergyPlus-related settings.
-    
-    The reset method is responsible for setting up a new episode of the environment. 
-    It increments the episode counter, initializes queues for communication between 
-    the environment and EnergyPlus, and starts an instance of the EnergyPlusRunner
-    class, which likely handles the EnergyPlus simulation.
-    
-    The step method is the core of the environment, where agents take actions, and 
-    the environment updates its state accordingly. It processes the provided actions, 
-    communicates with the EnergyPlus simulation through queues, retrieves 
-    observations and information from the simulation, calculates rewards based on a 
-    specified reward function, and determines if the episode should terminate or truncate.
-    
-    The close method is used to stop the EnergyPlus simulation when the environment is 
-    no longer needed.
-    
-    The render method is currently a placeholder and does not perform any rendering 
-    functionality.
-    
-    Overall, this class encapsulates the logic for running EnergyPlus simulations as 
-    part of a multi-agent reinforcement learning environment, allowing agents to 
-    interact with the building energy simulation and receive observations, rewards, 
-    and termination signals based on their actions.
+    Attributes:
+        env_config (Dict[str, Any]): Configuration settings for the environment, 
+            such as the list of agent IDs, action spaces, observable variables, 
+            actuators, meters, and other EnergyPlus-related settings.
+        episode_counter (int): Counter for the number of episodes.
+        queues (Dict[str, Queue]): Queues for communication between the environment 
+            and EnergyPlus.
+        runner (BaseRunner): Instance of the EnergyPlusRunner class that handles 
+            the EnergyPlus simulation.
+
+    Methods:
+        reset() -> Dict[str, Any]:
+            Sets up a new episode of the environment. Increments the episode counter, 
+            initializes queues for communication, and starts an instance of the 
+            EnergyPlusRunner class.
+        
+        step(actions: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]:
+            The core method where agents take actions, and the environment updates 
+            its state accordingly. Processes the provided actions, communicates with 
+            the EnergyPlus simulation, retrieves observations and information, 
+            calculates rewards, and determines if the episode should terminate or truncate.
+        
+        close() -> None:
+            Stops the EnergyPlus simulation when the environment is no longer needed.
+        
+        render() -> None:
+            Placeholder method for rendering functionality.
     """
     def __init__(
         self,
         env_config: Dict[str, Any]
-        ):
-        """The __init__ method in the EnergyPlusEnv_v0 class is responsible for 
-        initializing the multi-agent environment for the EnergyPlus reinforcement 
-        learning task. Here's a summary of what it does:
-            * 1. It assigns the env_config dictionary, which contains various 
-            configuration settings for the environment, such as agent IDs, action 
-            spaces, observable variables, actuators, meters, and other EnergyPlus-related 
-            settings.
-            * 2. It sets the agents attribute as a set of agent IDs from the env_config.
-            * 3. It assigns the action_space attribute from the env_config.
-            * 4. It calculates the length of the observation space based on the number of 
-            observable variables, meters, actuators, time variables, weather variables, 
-            and other relevant information specified in the env_config. It then creates a 
-            Box space for the observation_space attribute.
-            * 5. It initializes the energyplus_runner, obs_queue, act_queue, and infos_queue
-            attributes to None. These will be used later for communication between the 
-            environment and the EnergyPlus simulation.
-            * 6. It sets up variables for tracking the episode number (episode), timestep 
-            (timestep), termination status (terminateds), and truncation status (truncateds).
-            * 7. It creates a dictionary last_obs and last_infos to store the last observation 
-            and information for each agent.
-        
-        Overall, the __init__ method sets up the necessary data structures and configurations 
-        for the EnergyPlus multi-agent environment, preparing it for running simulations 
-        and interacting with agents.
+    ):
+        """
+        Initializes the BaseEnvironment class.
+
+        Args:
+            env_config (Dict[str, Any]): Configuration settings for the environment.
         """
         self.env_config = env_config
         
@@ -90,24 +73,24 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         # currently "alive" agents are.
         
         # Episode and multiagent functions
-        self.episode_fn: EpisodeFunction = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
-        self.multiagent_fn: MultiagentFunction = self.env_config['multiagent_fn'](self.env_config["multiagent_fn_config"])
+        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
         
         # asigning the configuration of the environment.
-        self.reward_fn: Dict[str, RewardFunction] = {agent: None for agent in self.agents}
+        self.reward_fn: Dict[str, BaseReward] = {agent: None for agent in self.agents}
         
-        self.action_fn: Dict[str, ActionFunction] = {agent: None for agent in self.agents}
-        self.observation_fn: Dict[str, ObservationFunction] = {agent: None for agent in self.agents}
+        self.trigger_fn: Dict[str, BaseTrigger] = {agent: None for agent in self.agents}
+        self.filter_fn: Dict[str, BaseFilter] = {agent: None for agent in self.agents}
         for agent in self.agents:
-            self.action_fn.update({agent: self.env_config["agents_config"][agent]["action"]['action_fn'](self.env_config["agents_config"][agent]["action"]["action_fn_config"])})
-            self.observation_fn.update({agent: self.env_config["agents_config"][agent]["observation"]['observation_fn'](self.env_config["agents_config"][agent]["observation"]["observation_fn_config"])})
+            self.trigger_fn.update({agent: self.env_config["agents_config"][agent]["trigger"]['trigger_fn'](self.env_config["agents_config"][agent]["trigger"]["trigger_fn_config"])})
+            self.filter_fn.update({agent: self.env_config["agents_config"][agent]["filter"]['filter_fn'](self.env_config["agents_config"][agent]["filter"]["filter_fn_config"])})
         
         # asignation of environment action space.
         self.action_space = {agent: None for agent in self.agents}
         self.observation_space = {agent: None for agent in self.agents}
         for agent in self.agents:
-            self.action_space[agent] = self.action_fn[agent].get_action_space_dim()
-            self.observation_space[agent] = self.observation_fn[agent].get_agent_obs_dim(self.env_config, self.multiagent_fn, agent)
+            self.action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
+            self.observation_space[agent] = self.filter_fn[agent].get_agent_obs_dim(self.env_config, self.connector_fn, agent)
         
         self.action_space = spaces.Dict(self.action_space)
         self.observation_space = spaces.Dict(self.observation_space)
@@ -116,7 +99,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         super().__init__()
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
-        self.energyplus_runner: Optional[EnergyPlusRunner] = None
+        self.runner: Optional[BaseRunner] = None
         self.obs_queue: Optional[Queue] = None
         self.act_queue: Optional[Queue] = None
         self.infos_queue: Optional[Queue] = None
@@ -138,6 +121,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None
     ):
+        """
+        Sets up a new episode of the environment.
+
+        Returns:
+            Dict[str, Any]: Initial observations for each agent.
+        """
         # Increment the counting of episodes in 1.
         self.episode += 1
         # saving the episode in the env_config to use across functions.
@@ -148,7 +137,7 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         if not self.truncateds:
             # Condition implemented to restart a new epsiode when simulation is completed and 
             # EnergyPlus Runner is already inicialized.
-            if self.energyplus_runner is not None:
+            if self.runner is not None:
                 self.close()
             # Define the queues for flow control between MDP and EnergyPlus threads in a max size 
             # of 1 because EnergyPlus timestep will be processed at a time.
@@ -188,23 +177,23 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
             
             
             # Start EnergyPlusRunner whith the following configuration.
-            self.energyplus_runner = EnergyPlusRunner(
+            self.runner = BaseRunner(
                 episode = self.episode,
                 env_config = self.env_config,
                 obs_queue = self.obs_queue,
                 act_queue = self.act_queue,
                 infos_queue = self.infos_queue,
                 agents = self.agents,
-                observation_fn = self.observation_fn,
-                action_fn = self.action_fn,
-                multiagent_fn = self.multiagent_fn
+                filter_fn = self.filter_fn,
+                trigger_fn = self.trigger_fn,
+                connector_fn = self.connector_fn
             )
             # Divide the thread in two in this point.
-            self.energyplus_runner.start()
+            self.runner.start()
             # Wait untill an observation and an infos are made, and get the values.
-            self.energyplus_runner.obs_event.wait()
+            self.runner.obs_event.wait()
             self.last_obs = self.obs_queue.get()
-            self.energyplus_runner.infos_event.wait()
+            self.runner.infos_event.wait()
             self.last_infos = self.infos_queue.get()
         
         # Asign the obs and infos to the environment.
@@ -217,7 +206,20 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         return obs, infos
 
     @override(MultiAgentEnv)
-    def step(self, action):
+    def step(
+        self, 
+        actions: Dict[str, Any]
+    ) -> Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]:
+        """
+        The core method where agents take actions, and the environment updates its state accordingly.
+
+        Args:
+            actions (Dict[str, Any]): Actions taken by each agent.
+
+        Returns:
+            Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]: 
+                Observations, rewards, done flags, truncated flags, and additional info for each agent.
+        """
         # increment the timestep in 1.
         self.timestep += 1
         # ===CONTROLS=== #
@@ -240,12 +242,12 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         timeout = self.env_config["timeout"]
         
         # check for simulation errors.
-        if self.energyplus_runner.failed():
+        if self.runner.failed():
             self.terminateds = True
             raise Exception('Simulation in EnergyPlus fallied.')
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
-        if self.energyplus_runner.simulation_complete:
+        if self.runner.simulation_complete:
             # if the simulation is complete, the episode is ended.
             self.terminateds = True
             # we use the last observation as a observation for the timestep.
@@ -257,15 +259,15 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
         else:
             try:
                 # Send the action to the EnergyPlus Runner flow.
-                self.act_queue.put(action)
-                self.energyplus_runner.act_event.set()
+                self.act_queue.put(actions)
+                self.runner.act_event.set()
                 # Modify the quantity of agents in the environment for this timestep, if apply.
-                self.energyplus_runner.agents = self.episode_fn.get_timestep_agents(self.env_config, self.possible_agents)
+                self.runner.agents = self.episode_fn.get_timestep_agents(self.env_config, self.possible_agents)
                 
                 # Get the return observation and infos after the action is applied.
-                self.energyplus_runner.obs_event.wait(timeout=timeout)
+                self.runner.obs_event.wait(timeout=timeout)
                 obs = self.obs_queue.get(timeout=timeout)
-                self.energyplus_runner.infos_event.wait(timeout=timeout)
+                self.runner.infos_event.wait(timeout=timeout)
                 infos = self.infos_queue.get(timeout=timeout)
                 # Upgrade last observation and infos dicts.
                 self.last_obs = obs
@@ -291,9 +293,15 @@ class EnergyPlusEnv_v0(MultiAgentEnv):
 
     @override(MultiAgentEnv)
     def close(self):
-        if self.energyplus_runner is not None:
-            self.energyplus_runner.stop()
+        """
+        Stops the EnergyPlus simulation when the environment is no longer needed.
+        """
+        if self.runner is not None:
+            self.runner.stop()
     
     @override(MultiAgentEnv)
     def render(self, mode="human"):
+        """
+        Placeholder method for rendering functionality.
+        """
         pass

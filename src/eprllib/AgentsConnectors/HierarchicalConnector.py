@@ -1,52 +1,64 @@
 """
-Herarchica agent implementation
-================================
+Hierarchical Agents Connector
+=============================
 
-Two levels of herarchy are used. In the top-level, a manager agent establish goals
-and gives this as an augmentation to the observation of the low-level agents.
+This module implements a hierarchical connector with two levels of hierarchy. In the top-level, a manager agent 
+establishes goals and provides these as an augmentation to the observation of the low-level agents.
 
-The low level agents use a fully-shared-parameter policy.
+The low-level agents use a fully-shared-parameter policy.
 """
+
 import numpy as np
 import gymnasium as gym
 from typing import Dict, Any, List, Tuple
-from eprllib.MultiagentFunctions.MultiagentFunctions import MultiagentFunction
+from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 
-class herarchical_agent(MultiagentFunction):
+class HierarchicalConnector(BaseConnector):
     def __init__(
         self, 
-        multiagent_fn_config: Dict[str, Any] = {}
+        connector_fn_config: Dict[str, Any] = {}
         ):
-        super().__init__(multiagent_fn_config)
-        
-        self.sub_multiagent_fn: MultiagentFunction = multiagent_fn_config["sub_multiagent_fn"](multiagent_fn_config["sub_multiagent_fn_config"])
-        self.top_level_agent: str = multiagent_fn_config["top_level_agent"]
-        self.top_level_temporal_scale: int = multiagent_fn_config["top_level_temporal_scale"]
-        
-        self.timestep_runner: int = 0
-        self.top_level_goal: int|List = -1
-        self.top_level_obs: Dict[str, Any] = None
-        self.top_level_trayectory: Dict[str,List[float|int]] = {}
-        
-    @override(MultiagentFunction)
-    def get_agent_obs_dim(
-        self,
-        env_config: Dict[str,Any],
-        agent: str = None
-        ) -> gym.Space:
         """
-        This method construct the observation space of the environment.
+        Initializes the hierarchical connector.
 
         Args:
-            env_config (Dict): The environment configuration dictionary.
+            connector_fn_config (Dict[str, Any]): Configuration dictionary for the connector function.
+                - sub_connector_fn (Callable): The function to create the sub-connector.
+                - sub_connector_fn_config (Dict[str, Any]): Configuration for the sub-connector function.
+                - top_level_agent (str): The identifier for the top-level agent.
+                - top_level_temporal_scale (int): The temporal scale for the top-level agent.
+        """
+        super().__init__(connector_fn_config)
+        
+        self.sub_connector_fn: BaseConnector = connector_fn_config["sub_connector_fn"](connector_fn_config["sub_connector_fn_config"])
+        self.top_level_agent: str = connector_fn_config["top_level_agent"]
+        self.top_level_temporal_scale: int = connector_fn_config["top_level_temporal_scale"]
+        
+        self.timestep_runner: int = 0
+        self.top_level_goal: int | List = None
+        self.top_level_obs: Dict[str, Any] = None
+        self.top_level_trajectory: Dict[str, List[float | int]] = {}
+        
+    @override(BaseConnector)
+    def get_agent_obs_dim(
+        self,
+        env_config: Dict[str, Any],
+        agent: str = None
+    ) -> gym.Space:
+        """
+        Construct the observation space of the environment.
+
+        Args:
+            env_config (Dict[str, Any]): The environment configuration dictionary.
+            agent (str, optional): The agent identifier.
 
         Returns:
-            space.Box: The observation space of the environment.
+            gym.Space: The observation space of the environment.
         """
         
         if agent != self.top_level_agent: 
-            observation_space_pre = self.sub_multiagent_fn.get_agent_obs_dim(env_config, agent)
+            observation_space_pre = self.sub_connector_fn.get_agent_obs_dim(env_config, agent)
             return gym.spaces.Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + 1, ))
         
         else:
@@ -90,7 +102,7 @@ class herarchical_agent(MultiagentFunction):
             return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len + 1, ))
         
         
-    @override(MultiagentFunction)
+    @override(BaseConnector)
     def set_top_level_obs(
         self,
         env_config: Dict[str, Any],
@@ -122,10 +134,10 @@ class herarchical_agent(MultiagentFunction):
         
         # Send the flat observation to the top_level_agent when the timestep is right or when the episode is ending.
         if self.timestep_runner % self.top_level_temporal_scale == 0 \
-            or self.top_level_goal == -1 \
+            or self.top_level_goal is None \
                 or is_last_timestep:
             # Set the agents observation and infos to communicate with the EPEnv.
-            self.top_level_obs = {self.top_level_agent: np.array(list(agent_states[self.top_level_agent].values()), dtype='float32')}
+            self.top_level_obs = {self.top_level_agent: dict_agents_obs[self.top_level_agent]}
             top_level_infos = {self.top_level_agent: self.top_level_trayectory}
             self.top_level_trayectory = {}
             self.timestep_runner += 1
@@ -133,7 +145,7 @@ class herarchical_agent(MultiagentFunction):
             return self.top_level_obs, top_level_infos, is_lowest_level
         
         else:
-            self.top_level_obs = {self.top_level_agent: np.array(list(agent_states[self.top_level_agent].values()), dtype='float32')}
+            self.top_level_obs = {self.top_level_agent: dict_agents_obs[self.top_level_agent]}
             return self.set_low_level_obs(
                 env_config,
                 agent_states,
@@ -142,7 +154,7 @@ class herarchical_agent(MultiagentFunction):
                 self.top_level_goal
             )
     
-    @override(MultiagentFunction)
+    @override(BaseConnector)
     def set_low_level_obs(
         self,
         env_config: Dict[str, Any],
@@ -167,7 +179,7 @@ class herarchical_agent(MultiagentFunction):
         del infos[self.top_level_agent]
         del agent_states[self.top_level_agent]
         
-        dict_agents_obs, infos_agents, is_lowest_level = self.sub_multiagent_fn.set_top_level_obs(
+        dict_agents_obs, infos_agents, is_lowest_level = self.sub_connector_fn.set_top_level_obs(
             env_config,
             agent_states,
             dict_agents_obs,
@@ -192,25 +204,25 @@ class herarchical_agent(MultiagentFunction):
             else:
                 ix = 0
                 for agent in dict_agents_obs.keys():
-                    dict_agents_obs.update({agent: np.concatenate(
+                    dict_agents_obs[agent] = np.concatenate(
                         (
                             dict_agents_obs[agent],
                             np.array([goals[self.top_level_agent][ix]], dtype='float32')
                         ),
                         dtype='float32'
-                    )})
+                    )
                     infos[agent].update({'goal': goals[self.top_level_agent][ix]})
                     ix += 1
                     
         elif type(goals[self.top_level_agent]) in [int, np.int8, np.int32, np.int64]: # This means a discrete action_space
             for agent in dict_agents_obs.keys():
-                dict_agents_obs.update({agent: np.concatenate(
+                dict_agents_obs[agent] = np.concatenate(
                     (
                         dict_agents_obs[agent],
                         np.array([goals[self.top_level_agent]], dtype='float32')
                     ),
                     dtype='float32'
-                )})
+                )
                 infos[agent].update({'goal': goals[self.top_level_agent]})
         
         else:
@@ -218,4 +230,3 @@ class herarchical_agent(MultiagentFunction):
         
         
         return dict_agents_obs, infos
-    

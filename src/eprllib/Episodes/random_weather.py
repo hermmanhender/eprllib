@@ -6,11 +6,11 @@ Ramdom weather for episode
 """
 
 from typing import Dict, Any
-from eprllib.EpisodeFunctions.EpisodeFunctions import EpisodeFunction
+from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.random_weather import get_random_weather
 from eprllib.Utils.annotations import override
 
-class random_weather_episode(EpisodeFunction):
+class random_weather_episode(BaseEpisode):
     """
     This class contains the methods to configure the episode in EnergyPlus with RLlib.
     """
@@ -24,7 +24,7 @@ class random_weather_episode(EpisodeFunction):
         if 'epw_files_folder_path' not in self.episode_fn_config:
             raise ValueError("The 'epw_files_folder_path' must be defined in the episode_fn_config.")
 
-    @override(EpisodeFunction)
+    @override(BaseEpisode)
     def get_episode_config(self, env_config: Dict[str,Any]) -> Dict[str,Any]:
         """
         This method update the 'epw_path' property of the env_config Dict and returns it
