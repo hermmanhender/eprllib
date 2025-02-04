@@ -16,7 +16,7 @@ Notes:
 - The number of actuators for other agents is variable. Consider changing the actuator state for agent action or 
   finding a way to expand the observation space to adapt to different observation sizes.
 """
-
+import time
 from typing import Any, Dict, Tuple
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
@@ -63,7 +63,7 @@ class FullySharedParametersConnector(BaseConnector):
         agent_list = [key for key in env_config["agents_config"].keys()]
         obs_space_len: int = 0
         
-        if len(agent_list) < self.number_of_agents_total:
+        if len(agent_list) > self.number_of_agents_total:
             raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
         
         if self.number_of_agents_total > 1:
@@ -166,8 +166,13 @@ class FullySharedParametersConnector(BaseConnector):
         
         # Add the ID vectors if it's needed
         if self.agent_ids is None:
-            
-            self.agent_ids = {agent: env_config['agents_config'][agent]["agent_id"] for agent in env_config['agents_config'].keys()}
+            id = 0
+            self.agent_ids = {agent: None for agent in env_config['agents_config'].keys()}
+            for agent in env_config['agents_config'].keys():
+                self.agent_ids.update({agent: id})
+                id += 1
+                if len(self.agent_ids) > self.number_of_agents_total:
+                    raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
 
             if len(self.agent_ids) > self.number_of_agents_total:
                 print(f"The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}.")
@@ -184,7 +189,7 @@ class FullySharedParametersConnector(BaseConnector):
                         raise ValueError("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
         
         # agents in this timestep
-        agent_list = [key for key in agent_states.keys()]
+        agent_list = [key for key in dict_agents_obs.keys()]
         # Add agent indicator for the observation for each agent
         agents_obs = {agent: np.array([], dtype='float32') for agent in agent_list}
         actuator_names = {agent: {} for agent in agent_list}
@@ -193,7 +198,12 @@ class FullySharedParametersConnector(BaseConnector):
             # Remove from agent_states and save the actuator items.
             for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
                 actuator_name = get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
-                actuator_names[agent].update({actuator_name: agent_states[agent].pop(actuator_name)})
+                actuator_names[agent].update({actuator_name: agent_states[agent].get(actuator_name, -2)})
+                if actuator_names[agent][actuator_name] == -2:
+                    print(f"Looking for actuator: {actuator_name}")
+                    print(f"Available keys in agent_states[{agent}]: {agent_states[agent].keys()}")
+                    time.sleep(10)
+                    
             
             # Agent properties
             agent_id_vector = None
@@ -205,8 +215,8 @@ class FullySharedParametersConnector(BaseConnector):
                 agent_id_vector[self.agent_ids[agent]] = 1
                 
             
-            if agent_id_vector is not None and any(agent_states[agent].values()):
-                agents_obs[agent] = np.concatenate(
+            if agent_id_vector is not None:
+                dict_agents_obs[agent] = np.concatenate(
                     (
                         agent_id_vector,
                         dict_agents_obs[agent]

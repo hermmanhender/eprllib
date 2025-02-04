@@ -23,7 +23,7 @@ class EnvConfig:
         self.epw_path: str = NotImplemented
         self.output_path: str = NotImplemented
         self.ep_terminal_output: bool = True
-        self.timeout: float = 10.0
+        self.timeout: float | int = 10.0
         self.evaluation: bool = False
 
         # Agents configuration
@@ -42,7 +42,7 @@ class EnvConfig:
         epw_path: str = NotImplemented,
         output_path: str = NotImplemented,
         ep_terminal_output: Optional[bool] = True,
-        timeout: Optional[float] = 10.0,
+        timeout: Optional[float | int] = 10.0,
         evaluation: bool = False,
     ):
         """
@@ -53,7 +53,7 @@ class EnvConfig:
             epw_path (str): The path to the weather file in the format of epw file.
             output_path (str): The path to the output directory.
             ep_terminal_output (Optional[bool]): Flag to enable or disable terminal output from EnergyPlus.
-            timeout (Optional[float]): Timeout for the simulation.
+            timeout (Optional[float | int]): Timeout for the simulation.
             evaluation (bool): Flag to indicate if the environment is in evaluation mode.
         """
         self.epjson_path = epjson_path
@@ -131,6 +131,12 @@ class EnvConfig:
             self.episode_fn = episode_fn
             self.episode_fn_config = episode_fn_config
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+        
     def build(self) -> Dict:
         """
         Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
@@ -145,28 +151,28 @@ class EnvConfig:
         # generals
         # Chech that the variables defined in EnvConfig are the allowed in the EnvConfig base
         # class.
-        expected_types = {
-            'epjson_path': str,
-            'epw_path': str,
-            'output_path': str,
-            'ep_terminal_output': bool,
-            'timeout': float,
-            'evaluation': bool,
-            'agents_config': Dict[str,Dict|AgentSpec],
-            'connector_fn': BaseConnector,
-            'connector_fn_config': Dict[str,Any],
-            'episode_fn': BaseEpisode,
-            'episode_fn_config': Dict[str,Any],
-            'cut_episode_len': int
-        }
+        # expected_types = {
+        #     'epjson_path': str,
+        #     'epw_path': str,
+        #     'output_path': str,
+        #     'ep_terminal_output': bool,
+        #     'timeout': (float, int),
+        #     'evaluation': bool,
+        #     'agents_config': dict,
+        #     'connector_fn': Any,
+        #     'connector_fn_config': dict,
+        #     'episode_fn': BaseEpisode,
+        #     'episode_fn_config': dict,
+        #     'cut_episode_len': int
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
                 
         
         if self.epjson_path.endswith(".epJSON") or self.epjson_path.endswith(".idf"):

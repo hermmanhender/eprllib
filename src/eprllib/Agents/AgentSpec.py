@@ -43,24 +43,30 @@ class RewardSpec:
         self.reward_fn = reward_fn
         self.reward_fn_config = reward_fn_config
     
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+    
     def build(self) -> Dict:
         """
         This method is used to build the ActionSpec object.
         """
         # Check that the variables defined in RewardSpec are the allowed in the RewardSpec base
         # class.
-        expected_types = {
-            'reward_fn': BaseReward,
-            'reward_fn_config': (Dict[str, Any]),
-        }
+        # expected_types = {
+        #     'reward_fn': BaseReward,
+        #     'reward_fn_config': dict,
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
             
         return vars(self)
         
@@ -275,32 +281,39 @@ class ObservationSpec:
         if counter == 0:
             raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
     
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+        
+    
     def build(self) -> Dict:
         """
         This method is used to build the ObservationSpec object.
         """
         # Check that the variables defined in ObservationSpec are the allowed in the ObservationSpec base
         # class.
-        expected_types = {
-            'variables': (List[Tuple[str, str]], None),
-            'internal_variables': (List[str], None),
-            'meters': (List[str], None),
-            'simulation_parameters': (Dict[str, bool]),
-            'zone_simulation_parameters': (Dict[str, bool]),
-            'use_one_day_weather_prediction': bool,
-            'prediction_hours': int,
-            'prediction_variables': (Dict[str, bool]),
-            'use_actuator_state': bool,
-            'other_obs': (Dict[str, float | int])
-        }
+        # expected_types = {
+        #     'variables': (list, None),
+        #     'internal_variables': (list, None),
+        #     'meters': (list, None),
+        #     'simulation_parameters': dict,
+        #     'zone_simulation_parameters': dict,
+        #     'use_one_day_weather_prediction': bool,
+        #     'prediction_hours': int,
+        #     'prediction_variables': dict,
+        #     'use_actuator_state': bool,
+        #     'other_obs': dict
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
             
         return vars(self)
 
@@ -330,24 +343,30 @@ class FilterSpec:
             self.filter_fn = filter_fn
             self.filter_fn_config = filter_fn_config
     
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+        
     def build(self) -> Dict:
         """
         This method is used to build the FilterSpec object.
         """
         # Check that the variables defined in FilterSpec are the allowed in the FilterSpec base
         # class.
-        expected_types = {
-            'filter_fn': (BaseFilter, None),
-            'filter_fn_config': (Dict[str, Any])
-        }
+        # expected_types = {
+        #     'filter_fn': (BaseFilter, None),
+        #     'filter_fn_config': dict
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
             
         return vars(self)
 
@@ -384,23 +403,29 @@ class ActionSpec:
         
         self.actuators = actuators
     
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+        
     def build(self) -> Dict:
         """
         This method is used to build the ActionSpec object.
         """
         # Check that the variables defined in ActionSpec are the allowed in the ActionSpec base
         # class.
-        expected_types = {
-            'actuators': List[Tuple[str, str, str]]
-        }
+        # expected_types = {
+        #     'actuators': list
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
             
         return vars(self)
 
@@ -428,24 +453,30 @@ class TriggerSpec:
         self.trigger_fn = trigger_fn
         self.trigger_fn_config = trigger_fn_config
     
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+    
     def build(self) -> Dict:
         """
         This method is used to build the TriggerSpec object.
         """
         # Check that the variables defined in TriggerSpec are the allowed in the TriggerSpec base
         # class.
-        expected_types = {
-            'trigger_fn': BaseTrigger,
-            'trigger_fn_config': Dict[str, Any]
-        }
+        # expected_types = {
+        #     'trigger_fn': BaseTrigger,
+        #     'trigger_fn_config': dict
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
             
         return vars(self)
 
@@ -491,7 +522,7 @@ class AgentSpec:
         else:
             self.filter = filter
         self.action = action
-        if self.trigger is None:
+        if trigger is None:
             self.trigger = TriggerSpec()
         else:
             self.trigger = trigger
@@ -500,41 +531,47 @@ class AgentSpec:
         for key, value in kwargs.items():
             setattr(self, key, value)
     
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+        
     def build(self) -> Dict:
         """
         This method is used to build the AgentSpec object.
         """
         # Check that the variables defined in AgentSpec are the allowed in the AgentSpec base
         # class.
-        expected_types = {
-            'observation': (Dict, ObservationSpec),
-            'filter': (Dict, FilterSpec, None),
-            'action': (Dict, ActionSpec),
-            'trigger': (Dict, TriggerSpec, None),
-            'reward': (Dict, RewardSpec)
-        }
+        # expected_types = {
+        #     'observation': (dict, ObservationSpec),
+        #     'filter': (dict, FilterSpec, None),
+        #     'action': (dict, ActionSpec),
+        #     'trigger': (dict, TriggerSpec, None),
+        #     'reward': (dict, RewardSpec)
+        # }
         
-        is_valid, errors = validate_properties(self, expected_types)
-        if is_valid:
-            print("All properties have correct types")
-        else:
-            print("Validation errors:")
-            for error in errors:
-                print(f"- {error}")
+        # is_valid, errors = validate_properties(self, expected_types)
+        # if is_valid:
+        #     print("All properties have correct types")
+        # else:
+        #     print("Validation errors:")
+        #     for error in errors:
+        #         print(f"- {error}")
         
-        if isinstance(self.observation, ObservationSpec):
-            self.observation = self.observation.build()
+        # if isinstance(self.observation, ObservationSpec):
+        #     self.observation = self.observation.build()
 
-        if isinstance(self.filter, FilterSpec):
-            self.filter = self.filter.build()
+        # if isinstance(self.filter, FilterSpec):
+        #     self.filter = self.filter.build()
 
-        if isinstance(self.action, ActionSpec):
-            self.action = self.action.build()
+        # if isinstance(self.action, ActionSpec):
+        #     self.action = self.action.build()
 
-        if isinstance(self.trigger, TriggerSpec):
-            self.trigger = self.trigger.build()
+        # if isinstance(self.trigger, TriggerSpec):
+        #     self.trigger = self.trigger.build()
 
-        if isinstance(self.reward, RewardSpec):
-            self.reward = self.reward.build()
+        # if isinstance(self.reward, RewardSpec):
+        #     self.reward = self.reward.build()
             
         return vars(self)

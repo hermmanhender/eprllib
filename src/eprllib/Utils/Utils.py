@@ -4,7 +4,7 @@ General utilities
 
 Work in progress...
 """
-from typing import Set, Dict, List
+from typing import Set, Dict, List, get_origin, get_args, Union, _SpecialGenericAlias
 
 import os
 import json
@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import datetime
 
-        
+
 def variable_checking(
     epJSON_file:str,
 ) -> Set:
@@ -26,6 +26,15 @@ def variable_checking(
         set: list of missing variables.
     """
     pass
+
+from typing import get_origin, get_args, Union, _SpecialGenericAlias
+
+# Importar las clases que deseas validar
+from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Episodes.BaseEpisode import BaseEpisode
+from eprllib.Agents.Rewards.BaseReward import BaseReward
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.Filters.BaseFilter import BaseFilter
 
 def validate_properties(obj, expected_types):
     """
@@ -46,7 +55,7 @@ def validate_properties(obj, expected_types):
         is_optional = False
         expected_type = type_spec
         
-        if isinstance(type_spec, tuple) and len(type_spec) == 2:
+        if isinstance(type_spec, tuple) and len(type_spec) == 2 and isinstance(type_spec[1], bool):
             expected_type, is_optional = type_spec
             
         # Check if property exists
@@ -65,18 +74,30 @@ def validate_properties(obj, expected_types):
         # Handle union types
         valid_types = (expected_type,) if isinstance(expected_type, type) else expected_type
         
-        if not isinstance(actual_value, valid_types):
+        def is_instance_of_type(value, types):
+            if isinstance(types, _SpecialGenericAlias):
+                types = (types,)
+            for typ in types:
+                origin = get_origin(typ)
+                if origin:
+                    if origin is Union:
+                        if any(is_instance_of_type(value, get_args(typ))):
+                            return True
+                    elif isinstance(value, origin):
+                        return True
+                elif isinstance(value, typ):
+                    return True
+            return False
+
+        if not is_instance_of_type(actual_value, valid_types):
             errors.append(
                 f"Property '{prop_name}' has incorrect type. "
-                f"Expected {' or '.join(t.__name__ for t in valid_types)}, "
+                f"Expected {', '.join(t.__name__ if isinstance(t, type) else str(t) for t in valid_types)}, "
                 f"got {type(actual_value).__name__}"
             )
             is_valid = False
     
     return is_valid, errors
-
-
-
 
 def inertial_mass_calculation(env_config:Dict) -> float:
     """
@@ -781,4 +802,3 @@ def generate_occupancy_schedule(input_path, output_path, random_variation=False,
 
     # Save the updated dataset to the specified output path
     data.to_csv(output_path, index=False)
-    
