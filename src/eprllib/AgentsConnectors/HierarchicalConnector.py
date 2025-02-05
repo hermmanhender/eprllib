@@ -38,7 +38,7 @@ class HierarchicalConnector(BaseConnector):
         self.timestep_runner: int = 0
         self.top_level_goal: int | List = None
         self.top_level_obs: Dict[str, Any] = None
-        self.top_level_trajectory: Dict[str, List[float | int]] = {}
+        self.top_level_trayectory: Dict[str, List[float | int]] = {}
         
     @override(BaseConnector)
     def get_agent_obs_dim(
@@ -99,7 +99,7 @@ class HierarchicalConnector(BaseConnector):
             if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
                 obs_space_len += len(env_config['agents_config'][agent]["action"]["actuators"])
         
-            return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len + 1, ))
+            return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
         
         
     @override(BaseConnector)

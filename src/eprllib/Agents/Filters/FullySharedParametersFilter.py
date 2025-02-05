@@ -43,9 +43,10 @@ class FullySharedParametersFilter(BaseFilter):
         Returns:
             Dict[str, Any]: Dictionary containing the observations for the agent.
         """
+        agent_states_copy = agent_states.copy()
         # Remove from agent_states and save the actuator items.
         for agent in env_config["agents_config"].keys():
             for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                _ = agent_states.pop(get_actuator_name(agent, actuator_config[0], actuator_config[1], actuator_config[2]), None)
+                _ = agent_states_copy.pop(get_actuator_name(agent, actuator_config[0], actuator_config[1], actuator_config[2]), None)
         
-        return np.array(list(agent_states.values()), dtype='float32')
+        return np.array(list(agent_states_copy.values()), dtype='float32')

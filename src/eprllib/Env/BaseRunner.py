@@ -201,7 +201,7 @@ class BaseRunner:
             self.infos,
             self.is_last_timestep
         )
-
+        
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(top_level_agents_obs)
         self.obs_event.set()
@@ -209,27 +209,31 @@ class BaseRunner:
         self.infos_event.set()
         
         # Implementation for hierarchical agents.
-        while not is_lowest_level:
-            # Wait for a goal selection
-            event_flag = self.act_event.wait(self.env_config["timeout"])
-            if not event_flag:
-                return
-            # Get the action from the EnergyPlusEnvironment `step` method.
-            goals = self.act_queue.get()
+        if not is_lowest_level:
+            while not is_lowest_level:
+                # Wait for a goal selection
+                event_flag = self.act_event.wait(self.env_config["timeout"])
+                if not event_flag:
+                    return
+                # Get the action from the EnergyPlusEnvironment `step` method.
+                actions: Dict[str, int | float] = self.act_queue.get()
+                goals: Dict[str, int | float] = {agent: None for agent in actions.keys()}
+                for agent in actions.keys():
+                    goals.update({agent: self.trigger_fn[agent].action_to_goal(actions)})
+                
+                low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
+                    self.env_config,
+                    agent_states,
+                    dict_agents_obs,
+                    self.infos,
+                    goals
+                )
             
-            low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
-                self.env_config,
-                agent_states,
-                dict_agents_obs,
-                self.infos,
-                goals
-            )
-        
-            # Set the agents observation and infos to communicate with the EPEnv.
-            self.obs_queue.put(low_level_agents_obs)
-            self.obs_event.set()
-            self.infos_queue.put(low_level_agents_infos)
-            self.infos_event.set()
+                # Set the agents observation and infos to communicate with the EPEnv.
+                self.obs_queue.put(low_level_agents_obs)
+                self.obs_event.set()
+                self.infos_queue.put(low_level_agents_infos)
+                self.infos_event.set()
         
 
     def _collect_first_obs(self, state_argument):
@@ -351,7 +355,7 @@ class BaseRunner:
         """The EnergyPlus actuators are defined in the environment configuration.
 
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent str: The EnvConfig dictionary.
 
         Returns:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
@@ -461,7 +465,6 @@ class BaseRunner:
             in self.agent_variables_and_handles[f"{agent}_actuators"][1].items()
         }
         self.infos[agent].update(variables)
-        
         return variables
     
     def get_simulation_parameters_values(
@@ -719,7 +722,7 @@ class BaseRunner:
                 key: api.exchange.get_actuator_handle(state_argument, *actuator)
                 for key, actuator in self.agent_variables_and_handles[f"{agent}_actuators"][0].items()
             })
-                
+            
             for handles in [
                 self.agent_variables_and_handles[f"{agent}_variables"][1],
                 self.agent_variables_and_handles[f"{agent}_internal_variables"][1],
