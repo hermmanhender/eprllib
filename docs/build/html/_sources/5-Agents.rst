@@ -1,14 +1,14 @@
 Agents API
 ===========
 
-The agents in ``eprllib`` are defined by its elementary componentes:
+The agents in eprllib are defined by its elementary componentes:
 
 1. The capability of **observation**.
 2. The **action** or control habilities.
 3. And the **reward**, compensation or penalty by its actions given an observation.
 
 .. image:: Images/agents.png
-    :width: 400
+    :width: 600
 
 The image shows the main paramenters inside an agent. All of them must be defined. The ``AgentSpec`` class
 help to construct the agents. To use it just import the class with:
