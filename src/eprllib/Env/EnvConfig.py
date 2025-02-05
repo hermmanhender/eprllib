@@ -143,11 +143,6 @@ class EnvConfig:
         Also this method chek that all the variables are well defined and add some constant parameters to use after in 
         the program (like agents unique ID).
         """
-        # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
-        # class.
-        # if env_config_validation(MyEnvConfig):
-        
-        
         # generals
         # Chech that the variables defined in EnvConfig are the allowed in the EnvConfig base
         # class.
@@ -195,3 +190,4 @@ class EnvConfig:
             ix += 1
         
         return vars(self)
+    
