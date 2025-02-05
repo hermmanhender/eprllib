@@ -63,7 +63,7 @@ class BaseTrigger:
         """
         raise NotImplementedError("This method should be implemented in the child class.")
     
-    def get_actuator_action(self, action: float | int, actuator: str) -> Any:
+    def get_actuator_action(self, action: float | int, actuator: str) -> int | float:
         """
         This method is used to get the actions of the actuators after transforming the
         agent dict action to actuator dict action with agent_to_actuator_action.
@@ -76,3 +76,16 @@ class BaseTrigger:
             Dict[str, Any]: A dict of transformed action for each agent in the environment.
         """
         return action
+
+    def action_to_goal(self, action: int | float) -> int | float:
+        """
+        This method is used to transform the action to a goal. The goal is used to define the reward.
+
+        Args:
+            action (Any): The action to be transformed.
+
+        Returns:
+            Any: The transformed action.
+        """
+        return action
+    

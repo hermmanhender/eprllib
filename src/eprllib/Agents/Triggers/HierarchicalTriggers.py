@@ -46,4 +46,17 @@ class HierarchicalTriggerDiscrete(BaseTrigger):
         This method is not used in top_level_agent.
         """
         raise ValueError("This method should not be called.")
+
+    @override(BaseTrigger)
+    def action_to_goal(self, action: int | float) -> int | float:
+        """
+        This method is used to transform the action to a goal. The goal is used to define the reward.
+
+        Args:
+            action (Any): The action to be transformed.
+
+        Returns:
+            Any: The transformed action.
+        """
+        return action/self.action_space_dim
     

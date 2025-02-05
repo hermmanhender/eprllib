@@ -216,7 +216,10 @@ class BaseRunner:
                 if not event_flag:
                     return
                 # Get the action from the EnergyPlusEnvironment `step` method.
-                goals = self.act_queue.get()
+                actions: Dict[str, int | float] = self.act_queue.get()
+                goals: Dict[str, int | float] = {agent: None for agent in actions.keys()}
+                for agent in actions.keys():
+                    goals.update({agent: self.trigger_fn[agent].action_to_goal(actions)})
                 
                 low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
                     self.env_config,
