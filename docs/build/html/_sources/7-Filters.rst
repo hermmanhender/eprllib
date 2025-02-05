@@ -5,6 +5,10 @@ The observations are the variables, parameters, meters, and others that the agen
 capable to sense. The following code-block present an example of an observation configuration
 with the help of ``ObservationSpec`` to show how is the correct way of set this agent property.
 
+.. image:: Images/filters.png
+    :width: 600
+
+
 .. code-block:: python
 
     from eprllib.Agent.AgentSpec import ObservationSpec

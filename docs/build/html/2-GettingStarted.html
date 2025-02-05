@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=2aa4d142"></script>
+    <script src="_static/documentation_options.js?v=862cd339"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -468,20 +468,19 @@ document.write(`
                   
   <section id="getting-started-with-eprllib">
 <h1>Getting Started with eprllib<a class="headerlink" href="#getting-started-with-eprllib" title="Link to this heading">#</a></h1>
-<p>Work in progres…</p>
 <p>There are various ways to classify control methods, one of which is learning-based approaches, such as
 Reinforcement Learning (RL). In scenarios where multiple agents operate simultaneously in an environment,
 they can take actions, receive observations, and obtain rewards from it. This interaction is utilized to
 learn an optimal policy that maps observations to actions. The general scheme of RL can be seen in the
 following image.</p>
-<a class="reference internal image-reference" href="_images/markov_decision_process.png"><img alt="_images/markov_decision_process.png" src="_images/markov_decision_process.png" style="width: 400px;" />
+<a class="reference internal image-reference" href="_images/markov_decision_process.png"><img alt="_images/markov_decision_process.png" src="_images/markov_decision_process.png" style="width: 600px;" />
 </a>
 <p>During the learning process, an algorithm attempts to predict the cumulative reward that the agents will
 receive if they follow a certain policy. This prediction is represented by a Value function <code class="docutils literal notranslate"><span class="pre">V(obs)</span></code> or an
 Action-Value function <code class="docutils literal notranslate"><span class="pre">Q(obs,act)</span></code>. A modern approach to predicting the <code class="docutils literal notranslate"><span class="pre">V</span></code> or <code class="docutils literal notranslate"><span class="pre">Q</span></code> functions involves using deep neural
 networks (DNN) to approximate these values. When DNNs are used, the methodology is referred to as Deep
 Reinforcement Learning (DRL), and the DNN model is known as the policy.</p>
-<p>In <code class="docutils literal notranslate"><span class="pre">eprllib</span></code>, we use <strong>EnergyPlus</strong> to model the environment and <strong>RLlib</strong> as a framework for DRL to train, evaluate,
+<p>In eprllib, we use <strong>EnergyPlus</strong> to model the environment and <strong>RLlib</strong> as a framework for DRL to train, evaluate,
 save, and restore policies.</p>
 <section id="running-a-simple-experiment-with-eprllib-and-rllib">
 <h2>Running a simple experiment with eprllib and RLlib<a class="headerlink" href="#running-a-simple-experiment-with-eprllib-and-rllib" title="Link to this heading">#</a></h2>

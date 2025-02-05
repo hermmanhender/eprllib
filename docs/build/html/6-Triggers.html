@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=2aa4d142"></script>
+    <script src="_static/documentation_options.js?v=862cd339"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -454,7 +454,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-argument-in-agent-definitions"><code class="docutils literal notranslate"><span class="pre">action</span></code> argument in agent definitions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-argument-in-agent-definitions">action argument in agent definitions</a></li>
 </ul>
             </nav>
         </div>
@@ -471,8 +471,10 @@ document.write(`
 <p>Actions are taken by the agents in every timestep. The final action is implemented in
 an EnergyPlus actuator that must be defined inside the agent configuration. An agent
 can control more than one actuator.</p>
+<a class="reference internal image-reference" href="_images/triggers.png"><img alt="_images/triggers.png" src="_images/triggers.png" style="width: 600px;" />
+</a>
 <section id="action-argument-in-agent-definitions">
-<h2><code class="docutils literal notranslate"><span class="pre">action</span></code> argument in agent definitions<a class="headerlink" href="#action-argument-in-agent-definitions" title="Link to this heading">#</a></h2>
+<h2>action argument in agent definitions<a class="headerlink" href="#action-argument-in-agent-definitions" title="Link to this heading">#</a></h2>
 <p>The action argument inside the AgentSpec is defined with help of the ActionSpec class:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">eprllib.Agent.AgentSpec</span> <span class="kn">import</span> <span class="n">ActionSpec</span>
 <span class="kn">from</span> <span class="nn">eprllib.ActionFuntions.ActionFuntions</span> <span class="kn">import</span> <span class="n">ActionFunction</span>
@@ -561,7 +563,7 @@ throug three methods called in the simulation process:</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-argument-in-agent-definitions"><code class="docutils literal notranslate"><span class="pre">action</span></code> argument in agent definitions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#action-argument-in-agent-definitions">action argument in agent definitions</a></li>
 </ul>
   </nav></div>
 

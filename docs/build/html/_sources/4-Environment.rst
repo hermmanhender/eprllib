@@ -3,6 +3,10 @@ Environment API
 
 Work in progres...
 
+.. image:: Images/env_config.png
+    :width: 600
+
+
 How work the standard environment in DRL
 -----------------------------------------
 
