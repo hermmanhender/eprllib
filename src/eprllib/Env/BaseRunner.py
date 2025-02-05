@@ -209,27 +209,28 @@ class BaseRunner:
         self.infos_event.set()
         
         # Implementation for hierarchical agents.
-        while not is_lowest_level:
-            # Wait for a goal selection
-            event_flag = self.act_event.wait(self.env_config["timeout"])
-            if not event_flag:
-                return
-            # Get the action from the EnergyPlusEnvironment `step` method.
-            goals = self.act_queue.get()
+        if not is_lowest_level:
+            while not is_lowest_level:
+                # Wait for a goal selection
+                event_flag = self.act_event.wait(self.env_config["timeout"])
+                if not event_flag:
+                    return
+                # Get the action from the EnergyPlusEnvironment `step` method.
+                goals = self.act_queue.get()
+                
+                low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
+                    self.env_config,
+                    agent_states,
+                    dict_agents_obs,
+                    self.infos,
+                    goals
+                )
             
-            low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
-                self.env_config,
-                agent_states,
-                dict_agents_obs,
-                self.infos,
-                goals
-            )
-        
-            # Set the agents observation and infos to communicate with the EPEnv.
-            self.obs_queue.put(low_level_agents_obs)
-            self.obs_event.set()
-            self.infos_queue.put(low_level_agents_infos)
-            self.infos_event.set()
+                # Set the agents observation and infos to communicate with the EPEnv.
+                self.obs_queue.put(low_level_agents_obs)
+                self.obs_event.set()
+                self.infos_queue.put(low_level_agents_infos)
+                self.infos_event.set()
         
 
     def _collect_first_obs(self, state_argument):
