@@ -156,7 +156,7 @@ class EnvironmentConfig:
         self, 
         epjson_path: str = NotImplemented,
         epw_path: str = NotImplemented,
-        output_path: str = NotImplemented,
+        output_path: Optional[str] = None,
         ep_terminal_output: Optional[bool] = True,
         timeout: Optional[float | int] = 10.0,
         evaluation: bool = False,
@@ -179,20 +179,46 @@ class EnvironmentConfig:
         self.timeout = timeout
         self.evaluation = evaluation
         
-        if epjson_path == NotImplemented:
+        if self.epjson_path == NotImplemented:
             raise NotImplementedError("epjson_path must be defined.")
-        if epjson_path.endswith(".epJSON") or epjson_path.endswith(".idf"):
+        if self.epw_path == NotImplemented:
+            raise NotImplementedError("epw_path must be defined.")
+        if self.output_path is None:
+            print("The output_path is not defined. The default output path will be used.")
+        
+        if isinstance(self.ep_terminal_output, bool):
+            pass
+        else:
+            raise ValueError("The ep_terminal_output must be a boolean.")
+        if isinstance(self.timeout, (float, int)):
+            pass
+        else:
+            raise ValueError("The timeout must be a float or an integer.")
+        if isinstance(self.evaluation, bool):
+            pass
+        else:
+            raise ValueError("The evaluation must be a boolean.")
+        if isinstance(self.epjson_path, str):
+            pass
+        else:
+            raise ValueError("The epjson_path must be a string.")
+        if isinstance(self.epw_path, str):
+            pass
+        else:
+            raise ValueError("The epw_path must be a string.")
+        if isinstance(self.output_path, (str, None)):
+            pass
+        else:
+            raise ValueError("The output_path must be a string.")
+        
+        if self.epjson_path.endswith(".epJSON") or self.epjson_path.endswith(".idf"):
             pass
         else:
             raise ValueError("The epjson_path must be a path to a epJSON or idf file.")
-        if epw_path == NotImplemented:
-            raise NotImplementedError("epw_path must be defined.")
-        if epw_path.endswith(".epw"):
+        if self.epw_path.endswith(".epw"):
             pass
         else:
             raise ValueError("The epw_path must be a path to a epw file.")
-        if output_path == NotImplemented:
-            raise NotImplementedError("output_path must be defined.")
         
     def agents(
         self,
