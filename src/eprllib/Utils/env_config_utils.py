@@ -7,7 +7,7 @@ Work in progress...
 
 from typing import Dict, Optional
 import inspect
-from eprllib.Env.EnvConfig import EnvConfig
+from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from gymnasium.spaces import Box, Discrete
 import sys
 
@@ -37,20 +37,20 @@ def EP_API_add_path(version:Optional[str]="24-2-0", path:Optional[str]=None):
         sys.path.insert(0, new_path)
         print(f"EnergyPlus API path added: {new_path}")
 
-def env_config_validation(MyEnvConfig: EnvConfig) -> bool:
+def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:
     """
     Validate the EnvConfig object before to be used in the env_config parameter of RLlib environment config.
     """
     # Check that the variables defined in EnvConfig are the allowed in the EnvConfig base
     # class.
-    allowed_vars = inspect.get_annotations(EnvConfig).keys()
+    allowed_vars = inspect.get_annotations(EnvironmentConfig).keys()
     for var in vars(MyEnvConfig):
         if var not in allowed_vars:
             raise ValueError(f"The variable {var} is not allowed in EnvConfig. Allowed variables are {allowed_vars}")
     return True
 
 def to_json(
-    MyEnvConfig: EnvConfig,
+    MyEnvConfig: EnvironmentConfig,
     output_path: str = None
     ) -> str:
     """Convert an EnvConfig object into a json string before to be used in the env_config parameter of RLlib environment config.
@@ -83,7 +83,7 @@ def to_json(
 
 def from_json(
     path: str
-    ) -> EnvConfig:
+    ) -> EnvironmentConfig:
     """Convert a json file into an EnvConfig object before to be used in the env_config parameter of RLlib environment config.
 
     Args:
@@ -96,7 +96,7 @@ def from_json(
     with open(path, 'r') as f:
         env_config_json = f.read()
     env_config_dict = json.loads(env_config_json)
-    env_config = EnvConfig(**env_config_dict)
+    env_config = EnvironmentConfig(**env_config_dict)
     return env_config
 
 def continuous_action_space():
