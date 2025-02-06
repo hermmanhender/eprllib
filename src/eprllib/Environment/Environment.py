@@ -19,7 +19,7 @@ from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
 
-class BaseEnvironment(MultiAgentEnv):
+class Environment(MultiAgentEnv):
     """
     The BaseEnvironment class represents a multi-agent environment for 
     reinforcement learning tasks related to building energy simulation using 
