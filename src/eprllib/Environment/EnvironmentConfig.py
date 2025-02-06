@@ -223,8 +223,6 @@ class EnvironmentConfig:
     def agents(
         self,
         agents_config:Dict[str,AgentSpec|Dict] = NotImplemented,
-        connector_fn: BaseConnector = NotImplemented,
-        connector_fn_config: Dict[str, Any] = {},
         ):
         """
         This method is used to modify the agents configuration of the environment.
@@ -235,17 +233,34 @@ class EnvironmentConfig:
             thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
             
         """
-        if agents_config == NotImplemented:
+        self.agents_config = agents_config
+        
+        if self.agents_config == NotImplemented:
             raise NotImplementedError("agents_config must be defined.")
 
-        self.agents_config = agents_config
+    def connector(
+        self,
+        connector_fn: BaseConnector = NotImplemented,
+        connector_fn_config: Dict[str, Any] = {},
+        ):
+        """
+        This method is used to modify the agents connector configuration of the environment.
+
+        Args:
+            connector_fn (BaseConnector): This method is used to define the interaction between the agents and the 
+            environment. By default, the independent learning is used.
+            
+            connector_fn_config (Dict): NotDescribed
+            
+        """
+        self.connector_fn = connector_fn
+        self.connector_fn_config = connector_fn_config
         
         if connector_fn == NotImplemented:
             print("The multiagent function is not defined. The default function (independent learning) will be used.")
-        else:
             self.connector_fn = connector_fn
-            self.connector_fn_config = connector_fn_config
-
+            self.connector_fn_config = {}
+    
     def episodes(
         self,
         episode_fn: BaseEpisode = None,
@@ -253,7 +268,7 @@ class EnvironmentConfig:
         cut_episode_len: int = 0,
         ):
         """
-        This method configure special functions to improve the use of eprllib.
+        This method configure episode functions to improve the use of eprllib.
 
         Args:
             episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it 
