@@ -32,7 +32,7 @@ from pyenergyplus.api import EnergyPlusAPI
 
 api = EnergyPlusAPI()
 
-class BaseRunner:
+class EnvironmentRunner:
     """
     This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
