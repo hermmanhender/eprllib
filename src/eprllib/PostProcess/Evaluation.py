@@ -6,7 +6,7 @@ This script execute the conventional controls in the evaluation scenario.
 """
 import os
 from ray.rllib.policy.policy import Policy
-from eprllib.Environment.BaseEnvironment import BaseEnvironment
+from eprllib.Environment.Environment import Environment
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import numpy as np
 import pandas as pd
@@ -31,7 +31,7 @@ class drl_evaluation:
         self.lstm_cell_size = lstm_cell_size
         self.policy = Policy.from_checkpoint(checkpoint_path)
         print(f"Checkpoint path restore: {checkpoint_path}")
-        self.env = BaseEnvironment(env_config)
+        self.env = Environment(env_config)
         self.agents = self.env.agents
         self.terminated = False
         self.data_queue: Optional[Queue] = None
