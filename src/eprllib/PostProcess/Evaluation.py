@@ -6,7 +6,7 @@ This script execute the conventional controls in the evaluation scenario.
 """
 import os
 from ray.rllib.policy.policy import Policy
-from eprllib.Env.BaseEnvironment import BaseEnvironment
+from eprllib.Environment.BaseEnvironment import BaseEnvironment
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import numpy as np
 import pandas as pd
