@@ -10,7 +10,8 @@ from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional, Tuple
-from eprllib.Environment.BaseRunner import BaseRunner
+from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
+from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
@@ -100,7 +101,7 @@ class BaseEnvironment(MultiAgentEnv):
         super().__init__()
         
         # EnergyPlusRunner class and queues for communication between MDP and EnergyPlus.
-        self.runner: Optional[BaseRunner] = None
+        self.runner: Optional[EnvironmentRunner] = None
         self.obs_queue: Optional[Queue] = None
         self.act_queue: Optional[Queue] = None
         self.infos_queue: Optional[Queue] = None
@@ -189,7 +190,7 @@ class BaseEnvironment(MultiAgentEnv):
             
             
             # Start EnergyPlusRunner whith the following configuration.
-            self.runner = BaseRunner(
+            self.runner = EnvironmentRunner(
                 episode = self.episode,
                 env_config = self.env_config,
                 obs_queue = self.obs_queue,
@@ -317,3 +318,12 @@ class BaseEnvironment(MultiAgentEnv):
         Placeholder method for rendering functionality.
         """
         pass
+    
+    def from_checkpoint(
+        cls,
+        path: str
+    ) -> "Environment":
+        return NotImplementedError("Not implemented yet.")
+    
+    def get_default_config(cls) -> EnvironmentConfig:
+        return EnvironmentConfig()
