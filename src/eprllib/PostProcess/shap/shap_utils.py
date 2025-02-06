@@ -9,7 +9,7 @@ import torch
 import shap
 from typing import Dict, Any
 from ray.rllib.policy.policy import Policy
-from eprllib.Env.BaseEnvironment import BaseEnvironment
+from eprllib.Environment.BaseEnvironment import BaseEnvironment
 
 def generate_experience(
     policy: Policy, 
