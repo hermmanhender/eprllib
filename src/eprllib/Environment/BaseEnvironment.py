@@ -5,6 +5,7 @@ Base Environment
 This script define the environment of EnergyPlus implemented in RLlib. To works 
 need to define the EnergyPlus Runner.
 """
+import tempfile
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
@@ -114,6 +115,17 @@ class BaseEnvironment(MultiAgentEnv):
         # dict to save the last observation and infos in the environment.
         self.last_obs = {agent: [] for agent in self.agents}
         self.last_infos = {agent: {} for agent in self.agents}
+        
+        # ===DATA MANAGEMENT=== #
+        # output_path: Path to save the EnergyPlus simulation results.
+        self.output_path = self.env_config["output_path"]
+        if self.output_path is None:
+            self.output_path = tempfile.gettempdir()
+        print(f"Output path for EnergyPlus simulation results: {self.output_path}")
+        
+        # If epjson_path is a IDF file, transform it into a epJSON file.
+        if env_config['epjson_path'].endswith(".idf"):
+            print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
     @override(MultiAgentEnv)
     def reset(
