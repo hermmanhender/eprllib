@@ -35,7 +35,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         self.top_level_agent: str = connector_fn_config["top_level_agent"]
         self.top_level_temporal_scale: int = connector_fn_config["top_level_temporal_scale"]
         
-        self.timestep_runner: int = 0
+        self.timestep_runner: int = -1
         self.top_level_goal: int | List = None
         self.top_level_obs: Dict[str, Any] = None
         self.top_level_trayectory: Dict[str, List[float | int]] = {}
@@ -122,7 +122,8 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         :type dict_agents_obs: Dict[str,Any]
         :return: multiagent observation
         :rtype: Dict[str,Any]
-        """        
+        """
+        self.timestep_runner += 1
         # Save trayectories for future reward calculations
         for key in agent_states[self.top_level_agent].keys():
             if key not in self.top_level_trayectory.keys():
@@ -140,7 +141,6 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
             self.top_level_obs = {self.top_level_agent: dict_agents_obs[self.top_level_agent]}
             top_level_infos = {self.top_level_agent: self.top_level_trayectory}
             self.top_level_trayectory = {}
-            self.timestep_runner += 1
             is_lowest_level = False
             return self.top_level_obs, top_level_infos, is_lowest_level
         
@@ -178,8 +178,6 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         del dict_agents_obs[self.top_level_agent]
         del infos[self.top_level_agent]
         del agent_states[self.top_level_agent]
-        
-        self.timestep_runner += 1
         
         dict_agents_obs, infos_agents, is_lowest_level = self.sub_connector_fn.set_top_level_obs(
             env_config,
@@ -268,7 +266,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         
         self.lower_level_agents: List[str] = connector_fn_config["lower_level_agents"]
         
-        self.timestep_runner: int = 0
+        self.timestep_runner: int = -1
         self.top_level_goal: int | List = None
         self.top_level_obs: Dict[str, Any] = None
         self.top_level_trayectory: Dict[str, List[float | int]] = {}
@@ -363,7 +361,8 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         :type dict_agents_obs: Dict[str,Any]
         :return: multiagent observation
         :rtype: Dict[str,Any]
-        """        
+        """
+        self.timestep_runner += 1
         # Save trayectories for future reward calculations
         for key in agent_states[self.top_level_agent].keys():
             if key not in self.top_level_trayectory.keys():
@@ -381,7 +380,6 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             self.top_level_obs = {self.top_level_agent: dict_agents_obs[self.top_level_agent]}
             top_level_infos = {self.top_level_agent: self.top_level_trayectory}
             self.top_level_trayectory = {}
-            self.timestep_runner += 1
             is_lowest_level = False
             return self.top_level_obs, top_level_infos, is_lowest_level
         
@@ -420,9 +418,13 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         del infos[self.top_level_agent]
         del agent_states[self.top_level_agent]
         
-        self.timestep_runner += 1
-        
         if not self.middle_level_flag:
+            
+            for agent in self.middle_level_agents:
+                del dict_agents_obs[agent]
+                del infos[agent]
+                del agent_states[agent]
+        
             dict_agents_obs, infos_agents, is_lowest_level = self.middle_level_connector_fn.set_top_level_obs(
                 env_config,
                 agent_states,
@@ -434,6 +436,12 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             dict_agents_obs, infos_agents = self.add_goal(dict_agents_obs, infos_agents, self.top_level_goal)
         
         else:
+            
+            for agent in self.lower_level_agents:
+                del dict_agents_obs[agent]
+                del infos[agent]
+                del agent_states[agent]
+                
             dict_agents_obs, infos_agents, is_lowest_level = self.lower_level_connector_fn.set_top_level_obs(
                 env_config,
                 agent_states,
@@ -442,7 +450,6 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             )
             self.middle_level_flag = False
             self.middle_level_objectives = goals
-            dict_agents_obs, infos_agents = self.add_goal(dict_agents_obs, infos_agents, self.top_level_goal)
             dict_agents_obs, infos_agents = self.add_objectives(dict_agents_obs, infos_agents, self.middle_level_objectives)
         
         return dict_agents_obs, infos_agents, is_lowest_level
