@@ -5,7 +5,7 @@ RUN CONVENTIONAL CONTROLS
 This script execute the conventional controls in the evaluation scenario.
 """
 import os
-from eprllib.Env.BaseEnvironment import BaseEnvironment
+from eprllib.Environment.Environment import Environment
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import pandas as pd
 import threading
@@ -24,7 +24,7 @@ class rb_evaluation:
         self.env_config = env_config
         self.policy_config = policy_config
         self.name = name
-        self.env = BaseEnvironment(env_config)
+        self.env = Environment(env_config)
         self.agents = self.env.agents
         self.terminated = {}
         self.terminated = False

@@ -9,11 +9,11 @@ import torch
 import shap
 from typing import Dict, Any
 from ray.rllib.policy.policy import Policy
-from eprllib.Env.BaseEnvironment import BaseEnvironment
+from eprllib.Environment.Environment import Environment
 
 def generate_experience(
     policy: Policy, 
-    env: BaseEnvironment, 
+    env: Environment, 
     num_episodes=5):
     first_episode = True
     done = {"__all__": False}
