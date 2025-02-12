@@ -131,14 +131,16 @@ class EnvironmentRunner:
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state:c_void_p = api.state_manager.new_state()
-        # TODO: use request_variable(state: c_void_p, variable_name: str | bytes, variable_key: str | bytes) to avoid
-        # the necesity of the user to use the output definition inside the IDF/epJSON file.
-        # for variable_name, variable_key in self.variables.items():
-        #     api.exchange.request_variable(
-        #         self.energyplus_state,
-        #         variable_name = variable_name,
-        #         variable_key = variable_key
-        #         )
+        # Request variables.
+        for agent in self.agents:
+            if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
+                for variable in self.env_config["agents_config"][agent]['observation']["variables"]:
+                    api.exchange.request_variable(
+                        self.energyplus_state,
+                        variable_name = variable[0],
+                        variable_key = variable[1]
+                    )
+                    self.logger.debug(f"Variable {get_variable_name(agent,variable[0],variable[1])} requested.")
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
         api.runtime.callback_progress(self.energyplus_state, self.progress_handler)
