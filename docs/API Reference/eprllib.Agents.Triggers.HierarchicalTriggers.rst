@@ -8,5 +8,6 @@
 
    .. autosummary::
    
-      HierarchicalTriggerDiscrete
+      HierarchicalGoalTriggerDiscrete
+      HierarchicalObjectiveTriggerMultiDiscrete
    

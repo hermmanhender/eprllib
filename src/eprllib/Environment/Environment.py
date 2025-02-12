@@ -6,6 +6,7 @@ This script define the environment of EnergyPlus implemented in RLlib. To works
 need to define the EnergyPlus Runner.
 """
 import tempfile
+import json
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
@@ -18,6 +19,8 @@ from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
+from eprllib.Utils.logging import setup_logging
+
 
 class Environment(MultiAgentEnv):
     """
@@ -66,8 +69,17 @@ class Environment(MultiAgentEnv):
         """
         self.env_config = env_config
         
+        # Setup logging for this class
+        self.logger = setup_logging(
+            module_name="eprllib.Environment",
+            log_level=env_config.get("log_level", "INFO")
+        )
+        
+        self.logger.info("Initializing environment with config: %s", json.dumps(env_config))
+        
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
+        self.logger.info(f"Possible agents: {self.possible_agents}")
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
         self.agents = self.possible_agents
@@ -76,7 +88,9 @@ class Environment(MultiAgentEnv):
         
         # Episode and multiagent functions
         self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+        self.logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
         self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
+        self.logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
         
         # asigning the configuration of the environment.
         self.reward_fn: Dict[str, BaseReward] = {agent: None for agent in self.agents}
@@ -95,7 +109,9 @@ class Environment(MultiAgentEnv):
             self.observation_space[agent] = self.filter_fn[agent].get_agent_obs_dim(self.env_config, self.connector_fn, agent)
         
         self.action_space = spaces.Dict(self.action_space)
+        self.logger.debug(f"Action space: {self.action_space}")
         self.observation_space = spaces.Dict(self.observation_space)
+        self.logger.debug(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -122,12 +138,14 @@ class Environment(MultiAgentEnv):
         self.output_path = self.env_config["output_path"]
         if self.output_path is None:
             self.output_path = tempfile.gettempdir()
-        print(f"Output path for EnergyPlus simulation results: {self.output_path}")
+        self.logger.info(f"Output path for EnergyPlus simulation results: {self.output_path}")
         
         # If epjson_path is a IDF file, transform it into a epJSON file.
         if env_config['epjson_path'].endswith(".idf"):
-            print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
+            self.logger.warning("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
+        self.logger.info("Environment initialization complete")
+        
     @override(MultiAgentEnv)
     def reset(
         self, *,
@@ -250,6 +268,7 @@ class Environment(MultiAgentEnv):
             cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
+                self.logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
@@ -257,7 +276,7 @@ class Environment(MultiAgentEnv):
         # check for simulation errors.
         if self.runner.failed():
             self.terminateds = True
-            raise Exception('Simulation in EnergyPlus fallied.')
+            self.logger.error("EnergyPlus failed with an error!")
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
         if self.runner.simulation_complete:
@@ -292,6 +311,7 @@ class Environment(MultiAgentEnv):
                 # We use the last observation as a observation for the timestep.
                 obs = self.last_obs
                 infos = self.last_infos
+                self.logger.warning("Queue timeout, ending episode early.")
         
         # Calculate the reward in the timestep
         reward_dict = {agent: None for agent in obs.keys()}
@@ -300,8 +320,7 @@ class Environment(MultiAgentEnv):
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
-        # if self.timestep % 100 == 0:
-        #     print(f"Action: {action}\nReward: {reward_dict}")
+        
         return obs, reward_dict, terminated, truncated, infos
 
     @override(MultiAgentEnv)
