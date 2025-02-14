@@ -21,6 +21,25 @@ from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
 from eprllib.Utils.logging import setup_logging
 
+# TODO: Add here the availability to run EnergyPlus in Parallel.
+# Run EnergyPlus in Parallel
+# EnergyPlus is a multi-thread application but is not optimized for parallel runs on multi-core 
+# machines. However, multiple parametric runs can be launched in parallel if these runs are 
+# independent. One way to do it is to create multiple folders and copy files EnergyPlus.exe, 
+# Energy+.idd, DElight2.dll, libexpat.dll, bcvtb.dll, EPMacro.exe (if macros are used), 
+# ExpandObjects.exe (if HVACTemplate or Compact HVAC objects are used) from the original EnergyPlus 
+# installed folder. Inside each folder, copy IDF file as in.idf and EPW file as in.epw, then run 
+# EnergyPlus.exe from each folder. This is better handled with a batch file. If the Energy+.ini file 
+# exists in one of the created folders, make sure it is empty or points to the current EnergyPlus folder.
+
+# EP-Launch now does this automatically for Group or Parametric-Preprocessor runs.
+
+# The benefit of run time savings depends on computer configurations including number of CPUs, 
+# CPU clock speed, amount of RAM and cache, and hard drive speed. To be time efficient, the number 
+# of parallel EnergyPlus runs should not be more than the number of CPUs on a computer. The EnergyPlus 
+# utility program EP-Launch is being modified to add the parallel capability for group simulations. The 
+# long term goal is to run EnergyPlus in parallel on multi-core computers even for a single EnergyPlus 
+# run without degradation to accuracy.
 
 class Environment(MultiAgentEnv):
     """
@@ -77,6 +96,13 @@ class Environment(MultiAgentEnv):
         
         self.logger.info("Initializing environment with config: %s", json.dumps(env_config))
         
+        # Episode and multiagent functions
+        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+        self.logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
+        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
+        self.logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
+        
+        # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
         self.logger.info(f"Possible agents: {self.possible_agents}")
@@ -85,12 +111,6 @@ class Environment(MultiAgentEnv):
         self.agents = self.possible_agents
         # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
         # currently "alive" agents are.
-        
-        # Episode and multiagent functions
-        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
-        self.logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
-        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
-        self.logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
         
         # asigning the configuration of the environment.
         self.reward_fn: Dict[str, BaseReward] = {agent: None for agent in self.agents}
@@ -122,7 +142,7 @@ class Environment(MultiAgentEnv):
         self.act_queue: Optional[Queue] = None
         self.infos_queue: Optional[Queue] = None
         
-        # ===CONTROLS=== #
+        # === CONTROLS === #
         # variable for the registry of the episode number.
         self.episode = -1
         self.timestep = 0
@@ -133,7 +153,7 @@ class Environment(MultiAgentEnv):
         self.last_obs = {agent: [] for agent in self.agents}
         self.last_infos = {agent: {} for agent in self.agents}
         
-        # ===DATA MANAGEMENT=== #
+        # === DATA MANAGEMENT === #
         # output_path: Path to save the EnergyPlus simulation results.
         self.output_path = self.env_config["output_path"]
         if self.output_path is None:
@@ -178,34 +198,17 @@ class Environment(MultiAgentEnv):
             
             # episode_config_fn: Function that take the env_config as argument and upgrade the value
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
-            self.env_config = self.episode_fn.get_episode_config(self.env_config)
-            self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
+            try:
+                self.env_config = self.episode_fn.get_episode_config(self.env_config)
+                self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
+                self.logger.debug(f"Episode configuration: {self.env_config}")
+            except (ValueError, FileNotFoundError):
+                self.logger.error("The episode configuration is not valid. Please check the episode configuration.")
+                pass
             
+            # Update the rewards functions. The parameters of the reward function could be modify by the episode function, due that it's update here.
             for agent in self.agents:
                 self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
-            
-            
-            # TODO: Add here the availability to run EnergyPlus in Parallel.
-            # Run EnergyPlus in Parallel
-            # EnergyPlus is a multi-thread application but is not optimized for parallel runs on multi-core 
-            # machines. However, multiple parametric runs can be launched in parallel if these runs are 
-            # independent. One way to do it is to create multiple folders and copy files EnergyPlus.exe, 
-            # Energy+.idd, DElight2.dll, libexpat.dll, bcvtb.dll, EPMacro.exe (if macros are used), 
-            # ExpandObjects.exe (if HVACTemplate or Compact HVAC objects are used) from the original EnergyPlus 
-            # installed folder. Inside each folder, copy IDF file as in.idf and EPW file as in.epw, then run 
-            # EnergyPlus.exe from each folder. This is better handled with a batch file. If the Energy+.ini file 
-            # exists in one of the created folders, make sure it is empty or points to the current EnergyPlus folder.
-
-            # EP-Launch now does this automatically for Group or Parametric-Preprocessor runs.
-
-            # The benefit of run time savings depends on computer configurations including number of CPUs, 
-            # CPU clock speed, amount of RAM and cache, and hard drive speed. To be time efficient, the number 
-            # of parallel EnergyPlus runs should not be more than the number of CPUs on a computer. The EnergyPlus 
-            # utility program EP-Launch is being modified to add the parallel capability for group simulations. The 
-            # long term goal is to run EnergyPlus in parallel on multi-core computers even for a single EnergyPlus 
-            # run without degradation to accuracy.
-            
-            
             
             # Start EnergyPlusRunner whith the following configuration.
             self.runner = EnvironmentRunner(
