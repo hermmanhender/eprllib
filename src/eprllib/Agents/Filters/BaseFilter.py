@@ -24,25 +24,6 @@ class BaseFilter:
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
         """
         self.filter_fn_config = filter_fn_config
-    
-    def get_agent_obs_dim(
-        self,
-        env_config: Dict[str, Any],
-        connector_fn: BaseConnector,
-        agent: str = None
-    ) -> Dict[str, gym.Space]:
-        """
-        Constructs the observation space for the agent. This method is implemented in the multiagent connector.
-
-        Args:
-            env_config (Dict[str, Any]): Configuration dictionary for the environment.
-            connector_fn (BaseConnector): Connector function to get the observation dimensions.
-            agent (str, optional): Agent identifier. Defaults to None.
-
-        Returns:
-            Dict[str, gym.Space]: Dictionary containing the observation space for the agent.
-        """
-        return connector_fn.get_agent_obs_dim(env_config, agent)
         
     def set_agent_obs(
         self,
