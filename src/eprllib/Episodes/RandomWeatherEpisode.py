@@ -2,17 +2,21 @@
 Ramdom weather for episode
 ===========================
 
-
+Given a path for a folder with epw files, this function update the epw file randomly in
+each episode during the training process.
 """
 
 from typing import Dict, Any
 from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib.Utils.random_weather import get_random_weather
+from eprllib.Utils.episode_fn_utils import get_random_weather
 from eprllib.Utils.annotations import override
 
-class random_weather_episode(BaseEpisode):
+class RandomWeatherEpisode(BaseEpisode):
     """
     This class contains the methods to configure the episode in EnergyPlus with RLlib.
+    
+    Methods:
+        get_episode_config: return the env_config with a updated epw path from the epw_files_folder_path.
     """
     def __init__(
         self,
