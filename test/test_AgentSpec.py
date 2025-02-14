@@ -1,20 +1,11 @@
-from eprllib.Agents.AgentSpec import ActionSpec
-from eprllib.Agents.AgentSpec import AgentSpec, ActionSpec, ObservationSpec, FilterSpec, TriggerSpec, RewardSpec
+
+
 from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, FilterSpec, ActionSpec, TriggerSpec, RewardSpec
-from eprllib.Agents.AgentSpec import FilterSpec
-from eprllib.Agents.AgentSpec import ObservationSpec
-from eprllib.Agents.AgentSpec import RewardSpec
-from eprllib.Agents.AgentSpec import TriggerSpec
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
-from typing import Dict
-from typing import Dict, Any
-from typing import Dict, List, Tuple
-from typing import Dict, Tuple, List
-from typing import List, Tuple
-from unittest.mock import Mock
+from typing import Dict, List, Tuple, Any
 from unittest.mock import Mock, patch
 import logging
 import pytest
