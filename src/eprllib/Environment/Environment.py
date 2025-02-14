@@ -103,14 +103,14 @@ class Environment(MultiAgentEnv):
         
         # asignation of environment action space.
         self.action_space = {agent: None for agent in self.agents}
-        self.observation_space = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
-            self.observation_space[agent] = self.filter_fn[agent].get_agent_obs_dim(self.env_config, self.connector_fn, agent)
-        
+            
         self.action_space = spaces.Dict(self.action_space)
         self.logger.debug(f"Action space: {self.action_space}")
-        self.observation_space = spaces.Dict(self.observation_space)
+        
+        # asignation of environment observation space.
+        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
         self.logger.debug(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).

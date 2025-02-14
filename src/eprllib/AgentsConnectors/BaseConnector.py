@@ -9,7 +9,7 @@ are provided.
 """
 
 from typing import Dict, Any, Tuple
-from gymnasium.spaces import Space
+from gymnasium import spaces
 
 class BaseConnector:
     def __init__(
@@ -28,7 +28,7 @@ class BaseConnector:
         self,
         env_config: Dict[str, Any],
         agent: str = None
-    ) -> Space:
+    ) -> spaces.Space:
         """
         Get the agent observation dimension.
 
@@ -37,9 +37,27 @@ class BaseConnector:
         :param agent: Agent identifier, optional.
         :type agent: str, optional
         :return: Agent observation spaces.
-        :rtype: gym.Space
+        :rtype: gym.spaces.Space
         """
         raise NotImplementedError("This method must be implemented in the child class.")
+    
+    def get_all_agents_obs_spaces_dict(
+        self,
+        env_config: Dict[str, Any],
+    ) -> spaces.Dict:
+        """
+        Get all the agents observations spaces putting togheter in a Dict space dimension.
+
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :return: Agents observation spaces.
+        :rtype: gym.spaces.Dict
+        """
+        possible_agents = [key for key in env_config["agents_config"].keys()]
+        observation_space_dict = {agent: None for agent in possible_agents}
+        for agent in possible_agents:
+            observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
+        return spaces.Dict(observation_space_dict)
         
     def set_top_level_obs(
         self,
