@@ -47,15 +47,14 @@ class ASHRAE55SimpleModel(BaseReward):
         """
         super().__init__(reward_fn_config)
         
+        # Validate that the folowing keys were specified.
+        assert "agent_name" in reward_fn_config, "The key 'agent_name' must be specified in the reward function config."
+        assert "thermal_zone" in reward_fn_config, "The key 'thermal_zone' must be specified in the reward function config."
+        
         agent_name = reward_fn_config["agent_name"]
         self.comfort = get_variable_name(
             agent_name, 
             "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
-            reward_fn_config['thermal_zone']
-        )
-        self.occcupancy = get_variable_name(
-            agent_name,
-            "Zone People Occupant Count",
             reward_fn_config['thermal_zone']
         )
     
@@ -78,10 +77,10 @@ class ASHRAE55SimpleModel(BaseReward):
         Returns:
             float: reward normalize value
         """
-        if infos[self.comfort] == 0:
-            if infos[self.occcupancy] > 0:
-                return -1
-        return 0
+        if infos[self.comfort] > 0:
+            return -1
+        else:
+            return 0
 
 class CEN15251(BaseReward):
     """
@@ -217,40 +216,17 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
         reward_fn_config: Dict[str,Any],
         ) -> Dict[str,float]:
         """
-        This reward funtion takes the energy demand in the time step by the heating and cooling system and 
-        calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
-        heating and cooling active system, respectibly.
-        
-        Also, take the Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time[hr]
-        variable to determine the comfort reward.
-        
-        Thogother, they constitute the total reward that, ponderated with the beta factor, gives to the agents
-        a signal to optimize the policy.
-
-        Args:
-            reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
-            to calculate the reward. The dictionary must to have the following keys:
-            
-                1. agent_name,
-                2. thermal_zone,
-            
-            All this variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str,float]: The reward value for each agent in the timestep.
         """
         super().__init__(reward_fn_config)
+        
+        # Validate that the folowing keys were specified.
+        assert "agent_name" in reward_fn_config, "The key 'agent_name' must be specified in the reward function config."
+        assert "thermal_zone" in reward_fn_config, "The key 'thermal_zone' must be specified in the reward function config."
         
         agent_name = reward_fn_config["agent_name"]
         self.comfort = get_variable_name(
             agent_name,
             "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time",
-            reward_fn_config['thermal_zone']
-        )
-        self.occcupancy = get_variable_name(
-            agent_name,
-            "Zone People Occupant Count",
             reward_fn_config['thermal_zone']
         )
     
@@ -261,23 +237,12 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
     terminated_flag: bool = False,
     truncated_flag: bool = False
     ) -> float:
-        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
-        amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
-        divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
-        of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
-        Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
-
-        Args:
-            infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-
-        Returns:
-            float: reward normalize value
+        """
         """
         reward = 0
         for ix in range(len(infos[self.comfort])):
-            if infos[self.comfort][ix] == 0:
-                if infos[self.occcupancy][ix] > 0:
-                    reward -= 1
+            if infos[self.comfort][ix] > 0:
+                reward -= 1
         
         return reward/len(infos[self.comfort])
     
