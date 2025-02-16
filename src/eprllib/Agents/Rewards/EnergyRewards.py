@@ -5,7 +5,7 @@ Energy rewards
 The rewards based on energy variables/meters.
 
 Hierarchical versions
----------------------
+----------------------
 
 Note that hierarchical versions are the same function but insteade of using only the inmediate
 value of the variable/meter, the reward is calculated using a List of the last timesteps and
