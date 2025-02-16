@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
+from eprllib.Utils.agent_utils import get_agent_name
 
 class WindowsOpeningTrigger(BaseTrigger):
     def __init__(
@@ -22,17 +23,11 @@ class WindowsOpeningTrigger(BaseTrigger):
         Args:
             trigger_fn_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
-                - agent_name (str): The name of the agent.
                 - window_actuator (Tuple[str, str, str]): The configuration for the window actuator.
         """
         super().__init__(trigger_fn_config)
-        
-        self.window_actuator = get_actuator_name(
-            trigger_fn_config['agent_name'],
-            trigger_fn_config['window_actuator'][0],
-            trigger_fn_config['window_actuator'][1],
-            trigger_fn_config['window_actuator'][2]
-        )
+        self.agent_name = None
+        self.window_actuator = None
     
     @override(BaseTrigger)    
     def get_action_space_dim(self) -> gym.Space:
@@ -56,6 +51,15 @@ class WindowsOpeningTrigger(BaseTrigger):
         Returns:
             Dict[str, Any]: Transformed actions for the actuators.
         """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(actuators)
+            self.window_actuator = get_actuator_name(
+                self.agent_name,
+                self.trigger_fn_config['window_actuator'][0],
+                self.trigger_fn_config['window_actuator'][1],
+                self.trigger_fn_config['window_actuator'][2]
+            )
+        
         actuator_dict_actions = {actuator: None for actuator in actuators}
         actuator_dict_actions.update({self.window_actuator: action / 10})
         return actuator_dict_actions
