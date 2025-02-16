@@ -22,7 +22,7 @@ class CEN15251(BaseReward):
     The standard CEN 15251 stablish three categories of acceptability of the thermal condition
     as is show in table below.
 
-    .. list-table:: Title
+    .. list-table:: Comfort categories based on CEN 15251 standard.
     :widths: 25 75
     :header-rows: 1
 
