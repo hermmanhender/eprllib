@@ -195,7 +195,7 @@ class EnvironmentRunner:
         dict_agents_obs = {agent: None for agent in self.agents}
         for agent in self.agents:
             dict_agents_obs.update({
-                agent: self.filter_fn[agent].set_agent_obs(
+                agent: self.filter_fn[agent].get_filtered_obs(
                     self.env_config,
                     agent_states[agent]
                 )})
