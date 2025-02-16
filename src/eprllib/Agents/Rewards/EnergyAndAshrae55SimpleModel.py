@@ -7,7 +7,7 @@ Energy and ASHRAE 55 Simple Model reward function
 from typing import Any, Dict
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters, HierarchicalEnergyWithMeters
-from eprllib.Agents.Rewards.ComfortRewards import ASHRAE55SimpleModel, HierarchicalASHRAE55SimpleModel
+from eprllib.Agents.Rewards.ASHRAE55SimpleModel import ASHRAE55SimpleModel, HierarchicalASHRAE55SimpleModel
 from eprllib.Utils.annotations import override
 
 class EnergyAndASHRAE55SimpleModel(BaseReward):
