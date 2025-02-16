@@ -15,6 +15,7 @@ import numpy as np
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
+from eprllib.Utils.agent_utils import get_agent_name
 
 class FullySharedParametersFilter(BaseFilter):
     """
@@ -31,6 +32,8 @@ class FullySharedParametersFilter(BaseFilter):
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
         """
         super().__init__(filter_fn_config)
+        
+        self.agent_name = None
     
     @override(BaseFilter)
     def get_filtered_obs(
@@ -53,11 +56,12 @@ class FullySharedParametersFilter(BaseFilter):
         
         # As we don't know the agent that belong this filter, we auto-dectect his name form the name of the variables names
         # inside the agent_states_copy dictionary. The agent_states dict has keys with the format of "agent_name: ...".
-        agent_name = list(agent_states_copy.keys())[0].split(':')[0]
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(agent_states_copy)
         
         # Remove from agent_states_copy the actuators state that the agent manage, if any.
-        for actuator_config in env_config["agents_config"][agent_name]["action"]["actuators"]:
-            _ = agent_states_copy.pop(get_actuator_name(agent_name, actuator_config[0], actuator_config[1], actuator_config[2]), None)
+        for actuator_config in env_config["agents_config"][self.agent_name]["action"]["actuators"]:
+            _ = agent_states_copy.pop(get_actuator_name(self.agent_name, actuator_config[0], actuator_config[1], actuator_config[2]), None)
         
         # Return a flat array with the values of the agent_states_copy without actuators state.
         return np.array(list(agent_states_copy.values()), dtype='float32')
