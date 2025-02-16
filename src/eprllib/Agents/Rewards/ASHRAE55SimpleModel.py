@@ -2,7 +2,71 @@
 ASHRAE55SimpleModel
 ====================
 
-The rewards based on comfort variables/meters.
+The rewards based on whether the humidity ratio and the operative temperature
+is within the region shown in ASHRAE Standard 55-2004 in the figure. For the calculation the operative
+temperature is simplified to be the average of the air temperature and the mean radiant temperature. For
+summer, the 0.5 Clo level is used and, for winter, the 1.0 Clo level is used. The graphs below are based on
+the following tables which extend the ASHRAE values to zero humidity ratio.
+
+.. list-table:: Table 1: Winter Clothes (1.0 Clo)
+    :widths: 50 50
+    :header-rows: 1
+
+    * - Operative temperature, °C
+        - Humidity Ratio (kgWater/kgDryAir)
+    * - 19.6
+        - 0.012
+    * - 23.9 
+        - 0.012
+    * - 26.3
+        - 0.000
+    * - 21.7
+        - 0.000
+
+.. list-table:: Table 2: Summer Clothes (0.5 Clo)
+    :widths: 50 50
+    :header-rows: 1
+
+    * - Operative temperature, °C
+        - Humidity Ratio (kgWater/kgDryAir)
+    * - 23.6
+        - 0.012
+    * - 26.8 
+        - 0.012
+    * - 28.3
+        - 0.000
+    * - 25.1
+        - 0.000
+
+We use in this implementation the EnergyPlus variable:
+
+* Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time[hr]: The time when the 
+zone is occupied that the combination of humidity ratio and operative temperature is not in the ASHRAE 55-2004 summer 
+or winter clothes region.
+
+If you use this implementation for an agent, the observation space must to contain the following variable:
+
+.. code-block:: python
+    
+    eprllib_config = EnvConfig()
+    eprllib_config.agents(
+        agents_config = {
+            "agent_name": AgentSpec(
+                observation = ObservationSpec(
+                    variables = [
+                        ...
+                        ("Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", "Thermal Zone Name"),
+                        ...
+                    ],
+                    ...
+                ),
+                ...
+            ),
+            ...
+        },
+        ...
+    )
+    
 
 Hierarchical versions
 ----------------------
