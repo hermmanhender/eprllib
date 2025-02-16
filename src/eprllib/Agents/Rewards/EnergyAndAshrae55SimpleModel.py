@@ -14,7 +14,7 @@ class EnergyAndASHRAE55SimpleModel(BaseReward):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         This reward funtion takes the energy demand in the time step by the heating and cooling system and 
         calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
@@ -30,27 +30,20 @@ class EnergyAndASHRAE55SimpleModel(BaseReward):
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
             to calculate the reward. The dictionary must to have the following keys:
             
-                1. agent_name,
-                2. thermal_zone,
-                3. beta,
-                4. cooling_name,
-                5. heating_name,
-                6. cooling_energy_ref,
-                7. heating_energy_ref.
+                1. thermal_zone,
+                2. beta,
+                3. cooling_name,
+                4. heating_name,
+                5. cooling_energy_ref,
+                6. heating_energy_ref.
             
-            All this variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str,float]: The reward value for each agent in the timestep.
+            All this variables start with the name of the agent and then the value of the reference name.
         """
         super().__init__(reward_fn_config)
         self.comfort_reward = ASHRAE55SimpleModel({
-            "agent_name": reward_fn_config["agent_name"],
             "thermal_zone": reward_fn_config['thermal_zone']
         })
         self.energy_reward = EnergyWithMeters({
-            "agent_name": reward_fn_config["agent_name"],
             "cooling_name": reward_fn_config['cooling_name'],
             "heating_name": reward_fn_config['heating_name'],
             "cooling_energy_ref": reward_fn_config['cooling_energy_ref'],
@@ -88,7 +81,7 @@ class HierarchicalEnergyAndASHRAE55SimpleModel(BaseReward):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         This reward funtion takes the energy demand in the time step by the heating and cooling system and 
         calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
@@ -104,27 +97,20 @@ class HierarchicalEnergyAndASHRAE55SimpleModel(BaseReward):
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
             to calculate the reward. The dictionary must to have the following keys:
             
-                1. agent_name,
-                2. thermal_zone,
-                3. beta,
-                4. cooling_name,
-                5. heating_name,
-                6. cooling_energy_ref,
-                7. heating_energy_ref.
+                1. thermal_zone,
+                2. beta,
+                3. cooling_name,
+                4. heating_name,
+                5. cooling_energy_ref,
+                6. heating_energy_ref.
             
-            All this variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str,float]: The reward value for each agent in the timestep.
+            All this variables start with the name of the agent and then the value of the reference name.
         """
         super().__init__(reward_fn_config)
         self.comfort_reward = HierarchicalASHRAE55SimpleModel({
-            "agent_name": reward_fn_config["agent_name"],
             "thermal_zone": reward_fn_config['thermal_zone']
         })
         self.energy_reward = HierarchicalEnergyWithMeters({
-            "agent_name": reward_fn_config["agent_name"],
             "cooling_name": reward_fn_config['cooling_name'],
             "heating_name": reward_fn_config['heating_name'],
             "cooling_energy_ref": reward_fn_config['cooling_energy_ref'],
