@@ -11,6 +11,7 @@ must be based in this class.
 """
 
 from typing import Any, Dict
+from numpy import ndarray
 
 class BaseFilter:
     """
@@ -33,7 +34,7 @@ class BaseFilter:
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> Dict[str, Any]:
+    ) -> ndarray:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
@@ -46,6 +47,6 @@ class BaseFilter:
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            Dict[str, Any]: Filtered observations as a numpy array of float32 values.
+            NDarray: Filtered observations as a numpy array of float32 values.
         """
         return NotImplementedError("This method should be implemented in a subclass.")
