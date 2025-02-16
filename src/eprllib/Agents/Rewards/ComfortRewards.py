@@ -15,12 +15,13 @@ from typing import Any, Dict
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
+from eprllib.Utils.agent_utils import get_agent_name
 
 class ASHRAE55SimpleModel(BaseReward):
     def __init__(
         self,
         reward_fn_config: Dict[str, Any],
-    ) -> Dict[str, float]:
+    ):
         """
         This reward function takes the energy demand in the time step by the heating and cooling system and 
         calculates the energy reward as the sum of both divided by the maximal energy consumption of the 
@@ -36,27 +37,17 @@ class ASHRAE55SimpleModel(BaseReward):
             reward_fn_config (Dict[str, Any]): The dictionary to configure the variables that each agent uses
             to calculate the reward. The dictionary must have the following keys:
             
-                1. agent_name,
-                2. thermal_zone,
+                1. thermal_zone,
             
-            All these variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str, float]: The reward value for each agent in the timestep.
+            All these variables start with the name of the agent and then the value of the reference name.
         """
         super().__init__(reward_fn_config)
         
         # Validate that the folowing keys were specified.
-        assert "agent_name" in reward_fn_config, "The key 'agent_name' must be specified in the reward function config."
         assert "thermal_zone" in reward_fn_config, "The key 'thermal_zone' must be specified in the reward function config."
         
-        agent_name = reward_fn_config["agent_name"]
-        self.comfort = get_variable_name(
-            agent_name, 
-            "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
-            reward_fn_config['thermal_zone']
-        )
+        self.agent_name = None
+        self.comfort = None
     
     @override(BaseReward)
     def get_reward(
@@ -65,18 +56,26 @@ class ASHRAE55SimpleModel(BaseReward):
     terminated_flag: bool = False,
     truncated_flag: bool = False
     ) -> float:
-        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+        """
+        This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
         divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
         of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
         Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
 
         Args:
-            infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
+            infos (dict): infos dict must to provide the Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time.
 
         Returns:
-            float: reward normalize value
+            float: reward value.
         """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.comfort = get_variable_name(
+                self.agent_name, 
+                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
+                self.reward_fn_config['thermal_zone']
+            )
         if infos[self.comfort] > 0:
             return -1
         else:
@@ -110,7 +109,7 @@ class CEN15251(BaseReward):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         This reward funtion takes the energy demand in the time step by the heating and cooling system and 
         calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
@@ -126,42 +125,23 @@ class CEN15251(BaseReward):
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
             to calculate the reward. The dictionary must to have the following keys:
             
-                1. agent_name,
-                2. people_name,
-                3. thermal_zone,
-                4. beta,
-                5. cooling_name,
-                6. heating_name,
-                7. cooling_energy_ref,
-                8. heating_energy_ref.
+                1. people_name,
+                2. thermal_zone,
+                3. beta,
+                4. cooling_name,
+                5. heating_name,
+                6. cooling_energy_ref,
+                7. heating_energy_ref.
             
-            All this variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str,float]: The reward value for each agent in the timestep.
+            All this variables start with the name of the agent and then the value of the reference name.
         """
         super().__init__(reward_fn_config)
         
-        self.agent_name = reward_fn_config["agent_name"]
-        people = reward_fn_config['people_name']
-        self.thermal_zone = reward_fn_config['thermal_zone']
-        
-        self.cat1_name = get_variable_name(
-            self.agent_name,
-            "Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status",
-            people
-        )
-        self.cat2_name = get_variable_name(
-            self.agent_name,
-            "Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status",
-            people
-        )
-        self.cat3_name = get_variable_name(
-            self.agent_name,
-            "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
-            people
-        )
+        self.agent_name = None
+        self.cat1_name = None
+        self.cat2_name = None
+        self.cat3_name = None
+        self.temp_int = None
     
     @override(BaseReward)
     def get_reward(
@@ -183,12 +163,32 @@ class CEN15251(BaseReward):
         Returns:
             float: reward normalize value
         """
-        temp_int = infos.get(get_variable_name(
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.cat1_name = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status",
+                self.reward_fn_config['people_name']
+            )
+            self.cat2_name = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status",
+                self.reward_fn_config['people_name']
+            )
+            self.cat3_name = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
+                self.reward_fn_config['people_name']
+            )
+            self.temp_int = get_variable_name(
                 self.agent_name,
                 "Zone Mean Air Temperature",
-                self.thermal_zone
-            ),
-            KeyError(f"The parameter {get_variable_name(self.agent_name,'Zone Mean Air Temperature',self.thermal_zone)} not found")
+                self.reward_fn_config['thermal_zone']
+            )
+        
+        temp_int = infos.get(
+            self.temp_int,
+            KeyError(f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}")
         )
         
         if infos[self.cat1_name] == 1:
@@ -214,21 +214,16 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         """
         super().__init__(reward_fn_config)
         
         # Validate that the folowing keys were specified.
-        assert "agent_name" in reward_fn_config, "The key 'agent_name' must be specified in the reward function config."
         assert "thermal_zone" in reward_fn_config, "The key 'thermal_zone' must be specified in the reward function config."
         
-        agent_name = reward_fn_config["agent_name"]
-        self.comfort = get_variable_name(
-            agent_name,
-            "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time",
-            reward_fn_config['thermal_zone']
-        )
+        self.agent_name = None
+        self.comfort = None
     
     @override(BaseReward)
     def get_reward(
@@ -239,6 +234,14 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
     ) -> float:
         """
         """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.comfort = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time",
+                self.reward_fn_config['thermal_zone']
+            )
+            
         reward = 0
         for ix in range(len(infos[self.comfort])):
             if infos[self.comfort][ix] > 0:
@@ -250,7 +253,7 @@ class HierarchicalCEN15251(BaseReward):
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         This reward funtion takes the energy demand in the time step by the heating and cooling system and 
         calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
@@ -266,42 +269,23 @@ class HierarchicalCEN15251(BaseReward):
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
             to calculate the reward. The dictionary must to have the following keys:
             
-                1. agent_name,
-                2. people_name,
-                3. thermal_zone,
-                4. beta,
-                5. cooling_name,
-                6. heating_name,
-                7. cooling_energy_ref,
-                8. heating_energy_ref.
+                1. people_name,
+                2. thermal_zone,
+                3. beta,
+                4. cooling_name,
+                5. heating_name,
+                6. cooling_energy_ref,
+                7. heating_energy_ref.
             
-            All this variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str,float]: The reward value for each agent in the timestep.
+            All this variables start with the name of the agent and then the value of the reference name.
         """
         super().__init__(reward_fn_config)
         
-        self.agent_name = reward_fn_config["agent_name"]
-        people = reward_fn_config['people_name']
-        self.thermal_zone = reward_fn_config['thermal_zone']
-        
-        self.cat1_name = get_variable_name(
-            self.agent_name,
-            "Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status",
-            people
-        )
-        self.cat2_name = get_variable_name(
-            self.agent_name,
-            "Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status",
-            people
-        )
-        self.cat3_name = get_variable_name(
-            self.agent_name,
-            "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
-            people
-        )
+        self.agent_name = None
+        self.cat1_name = None
+        self.cat2_name = None
+        self.cat3_name = None
+        self.temp_int = None
         
     @override(BaseReward)
     def get_reward(
@@ -323,14 +307,34 @@ class HierarchicalCEN15251(BaseReward):
         Returns:
             float: reward normalize value
         """
-        reward = 0. 
-        
-        temp_int = infos.get(get_variable_name(
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.cat1_name = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status",
+                self.reward_fn_config['people_name']
+            )
+            self.cat2_name = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status",
+                self.reward_fn_config['people_name']
+            )
+            self.cat3_name = get_variable_name(
+                self.agent_name,
+                "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
+                self.reward_fn_config['people_name']
+            )
+            self.temp_int = get_variable_name(
                 self.agent_name,
                 "Zone Mean Air Temperature",
-                self.thermal_zone
-            ),
-            KeyError(f"The parameter {get_variable_name(self.agent_name,'Zone Mean Air Temperature',self.thermal_zone)} not found")
+                self.reward_fn_config['thermal_zone']
+            )
+        
+        reward = 0. 
+        
+        temp_int = infos.get(
+            self.temp_int,
+            KeyError(f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}")
         )
         for ix in range(len(infos[self.cat1_name])):
             
@@ -350,3 +354,4 @@ class HierarchicalCEN15251(BaseReward):
                 else:
                     reward += 0
         return reward
+    
