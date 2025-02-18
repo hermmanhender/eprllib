@@ -15,7 +15,7 @@ from typing import Any, Dict
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name
+from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class CEN15251(BaseReward):
     """
@@ -42,6 +42,11 @@ class CEN15251(BaseReward):
     See Engineering Reference of EnergyPlus documentation 19.1.6 Adaptive Comfort Model Based on European Standard
     EN15251-2007 for more information.
     """
+    REQUIRED_KEYS = {
+        "thermal_zone": str,
+        "people_name": str
+    }
+    
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
@@ -62,15 +67,13 @@ class CEN15251(BaseReward):
             to calculate the reward. The dictionary must to have the following keys:
             
                 1. people_name,
-                2. thermal_zone,
-                3. beta,
-                4. cooling_name,
-                5. heating_name,
-                6. cooling_energy_ref,
-                7. heating_energy_ref.
+                2. thermal_zone
             
             All this variables start with the name of the agent and then the value of the reference name.
         """
+        # Validate the config.
+        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        
         super().__init__(reward_fn_config)
         
         self.agent_name = None
@@ -147,6 +150,11 @@ class CEN15251(BaseReward):
 # === Hierarchical versions ===
    
 class HierarchicalCEN15251(BaseReward):
+    REQUIRED_KEYS = {
+        "thermal_zone": str,
+        "people_name": str
+    }
+    
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
@@ -167,15 +175,13 @@ class HierarchicalCEN15251(BaseReward):
             to calculate the reward. The dictionary must to have the following keys:
             
                 1. people_name,
-                2. thermal_zone,
-                3. beta,
-                4. cooling_name,
-                5. heating_name,
-                6. cooling_energy_ref,
-                7. heating_energy_ref.
+                2. thermal_zone
             
             All this variables start with the name of the agent and then the value of the reference name.
         """
+        # Validate the config.
+        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        
         super().__init__(reward_fn_config)
         
         self.agent_name = None

@@ -3,7 +3,7 @@ Agent utilities
 ================
 
 """
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 def get_agent_name(state: Dict[str, Any] | List) -> str:
     """
@@ -25,3 +25,37 @@ def get_agent_name(state: Dict[str, Any] | List) -> str:
     elif isinstance(state, dict):
         return list(state.keys())[0].split(':')[0]
     
+def config_validation(config, required_keys):
+    for key, expected_type in required_keys.items():
+        if key not in config:
+            raise ValueError(f"The following key is missing: '{key}'")
+        
+        # Special case for Tuple[str, str, str]
+        if expected_type == Tuple[str, str, str]:
+            if not isinstance(expected_type, tuple):
+                raise TypeError(f"The key '{key}' must be a tuple, but goot a {type(expected_type).__name__}")
+            if len(expected_type) != 3:
+                raise ValueError(f"The key '{key}' must be a tuple with 3 elements, but has {len(expected_type)}")
+            if not all(isinstance(item, str) for item in expected_type):
+                raise TypeError(f"All the elements in the key '{key}' must be strings, but was gotten: {[type(item).__name__ for item in expected_type]}")
+        
+        elif expected_type == Tuple[str, str]:
+            if not isinstance(expected_type, tuple):
+                raise TypeError(f"The key '{key}' must be a tuple, but goot a {type(expected_type).__name__}")
+            if len(expected_type) != 2:
+                raise ValueError(f"The key '{key}' must be a tuple with 2 elements, but has {len(expected_type)}")
+            if not all(isinstance(item, str) for item in expected_type):
+                raise TypeError(f"All the elements in the key '{key}' must be strings, but was gotten: {[type(item).__name__ for item in expected_type]}")
+            
+        elif expected_type == Tuple[int, int]:
+            if not isinstance(expected_type, tuple):
+                raise TypeError(f"The key '{key}' must be a tuple, but goot a {type(expected_type).__name__}")
+            if len(expected_type) != 2:
+                raise ValueError(f"The key '{key}' must be a tuple with 2 elements, but has {len(expected_type)}")
+            if not all(isinstance(item, int) for item in expected_type):
+                raise TypeError(f"All the elements in the key '{key}' must be integers, but was gotten: {[type(item).__name__ for item in expected_type]}")
+        
+        elif not isinstance(config[key], expected_type):
+            raise TypeError(f"The key '{key}' expect the type {expected_type.__name__}, "
+                            f"but got {type(config[key]).__name__}")
+            
