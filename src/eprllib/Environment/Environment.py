@@ -118,6 +118,7 @@ class Environment(MultiAgentEnv):
         self.trigger_fn: Dict[str, BaseTrigger] = {agent: None for agent in self.agents}
         self.filter_fn: Dict[str, BaseFilter] = {agent: None for agent in self.agents}
         for agent in self.agents:
+            # TODO: Allow the implementation of MultiTriggerSpec.
             self.trigger_fn.update({agent: self.env_config["agents_config"][agent]["trigger"]['trigger_fn'](self.env_config["agents_config"][agent]["trigger"]["trigger_fn_config"])})
             self.filter_fn.update({agent: self.env_config["agents_config"][agent]["filter"]['filter_fn'](self.env_config["agents_config"][agent]["filter"]["filter_fn_config"])})
         
