@@ -463,6 +463,20 @@ class TriggerSpec:
         
         return True
 
+class MultiTriggerSpec:
+    """
+    MultiTriggerSpec allows combining multiple TriggerSpec instances.
+    """
+    def __init__(self, *trigger_specs: "TriggerSpec"):
+        """
+        Args:
+            trigger_specs (TriggerSpec): One or more instances of TriggerSpec.
+        """
+        if not all(isinstance(ts, TriggerSpec) for ts in trigger_specs):
+            raise TypeError("All arguments must be instances of TriggerSpec")
+
+        self.triggers_list = list(trigger_specs)
+
 class AgentSpec:
     """
     AgentSpec is the base class for an agent specification to safe configuration of the object.
