@@ -79,9 +79,13 @@ from typing import Any, Dict
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name
+from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class ASHRAE55SimpleModel(BaseReward):
+    REQUIRED_KEYS = {
+        "thermal_zone": str,
+    }
+    
     def __init__(
         self,
         reward_fn_config: Dict[str, Any],
@@ -105,10 +109,10 @@ class ASHRAE55SimpleModel(BaseReward):
             
             All these variables start with the name of the agent and then the value of the reference name.
         """
-        super().__init__(reward_fn_config)
+        # Validate the config.
+        config_validation(self.REQUIRED_KEYS, reward_fn_config)
         
-        # Validate that the folowing keys were specified.
-        assert "thermal_zone" in reward_fn_config, "The key 'thermal_zone' must be specified in the reward function config."
+        super().__init__(reward_fn_config)
         
         self.agent_name = None
         self.comfort = None
@@ -148,16 +152,20 @@ class ASHRAE55SimpleModel(BaseReward):
 # === Hierarchical versions ===
 
 class HierarchicalASHRAE55SimpleModel(BaseReward):
+    REQUIRED_KEYS = {
+        "thermal_zone": str,
+    }
+    
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
         ):
         """
         """
-        super().__init__(reward_fn_config)
+        # Validate the config.
+        config_validation(self.REQUIRED_KEYS, reward_fn_config)
         
-        # Validate that the folowing keys were specified.
-        assert "thermal_zone" in reward_fn_config, "The key 'thermal_zone' must be specified in the reward function config."
+        super().__init__(reward_fn_config)
         
         self.agent_name = None
         self.comfort = None

@@ -10,9 +10,16 @@ from typing import Any, Dict, List, Tuple
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name
+from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
+    REQUIRED_KEYS = {
+        "temperature_range": Tuple[int, int],
+        "actuator_for_cooling": Tuple[str, str, str],
+        "actuator_for_heating": Tuple[str, str, str],
+        "availability_actuator": Tuple[str, str, str]
+    }
+    
     def __init__(
         self,
         trigger_fn_config: Dict[str, Any]
@@ -28,6 +35,9 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
                 - actuator_for_heating (Tuple[str, str, str]): The configuration for the heating actuator.
                 - availability_actuator (Tuple[str, str, str]): The configuration for the availability actuator.
         """
+        # Validate the config.
+        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        
         super().__init__(trigger_fn_config)
         
         self.agent_name = None
@@ -114,6 +124,10 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
 
 
 class AvailabilityTrigger(BaseTrigger):
+    REQUIRED_KEYS = {
+        "availability_actuator": Tuple[str, str, str]
+    }
+    
     def __init__(
         self, 
         trigger_fn_config:Dict[str,Any]
@@ -126,6 +140,9 @@ class AvailabilityTrigger(BaseTrigger):
             It should contain the following keys: agents_type (Dict[str, int]): A dictionary 
             mapping agent names to their types (1 for cooling, 2 for heating, 3 for Availability).
         """
+        # Validate the config.
+        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        
         super().__init__(trigger_fn_config)
         
         self.agent_name = None
