@@ -61,7 +61,7 @@ class HierarchicalGoalTriggerDiscrete(BaseTrigger):
         Returns:
             Any: The transformed action.
         """
-        return action/self.trigger_fn_config['action_space_dim']
+        return action/(self.trigger_fn_config['action_space_dim']-1)
     
     
 class HierarchicalObjectiveTriggerMultiDiscrete(BaseTrigger):
