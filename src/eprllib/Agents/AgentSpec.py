@@ -11,15 +11,12 @@ The ``AgentSpec`` class has a method called ``build`` that is used to build the 
 validate the properties of the object and to return the object as a dictionary. It is used internally when you build
 the environment to provide it to RLlib.
 """
-import logging
 from typing import Dict, Any, List, Tuple
 
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-
-logger = logging.getLogger(__name__)
 
 class RewardSpec:
     """
@@ -55,7 +52,7 @@ class RewardSpec:
             validated = self.validation_rew_config()
             
         except NotImplementedError:
-            logger.error("reward_fn must be implemented")
+            raise NotImplementedError("reward_fn must be implemented")
             
         return vars(self)
     
@@ -199,7 +196,7 @@ class ObservationSpec:
         admissible_values = list(self.simulation_parameters.keys())
         for key in simulation_parameters.keys():
             if key not in admissible_values:
-                logger.error(f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}")
+                raise ValueError(f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}")
         # Update the boolean values in the self.simulation_parameters Dict.
         self.simulation_parameters.update(simulation_parameters)
         
@@ -213,7 +210,7 @@ class ObservationSpec:
         admissible_values = list(self.zone_simulation_parameters.keys())
         for key in zone_simulation_parameters.keys():
             if key not in admissible_values:
-                logger.error(f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}")
+                raise ValueError(f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}")
         # Update the boolean values in the self.zone_simulation_parameters Dict.
         self.zone_simulation_parameters.update(zone_simulation_parameters)
         
@@ -239,13 +236,13 @@ class ObservationSpec:
             admissible_values = list(self.prediction_variables.keys())
             for key in prediction_variables.keys():
                 if key not in admissible_values:
-                    logger.error(f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}")
+                    raise ValueError(f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}")
             # Update the boolean values in the self.prediction_variables Dict.
             self.prediction_variables.update(prediction_variables)
         
             if prediction_hours <= 0 or prediction_hours > 24:
                 self.prediction_hours = 24
-                logger.warning(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
+                print(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
             self.prediction_hours = prediction_hours
             
         # Actuator value in the observation.
@@ -288,7 +285,7 @@ class ObservationSpec:
         counter += len(self.other_obs)
         
         if counter == 0:
-            logger.error("At least one variable/meter/actuator/parameter must be defined in the observation.")
+            raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
         
         return True
 
@@ -338,10 +335,10 @@ class FilterSpec:
         """
         
         if not isinstance(self.filter_fn, BaseFilter):
-            logger.error(f"The filter function must be based on BaseFilter class but {type(self.filter_fn)} was given.")
+            raise ValueError(f"The filter function must be based on BaseFilter class but {type(self.filter_fn)} was given.")
 
         if not isinstance(self.filter_fn_config, dict):
-            logger.error(f"The configuration for the filter function must be a dictionary but {type(self.filter_fn_config)} was given.")
+            raise ValueError(f"The configuration for the filter function must be a dictionary but {type(self.filter_fn_config)} was given.")
             
         
         return True
@@ -377,7 +374,7 @@ class ActionSpec:
         self.actuators = actuators
         
         if self.actuators is None:
-            logger.warning("No actuators provided.")
+            print("No actuators provided.")
             self.actuators = []
     
     def __getitem__(self, key):
@@ -400,15 +397,15 @@ class ActionSpec:
         """
         # Check that the actuators are defined as a list of tuples.
         if not isinstance(self.actuators, list):
-            logger.error(f"The actuators must be defined as a list of tuples but {type(self.actuators)} was given.")
+            raise ValueError(f"The actuators must be defined as a list of tuples but {type(self.actuators)} was given.")
         else:
             # Check that the actuators are defined as a list of tuples of 3 elements.
             for actuator in self.actuators:
                 if not isinstance(actuator, tuple):
-                    logger.error(f"The actuators must be defined as a list of tuples but {type(actuator)} was given.")
+                    raise ValueError(f"The actuators must be defined as a list of tuples but {type(actuator)} was given.")
                 else:
                     if len(actuator) != 3:
-                        logger.error(f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given.")
+                        raise ValueError(f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given.")
 
         return True
 
@@ -453,13 +450,13 @@ class TriggerSpec:
         """
 
         if not isinstance(self.trigger_fn, BaseTrigger):
-            logger.error(f"The trigger function must be based on BaseTrigger class but {type(self.trigger_fn)} was given.")
+            raise ValueError(f"The trigger function must be based on BaseTrigger class but {type(self.trigger_fn)} was given.")
 
         if not isinstance(self.trigger_fn_config, dict):
-            logger.error(f"The configuration for the trigger function must be a dictionary but {type(self.trigger_fn_config)} was given.")
+            raise ValueError(f"The configuration for the trigger function must be a dictionary but {type(self.trigger_fn_config)} was given.")
 
         if self.trigger_fn == NotImplemented:
-            logger.error("The trigger function must be defined.")
+            raise ValueError("The trigger function must be defined.")
         
         return True
 
@@ -528,22 +525,22 @@ class AgentSpec:
         if isinstance(self.observation, ObservationSpec):
             self.observation = self.observation.build()
         else:
-            logger.error(f"The observation must be defined as an ObservationSpec object but {type(self.observation)} was given.")
+            raise ValueError(f"The observation must be defined as an ObservationSpec object but {type(self.observation)} was given.")
         if isinstance(self.filter, FilterSpec):
             self.filter = self.filter.build()
         else:
-            logger.error(f"The filter must be defined as a FilterSpec object but {type(self.filter)} was given.")
+            raise ValueError(f"The filter must be defined as a FilterSpec object but {type(self.filter)} was given.")
         if isinstance(self.action, ActionSpec):
             self.action = self.action.build()
         else:
-            logger.error(f"The action must be defined as an ActionSpec object but {type(self.action)} was given.")
+            raise ValueError(f"The action must be defined as an ActionSpec object but {type(self.action)} was given.")
         if isinstance(self.trigger, TriggerSpec):
             self.trigger = self.trigger.build()
         else:
-            logger.error(f"The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given.")
+            raise ValueError(f"The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given.")
         if isinstance(self.reward, RewardSpec):
             self.reward = self.reward.build()
         else:
-            logger.error(f"The reward must be defined as a RewardSpec object but {type(self.reward)} was given.")
+            raise ValueError(f"The reward must be defined as a RewardSpec object but {type(self.reward)} was given.")
 
         return vars(self)

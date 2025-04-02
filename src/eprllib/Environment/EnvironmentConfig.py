@@ -7,7 +7,6 @@ This module contains the class and methods used to configure the environment.
 from typing import Optional, Dict, Any
 from ray.rllib.env.env_context import EnvContext
 from ray.rllib.utils.typing import EnvType
-from eprllib.Utils.logging import setup_logging
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
@@ -31,10 +30,6 @@ class EnvironmentConfig:
         """
         This is the main object that is used to relate the EnergyPlus model and the RLlib policy training execution.
         """
-        self.logger = setup_logging(
-            module_name="eprllib.EnvironmentConfig",
-            log_level="INFO"
-        )
         # General configuration
         self.epjson_path: str = None
         self.epw_path: str = None
@@ -42,7 +37,6 @@ class EnvironmentConfig:
         self.ep_terminal_output: bool = True
         self.timeout: float | int = 10.0
         self.evaluation: bool = False
-        self.log_level: str = "INFO"
 
         # Agents configuration
         self.agents_config: Dict[str, AgentSpec | Dict] = None
@@ -91,7 +85,6 @@ class EnvironmentConfig:
         the program (like agents unique ID).
         """
         # === GENERALS === #
-        self.logger.debug("Building the environment configuration...")
         # epjson_path
         if self.epjson_path is None:
             pass
@@ -99,12 +92,12 @@ class EnvironmentConfig:
             if self.epjson_path.endswith(".epJSON"):
                 pass
             if self.epjson_path.endswith(".idf"):
-                self.logger.warning("The epjson_path is an IDF file. Consider converting to epJSON.")
+                print("The epjson_path is an IDF file. Consider converting to epJSON.")
                 pass
             else:
-                self.logger.error("The epjson_path must be a path to a epJSON or idf file.")
+                raise ValueError("The epjson_path must be a path to a epJSON or idf file.")
         else:
-            self.logger.error("The epjson_path must be a string.")
+            raise ValueError("The epjson_path must be a string.")
         
         # epw_path
         if self.epw_path is None:
@@ -113,39 +106,39 @@ class EnvironmentConfig:
             if self.epw_path.endswith(".epw"):
                 pass
             else:
-                self.logger.error("The epw_path must be a path to a epw file.")
+                raise ValueError("The epw_path must be a path to a epw file.")
         else:
-            self.logger.error("The epw_path must be a string.")
+            raise ValueError("The epw_path must be a string.")
         
         # output_path
         if self.output_path is None:
-            self.logger.warning("The output_path is not defined. The default output path will be used.")
+            print("The output_path is not defined. The default output path will be used.")
         elif isinstance(self.output_path, str):
             pass
         else:
-            self.logger.error("The output_path must be a string.")
+            raise ValueError("The output_path must be a string.")
         
         # ep_terminal_output
         if isinstance(self.ep_terminal_output, bool):
             pass
         else:
-            self.logger.error("The ep_terminal_output must be a boolean.")
+            raise ValueError("The ep_terminal_output must be a boolean.")
         
         # timeout
         if isinstance(self.timeout, (float, int)):
             pass
         else:
-            self.logger.error("The timeout must be a float or an integer.")
+            raise ValueError("The timeout must be a float or an integer.")
         
         # evaluation
         if isinstance(self.evaluation, bool):
             pass
         else:
-            self.logger.error("The evaluation must be a boolean.")
+            raise ValueError("The evaluation must be a boolean.")
                 
         # === AGENTS === #
         if self.agents_config is None:
-            self.logger.error("agents_config must be defined.")
+            raise ValueError("agents_config must be defined.")
             
         ix = 0
         for agent, config in self.agents_config.items():
@@ -154,43 +147,43 @@ class EnvironmentConfig:
             elif isinstance(config, dict):
                 pass
             else:
-                self.logger.error(f"The agent {agent} must be an instance of AgentSpec or a dictionary.")
+                raise ValueError(f"The agent {agent} must be an instance of AgentSpec or a dictionary.")
             
             self.agents_config[agent].update({'agent_id': ix})
             ix += 1
-        self.logger.debug(f"Agents config: {self.agents_config}")
+        # print(f"Agents config: {self.agents_config}")
         
         # === CONNECTOR === #
         if self.connector_fn is None:
-            self.logger.warning("The multiagent function is not defined. The default connector will be used.")
+            print("The multiagent function is not defined. The default connector will be used.")
             self.connector_fn = DefaultConnector
             self.connector_fn_config = {}
         elif isinstance(self.connector_fn, BaseConnector):
             pass
         else:
-            self.logger.error(f"The connector_fn must be an instance of BaseConnector but {type(self.connector_fn)} was given.")
+            raise ValueError(f"The connector_fn must be an instance of BaseConnector but {type(self.connector_fn)} was given.")
         if isinstance(self.connector_fn_config, dict):
             pass
         else:
-            self.logger.error(f"The connector_fn_config must be a dictionary but {type(self.connector_fn_config)} was given.")
+            raise ValueError(f"The connector_fn_config must be a dictionary but {type(self.connector_fn_config)} was given.")
         
         # === EPISODES === #
         if self.episode_fn is None:
-            self.logger.warning("The episode function is not defined. The default episode function will be used.")
+            print("The episode function is not defined. The default episode function will be used.")
         elif isinstance(self.episode_fn, BaseEpisode):
             pass
         else:
-            self.logger.error(f"The episode_fn must be an instance of BaseEpisode but {type(self.episode_fn)} was given.")
+            raise ValueError(f"The episode_fn must be an instance of BaseEpisode but {type(self.episode_fn)} was given.")
             
         if isinstance(self.episode_fn_config, dict):
             pass
         else:
-            self.logger.error(f"The episode_fn_config must be a dictionary but {type(self.episode_fn_config)} was given.")
+            raise ValueError(f"The episode_fn_config must be a dictionary but {type(self.episode_fn_config)} was given.")
             
         if isinstance(self.cut_episode_len, int):
             pass
         else:
-            self.logger.error(f"The cut_episode_len must be an integer but {type(self.cut_episode_len)} was given.")
+            raise ValueError(f"The cut_episode_len must be an integer but {type(self.cut_episode_len)} was given.")
             
         return vars(self)
     
@@ -220,7 +213,6 @@ class EnvironmentConfig:
         ep_terminal_output: Optional[bool] = True,
         timeout: Optional[float | int] = 10.0,
         evaluation: bool = False,
-        log_level: str | None = None
     ):
         """
         This method is used to modify the general configuration of the environment.
@@ -233,24 +225,12 @@ class EnvironmentConfig:
             timeout (Optional[float | int]): Timeout for the simulation.
             evaluation (bool): Flag to indicate if the environment is in evaluation mode.
         """
-        if log_level is not None:
-            if isinstance(self.log_level, str):
-                if self.log_level in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-                    pass
-                else:
-                    self.logger.error("The log_level must be a string with one of the following values: DEBUG, INFO, WARNING, ERROR, CRITICAL.")
-            self.logger = setup_logging(
-                module_name="eprllib.EnvironmentConfig",
-                log_level=self.log_level
-            )
-            
         self.epjson_path = epjson_path
         self.epw_path = epw_path
         self.output_path = output_path
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
         self.evaluation = evaluation
-        self.log_level = log_level
         
     def agents(
         self,
