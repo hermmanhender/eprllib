@@ -6,7 +6,6 @@ This script define the environment of EnergyPlus implemented in RLlib. To works
 need to define the EnergyPlus Runner.
 """
 import tempfile
-import json
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
@@ -169,6 +168,8 @@ class Environment(MultiAgentEnv):
         Returns:
             Dict[str, Any]: Initial observations for each agent.
         """
+        # Call super's `reset()` method to (maybe) set the given `seed`.
+        super().reset(seed=seed, options=options)
         # Increment the counting of episodes in 1.
         self.episode += 1
         # saving the episode in the env_config to use across functions.
