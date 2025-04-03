@@ -91,7 +91,7 @@ class EnvironmentConfig:
         elif isinstance(self.epjson_path, str):
             if self.epjson_path.endswith(".epJSON"):
                 pass
-            if self.epjson_path.endswith(".idf"):
+            elif self.epjson_path.endswith(".idf"):
                 print("The epjson_path is an IDF file. Consider converting to epJSON.")
                 pass
             else:
