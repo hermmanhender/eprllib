@@ -72,7 +72,7 @@ class CEN15251(BaseReward):
             All this variables start with the name of the agent and then the value of the reference name.
         """
         # Validate the config.
-        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(reward_fn_config)
         
@@ -180,7 +180,7 @@ class HierarchicalCEN15251(BaseReward):
             All this variables start with the name of the agent and then the value of the reference name.
         """
         # Validate the config.
-        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(reward_fn_config)
         

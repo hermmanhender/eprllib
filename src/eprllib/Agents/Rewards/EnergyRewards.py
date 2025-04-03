@@ -22,8 +22,8 @@ class EnergyWithMeters(BaseReward):
     REQUIRED_KEYS = {
         "cooling_name": str,
         "heating_name": str,
-        "cooling_energy_ref": str,
-        "heating_energy_ref": str
+        "cooling_energy_ref": float|int,
+        "heating_energy_ref": float|int
     }
     
     def __init__(
@@ -53,7 +53,7 @@ class EnergyWithMeters(BaseReward):
             All this variables start with the name of the agent and then the value of the reference name.
         """
         # Validate the config.
-        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(reward_fn_config)
         
@@ -106,8 +106,8 @@ class HierarchicalEnergyWithMeters(BaseReward):
     REQUIRED_KEYS = {
         "cooling_name": str,
         "heating_name": str,
-        "cooling_energy_ref": str,
-        "heating_energy_ref": str
+        "cooling_energy_ref": float|int,
+        "heating_energy_ref": float|int
     }
     
     def __init__(
@@ -137,7 +137,7 @@ class HierarchicalEnergyWithMeters(BaseReward):
             All this variables start with the name of the agent and then the value of the reference name.
         """
         # Validate the config.
-        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(reward_fn_config)
         

@@ -110,7 +110,7 @@ class ASHRAE55SimpleModel(BaseReward):
             All these variables start with the name of the agent and then the value of the reference name.
         """
         # Validate the config.
-        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(reward_fn_config)
         
@@ -163,7 +163,7 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
         """
         """
         # Validate the config.
-        config_validation(self.REQUIRED_KEYS, reward_fn_config)
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(reward_fn_config)
         

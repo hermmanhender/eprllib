@@ -30,7 +30,7 @@ class WindowsOpeningTrigger(BaseTrigger):
                 - window_actuator (Tuple[str, str, str]): The configuration for the window actuator.
         """
         # Validate the config.
-        config_validation(self, trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
         
         super().__init__(trigger_fn_config)
         
