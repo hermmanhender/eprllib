@@ -102,8 +102,8 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         
         else:
             actuator_dict_actions.update({
-                self.actuator_for_cooling: min(self.temperature_range)+1 + (action-1)/(10-1) * (max(self.temperature_range) - min(self.temperature_range)-1),
-                self.actuator_for_heating: min(self.temperature_range) + (action-1)/(10-1) * (max(self.temperature_range) - min(self.temperature_range)-1),
+                self.actuator_for_cooling: ((max(self.temperature_range)+min(self.temperature_range))/2)+(action-1)/(9)*(max(self.temperature_range)-1-(max(self.temperature_range)+min(self.temperature_range))/2)+1,
+                self.actuator_for_heating: ((max(self.temperature_range)+min(self.temperature_range))/2)-(action-1)/(9)*(((max(self.temperature_range)+min(self.temperature_range))/2)-min(self.temperature_range)),
                 self.availability_actuator: 1
             })
 
