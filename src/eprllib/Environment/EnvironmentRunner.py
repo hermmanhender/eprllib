@@ -27,7 +27,7 @@ from eprllib.Utils.observation_utils import (
 
     
 # EnergyPlus Python API path adding
-EP_API_add_path(version="24-2-0")
+EP_API_add_path()
 from pyenergyplus.api import EnergyPlusAPI
 
 api = EnergyPlusAPI()
