@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "eprllib"
 
-version = "1.5.16"
+version = "1.5.17"
 
 metadata = "2.2"
 authors = [
