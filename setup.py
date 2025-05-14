@@ -11,7 +11,7 @@ setup(
   author_email = 'hendger.07@gmail.com',      # Tu correo electrónico
   url = 'https://github.com/hermmanhender/eprllib',   # Tu github o tu sitio web
 
-  download_url = 'https://github.com/hermmanhender/eprllib/dist/eprllib-1.5.15.tar.gz',    # Ahora hablamos de esto
+  download_url = 'https://github.com/hermmanhender/eprllib/dist/eprllib-1.5.17.tar.gz',    # Ahora hablamos de esto
 
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
   install_requires=[            # Los paquetes que usas en tu librería.
