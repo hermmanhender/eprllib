@@ -19,6 +19,26 @@ from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
 
+# TODO: Add here the availability to run EnergyPlus in Parallel.
+# Run EnergyPlus in Parallel
+# EnergyPlus is a multi-thread application but is not optimized for parallel runs on multi-core 
+# machines. However, multiple parametric runs can be launched in parallel if these runs are 
+# independent. One way to do it is to create multiple folders and copy files EnergyPlus.exe, 
+# Energy+.idd, DElight2.dll, libexpat.dll, bcvtb.dll, EPMacro.exe (if macros are used), 
+# ExpandObjects.exe (if HVACTemplate or Compact HVAC objects are used) from the original EnergyPlus 
+# installed folder. Inside each folder, copy IDF file as in.idf and EPW file as in.epw, then run 
+# EnergyPlus.exe from each folder. This is better handled with a batch file. If the Energy+.ini file 
+# exists in one of the created folders, make sure it is empty or points to the current EnergyPlus folder.
+
+# EP-Launch now does this automatically for Group or Parametric-Preprocessor runs.
+
+# The benefit of run time savings depends on computer configurations including number of CPUs, 
+# CPU clock speed, amount of RAM and cache, and hard drive speed. To be time efficient, the number 
+# of parallel EnergyPlus runs should not be more than the number of CPUs on a computer. The EnergyPlus 
+# utility program EP-Launch is being modified to add the parallel capability for group simulations. The 
+# long term goal is to run EnergyPlus in parallel on multi-core computers even for a single EnergyPlus 
+# run without degradation to accuracy.
+
 class Environment(MultiAgentEnv):
     """
     The BaseEnvironment class represents a multi-agent environment for 
@@ -66,17 +86,21 @@ class Environment(MultiAgentEnv):
         """
         self.env_config = env_config
         
+        # Episode and multiagent functions
+        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+        # self.logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
+        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
+        # self.logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
+        
+        # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
+        # self.logger.info(f"Possible agents: {self.possible_agents}")
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
         self.agents = self.possible_agents
         # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
         # currently "alive" agents are.
-        
-        # Episode and multiagent functions
-        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
-        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
         
         # asigning the configuration of the environment.
         self.reward_fn: Dict[str, BaseReward] = {agent: None for agent in self.agents}
@@ -89,13 +113,15 @@ class Environment(MultiAgentEnv):
         
         # asignation of environment action space.
         self.action_space = {agent: None for agent in self.agents}
-        self.observation_space = {agent: None for agent in self.agents}
         for agent in self.agents:
             self.action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
-            self.observation_space[agent] = self.filter_fn[agent].get_agent_obs_dim(self.env_config, self.connector_fn, agent)
-        
+            
         self.action_space = spaces.Dict(self.action_space)
-        self.observation_space = spaces.Dict(self.observation_space)
+        # self.logger.debug(f"Action space: {self.action_space}")
+        
+        # asignation of environment observation space.
+        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
+        # self.logger.debug(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -106,7 +132,7 @@ class Environment(MultiAgentEnv):
         self.act_queue: Optional[Queue] = None
         self.infos_queue: Optional[Queue] = None
         
-        # ===CONTROLS=== #
+        # === CONTROLS === #
         # variable for the registry of the episode number.
         self.episode = -1
         self.timestep = 0
@@ -117,17 +143,19 @@ class Environment(MultiAgentEnv):
         self.last_obs = {agent: [] for agent in self.agents}
         self.last_infos = {agent: {} for agent in self.agents}
         
-        # ===DATA MANAGEMENT=== #
+        # === DATA MANAGEMENT === #
         # output_path: Path to save the EnergyPlus simulation results.
         self.output_path = self.env_config["output_path"]
         if self.output_path is None:
             self.output_path = tempfile.gettempdir()
-        print(f"Output path for EnergyPlus simulation results: {self.output_path}")
+        # self.logger.info(f"Output path for EnergyPlus simulation results: {self.output_path}")
         
         # If epjson_path is a IDF file, transform it into a epJSON file.
         if env_config['epjson_path'].endswith(".idf"):
             print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
+        # self.logger.info("Environment initialization complete")
+        
     @override(MultiAgentEnv)
     def reset(
         self, *,
@@ -140,6 +168,8 @@ class Environment(MultiAgentEnv):
         Returns:
             Dict[str, Any]: Initial observations for each agent.
         """
+        # Call super's `reset()` method to (maybe) set the given `seed`.
+        super().reset(seed=seed, options=options)
         # Increment the counting of episodes in 1.
         self.episode += 1
         # saving the episode in the env_config to use across functions.
@@ -160,34 +190,16 @@ class Environment(MultiAgentEnv):
             
             # episode_config_fn: Function that take the env_config as argument and upgrade the value
             # of env_config['epjson'] (str). Buid-in function allocated in tools.ep_episode_config
-            self.env_config = self.episode_fn.get_episode_config(self.env_config)
-            self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
+            try:
+                self.env_config = self.episode_fn.get_episode_config(self.env_config)
+                self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
+                # self.logger.debug(f"Episode configuration: {self.env_config}")
+            except (ValueError, FileNotFoundError):
+                raise ValueError("The episode configuration is not valid. Please check the episode configuration.")
             
+            # Update the rewards functions. The parameters of the reward function could be modify by the episode function, due that it's update here.
             for agent in self.agents:
                 self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
-            
-            
-            # TODO: Add here the availability to run EnergyPlus in Parallel.
-            # Run EnergyPlus in Parallel
-            # EnergyPlus is a multi-thread application but is not optimized for parallel runs on multi-core 
-            # machines. However, multiple parametric runs can be launched in parallel if these runs are 
-            # independent. One way to do it is to create multiple folders and copy files EnergyPlus.exe, 
-            # Energy+.idd, DElight2.dll, libexpat.dll, bcvtb.dll, EPMacro.exe (if macros are used), 
-            # ExpandObjects.exe (if HVACTemplate or Compact HVAC objects are used) from the original EnergyPlus 
-            # installed folder. Inside each folder, copy IDF file as in.idf and EPW file as in.epw, then run 
-            # EnergyPlus.exe from each folder. This is better handled with a batch file. If the Energy+.ini file 
-            # exists in one of the created folders, make sure it is empty or points to the current EnergyPlus folder.
-
-            # EP-Launch now does this automatically for Group or Parametric-Preprocessor runs.
-
-            # The benefit of run time savings depends on computer configurations including number of CPUs, 
-            # CPU clock speed, amount of RAM and cache, and hard drive speed. To be time efficient, the number 
-            # of parallel EnergyPlus runs should not be more than the number of CPUs on a computer. The EnergyPlus 
-            # utility program EP-Launch is being modified to add the parallel capability for group simulations. The 
-            # long term goal is to run EnergyPlus in parallel on multi-core computers even for a single EnergyPlus 
-            # run without degradation to accuracy.
-            
-            
             
             # Start EnergyPlusRunner whith the following configuration.
             self.runner = EnvironmentRunner(
@@ -250,6 +262,7 @@ class Environment(MultiAgentEnv):
             cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
+                # self.logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
@@ -257,7 +270,7 @@ class Environment(MultiAgentEnv):
         # check for simulation errors.
         if self.runner.failed():
             self.terminateds = True
-            raise Exception('Simulation in EnergyPlus fallied.')
+            print("EnergyPlus failed with an error!")
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
         if self.runner.simulation_complete:
@@ -292,6 +305,7 @@ class Environment(MultiAgentEnv):
                 # We use the last observation as a observation for the timestep.
                 obs = self.last_obs
                 infos = self.last_infos
+                print("Queue timeout, ending episode early.")
         
         # Calculate the reward in the timestep
         reward_dict = {agent: None for agent in obs.keys()}
@@ -300,8 +314,7 @@ class Environment(MultiAgentEnv):
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
-        # if self.timestep % 100 == 0:
-        #     print(f"Action: {action}\nReward: {reward_dict}")
+        
         return obs, reward_dict, terminated, truncated, infos
 
     @override(MultiAgentEnv)

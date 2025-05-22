@@ -5,7 +5,7 @@ Energy rewards
 The rewards based on energy variables/meters.
 
 Hierarchical versions
----------------------
+----------------------
 
 Note that hierarchical versions are the same function but insteade of using only the inmediate
 value of the variable/meter, the reward is calculated using a List of the last timesteps and
@@ -16,12 +16,20 @@ from typing import Any, Dict
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_meter_name
 from eprllib.Utils.annotations import override
+from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class EnergyWithMeters(BaseReward):
+    REQUIRED_KEYS = {
+        "cooling_name": str,
+        "heating_name": str,
+        "cooling_energy_ref": float|int,
+        "heating_energy_ref": float|int
+    }
+    
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         This reward funtion takes the energy demand in the time step by the heating and cooling system and 
         calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
@@ -37,29 +45,21 @@ class EnergyWithMeters(BaseReward):
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
             to calculate the reward. The dictionary must to have the following keys:
             
-                1. agent_name,
-                2. cooling_name,
-                3. heating_name,
-                4. cooling_energy_ref,
-                5. heating_energy_ref.
+                1. cooling_name,
+                2. heating_name,
+                3. cooling_energy_ref,
+                4. heating_energy_ref.
             
-            All this variables start with the name of the agent and then
-            the value of the reference name.
-
-        Returns:
-            Dict[str,float]: The reward value for each agent in the timestep.
+            All this variables start with the name of the agent and then the value of the reference name.
         """
+        # Validate the config.
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
+        
         super().__init__(reward_fn_config)
         
-        agent_name = reward_fn_config["agent_name"]
-        self.cooling = get_meter_name(
-            agent_name,
-            reward_fn_config['cooling_name']
-        )
-        self.heating = get_meter_name(
-            agent_name,
-            reward_fn_config['heating_name']
-        )
+        self.agent_name = None
+        self.cooling = None
+        self.heating = None
     
     @override(BaseReward)
     def get_reward(
@@ -68,7 +68,8 @@ class EnergyWithMeters(BaseReward):
     terminated_flag: bool = False,
     truncated_flag: bool = False
     ) -> float:
-        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+        """
+        This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
         divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
         of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
@@ -80,6 +81,17 @@ class EnergyWithMeters(BaseReward):
         Returns:
             float: reward normalize value
         """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.cooling = get_meter_name(
+                self.agent_name,
+                self.reward_fn_config['cooling_name']
+            )
+            self.heating = get_meter_name(
+                self.agent_name,
+                self.reward_fn_config['heating_name']
+            )
+            
         return - np.clip(
             (infos[self.cooling] / self.reward_fn_config['cooling_energy_ref'] \
                 + infos[self.heating] / self.reward_fn_config['heating_energy_ref']),
@@ -91,10 +103,17 @@ class EnergyWithMeters(BaseReward):
 # === Hierarchical versions ===
 
 class HierarchicalEnergyWithMeters(BaseReward):
+    REQUIRED_KEYS = {
+        "cooling_name": str,
+        "heating_name": str,
+        "cooling_energy_ref": float|int,
+        "heating_energy_ref": float|int
+    }
+    
     def __init__(
         self,
         reward_fn_config: Dict[str,Any],
-        ) -> Dict[str,float]:
+        ):
         """
         This reward funtion takes the energy demand in the time step by the heating and cooling system and 
         calculate the energy reward as the sum of both divide by the maximal energy consumption of the 
@@ -110,29 +129,21 @@ class HierarchicalEnergyWithMeters(BaseReward):
             reward_fn_config (Dict[str,Any]): The dictionary is to configurate the variables that use each agent
             to calculate the reward. The dictionary must to have the following keys:
             
-                1. agent_name,
-                2. people_name,
-                3. thermal_zone,
-                4. beta,
-                5. cooling_name,
-                6. heating_name,
-                7. cooling_energy_ref,
-                8. heating_energy_ref.
+                1. cooling_name,
+                2. heating_name,
+                3. cooling_energy_ref,
+                4. heating_energy_ref.
             
-            All this variables start with the name of the agent and then
-            the value of the reference name.
+            All this variables start with the name of the agent and then the value of the reference name.
         """
-        self.reward_fn_config = reward_fn_config
+        # Validate the config.
+        config_validation(reward_fn_config, self.REQUIRED_KEYS)
         
-        agent_name = reward_fn_config["agent_name"]
-        self.cooling = get_meter_name(
-            agent_name,
-            reward_fn_config['cooling_name']
-        )
-        self.heating = get_meter_name(
-            agent_name,
-            reward_fn_config['heating_name']
-        )
+        super().__init__(reward_fn_config)
+        
+        self.agent_name = None
+        self.cooling = None
+        self.heating = None
     
     @override(BaseReward)
     def get_reward(
@@ -141,7 +152,8 @@ class HierarchicalEnergyWithMeters(BaseReward):
         terminated_flag: bool = False,
         truncated_flag: bool = False
         ) -> float:
-            """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+            """
+            This function returns the normalize reward calcualted as the sum of the penalty of the energy 
             amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
             divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
             of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
@@ -153,6 +165,17 @@ class HierarchicalEnergyWithMeters(BaseReward):
             Returns:
                 float: reward normalize value
             """
+            if self.agent_name is None:
+                self.agent_name = get_agent_name(infos)
+                self.cooling = get_meter_name(
+                    self.agent_name,
+                    self.reward_fn_config['cooling_name']
+                )
+                self.heating = get_meter_name(
+                    self.agent_name,
+                    self.reward_fn_config['heating_name']
+                )
+                
             return - np.clip(
                 (sum(infos[self.cooling]) / (self.reward_fn_config['cooling_energy_ref'] * len(infos[self.cooling])) \
                     + sum(infos[self.heating]) / (self.reward_fn_config['heating_energy_ref'] * len(infos[self.heating]))),

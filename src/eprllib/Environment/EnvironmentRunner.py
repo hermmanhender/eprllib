@@ -27,7 +27,7 @@ from eprllib.Utils.observation_utils import (
 
     
 # EnergyPlus Python API path adding
-EP_API_add_path(version="24-2-0")
+EP_API_add_path()
 from pyenergyplus.api import EnergyPlusAPI
 
 api = EnergyPlusAPI()
@@ -114,6 +114,7 @@ class EnvironmentRunner:
             })
     
     def progress_handler(self, progress: int) -> None:
+        # print(f"Simulation progress: {progress}%")
         if progress >= 99:
             self.is_last_timestep = True
             
@@ -123,14 +124,16 @@ class EnvironmentRunner:
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         self.energyplus_state:c_void_p = api.state_manager.new_state()
-        # TODO: use request_variable(state: c_void_p, variable_name: str | bytes, variable_key: str | bytes) to avoid
-        # the necesity of the user to use the output definition inside the IDF/epJSON file.
-        # for variable_name, variable_key in self.variables.items():
-        #     api.exchange.request_variable(
-        #         self.energyplus_state,
-        #         variable_name = variable_name,
-        #         variable_key = variable_key
-        #         )
+        # Request variables.
+        for agent in self.agents:
+            if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
+                for variable in self.env_config["agents_config"][agent]['observation']["variables"]:
+                    api.exchange.request_variable(
+                        self.energyplus_state,
+                        variable_name = variable[0],
+                        variable_key = variable[1]
+                    )
+                    # print(f"Variable {get_variable_name(agent,variable[0],variable[1])} requested.")
         api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
         api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
         api.runtime.callback_progress(self.energyplus_state, self.progress_handler)
@@ -185,7 +188,7 @@ class EnvironmentRunner:
         dict_agents_obs = {agent: None for agent in self.agents}
         for agent in self.agents:
             dict_agents_obs.update({
-                agent: self.filter_fn[agent].set_agent_obs(
+                agent: self.filter_fn[agent].get_filtered_obs(
                     self.env_config,
                     agent_states[agent]
                 )})
@@ -214,12 +217,13 @@ class EnvironmentRunner:
                 # Wait for a goal selection
                 event_flag = self.act_event.wait(self.env_config["timeout"])
                 if not event_flag:
+                    # print(f"Timeout waiting for action from agent {agent}.")
                     return
                 # Get the action from the EnergyPlusEnvironment `step` method.
                 actions: Dict[str, int | float] = self.act_queue.get()
                 goals: Dict[str, int | float] = {agent: None for agent in actions.keys()}
                 for agent in actions.keys():
-                    goals.update({agent: self.trigger_fn[agent].action_to_goal(actions)})
+                    goals.update({agent: self.trigger_fn[agent].action_to_goal(actions[agent])})
                 
                 low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
                     self.env_config,
@@ -244,6 +248,7 @@ class EnvironmentRunner:
             state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
         """
         if self.first_observation:
+            # print("Collecting the first observation.")
             self._collect_obs(state_argument)
             self.first_observation = False
         else:
@@ -265,6 +270,7 @@ class EnvironmentRunner:
         # Wait for an action.
         event_flag = self.act_event.wait(self.env_config["timeout"])
         if not event_flag:
+            # print("Timeout waiting for action from agent.")
             return
         # Get the action from the EnergyPlusEnvironment `step` method.
         dict_action: Dict[str, Any] = self.act_queue.get()
@@ -384,7 +390,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
         if agent is None:
-            ValueError("The agent must be defined.")
+            raise ValueError("The agent must be defined.")
         variables = {
             key: api.exchange.get_variable_value(state_argument, handle)
             for key, handle
@@ -408,7 +414,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            ValueError("The agent must be defined.")
+            raise ValueError("The agent must be defined.")
         variables = {
             key: api.exchange.get_internal_variable_value(state_argument, handle)
             for key, handle
@@ -432,7 +438,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            ValueError("The agent must be defined.")
+            raise ValueError("The agent must be defined.")
         
         variables = {
             key: api.exchange.get_meter_value(state_argument, handle)
@@ -457,7 +463,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
         if agent is None:
-            ValueError("The agent must be defined.")
+            raise ValueError("The agent must be defined.")
         
         variables = {
             key: api.exchange.get_actuator_value(state_argument, handle)
@@ -661,7 +667,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            ValueError("The agent must be defined.")
+            raise ValueError("The agent must be defined.")
         
         variables = {}
         variables.update({
@@ -685,6 +691,7 @@ class EnvironmentRunner:
             bool: True if the simulation is ready to perform actions.
         """
         if not self.init_handles:
+            # print("Initializing handles...")
             self.init_handles = self._init_handles(state_argument)
         
         self.initialized = self.init_handles and not api.exchange.warmup_flag(state_argument)
@@ -731,7 +738,7 @@ class EnvironmentRunner:
             ]:
                 if any([v == -1 for v in handles.values()]):
                     available_data = api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
-                    print(
+                    raise ValueError(
                         f"got -1 handle, check your handles names:\n"
                         f"> handles with error: {handles}\n"
                         f"> available EnergyPlus API data: {available_data}"
@@ -744,6 +751,7 @@ class EnvironmentRunner:
         """
         Method to stop EnergyPlus simulation and joint the threads.
         """
+        # print("Stopping EnergyPlus simulation...")
         if not self.simulation_complete:
             self.simulation_complete = True
         time.sleep(0.5)

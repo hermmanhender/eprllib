@@ -10,8 +10,16 @@ from typing import Any, Dict, List, Tuple
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
+from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
+    REQUIRED_KEYS = {
+        "temperature_range": Tuple[int, int],
+        "actuator_for_cooling": Tuple[str, str, str],
+        "actuator_for_heating": Tuple[str, str, str],
+        "availability_actuator": Tuple[str, str, str]
+    }
+    
     def __init__(
         self,
         trigger_fn_config: Dict[str, Any]
@@ -22,34 +30,21 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         Args:
             trigger_fn_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
-                - agent_name (str): The name of the agent.
                 - temperature_range (Tuple[int, int]): The temperature range for the setpoints.
                 - actuator_for_cooling (Tuple[str, str, str]): The configuration for the cooling actuator.
                 - actuator_for_heating (Tuple[str, str, str]): The configuration for the heating actuator.
                 - availability_actuator (Tuple[str, str, str]): The configuration for the availability actuator.
         """
+        # Validate the config.
+        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        
         super().__init__(trigger_fn_config)
         
-        agent_name = trigger_fn_config['agent_name']
+        self.agent_name = None
         self.temperature_range: Tuple[int, int] = trigger_fn_config['temperature_range']
-        self.actuator_for_cooling = get_actuator_name(
-            agent_name,
-            trigger_fn_config['actuator_for_cooling'][0],
-            trigger_fn_config['actuator_for_cooling'][1],
-            trigger_fn_config['actuator_for_cooling'][2]
-        )
-        self.actuator_for_heating = get_actuator_name(
-            agent_name,
-            trigger_fn_config['actuator_for_heating'][0],
-            trigger_fn_config['actuator_for_heating'][1],
-            trigger_fn_config['actuator_for_heating'][2]
-        )
-        self.availability_actuator = get_actuator_name(
-            agent_name,
-            trigger_fn_config['availability_actuator'][0],
-            trigger_fn_config['availability_actuator'][1],
-            trigger_fn_config['availability_actuator'][2]
-        )
+        self.actuator_for_cooling = None
+        self.actuator_for_heating = None
+        self.availability_actuator = None
     
     @override(BaseTrigger)    
     def get_action_space_dim(self) -> gym.Space:
@@ -75,6 +70,27 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         Return:
             Dict[str, Any]: Dictionary with the actions for the actuators.
         """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(actuators)
+            self.actuator_for_cooling = get_actuator_name(
+                self.agent_name,
+                self.trigger_fn_config['actuator_for_cooling'][0],
+                self.trigger_fn_config['actuator_for_cooling'][1],
+                self.trigger_fn_config['actuator_for_cooling'][2]
+            )
+            self.actuator_for_heating = get_actuator_name(
+                self.agent_name,
+                self.trigger_fn_config['actuator_for_heating'][0],
+                self.trigger_fn_config['actuator_for_heating'][1],
+                self.trigger_fn_config['actuator_for_heating'][2]
+            )
+            self.availability_actuator = get_actuator_name(
+                self.agent_name,
+                self.trigger_fn_config['availability_actuator'][0],
+                self.trigger_fn_config['availability_actuator'][1],
+                self.trigger_fn_config['availability_actuator'][2]
+            )
+            
         actuator_dict_actions = {actuator: None for actuator in actuators}
         
         if action == 0:
@@ -86,8 +102,8 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         
         else:
             actuator_dict_actions.update({
-                self.actuator_for_cooling: min(self.temperature_range)+1 + (action-1)/(10-1) * (max(self.temperature_range) - min(self.temperature_range)-1),
-                self.actuator_for_heating: min(self.temperature_range) + (action-1)/(10-1) * (max(self.temperature_range) - min(self.temperature_range)-1),
+                self.actuator_for_cooling: ((max(self.temperature_range)+min(self.temperature_range))/2)+(action-1)/(9)*(max(self.temperature_range)-1-(max(self.temperature_range)+min(self.temperature_range))/2)+1,
+                self.actuator_for_heating: ((max(self.temperature_range)+min(self.temperature_range))/2)-(action-1)/(9)*(((max(self.temperature_range)+min(self.temperature_range))/2)-min(self.temperature_range)),
                 self.availability_actuator: 1
             })
 
@@ -106,7 +122,12 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         """
         return action
 
+
 class AvailabilityTrigger(BaseTrigger):
+    REQUIRED_KEYS = {
+        "availability_actuator": Tuple[str, str, str]
+    }
+    
     def __init__(
         self, 
         trigger_fn_config:Dict[str,Any]
@@ -119,15 +140,13 @@ class AvailabilityTrigger(BaseTrigger):
             It should contain the following keys: agents_type (Dict[str, int]): A dictionary 
             mapping agent names to their types (1 for cooling, 2 for heating, 3 for Availability).
         """
+        # Validate the config.
+        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        
         super().__init__(trigger_fn_config)
         
-        agent_name = trigger_fn_config['agent_name']
-        self.availability_actuator = get_actuator_name(
-            agent_name,
-            trigger_fn_config['availability_actuator'][0],
-            trigger_fn_config['availability_actuator'][1],
-            trigger_fn_config['availability_actuator'][2]
-        )
+        self.agent_name = None
+        self.availability_actuator = None
     
     @override(BaseTrigger)    
     def get_action_space_dim(self) -> gym.Space:
@@ -152,6 +171,16 @@ class AvailabilityTrigger(BaseTrigger):
         Return:
             Dict[str, Any]: Dictionary with the actions for the actuators.
         """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(actuators)
+            self.availability_actuator = get_actuator_name(
+                self.agent_name,
+                self.trigger_fn_config['availability_actuator'][0],
+                self.trigger_fn_config['availability_actuator'][1],
+                self.trigger_fn_config['availability_actuator'][2]
+            )
+
+        
         actuator_dict_actions = {actuator: None for actuator in actuators}
         
         if action == 0:

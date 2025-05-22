@@ -11,14 +11,12 @@ The ``AgentSpec`` class has a method called ``build`` that is used to build the 
 validate the properties of the object and to return the object as a dictionary. It is used internally when you build
 the environment to provide it to RLlib.
 """
-
 from typing import Dict, Any, List, Tuple
 
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-from eprllib.Utils.Utils import validate_properties
 
 class RewardSpec:
     """
@@ -37,9 +35,6 @@ class RewardSpec:
             dictionary. As a return, gives a float number as reward. See eprllib.Agents.Rewards for examples.
             
         """
-        if reward_fn == NotImplemented:
-            raise NotImplementedError("reward_fn must be implemented")
-            
         self.reward_fn = reward_fn
         self.reward_fn_config = reward_fn_config
     
@@ -51,24 +46,24 @@ class RewardSpec:
     
     def build(self) -> Dict:
         """
-        This method is used to build the ActionSpec object.
+        This method is used to build the RewardSpec object.
         """
-        # Check that the variables defined in RewardSpec are the allowed in the RewardSpec base
-        # class.
-        # expected_types = {
-        #     'reward_fn': BaseReward,
-        #     'reward_fn_config': dict,
-        # }
-        
-        # is_valid, errors = validate_properties(self, expected_types)
-        # if is_valid:
-        #     print("All properties have correct types")
-        # else:
-        #     print("Validation errors:")
-        #     for error in errors:
-        #         print(f"- {error}")
+        try:
+            validated = self.validation_rew_config()
+            
+        except NotImplementedError:
+            raise NotImplementedError("reward_fn must be implemented")
             
         return vars(self)
+    
+    def validation_rew_config(self) -> Dict:
+        """
+        This method is used to validate the properties of the object RewardSpec.
+        """
+        if self.reward_fn == NotImplemented:
+            raise NotImplementedError("reward_fn must be implemented")
+        
+        return True
         
 class ObservationSpec:
     """
@@ -146,22 +141,12 @@ class ObservationSpec:
             
             other_obs (Dict[str, float | int]): Custom observation dictionary.
         """
-        counter = 0
         # Variables
         self.variables = variables
-        if self.variables is not None:
-            counter += len(variables)
-    
         # Internal variables
         self.internal_variables = internal_variables
-        if self.internal_variables is not None:
-            counter += len(internal_variables)
-        
         # Meters
         self.meters = meters
-        if meters is not None:
-            counter += len(meters)
-        
         # Simulation parameters
         self.simulation_parameters: Dict[str, bool] = {
             'actual_date_time': False,
@@ -214,8 +199,6 @@ class ObservationSpec:
                 raise ValueError(f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}")
         # Update the boolean values in the self.simulation_parameters Dict.
         self.simulation_parameters.update(simulation_parameters)
-        # Count the variables introduced.
-        counter += sum([1 for value in simulation_parameters.values() if value])
         
         # Zone simulation parameters.
         self.zone_simulation_parameters: Dict[str, bool] = {
@@ -223,7 +206,6 @@ class ObservationSpec:
             'zone_time_step': False,
             'zone_time_step_number': False,
         }
-        
         # Check that the keys introduced in the Dict are admissible values.
         admissible_values = list(self.zone_simulation_parameters.keys())
         for key in zone_simulation_parameters.keys():
@@ -231,8 +213,6 @@ class ObservationSpec:
                 raise ValueError(f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}")
         # Update the boolean values in the self.zone_simulation_parameters Dict.
         self.zone_simulation_parameters.update(zone_simulation_parameters)
-        # Count the variables introduced.
-        counter += sum([1 for value in zone_simulation_parameters.values() if value])
         
         # Prediction weather.
         self.prediction_variables: Dict[str, bool] = {
@@ -251,7 +231,6 @@ class ObservationSpec:
             'wind_direction': False,
             'wind_speed': False,
         }
-        
         self.use_one_day_weather_prediction = use_one_day_weather_prediction
         if self.use_one_day_weather_prediction:
             admissible_values = list(self.prediction_variables.keys())
@@ -263,24 +242,15 @@ class ObservationSpec:
         
             if prediction_hours <= 0 or prediction_hours > 24:
                 self.prediction_hours = 24
-                raise ValueError(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
+                print(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {prediction_hours}. The value of 24 is used.")
             self.prediction_hours = prediction_hours
-            # Count prediction parameters.
-            counter += sum([1 for value in prediction_variables.values() if value])
-        
+            
         # Actuator value in the observation.
         self.use_actuator_state = use_actuator_state
-        if self.use_actuator_state:
-            counter += 1
         
         # Custom observation dict.
         self.other_obs = other_obs
-        counter += len(self.other_obs)
         
-        # Check that at least one parameter were defined in the observation.
-        if counter == 0:
-            raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
-    
     def __getitem__(self, key):
         return getattr(self, key)
 
@@ -292,30 +262,32 @@ class ObservationSpec:
         """
         This method is used to build the ObservationSpec object.
         """
-        # Check that the variables defined in ObservationSpec are the allowed in the ObservationSpec base
-        # class.
-        # expected_types = {
-        #     'variables': (list, None),
-        #     'internal_variables': (list, None),
-        #     'meters': (list, None),
-        #     'simulation_parameters': dict,
-        #     'zone_simulation_parameters': dict,
-        #     'use_one_day_weather_prediction': bool,
-        #     'prediction_hours': int,
-        #     'prediction_variables': dict,
-        #     'use_actuator_state': bool,
-        #     'other_obs': dict
-        # }
+        validated = self.validate_obs_config()
         
-        # is_valid, errors = validate_properties(self, expected_types)
-        # if is_valid:
-        #     print("All properties have correct types")
-        # else:
-        #     print("Validation errors:")
-        #     for error in errors:
-        #         print(f"- {error}")
-            
         return vars(self)
+    
+    def validate_obs_config(self) -> Dict:
+        """
+        This method is used to validate the properties of the object ObservationSpec.
+        """
+        counter = 0
+        if self.variables is not None:
+            counter += len(self.variables)
+        if self.internal_variables is not None:
+            counter += len(self.internal_variables)
+        if self.meters is not None:
+            counter += len(self.meters)
+        counter += sum([1 for value in self.simulation_parameters.values() if value])
+        counter += sum([1 for value in self.zone_simulation_parameters.values() if value])
+        counter += sum([1 for value in self.prediction_variables.values() if value])
+        if self.use_actuator_state:
+            counter += 1
+        counter += len(self.other_obs)
+        
+        if counter == 0:
+            raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
+        
+        return True
 
 class FilterSpec:
     """
@@ -336,7 +308,7 @@ class FilterSpec:
             filter_fn_config (Dict[str, Any]): The configuration of the filter function.
         """
         if filter_fn is None:
-            print("No filter provided. Default filter will be used.")
+            logger.warning("No filter provided. Default filter will be used.")
             self.filter_fn = DefaultFilter
             self.filter_fn_config = {}
         else:
@@ -353,22 +325,23 @@ class FilterSpec:
         """
         This method is used to build the FilterSpec object.
         """
-        # Check that the variables defined in FilterSpec are the allowed in the FilterSpec base
-        # class.
-        # expected_types = {
-        #     'filter_fn': (BaseFilter, None),
-        #     'filter_fn_config': dict
-        # }
-        
-        # is_valid, errors = validate_properties(self, expected_types)
-        # if is_valid:
-        #     print("All properties have correct types")
-        # else:
-        #     print("Validation errors:")
-        #     for error in errors:
-        #         print(f"- {error}")
+        validated = self.validate_filter_config()
             
         return vars(self)
+    
+    def validate_filter_config(self) -> Dict:
+        """
+        This method is used to validate the properties of the object FilterSpec.
+        """
+        
+        if not isinstance(self.filter_fn, BaseFilter):
+            raise ValueError(f"The filter function must be based on BaseFilter class but {type(self.filter_fn)} was given.")
+
+        if not isinstance(self.filter_fn_config, dict):
+            raise ValueError(f"The configuration for the filter function must be a dictionary but {type(self.filter_fn_config)} was given.")
+            
+        
+        return True
 
 class ActionSpec:
     """
@@ -376,7 +349,7 @@ class ActionSpec:
     """
     def __init__(
         self,
-        actuators: List[Tuple[str, str, str]] = NotImplemented,
+        actuators: List[Tuple[str, str, str]] = None,
     ):
         """
         Construction method.
@@ -398,10 +371,11 @@ class ActionSpec:
             allow EnergyPlus to resume controlling that value, there is an actuator reset function as well.
             One agent can manage several actuators.
         """
-        if actuators == NotImplemented:
-            raise NotImplementedError("actuators must be defined.")
-        
         self.actuators = actuators
+        
+        if self.actuators is None:
+            print("No actuators provided.")
+            self.actuators = []
     
     def __getitem__(self, key):
         return getattr(self, key)
@@ -413,21 +387,27 @@ class ActionSpec:
         """
         This method is used to build the ActionSpec object.
         """
-        # Check that the variables defined in ActionSpec are the allowed in the ActionSpec base
-        # class.
-        # expected_types = {
-        #     'actuators': list
-        # }
-        
-        # is_valid, errors = validate_properties(self, expected_types)
-        # if is_valid:
-        #     print("All properties have correct types")
-        # else:
-        #     print("Validation errors:")
-        #     for error in errors:
-        #         print(f"- {error}")
+        validated = self.validate_action_config()
             
         return vars(self)
+    
+    def validate_action_config(self) -> Dict:
+        """
+        This method is used to validate the properties of the object ActionSpec.
+        """
+        # Check that the actuators are defined as a list of tuples.
+        if not isinstance(self.actuators, list):
+            raise ValueError(f"The actuators must be defined as a list of tuples but {type(self.actuators)} was given.")
+        else:
+            # Check that the actuators are defined as a list of tuples of 3 elements.
+            for actuator in self.actuators:
+                if not isinstance(actuator, tuple):
+                    raise ValueError(f"The actuators must be defined as a list of tuples but {type(actuator)} was given.")
+                else:
+                    if len(actuator) != 3:
+                        raise ValueError(f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given.")
+
+        return True
 
 class TriggerSpec:
     """
@@ -447,9 +427,6 @@ class TriggerSpec:
             
             trigger_fn_config (Dict[str, Any]): The configuration of the trigger function.
         """
-        if trigger_fn == NotImplemented:
-            raise NotImplementedError("trigger_fn must be defined.")
-        
         self.trigger_fn = trigger_fn
         self.trigger_fn_config = trigger_fn_config
     
@@ -463,22 +440,25 @@ class TriggerSpec:
         """
         This method is used to build the TriggerSpec object.
         """
-        # Check that the variables defined in TriggerSpec are the allowed in the TriggerSpec base
-        # class.
-        # expected_types = {
-        #     'trigger_fn': BaseTrigger,
-        #     'trigger_fn_config': dict
-        # }
-        
-        # is_valid, errors = validate_properties(self, expected_types)
-        # if is_valid:
-        #     print("All properties have correct types")
-        # else:
-        #     print("Validation errors:")
-        #     for error in errors:
-        #         print(f"- {error}")
+        validated = self.validate_trigger_config()
             
         return vars(self)
+    
+    def validate_trigger_config(self) -> Dict:
+        """
+        This method is used to validate the properties of the object TriggerSpec.
+        """
+
+        if not isinstance(self.trigger_fn, BaseTrigger):
+            raise ValueError(f"The trigger function must be based on BaseTrigger class but {type(self.trigger_fn)} was given.")
+
+        if not isinstance(self.trigger_fn_config, dict):
+            raise ValueError(f"The configuration for the trigger function must be a dictionary but {type(self.trigger_fn_config)} was given.")
+
+        if self.trigger_fn == NotImplemented:
+            raise ValueError("The trigger function must be defined.")
+        
+        return True
 
 class AgentSpec:
     """
@@ -486,11 +466,11 @@ class AgentSpec:
     """
     def __init__(
         self,
-        observation: ObservationSpec = NotImplemented,
+        observation: ObservationSpec = None,
         filter: FilterSpec = None,
-        action: ActionSpec = NotImplemented,
+        action: ActionSpec = None,
         trigger: TriggerSpec = None,
-        reward: RewardSpec = NotImplemented,
+        reward: RewardSpec = None,
         **kwargs):
         """
         Contruction method for the AgentSpec class.
@@ -508,25 +488,26 @@ class AgentSpec:
             NotImplementedError: _description_
             NotImplementedError: _description_
         """
-        
-        if observation == NotImplemented:
-            raise NotImplementedError("observation must be deffined.")
-        if action == NotImplemented:
-            raise NotImplementedError("action must be deffined.")
-        if reward == NotImplemented:
-            raise NotImplementedError("reward must be deffined.")
-        
-        self.observation = observation
+        if observation is None:
+            self.observation = ObservationSpec()
+        else:
+            self.observation = observation
         if filter is None:
             self.filter = FilterSpec()
         else:
             self.filter = filter
-        self.action = action
+        if action is None:
+            self.action = ActionSpec()
+        else:
+            self.action = action
         if trigger is None:
             self.trigger = TriggerSpec()
         else:
             self.trigger = trigger
-        self.reward = reward
+        if reward is None:
+            self.reward = RewardSpec()
+        else:
+            self.reward = reward
         
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -541,37 +522,25 @@ class AgentSpec:
         """
         This method is used to build the AgentSpec object.
         """
-        # Check that the variables defined in AgentSpec are the allowed in the AgentSpec base
-        # class.
-        # expected_types = {
-        #     'observation': (dict, ObservationSpec),
-        #     'filter': (dict, FilterSpec, None),
-        #     'action': (dict, ActionSpec),
-        #     'trigger': (dict, TriggerSpec, None),
-        #     'reward': (dict, RewardSpec)
-        # }
-        
-        # is_valid, errors = validate_properties(self, expected_types)
-        # if is_valid:
-        #     print("All properties have correct types")
-        # else:
-        #     print("Validation errors:")
-        #     for error in errors:
-        #         print(f"- {error}")
-        
-        # if isinstance(self.observation, ObservationSpec):
-        #     self.observation = self.observation.build()
+        if isinstance(self.observation, ObservationSpec):
+            self.observation = self.observation.build()
+        else:
+            raise ValueError(f"The observation must be defined as an ObservationSpec object but {type(self.observation)} was given.")
+        if isinstance(self.filter, FilterSpec):
+            self.filter = self.filter.build()
+        else:
+            raise ValueError(f"The filter must be defined as a FilterSpec object but {type(self.filter)} was given.")
+        if isinstance(self.action, ActionSpec):
+            self.action = self.action.build()
+        else:
+            raise ValueError(f"The action must be defined as an ActionSpec object but {type(self.action)} was given.")
+        if isinstance(self.trigger, TriggerSpec):
+            self.trigger = self.trigger.build()
+        else:
+            raise ValueError(f"The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given.")
+        if isinstance(self.reward, RewardSpec):
+            self.reward = self.reward.build()
+        else:
+            raise ValueError(f"The reward must be defined as a RewardSpec object but {type(self.reward)} was given.")
 
-        # if isinstance(self.filter, FilterSpec):
-        #     self.filter = self.filter.build()
-
-        # if isinstance(self.action, ActionSpec):
-        #     self.action = self.action.build()
-
-        # if isinstance(self.trigger, TriggerSpec):
-        #     self.trigger = self.trigger.build()
-
-        # if isinstance(self.reward, RewardSpec):
-        #     self.reward = self.reward.build()
-            
         return vars(self)

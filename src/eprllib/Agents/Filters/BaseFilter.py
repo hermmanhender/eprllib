@@ -5,58 +5,48 @@ Base Filter
 This module contains the base class for defining filter functions used in agent specifications.
 Filters are used to preprocess observations before they are fed to the agent. The `BaseFilter`
 class provides the basic structure and methods that can be extended to create custom filters.
+
+This class can not be used directly in eprllib, but as a base to create new filters. All the filters
+must be based in this class.
 """
 
 from typing import Any, Dict
-import numpy as np
-import gymnasium as gym
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from numpy import ndarray
 
 class BaseFilter:
+    """
+    Base class for defining filter functions used in agent specifications.
+    Filters are used to preprocess observations before they are fed to the agent.
+    """
     def __init__(
         self,
         filter_fn_config: Dict[str, Any]
     ):
         """
-        Base class for defining a filter function configuration.
+        Initializes the BaseFilter class.
 
         Args:
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
         """
         self.filter_fn_config = filter_fn_config
-    
-    def get_agent_obs_dim(
-        self,
-        env_config: Dict[str, Any],
-        connector_fn: BaseConnector,
-        agent: str = None
-    ) -> Dict[str, gym.Space]:
-        """
-        Constructs the observation space for the agent. This method is implemented in the multiagent connector.
-
-        Args:
-            env_config (Dict[str, Any]): Configuration dictionary for the environment.
-            connector_fn (BaseConnector): Connector function to get the observation dimensions.
-            agent (str, optional): Agent identifier. Defaults to None.
-
-        Returns:
-            Dict[str, gym.Space]: Dictionary containing the observation space for the agent.
-        """
-        return connector_fn.get_agent_obs_dim(env_config, agent)
         
-    def set_agent_obs(
+    def get_filtered_obs(
         self,
         env_config: Dict[str, Any],
-        agent_states: Dict[str, Any] = NotImplemented,
-    ) -> Dict[str, Any]:
+        agent_states: Dict[str, Any],
+    ) -> ndarray:
         """
-        Sets the observation for the agent.
+        Returns the filtered observations for the agent based on the environment configuration
+        and agent states. This method processes the raw observations according to the filter
+        configuration specified in filter_fn_config.
 
         Args:
-            env_config (Dict[str, Any]): Configuration dictionary for the environment.
-            agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent. Defaults to NotImplemented.
+            env_config (Dict[str, Any]): Configuration dictionary for the environment. Can include settings 
+            that affect how the observations are filtered.
+            
+            agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            Dict[str, Any]: Dictionary containing the observations for the agent.
+            NDarray: Filtered observations as a numpy array of float32 values.
         """
-        return np.array(list(agent_states.values()), dtype='float32')
+        return NotImplementedError("This method should be implemented in a subclass.")
