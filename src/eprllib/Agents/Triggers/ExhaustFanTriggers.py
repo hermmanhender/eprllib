@@ -91,7 +91,8 @@ class ExhaustFanTrigger(BaseTrigger):
         # in the effect of the actions. The best way of avoid this (I think) it to introduce a mask
         # for the actions that reduce the probability of choose the actions that are not in the modes.
         if action not in self.modes:
-            action = np.random.choice(self.modes)
+            action_list = [_ for _ in range(len(self.modes))]
+            action = np.random.choice(action_list)
             
         actuator_dict_actions.update({
             self.exhaust_fan_actuator: self.modes[action],
@@ -100,7 +101,7 @@ class ExhaustFanTrigger(BaseTrigger):
         # Check if there is an actuator_dict_actions value equal to None.
         for actuator in actuator_dict_actions:
             if actuator_dict_actions[actuator] is None:
-                raise ValueError(f"The actuator {actuator} is not in the list of actuators.")
+                raise ValueError(f"The actuator {actuator} is not in the list of actuators: \n{actuators}.\nThe actuator dict is: \n{actuator_dict_actions}")
         
         return actuator_dict_actions
     
