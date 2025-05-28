@@ -15,7 +15,7 @@ from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class ExhaustFanTrigger(BaseTrigger):
     REQUIRED_KEYS = {
-        "modes": List[float],
+        "modes": List[float|int],
         "exhaust_fan_actuator": Tuple[str, str, str]
     }
     
