@@ -1,10 +1,9 @@
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from typing import Any, Dict
-from typing import Dict, Any
 import numpy as np
-import unittest
+import pytest
 
-class TestDefaultfilter(unittest.TestCase):
+class TestDefaultfilter:
 
     def test___init___1(self):
         """
@@ -52,11 +51,11 @@ class TestDefaultfilter(unittest.TestCase):
         env_config = {}
         agent_states = {}
 
-        result = default_filter.get_filtered_obs(env_config, agent_states)
+        with pytest.raises(ValueError) as excinfo:
+            default_filter.get_filtered_obs(env_config, agent_states)
+            
+        assert str(excinfo.value) == "agent_states dictionary is empty"
 
-        assert isinstance(result, np.ndarray)
-        assert result.dtype == np.float32
-        assert result.size == 0
 
     def test_get_filtered_obs_with_non_numeric_values(self):
         """
@@ -68,11 +67,11 @@ class TestDefaultfilter(unittest.TestCase):
         env_config = {}
         agent_states = {"state1": "string", "state2": True, "state3": None}
 
-        result = default_filter.get_filtered_obs(env_config, agent_states)
+        with pytest.raises(ValueError) as excinfo:
+            default_filter.get_filtered_obs(env_config, agent_states)
+        
+        assert str(excinfo.value) == "All values in agent_states must be numeric"
 
-        assert isinstance(result, np.ndarray)
-        assert result.dtype == np.float32
-        assert np.isnan(result).all()
 
     def test_init_with_empty_dict(self):
         """
@@ -81,5 +80,5 @@ class TestDefaultfilter(unittest.TestCase):
         """
         empty_config: Dict[str, Any] = {}
         filter_instance = DefaultFilter(empty_config)
-        self.assertIsInstance(filter_instance, DefaultFilter)
-        self.assertEqual(filter_instance.filter_fn_config, empty_config)
+        assert isinstance(filter_instance, DefaultFilter)
+        assert filter_instance.filter_fn_config == empty_config
