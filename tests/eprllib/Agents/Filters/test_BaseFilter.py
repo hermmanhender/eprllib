@@ -41,8 +41,10 @@ class TestBasefilter(unittest.TestCase):
         This is the only edge case explicitly handled in the focal method's implementation.
         """
         base_filter = BaseFilter({})
-        with self.assertRaises(NotImplementedError):
+        with pytest.raises(NotImplementedError) as excinfo:
             base_filter.get_filtered_obs({}, {})
+        assert str(excinfo.value) == "This method should be implemented in a subclass."
+
 
     def test_init_with_empty_dict(self):
         """
@@ -51,7 +53,7 @@ class TestBasefilter(unittest.TestCase):
         which is a valid input but may lead to unexpected behavior in subclasses.
         """
         filter_instance = BaseFilter({})
-        self.assertEqual(filter_instance.filter_fn_config, {})
+        assert filter_instance.filter_fn_config == {}
 
     def test_init_with_none_input(self):
         """
@@ -59,5 +61,6 @@ class TestBasefilter(unittest.TestCase):
         This tests the edge case where the filter_fn_config is None, which is not
         a valid dictionary input as required by the method signature.
         """
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError) as excinfo:
             BaseFilter(None)
+        assert str(excinfo.value) == "filter_fn_config must be a dictionary"
