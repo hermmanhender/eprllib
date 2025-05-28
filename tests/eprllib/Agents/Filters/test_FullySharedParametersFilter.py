@@ -1,11 +1,9 @@
 from eprllib.Agents.Filters.FullySharedParametersFilter import FullySharedParametersFilter
 from typing import Any, Dict
-from typing import Dict, Any
 import numpy as np
 import pytest
-import unittest
 
-class TestFullysharedparametersfilter(unittest.TestCase):
+class TestFullysharedparametersfilter:
 
     def test___init___1(self):
         """
@@ -17,8 +15,8 @@ class TestFullysharedparametersfilter(unittest.TestCase):
         filter_fn_config: Dict[str, Any] = {}
         filter_instance = FullySharedParametersFilter(filter_fn_config)
 
-        self.assertIsInstance(filter_instance, FullySharedParametersFilter)
-        self.assertEqual(filter_instance.agent_name, None)
+        assert isinstance(filter_instance, FullySharedParametersFilter)
+        assert filter_instance.agent_name is None
 
     def test_get_filtered_obs_1(self):
         """
@@ -47,8 +45,8 @@ class TestFullysharedparametersfilter(unittest.TestCase):
         agent_states = {
             "agent1: state1": 1.0,
             "agent1: state2": 2.0,
-            "agent1: actuator1_type1_subtype1": 3.0,
-            "agent1: actuator2_type2_subtype2": 4.0
+            "agent1: actuator1: type1: subtype1": 3.0,
+            "agent1: actuator2: type2: subtype2": 4.0
         }
 
         # Create filter instance
@@ -89,8 +87,8 @@ class TestFullysharedparametersfilter(unittest.TestCase):
         agent_states = {
             "agent1: state1": 1.0,
             "agent1: state2": 2.0,
-            "agent1: actuator1_type1_subtype1": 3.0,
-            "agent1: actuator2_type2_subtype2": 4.0,
+            "agent1: actuator1: type1: subtype1": 3.0,
+            "agent1: actuator2: type2: subtype2": 4.0,
             "agent1: state3": 5.0
         }
 
@@ -110,10 +108,9 @@ class TestFullysharedparametersfilter(unittest.TestCase):
         env_config = {"agents_config": {"agent1": {"action": {"actuators": []}}}}
         agent_states = {}
 
-        result = filter_instance.get_filtered_obs(env_config, agent_states)
-        assert isinstance(result, np.ndarray)
-        assert result.size == 0
-        assert result.dtype == np.float32
+        with pytest.raises(ValueError):
+            filter_instance.get_filtered_obs(env_config, agent_states)
+        
 
     def test_get_filtered_obs_missing_agent_config(self):
         """
