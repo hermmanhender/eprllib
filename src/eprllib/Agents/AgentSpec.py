@@ -33,8 +33,23 @@ class RewardSpec:
         Args:
             reward_fn (BaseReward): The reward funtion take the arguments EnvObject (the GymEnv class) and the infos 
             dictionary. As a return, gives a float number as reward. See eprllib.Agents.Rewards for examples.
+            reward_fn_config (Dict[str, Any]): The configuration of the reward function.
             
+        Raises:
+            NotImplementedError: If the reward_fn is NotImplemented.
         """
+        # Check if the reward_fn is NotImplemented, and raise an error if so.
+        if reward_fn == NotImplemented:
+            raise NotImplementedError("reward_fn must be implemented")
+        
+        # Check if the reward_fn is a class, and raise an error if not.
+        if not isinstance(reward_fn, type):
+            raise TypeError("reward_fn must be a class that inherits from BaseReward")
+        
+        # Check if the reward_fn is a subclass of BaseReward, and raise an error if not.
+        if not issubclass(reward_fn, BaseReward):
+            raise TypeError("reward_fn must be a subclass of BaseReward")
+        
         self.reward_fn = reward_fn
         self.reward_fn_config = reward_fn_config
     

@@ -51,5 +51,19 @@ class DefaultFilter(BaseFilter):
 
         Returns:
             NDarray: Filtered observations as a numpy array of float32 values.
+            
+        Raises:
+            TypeError: If agent_states is not a dictionary.
+            ValueError: If agent_states is empty or contains non-numeric values.
         """
+        # Check the type of the agent_states argument
+        if not isinstance(agent_states, dict):
+            raise TypeError("agent_states must be a dictionary")
+        # Check if the agent_states dictionary is empty
+        if not agent_states:
+            raise ValueError("agent_states dictionary is empty")
+        # Check if all values in the agent_states dictionary are numeric
+        if not all(isinstance(value, (int, float)) for value in agent_states.values()):
+            raise ValueError("All values in agent_states must be numeric")
         return np.array(list(agent_states.values()), dtype='float32')
+    
