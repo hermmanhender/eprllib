@@ -28,6 +28,9 @@ class BaseFilter:
         Args:
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
         """
+        # Check if the filter_fn_config is a dictionary
+        if not isinstance(filter_fn_config, dict):
+            raise TypeError("filter_fn_config must be a dictionary")
         self.filter_fn_config = filter_fn_config
         
     def get_filtered_obs(
@@ -49,4 +52,4 @@ class BaseFilter:
         Returns:
             NDarray: Filtered observations as a numpy array of float32 values.
         """
-        return NotImplementedError("This method should be implemented in a subclass.")
+        raise NotImplementedError("This method should be implemented in a subclass.")

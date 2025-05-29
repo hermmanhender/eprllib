@@ -17,13 +17,25 @@ def get_agent_name(state: Dict[str, Any] | List) -> str:
 
     Returns:
         str: The agent name.
+    
+    Raises:
+        TypeError: If the state is neither a dictionary nor a list.
+        ValueError: If the state is empty.
     """
     # As we don't know the agent that belong this filter, we auto-dectect his name form the name of the variables names
     # inside the agent_states_copy dictionary. The agent_states dict has keys with the format of "agent_name: ...".
     if isinstance(state, list):
+        # Check if the list is empty
+        if not state:
+            raise ValueError("The state list is empty")
         return state[0].split(':')[0]
     elif isinstance(state, dict):
+        # Check if the dictionary is empty
+        if not state:
+            raise ValueError("The state dictionary is empty")
         return list(state.keys())[0].split(':')[0]
+    else:
+        raise TypeError(f"The state must be a dictionary or a list, but got a {type(state).__name__}")
 
 
 def config_validation(config: Dict[str, Any], required_keys: Dict[str, Any]) -> None:

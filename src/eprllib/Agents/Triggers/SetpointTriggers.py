@@ -14,7 +14,7 @@ from eprllib.Utils.agent_utils import get_agent_name, config_validation
 
 class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
     REQUIRED_KEYS = {
-        "temperature_range": Tuple[int, int],
+        "temperature_range": Tuple[int|float, int|float],
         "actuator_for_cooling": Tuple[str, str, str],
         "actuator_for_heating": Tuple[str, str, str],
         "availability_actuator": Tuple[str, str, str]

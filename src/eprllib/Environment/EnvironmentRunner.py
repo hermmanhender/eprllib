@@ -24,10 +24,10 @@ from eprllib.Utils.observation_utils import (
     get_variable_name,
     get_parameter_prediction_name
 )
+from eprllib import EP_VERSION
 
-    
 # EnergyPlus Python API path adding
-EP_API_add_path()
+EP_API_add_path(EP_VERSION)
 from pyenergyplus.api import EnergyPlusAPI
 
 api = EnergyPlusAPI()
