@@ -1,2 +1,4 @@
 eprllib-dev
 __pycache__/
+
+.env
