@@ -8,5 +8,6 @@
 
    .. autosummary::
    
-      HierarchicalConnector
+      HierarchicalThreeLevelsConnector
+      HierarchicalTwoLevelsConnector
    

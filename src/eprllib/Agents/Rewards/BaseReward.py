@@ -1,12 +1,15 @@
 """
 Reward Function
-===============
+================
 
 This module contains the base class for defining reward functions.
 
 It is preferred to use the `infos` dictionary and not the observation, since the latter is 
 a numpy array and cannot be called by key values, which is prone to errors when developing the program 
 and indexing an array may change.
+
+The terminated and truncated flags are arguments in the reward function ``get_reward`` method to allow
+implementations with dispersed reward. This flags allow return the final reward when the episode ends.
 """
 
 from typing import Dict, Any

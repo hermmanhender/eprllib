@@ -31,12 +31,17 @@ building properties for each episode. This approach is likely used for training 
 context of a reinforcement learning environment.
 """
 import os
-import json
 import numpy as np
-from typing import Dict, Any, Tuple, List
+import tempfile
+from typing import Dict, Any, List
 from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib.Utils.Utils import building_dimension
-from eprllib.Utils.random_weather import get_random_weather
+from eprllib.Utils.episode_fn_utils import (
+    load_ep_model,
+    save_ep_model,
+    get_random_weather,
+    run_period,
+    building_dimension,
+)
 from eprllib.Utils.annotations import override
 
 class RandomSimpleBuildingEpisode(BaseEpisode):
@@ -55,9 +60,17 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
             episode_fn_config (Dict[str, Any]): Configuration dictionary for the episode function.
         """
         super().__init__(episode_fn_config)
-        self.epjson_files_folder_path: str = episode_fn_config['epjson_files_folder_path']
-        self.epw_files_folder_path: str = episode_fn_config['epw_files_folder_path']
-        self.load_profiles_folder_path: str = episode_fn_config['load_profiles_folder_path']
+        
+        # check that 'epjson_files_folder_path', 'epw_files_folder_path' and 'load_profiles_folder_path' exist in the episode_fn_config
+        if 'epjson_files_folder_path' not in self.episode_fn_config:
+            raise ValueError("The 'epjson_files_folder_path' must be defined in the episode_fn_config.")
+        if 'epw_files_folder_path' not in self.episode_fn_config:
+            raise ValueError("The 'epw_files_folder_path' must be defined in the episode_fn_config.")
+        if 'load_profiles_folder_path' not in self.episode_fn_config:
+            raise ValueError("The 'load_profiles_folder_path' must be defined in the episode_fn_config.")
+        
+        # When modifying the epjson file, a temporary folder is created to save the update models.
+        self.folder_for_models = tempfile.gettempdir()
     
     @override(BaseEpisode)
     def get_episode_config(self, env_config:Dict[str,Any]) -> Dict[str,Any]:
@@ -91,10 +104,10 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         model = np.random.randint(1, 16)
         epjson_path: str = env_config['epjson_path']
         if epjson_path in ["auto", None]:
-            epjson_path = f"src/eprllib/files/GeneralBuildinModel/model_{model}.epJSON"
+            epjson_path = f"{self.episode_fn_config['epjson_files_folder_path']}/model_{model}.epJSON"
+        
         # Establish the epJSON Object, it will be manipulated to modify the building model.
-        with open(epjson_path) as file:
-            epJSON_object: dict = json.load(file)
+        epJSON_object: dict = load_ep_model(epjson_path)
         
         # == BUILDING ==
         # The building volume is V=h(high)*w(weiht)*l(large) m3
@@ -120,7 +133,7 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         env_config['building_properties']['window_area_relation_west'] = window_area_relation[3]
         
         window_area_relation = np.array(window_area_relation)
-        building_dimension(epJSON_object, h, w, l,window_area_relation)
+        epJSON_object = building_dimension(epJSON_object, h, w, l,window_area_relation)
         
         # Define the type of construction (construction properties for each three layers)
         # Walls
@@ -175,7 +188,7 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
             epJSON_object["InternalMass"][key]["surface_area"] = np.random.randint(10,40)
         
         # RunPeriod of a random date
-        beging_month, beging_day, end_month, end_day = self.run_period(np.random.randint(1, 365-14), 14)
+        beging_month, beging_day, end_month, end_day = run_period(np.random.randint(1, 365-14), 14)
         epJSON_object['RunPeriod']['Run Period 1']['begin_month'] = beging_month
         epJSON_object['RunPeriod']['Run Period 1']['begin_day_of_month'] = beging_day
         epJSON_object['RunPeriod']['Run Period 1']['end_month'] = end_month
@@ -205,97 +218,16 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         # Change the load file profiles
         schedule_file_keys = [key for key in epJSON_object["Schedule:File"].keys()]
         for key in schedule_file_keys:
-            epJSON_object["Schedule:File"][key]["file_name"] = self.load_profiles_folder_path + "/" + np.random.choice(os.listdir(self.load_profiles_folder_path))
-        
-        # Implementation of a random number of agent indicator and thermal zone
-        # TODO: Use the env_config number of maximum quantity of agents to train the model.
-        agent_indicator_init = np.random.randint(1,6)
-        agents_list = []
-        thermal_zone_indicator = np.random.randint(1,11)
-        for agent in [agent for agent in env_config['agents_config'].keys()]:
-            env_config['agents_config'][agent]['agent_indicator'] = agent_indicator_init
-            env_config['agents_config'][agent]['thermal_zone_indicator'] = thermal_zone_indicator
-            agents_list.append(agent_indicator_init)
-            if agent_indicator_init >= 6:
-                if len(agents_list) >= 6:
-                    print("The agent capacity is full.")
-                else:
-                    agent_indicator_init = 0
-            else:
-                agent_indicator_init += 1
+            epJSON_object["Schedule:File"][key]["file_name"] = self.episode_fn_config['load_profiles_folder_path'] + "/" + np.random.choice(os.listdir(self.episode_fn_config['load_profiles_folder_path']))
 
         # Select the weather site
-        env_config = get_random_weather(self.epw_files_folder_path)
+        env_config = get_random_weather(self.episode_fn_config['epw_files_folder_path'])
                 
-        # The new modify epjson file is writed in the results folder created by RLlib
-        # If don't exist, reate a folder call 'models' into env_config['episode_config']['epjson_files_folder_path']
-        if not os.path.exists(f"{self.epjson_files_folder_path}/models"):
-            os.makedirs(f"{self.epjson_files_folder_path}/models")
-        
-        env_config["epjson_path"] = f"{self.epjson_files_folder_path}/models/model-{env_config['episode']:08}-{os.getpid():05}.epJSON"
-        with open(env_config["epjson_path"], 'w') as fp:
-            json.dump(epJSON_object, fp, sort_keys=False, indent=4)
-            # The new modify epjson file is writed.
+        # Save the model and update the path in the env_config.
+        env_config["epjson_path"] = save_ep_model(epJSON_object, self.folder_for_models)
         
         return env_config
-    
-    def run_period(self, julian_day:int, days_period:int=28) -> Tuple[int,int,int,int]:
-        """
-        This function returns the begin and end date of the 'days_period' of simulation given a 'julian_day' between 1 and 365.
-        """
-        if julian_day < 1 or julian_day+days_period > 365:
-            raise ValueError('Julian day must be between 1 and (365-days_period)')
-        if days_period < 1:
-            raise ValueError('Days period must be greater than 0')
         
-        # Declaration of variables
-        beging_month = 1
-        beging_day = 0
-        check_day = 0
-        max_day = self.max_day_in_month(beging_month)
-        
-        # Initial date
-        while True:
-            beging_day += 1
-            check_day += 1
-            if julian_day == check_day:
-                break
-            if beging_day >= max_day:
-                beging_day = 0
-                beging_month += 1
-                max_day = self.max_day_in_month(beging_month)
-        
-        # End date
-        end_month = beging_month
-        end_day = beging_day + days_period
-        while True:
-            if end_day > max_day:
-                end_day -= max_day
-                end_month += 1
-                max_day = self.max_day_in_month(end_month)
-            else:
-                break
-            
-        return beging_month, beging_day, end_month, end_day
-    
-    
-    def max_day_in_month(self, month:int) -> int:
-        """
-        This function returns the maximum number of days in a given month.
-        """
-        months_31 = [1,3,5,7,8,10,12]
-        months_30 = [4,6,9,11]
-        months_28 = [2]
-        if month in months_31:
-            max_day = 31
-        elif month in months_30:
-            max_day = 30
-        elif month in months_28:
-            max_day = 28
-        else:
-            raise ValueError('Invalid month')
-        return max_day
-    
     @override(BaseEpisode)
     def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
         """
@@ -325,3 +257,4 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         """
         # Implement the logic to select the agents for each timestep
         return super().get_timestep_agents(env_config, possible_agents)
+    
