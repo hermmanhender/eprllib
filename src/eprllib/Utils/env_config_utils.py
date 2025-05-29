@@ -138,32 +138,40 @@ def EP_API_add_path(path: Optional[str] = None) -> str:
             print(f"Detected EnergyPlus version ({latest_version_found}): {original_ep_path}")
 
     # Create a temporary copy of the EnergyPlus installation
-    ep_install_dir_name = os.path.basename(original_ep_path)
-    temp_base_dir = tempfile.mkdtemp(prefix="eprllib_ep_")
-    temp_ep_path_for_env = os.path.join(temp_base_dir, ep_install_dir_name)
+    # ep_install_dir_name = os.path.basename(original_ep_path)
+    # temp_base_dir = tempfile.mkdtemp(prefix="eprllib_ep_")
+    # temp_ep_path_for_env = os.path.join(temp_base_dir, ep_install_dir_name)
 
-    print(f"Copying EnergyPlus from '{original_ep_path}' to temporary location '{temp_ep_path_for_env}'...")
-    try:
-        shutil.copytree(original_ep_path, temp_ep_path_for_env)
-        print("Copy successful.")
-    except Exception as e:
-        shutil.rmtree(temp_base_dir, ignore_errors=True) # Clean up base temp dir on copy failure
-        error_msg = f"Error copying EnergyPlus installation: {e}"
-        print(error_msg)
-        sys.exit(f"Failed to create temporary EnergyPlus environment: {error_msg}")
+    # print(f"Copying EnergyPlus from '{original_ep_path}' to temporary location '{temp_ep_path_for_env}'...")
+    # try:
+    #     shutil.copytree(original_ep_path, temp_ep_path_for_env)
+    #     print("Copy successful.")
+    # except Exception as e:
+    #     shutil.rmtree(temp_base_dir, ignore_errors=True) # Clean up base temp dir on copy failure
+    #     error_msg = f"Error copying EnergyPlus installation: {e}"
+    #     print(error_msg)
+    #     sys.exit(f"Failed to create temporary EnergyPlus environment: {error_msg}")
 
-    if not _cleanup_registered_for_ep_api:
-        atexit.register(_cleanup_all_temp_ep_dirs)
-        _cleanup_registered_for_ep_api = True
-    _temp_dirs_to_clean.append(temp_base_dir)
+    # if not _cleanup_registered_for_ep_api:
+    #     atexit.register(_cleanup_all_temp_ep_dirs)
+    #     _cleanup_registered_for_ep_api = True
+    # _temp_dirs_to_clean.append(temp_base_dir)
 
-    if temp_ep_path_for_env not in sys.path:
-        sys.path.insert(0, temp_ep_path_for_env)
-        print(f"EnergyPlus API path from temporary copy added to sys.path: {temp_ep_path_for_env}")
+    # if temp_ep_path_for_env not in sys.path:
+    #     sys.path.insert(0, temp_ep_path_for_env)
+    #     print(f"EnergyPlus API path from temporary copy added to sys.path: {temp_ep_path_for_env}")
+    # else:
+    #     print(f"EnergyPlus API path from temporary copy already in sys.path: {temp_ep_path_for_env}")
+
+    # return temp_ep_path_for_env
+    
+    if original_ep_path not in sys.path:
+        sys.path.insert(0, original_ep_path)
+        print(f"EnergyPlus API path from temporary copy added to sys.path: {original_ep_path}")
     else:
-        print(f"EnergyPlus API path from temporary copy already in sys.path: {temp_ep_path_for_env}")
-
-    return temp_ep_path_for_env
+        print(f"EnergyPlus API path from temporary copy already in sys.path: {original_ep_path}")
+    
+    return original_ep_path
 
 
 
