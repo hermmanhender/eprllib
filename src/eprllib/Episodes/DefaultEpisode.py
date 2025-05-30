@@ -8,6 +8,7 @@ This module contains the default implementation of the episode functions for the
 from typing import Dict, Any, List
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class DefaultEpisode(BaseEpisode):
     """

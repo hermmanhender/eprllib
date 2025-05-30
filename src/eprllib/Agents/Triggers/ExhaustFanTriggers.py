@@ -4,7 +4,6 @@ Exhaust Fan triggers
 
 This module contains classes to implement triggers for controlling exhaust fan actuators in the environment.
 """
-
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, List, Tuple
@@ -12,6 +11,7 @@ from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
+from eprllib import logger
 
 class ExhaustFanTrigger(BaseTrigger):
     REQUIRED_KEYS = {
@@ -33,6 +33,9 @@ class ExhaustFanTrigger(BaseTrigger):
                 in the list corresponds with mode of the Fan, usually mode 0 is off and mode 1 has the lower 
                 flow factor. No more than 11 modes are allowed.
                 - exhaust_fan_actuator (Tuple[str, str, str]): The configuration for the exhaust fan actuator.
+                The first element is the agent name, the second is the actuator name, and the third is the actuator type.
+        Raises:
+            ValueError: If the configuration is not valid, or if the modes are not in the range [0, 1], or if the length of the modes is larger than 11.
         """
         # Validate the config.
         config_validation(trigger_fn_config, self.REQUIRED_KEYS)
@@ -45,12 +48,16 @@ class ExhaustFanTrigger(BaseTrigger):
         
         #  Check if the lenght of the modes are larger than 11 (that is the action space for this class).
         if len(self.modes) > 11:
-            raise ValueError("The lenght of the modes must be less than 11.")
+            msg = f"The lenght of the modes must be less than 11. The lenght of the modes is {len(self.modes)}."
+            logger.error(msg)
+            raise ValueError(msg)
         
         # Check that all the elements in self.modes list are floats in the range [0, 1].
         for mode in self.modes:
             if mode < 0 or mode > 1:
-                raise ValueError("The modes must be in the range [0, 1].")
+                msg = f"The mode {mode} is not in the range [0, 1]."
+                logger.error(msg)
+                raise ValueError(msg)
     
     @override(BaseTrigger)    
     def get_action_space_dim(self) -> gym.Space:
@@ -60,7 +67,6 @@ class ExhaustFanTrigger(BaseTrigger):
         Returns:
             gym.Space: Action space of the environment.
         """
-        
         return gym.spaces.Discrete(11)
     
     @override(BaseTrigger)
@@ -75,6 +81,9 @@ class ExhaustFanTrigger(BaseTrigger):
 
         Return:
             Dict[str, Any]: Dictionary with the actions for the actuators.
+            
+        Raises:
+            ValueError: If the actuator is not in the list of actuators.
         """
         if self.agent_name is None:
             self.agent_name = get_agent_name(actuators)
@@ -101,7 +110,9 @@ class ExhaustFanTrigger(BaseTrigger):
         # Check if there is an actuator_dict_actions value equal to None.
         for actuator in actuator_dict_actions:
             if actuator_dict_actions[actuator] is None:
-                raise ValueError(f"The actuator {actuator} is not in the list of actuators: \n{actuators}.\nThe actuator dict is: \n{actuator_dict_actions}")
+                msg = f"The actuator {actuator} is not in the list of actuators: \n{actuators}.\nThe actuator dict is: \n{actuator_dict_actions}"
+                logger.error(msg)
+                raise ValueError(msg)
         
         return actuator_dict_actions
     
@@ -109,6 +120,13 @@ class ExhaustFanTrigger(BaseTrigger):
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 
-        
+        agent action to actuator action.
+
+        Args:
+            action (float|int): The action of the agent.
+            actuator (str): The name of the actuator.
+
+        Returns:
+            Any: The action of the actuator.
         """
         return action

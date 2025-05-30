@@ -10,12 +10,12 @@ To avoid parameter repetitions in the central agent observation, only implement 
 in a single agent. For example, if two agents are present in the same thermal zone and both of them have
 access to the thermal zone mean air temperature, only declare this parameter in one of them.
 """
-
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, Tuple
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class CentralizedConnector(BaseConnector):
     def __init__(

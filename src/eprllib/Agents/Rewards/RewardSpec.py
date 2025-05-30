@@ -4,11 +4,9 @@ Specification for agent reward functions
 This module defines the `RewardSpec` class, which is used to specify the configuration of reward functions for agents in reinforcement learning environments.
 It ensures that the reward function is properly defined and adheres to the expected interface.
 """
-import logging
 from typing import Dict, Any
 from eprllib.Agents.Rewards.BaseReward import BaseReward
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class RewardSpec:
     """

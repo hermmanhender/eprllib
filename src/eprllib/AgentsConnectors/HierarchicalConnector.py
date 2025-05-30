@@ -13,6 +13,7 @@ import gymnasium as gym
 from typing import Dict, Any, List, Tuple
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class HierarchicalTwoLevelsConnector(BaseConnector):
     def __init__(
@@ -200,7 +201,9 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         # Add the goal to the observation of all the other agents.
         if type(goals[self.top_level_agent]) == List: # This means a multi-discrete action_space
             if len(dict_agents_obs) != len(goals[self.top_level_agent]):
-                raise ValueError("The MultiDiscrete space must contain a goal for each agent.")
+                msg = "The MultiDiscrete space must contain a goal for each agent."
+                logger.error(msg)
+                raise ValueError(msg)
             else:
                 ix = 0
                 for agent in dict_agents_obs.keys():
@@ -226,7 +229,9 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
                 infos[agent].update({'goal': goals[self.top_level_agent]})
         
         else:
-            raise ValueError("The action space of the top_level_agent must be Discrete or MultiDiscrete spaces.")
+            msg = "The action space of the top_level_agent must be Discrete or MultiDiscrete spaces."
+            logger.error(msg)
+            raise ValueError(msg)
         
         
         return dict_agents_obs, infos
@@ -339,7 +344,9 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
         
         else:
-            raise ValueError(f"Agent {agent} not found in the environment configuration.")
+            msg = f"Agent {agent} not found in the environment configuration."
+            logger.error(msg)
+            raise ValueError(msg)
         
     @override(BaseConnector)
     def set_top_level_obs(
@@ -463,7 +470,9 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         # Add the goal to the observation of all the other agents.
         if type(goals[self.top_level_agent]) == List: # This means a multi-discrete action_space
             if len(dict_agents_obs) != len(goals[self.top_level_agent]):
-                raise ValueError("The MultiDiscrete space must contain a goal for each agent.")
+                msg = "The MultiDiscrete space must contain a goal for each agent."
+                logger.error(msg)
+                raise ValueError(msg)
             else:
                 ix = 0
                 for agent in dict_agents_obs.keys():
@@ -489,7 +498,9 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
                 infos[agent].update({'goal': goals[self.top_level_agent]})
         
         else:
-            raise ValueError("The action space of the top_level_agent must be Discrete or MultiDiscrete spaces.")
+            msg = "The action space of the top_level_agent must be Discrete or MultiDiscrete spaces."
+            logger.error(msg)
+            raise ValueError(msg)
         
         
         return dict_agents_obs, infos
@@ -527,7 +538,9 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         
         # Verify that all lists have the same length
         if not all(len(vec) == len(matrix[0]) for vec in matrix):
-            raise ValueError("All agents must have vectors of the same length.")
+            msg = "All agents must have vectors of the same length."
+            logger.error(msg)
+            raise ValueError(msg)
         
         # Compute the transpose of the matrix
         matrix_T = matrix.T

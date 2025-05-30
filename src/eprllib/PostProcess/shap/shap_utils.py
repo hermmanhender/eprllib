@@ -9,6 +9,7 @@ import shap
 from ray.rllib.policy.policy import Policy
 from ray.rllib.algorithms.algorithm import Algorithm
 import numpy as np
+from eprllib import logger
 
 
 class eprllibSHAP:
@@ -30,8 +31,12 @@ class eprllibSHAP:
         Raises:
             ValueError: If the specified policy name is not found in the algorithm.
         """
-        self.POLICY: Policy = algorithm.get_policy(policy_name)
-        
+        try:
+            self.POLICY: Policy = algorithm.get_policy(policy_name)
+        except ValueError as e:
+            msg = f"Policy '{policy_name}' not found in the algorithm. Available policies: {list(algorithm.get_policy_map().keys())}"
+            logger.error(msg)
+            raise ValueError(msg) from e
         
     def model_predict(
         self,

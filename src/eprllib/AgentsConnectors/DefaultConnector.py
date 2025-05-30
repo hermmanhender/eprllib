@@ -6,12 +6,12 @@ This module defines the default connector class that allows the combination of a
 to provide a flexible configuration of the communication between agents. Built-in hierarchical 
 (only two levels), fully-shared, centralized, and independent configurations are provided.
 """
-
 import gymnasium as gym
 from typing import Dict, Any, Tuple
 from gymnasium.spaces import Space
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class DefaultConnector(BaseConnector):
     def __init__(

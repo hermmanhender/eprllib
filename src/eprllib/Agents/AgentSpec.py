@@ -11,8 +11,6 @@ The ``AgentSpec`` class has a method called ``build`` that is used to build the 
 validate the properties of the object and to return the object as a dictionary. It is used internally when you build
 the environment to provide it to RLlib.
 """
-import logging
-import sys
 from typing import Dict
 
 from eprllib.Agents.Rewards.RewardSpec import RewardSpec
@@ -20,8 +18,7 @@ from eprllib.Agents.Filters.FilterSpec import FilterSpec
 from eprllib.Agents.ActionSpec import ActionSpec
 from eprllib.Agents.Triggers.TriggerSpec import TriggerSpec
 from eprllib.Agents.ObservationSpec import ObservationSpec
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class AgentSpec:
     """

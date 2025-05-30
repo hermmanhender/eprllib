@@ -8,6 +8,8 @@ disciplines has been complex and laborious. ``eprllib`` aims to simplify this pr
 offering an intuitive and flexible interface for developing intelligent agents that 
 interact with building simulations.
 """
+import logging
+logger = logging.getLogger("ray.rllib")
 
 __version__ = "1.5.19"
 EP_VERSION = "24-2-0"

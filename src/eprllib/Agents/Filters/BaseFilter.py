@@ -9,7 +9,7 @@ class provides the basic structure and methods that can be extended to create cu
 This class can not be used directly in eprllib, but as a base to create new filters. All the filters
 must be based in this class.
 """
-
+from eprllib import logger
 from typing import Any, Dict
 from numpy import ndarray
 
@@ -30,7 +30,10 @@ class BaseFilter:
         """
         # Check if the filter_fn_config is a dictionary
         if not isinstance(filter_fn_config, dict):
-            raise TypeError("filter_fn_config must be a dictionary")
+            msg = "filter_fn_config must be a dictionary"
+            logger.error(msg)
+            raise TypeError(msg)
+        
         self.filter_fn_config = filter_fn_config
         
     def get_filtered_obs(
@@ -52,4 +55,6 @@ class BaseFilter:
         Returns:
             NDarray: Filtered observations as a numpy array of float32 values.
         """
-        raise NotImplementedError("This method should be implemented in a subclass.")
+        msg = "This method should be implemented in a subclass."
+        logger.error(msg)
+        raise NotImplementedError(msg)

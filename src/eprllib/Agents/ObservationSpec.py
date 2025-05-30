@@ -4,15 +4,12 @@ Specification for the observation space and parameters
 This module defines the `ObservationSpec` class, which is used to specify the configuration of observation space and parameters for agents in reinforcement learning environments.
 It ensures that the observation space is properly defined and adheres to the expected interface.
 """
-import logging
-import sys
 from typing import Dict, List, Tuple
 from eprllib.Agents import (
     SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, 
     PREDICTION_VARIABLES, PREDICTION_HOURS
 )
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class ObservationSpec:
     """

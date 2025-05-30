@@ -17,6 +17,7 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_meter_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
+from eprllib import logger
 
 class EnergyWithMeters(BaseReward):
     REQUIRED_KEYS = {

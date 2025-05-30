@@ -3,10 +3,8 @@ Specification for the action space and actuators
 ===========================================================
 This module defines the `ActionSpec` class, which is used to specify the configuration of action space and actuators for agents in reinforcement learning environments.
 """
-import logging
 from typing import Dict, List, Tuple
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class ActionSpec:
     """

@@ -8,6 +8,7 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters, HierarchicalEnergyWithMeters
 from eprllib.Agents.Rewards.CEN15251 import CEN15251, HierarchicalCEN15251
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class EnergyAndCEN15251(BaseReward):
     def __init__(
