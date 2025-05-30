@@ -16,6 +16,7 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
+from eprllib import logger
 
 class CEN15251(BaseReward):
     """
@@ -125,10 +126,11 @@ class CEN15251(BaseReward):
                 self.reward_fn_config['thermal_zone']
             )
         
-        temp_int = infos.get(
-            self.temp_int,
-            KeyError(f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}")
-        )
+        temp_int = infos.get(self.temp_int, False)
+        if temp_int is False:
+            msg = f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}"
+            logger.error(msg)
+            raise KeyError(msg)
         
         if infos[self.cat1_name] == 1:
             return 0
@@ -235,10 +237,12 @@ class HierarchicalCEN15251(BaseReward):
         
         reward = 0. 
         
-        temp_int = infos.get(
-            self.temp_int,
-            KeyError(f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}")
-        )
+        temp_int = infos.get(self.temp_int, False)
+        if temp_int is False:
+            msg = f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}"
+            logger.error(msg)
+            raise KeyError(msg)
+        
         for ix in range(len(infos[self.cat1_name])):
             
             if infos[self.cat1_name][ix] == 1:

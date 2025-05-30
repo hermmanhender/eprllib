@@ -4,13 +4,13 @@ Setpoint triggers
 
 This module contains classes to implement setpoint triggers for controlling actuators in the environment.
 """
-
 import gymnasium as gym
 from typing import Any, Dict, List, Tuple
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
+from eprllib import logger
 
 class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
     REQUIRED_KEYS = {
@@ -54,7 +54,6 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         Returns:
             gym.Space: Action space of the environment.
         """
-        
         return gym.spaces.Discrete(11)
     
     @override(BaseTrigger)
@@ -110,7 +109,9 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         # Check if there is an actuator_dict_actions value equal to None.
         for actuator in actuator_dict_actions:
             if actuator_dict_actions[actuator] is None:
-                raise ValueError(f"The actuator {actuator} is not in the list of actuators.")
+                msg = f"The actuator {actuator} is not in the list of actuators: \n{actuators}.\nThe actuator dict is: \n{actuator_dict_actions}"
+                logger.error(msg)
+                raise ValueError(msg)
         
         return actuator_dict_actions
     
@@ -118,7 +119,14 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 
-        
+        agent action to actuator action.
+
+        Args:
+            action (float|int): The action to be transformed.
+            actuator (str): The actuator name.
+
+        Returns:
+            Any: The transformed action.
         """
         return action
 
@@ -196,7 +204,9 @@ class AvailabilityTrigger(BaseTrigger):
         # Check if there is an actuator_dict_actions value equal to None.
         for actuator in actuator_dict_actions:
             if actuator_dict_actions[actuator] is None:
-                raise ValueError(f"The actuator {actuator} is not in the list of actuators.")
+                msg = f"The actuator {actuator} is not in the list of actuators: \n{actuators}.\nThe actuator dict is: \n{actuator_dict_actions}"
+                logger.error(msg)
+                raise ValueError(msg)
         
         return actuator_dict_actions
     
@@ -204,7 +214,14 @@ class AvailabilityTrigger(BaseTrigger):
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 
+        agent action to actuator action.
         
+        Args:
+            action (float|int): The action to be transformed.
+            actuator (str): The actuator name.
+        
+        Returns:
+            Any: The transformed action.
         """
         return action
 

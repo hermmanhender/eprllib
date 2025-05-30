@@ -12,6 +12,7 @@ from typing import Any, List
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import config_validation
+from eprllib import logger
 
 class HierarchicalGoalTriggerDiscrete(BaseTrigger):
     REQUIRED_KEYS = {
@@ -41,14 +42,18 @@ class HierarchicalGoalTriggerDiscrete(BaseTrigger):
         """
         This method is not used in top_level_agent.
         """
-        raise ValueError("This method should not be called.")
+        msg = "This method should not be called."
+        logger.error(msg)
+        raise ValueError(msg)
     
     @override(BaseTrigger)
     def get_actuator_action(self, action: float | int, actuator: str):
         """
         This method is not used in top_level_agent.
         """
-        raise ValueError("This method should not be called.")
+        msg = f"The actuator {actuator} is not used in the top_level_agent."
+        logger.error(msg)
+        raise ValueError(msg)
 
     @override(BaseTrigger)
     def action_to_goal(self, action: int | float) -> int | float:
@@ -92,14 +97,18 @@ class HierarchicalObjectiveTriggerMultiDiscrete(BaseTrigger):
         """
         This method is not used in top_level_agent.
         """
-        raise ValueError("This method should not be called.")
+        msg = "This method should not be called."
+        logger.error(msg)
+        raise ValueError(msg)
     
     @override(BaseTrigger)
     def get_actuator_action(self, action: float | int, actuator: str):
         """
         This method is not used in top_level_agent.
         """
-        raise ValueError("This method should not be called.")
+        msg = f"The actuator {actuator} is not used in the top_level_agent."
+        logger.error(msg)
+        raise ValueError(msg)
 
     @override(BaseTrigger)
     def action_to_goal(self, action: int | float) -> int | float:

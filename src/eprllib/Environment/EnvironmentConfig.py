@@ -14,8 +14,7 @@ from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 from eprllib.AgentsConnectors.IndependentConnector import IndependentConnector
 from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class EnvironmentConfig:
     

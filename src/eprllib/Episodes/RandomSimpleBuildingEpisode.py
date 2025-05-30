@@ -43,6 +43,7 @@ from eprllib.Utils.episode_fn_utils import (
     building_dimension,
 )
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class RandomSimpleBuildingEpisode(BaseEpisode):
     def __init__(
@@ -63,11 +64,17 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         
         # check that 'epjson_files_folder_path', 'epw_files_folder_path' and 'load_profiles_folder_path' exist in the episode_fn_config
         if 'epjson_files_folder_path' not in self.episode_fn_config:
-            raise ValueError("The 'epjson_files_folder_path' must be defined in the episode_fn_config.")
+            msg = "The 'epjson_files_folder_path' must be defined in the episode_fn_config."
+            logger.error(msg)
+            raise ValueError(msg)
         if 'epw_files_folder_path' not in self.episode_fn_config:
-            raise ValueError("The 'epw_files_folder_path' must be defined in the episode_fn_config.")
+            msg = "The 'epw_files_folder_path' must be defined in the episode_fn_config."
+            logger.error(msg)
+            raise ValueError(msg)
         if 'load_profiles_folder_path' not in self.episode_fn_config:
-            raise ValueError("The 'load_profiles_folder_path' must be defined in the episode_fn_config.")
+            msg = "The 'load_profiles_folder_path' must be defined in the episode_fn_config."
+            logger.error(msg)
+            raise ValueError(msg)
         
         # When modifying the epjson file, a temporary folder is created to save the update models.
         self.folder_for_models = tempfile.gettempdir()

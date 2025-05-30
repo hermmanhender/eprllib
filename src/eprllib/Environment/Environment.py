@@ -18,6 +18,7 @@ from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 # TODO: Add here the availability to run EnergyPlus in Parallel.
 # Run EnergyPlus in Parallel
@@ -88,14 +89,14 @@ class Environment(MultiAgentEnv):
         
         # Episode and multiagent functions
         self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
-        # self.logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
+        logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
         self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
-        # self.logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
+        logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
         
         # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
-        # self.logger.info(f"Possible agents: {self.possible_agents}")
+        logger.info(f"Possible agents: {self.possible_agents}")
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
         self.agents = self.possible_agents
@@ -117,11 +118,11 @@ class Environment(MultiAgentEnv):
             self.action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
             
         self.action_space = spaces.Dict(self.action_space)
-        # self.logger.debug(f"Action space: {self.action_space}")
+        logger.debug(f"Action space: {self.action_space}")
         
         # asignation of environment observation space.
         self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
-        # self.logger.debug(f"Observation space: {self.observation_space}")
+        logger.debug(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -148,13 +149,13 @@ class Environment(MultiAgentEnv):
         self.output_path = self.env_config["output_path"]
         if self.output_path is None:
             self.output_path = tempfile.gettempdir()
-        # self.logger.info(f"Output path for EnergyPlus simulation results: {self.output_path}")
+        logger.info(f"Output path for EnergyPlus simulation results: {self.output_path}")
         
         # If epjson_path is a IDF file, transform it into a epJSON file.
         if env_config['epjson_path'].endswith(".idf"):
             print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
-        # self.logger.info("Environment initialization complete")
+        logger.info("Environment initialization complete")
         
     @override(MultiAgentEnv)
     def reset(
@@ -193,7 +194,7 @@ class Environment(MultiAgentEnv):
             try:
                 self.env_config = self.episode_fn.get_episode_config(self.env_config)
                 self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
-                # self.logger.debug(f"Episode configuration: {self.env_config}")
+                logger.debug(f"Episode configuration: {self.env_config}")
             except (ValueError, FileNotFoundError):
                 raise ValueError("The episode configuration is not valid. Please check the episode configuration.")
             
@@ -262,7 +263,7 @@ class Environment(MultiAgentEnv):
             cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
-                # self.logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
+                logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
@@ -270,7 +271,7 @@ class Environment(MultiAgentEnv):
         # check for simulation errors.
         if self.runner.failed():
             self.terminateds = True
-            print("EnergyPlus failed with an error!")
+            logger.error("EnergyPlus failed with an error!")
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
         if self.runner.simulation_complete:
@@ -305,7 +306,7 @@ class Environment(MultiAgentEnv):
                 # We use the last observation as a observation for the timestep.
                 obs = self.last_obs
                 infos = self.last_infos
-                print("Queue timeout, ending episode early.")
+                logger.warning("Queue timeout, ending episode early.")
         
         # Calculate the reward in the timestep
         reward_dict = {agent: None for agent in obs.keys()}
@@ -336,7 +337,9 @@ class Environment(MultiAgentEnv):
         cls,
         path: str
     ) -> "Environment":
-        return NotImplementedError("Not implemented yet.")
+        msg = "This method is not implemented yet. Please implement it in the child class."
+        logger.error(msg)
+        raise NotImplementedError(msg)
     
     def get_default_config(cls) -> EnvironmentConfig:
         return EnvironmentConfig()

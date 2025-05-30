@@ -5,14 +5,15 @@ RUN DRL CONTROLS
 This script execute the conventional controls in the evaluation scenario.
 """
 import os
-from ray.rllib.policy.policy import Policy
-from eprllib.Environment.Environment import Environment
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import numpy as np
 import pandas as pd
 import threading
 from queue import Queue, Empty
 from typing import Dict, Any, Optional
+from ray.rllib.policy.policy import Policy
+from eprllib.Environment.Environment import Environment
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib import logger
 
 class drl_evaluation:
     

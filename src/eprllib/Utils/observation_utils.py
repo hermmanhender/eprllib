@@ -6,6 +6,7 @@ This module contain some utilities used within the observation space, function, 
 of the programm related with the observations.
 
 """
+from eprllib import logger
 
 def get_variable_name(agent: str, variable_name:str, variable_key:str) -> str:
     """

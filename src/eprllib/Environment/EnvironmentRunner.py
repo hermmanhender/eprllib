@@ -24,7 +24,7 @@ from eprllib.Utils.observation_utils import (
     get_variable_name,
     get_parameter_prediction_name
 )
-from eprllib import EP_VERSION
+from eprllib import logger, EP_VERSION
 
 # EnergyPlus Python API path adding
 EP_API_add_path(EP_VERSION)
@@ -144,7 +144,7 @@ class EnvironmentRunner:
             Run EnergyPlus in a non-blocking way with Threads.
             """
             cmd_args = self.make_eplus_args()
-            print(f"running EnergyPlus with args: {cmd_args}")
+            logger.info(f"running EnergyPlus with args: {cmd_args}")
             self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
             self.simulation_complete = True
             
@@ -285,7 +285,9 @@ class EnvironmentRunner:
             # Check if there is an actuator_dict_actions value equal to None.
             for actuator in actuator_list:
                 if actuator_actions[actuator] is None:
-                    raise ValueError(f"The actuator {actuator} is not in the list of actuators.\n{actuator_actions}")
+                    msg = f"The actuator {actuator} has no action defined in the action dict for agent {agent}."
+                    logger.error(msg)
+                    raise ValueError(msg)
                 
             # Perform the actions in EnergyPlus simulation.
             for actuator in actuator_list:
@@ -390,7 +392,9 @@ class EnvironmentRunner:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
         if agent is None:
-            raise ValueError("The agent must be defined.")
+            msg = "The agent must be defined."
+            logger.error(msg)
+            raise ValueError(msg)
         variables = {
             key: api.exchange.get_variable_value(state_argument, handle)
             for key, handle
@@ -414,7 +418,9 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            raise ValueError("The agent must be defined.")
+            msg = "The agent must be defined."
+            logger.error(msg)
+            raise ValueError(msg)
         variables = {
             key: api.exchange.get_internal_variable_value(state_argument, handle)
             for key, handle
@@ -438,7 +444,9 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            raise ValueError("The agent must be defined.")
+            msg = "The agent must be defined."
+            logger.error(msg)
+            raise ValueError(msg)
         
         variables = {
             key: api.exchange.get_meter_value(state_argument, handle)
@@ -463,7 +471,9 @@ class EnvironmentRunner:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
         if agent is None:
-            raise ValueError("The agent must be defined.")
+            msg = "The agent must be defined."
+            logger.error(msg)
+            raise ValueError(msg)
         
         variables = {
             key: api.exchange.get_actuator_value(state_argument, handle)
@@ -667,7 +677,9 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            raise ValueError("The agent must be defined.")
+            msg = "The agent must be defined."
+            logger.error(msg)
+            raise ValueError(msg)
         
         variables = {}
         variables.update({
@@ -738,12 +750,13 @@ class EnvironmentRunner:
             ]:
                 if any([v == -1 for v in handles.values()]):
                     available_data = api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
-                    raise ValueError(
-                        f"got -1 handle, check your handles names:\n"
+                    msg = (
+                        f"Some handles were not initialized correctly for agent {agent}.\n"
                         f"> handles with error: {handles}\n"
                         f"> available EnergyPlus API data: {available_data}"
                     )
-                    return False
+                    logger.error(msg)
+                    raise ValueError(msg)
         
         return True
 

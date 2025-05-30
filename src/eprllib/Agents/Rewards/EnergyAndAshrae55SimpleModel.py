@@ -9,6 +9,7 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters, HierarchicalEnergyWithMeters
 from eprllib.Agents.Rewards.ASHRAE55SimpleModel import ASHRAE55SimpleModel, HierarchicalASHRAE55SimpleModel
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class EnergyAndASHRAE55SimpleModel(BaseReward):
     def __init__(

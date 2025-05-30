@@ -86,7 +86,7 @@ class TestAgentUtils:
         with pytest.raises(ValueError) as excinfo:
             config_validation(config, required_keys)
 
-        assert "The following key is missing: 'key2'" in str(excinfo.value)
+        assert "Missing required key: 'key2'" in str(excinfo.value)
 
     def test_config_validation_missing_key_2(self):
         """
@@ -98,7 +98,7 @@ class TestAgentUtils:
         with pytest.raises(ValueError) as context:
             config_validation(config, required_keys)
         
-        assert str(context.value) == "The following key is missing: 'key2'"
+        assert str(context.value) == "Missing required key: 'key2'"
 
     def test_config_validation_missing_key_and_tuple_mismatch(self):
         """
@@ -121,7 +121,7 @@ class TestAgentUtils:
 
         with pytest.raises(ValueError) as excinfo:
             config_validation(config, required_keys)
-        assert "The following key is missing: 'missing_key'" in str(excinfo.value)
+        assert "Missing required key: 'missing_key'" in str(excinfo.value)
 
         # Update config to include the missing key
         config['missing_key'] = 'value'
@@ -155,7 +155,7 @@ class TestAgentUtils:
             'wrong_tuple_type': Tuple[int, int, int]
         }
 
-        with pytest.raises(ValueError, match="The following key is missing: 'missing_key'"):
+        with pytest.raises(ValueError, match="Missing required key: 'missing_key'"):
             config_validation(config, required_keys)
 
         config['missing_key'] = 'value'
@@ -191,7 +191,7 @@ class TestAgentUtils:
         with pytest.raises(ValueError) as excinfo:
             config_validation(config, required_keys)
 
-        assert "The following key is missing: 'missing_key'" in str(excinfo.value)
+        assert "Missing required key: 'missing_key'" in str(excinfo.value)
 
     def test_config_validation_non_tuple_for_tuple_type(self):
         """
@@ -243,7 +243,7 @@ class TestAgentUtils:
 
         with pytest.raises(ValueError) as excinfo:
             config_validation(config, required_keys)
-        assert "The following key is missing: 'missing_key'" in str(excinfo.value)
+        assert "Missing required key: 'missing_key'" in str(excinfo.value)
 
         config['missing_key'] = 'value'
         config['key1'] = (1, 'string', '3.14', 4)  # Incorrect length and type

@@ -9,13 +9,13 @@ The actuator state could be added after as a augmented observation vector in the
 class for ``AgentsConnectors``. The use of both methods together avoid the duplication of information in the observation
 space.
 """
-
 from typing import Any, Dict
 import numpy as np
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name
+from eprllib import logger
 
 class FullySharedParametersFilter(BaseFilter):
     """

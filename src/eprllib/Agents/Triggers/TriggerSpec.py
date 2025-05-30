@@ -4,11 +4,9 @@ Specification for the trigger functions
 This module defines the `TriggerSpec` class, which is used to specify the configuration of trigger 
 functions for agents in reinforcement learning environments.
 """
-import logging
 from typing import Dict, Any
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class TriggerSpec:
     """

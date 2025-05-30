@@ -10,6 +10,7 @@ import numpy as np
 from typing import Any, Dict
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class DefaultFilter(BaseFilter):
     """
@@ -58,12 +59,21 @@ class DefaultFilter(BaseFilter):
         """
         # Check the type of the agent_states argument
         if not isinstance(agent_states, dict):
-            raise TypeError("agent_states must be a dictionary")
+            msg = "agent_states must be a dictionary"
+            logger.error(msg)
+            raise TypeError(msg)
+        
         # Check if the agent_states dictionary is empty
         if not agent_states:
-            raise ValueError("agent_states dictionary is empty")
+            msg = "agent_states dictionary is empty"
+            logger.error(msg)
+            raise ValueError(msg)
+        
         # Check if all values in the agent_states dictionary are numeric
         if not all(isinstance(value, (int, float)) for value in agent_states.values()):
-            raise ValueError("All values in agent_states must be numeric")
+            msg = "All values in agent_states must be numeric"
+            logger.error(msg)
+            raise ValueError(msg)
+        
         return np.array(list(agent_states.values()), dtype='float32')
     
