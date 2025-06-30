@@ -53,6 +53,14 @@ class EnergyAndASHRAE55SimpleModel(BaseReward):
         self.beta = reward_fn_config['beta']
     
     @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        self.comfort_reward.set_initial_parameters(infos)
+        self.energy_reward.set_initial_parameters(infos)
+        
+    @override(BaseReward)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -120,6 +128,14 @@ class HierarchicalEnergyAndASHRAE55SimpleModel(BaseReward):
         self.beta = reward_fn_config['beta']
     
     @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        self.comfort_reward.set_initial_parameters(infos)
+        self.energy_reward.set_initial_parameters(infos)
+        
+    @override(BaseReward)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -184,6 +200,14 @@ class LowLevelEnergyAndASHRAE55SimpleModel(BaseReward):
         })
         self.beta = reward_fn_config['beta']
     
+    @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        self.comfort_reward.set_initial_parameters(infos)
+        self.energy_reward.set_initial_parameters(infos)
+        
     @override(BaseReward)
     def get_reward(
     self,

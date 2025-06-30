@@ -36,6 +36,18 @@ class BaseReward:
         
         self.reward_fn_config = reward_fn_config
     
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        """
+        This method can be overridden in subclasses to set initial parameters based on the provided infos.
+
+        Args:
+            infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
+        """
+        pass
+    
     def get_reward(
         self,
         infos: Dict[str, Any],
