@@ -119,6 +119,25 @@ class ASHRAE55SimpleModel(BaseReward):
         self.comfort = None
     
     @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        """
+        This method can be overridden in subclasses to set initial parameters based on the provided infos.
+
+        Args:
+            infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
+        """
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.comfort = get_variable_name(
+                self.agent_name, 
+                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
+                self.reward_fn_config['thermal_zone']
+            )
+    
+    @override(BaseReward)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -138,13 +157,6 @@ class ASHRAE55SimpleModel(BaseReward):
         Returns:
             float: reward value.
         """
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.comfort = get_variable_name(
-                self.agent_name, 
-                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
-                self.reward_fn_config['thermal_zone']
-            )
         if infos[self.comfort] > 0:
             return -1
         else:
@@ -172,14 +184,10 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
         self.comfort = None
     
     @override(BaseReward)
-    def get_reward(
+    def set_initial_parameters(
     self,
     infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
-    ) -> float:
-        """
-        """
+    ) -> None:
         if self.agent_name is None:
             self.agent_name = get_agent_name(infos)
             self.comfort = get_variable_name(
@@ -188,6 +196,15 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
                 self.reward_fn_config['thermal_zone']
             )
             
+    @override(BaseReward)
+    def get_reward(
+    self,
+    infos: Dict[str,Any] = None,
+    terminated_flag: bool = False,
+    truncated_flag: bool = False
+    ) -> float:
+        """
+        """
         reward = 0
         for ix in range(len(infos[self.comfort])):
             if infos[self.comfort][ix] > 0:

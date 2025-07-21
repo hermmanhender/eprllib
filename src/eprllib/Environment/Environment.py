@@ -203,6 +203,9 @@ class Environment(MultiAgentEnv):
         """
         # Call super's `reset()` method to (maybe) set the given `seed`.
         super().reset(seed=seed, options=options)
+        # Set a list for the agents that are currently in the environment.
+        # This list will be used to initialize the reward parameters.
+        self.agents_to_inizialize_reward_parameters = self.possible_agents.copy()
         # Increment the counting of episodes in 1.
         self.episode += 1
         # saving the episode in the env_config to use across functions.
@@ -275,6 +278,19 @@ class Environment(MultiAgentEnv):
                 obs[agent] = self.last_obs[agent]
             
         infos = self.last_infos
+        
+        # set initial parameters for the reward function.
+        for agent in obs.keys():
+            if self.reward_fn[agent] is not None:
+                # set the initial parameters for the reward function.
+                self.reward_fn[agent].set_initial_parameters(infos[agent])
+                logger.debug(f"Reward function for agent {agent} initialized with infos: {infos[agent]}")
+                self.agents_to_inizialize_reward_parameters.remove(agent)
+                logger.debug(f"Reward function initial parameters for agent {agent} initialized.")
+                logger.debug(f"The agents to inizialize reward parameters: {self.agents_to_inizialize_reward_parameters}")
+            else:
+                logger.warning(f"No reward function defined for agent {agent}.")
+                pass
         
         self.terminateds = False
         self.truncateds = False
@@ -351,6 +367,8 @@ class Environment(MultiAgentEnv):
                 self.last_obs = current_obs
                 self.last_infos = infos
                 
+                # If the history length is greater than 1, we need to create a buffer for each agent
+                # to store the last observations.
                 obs = {agent: [] for agent in self.agents}
                 for agent in self.agents:
                     if self.history_len[agent] > 1:
@@ -360,7 +378,18 @@ class Environment(MultiAgentEnv):
                         obs[agent] = np.array(self.observation_buffers[agent])
                     else:
                         obs[agent] = current_obs[agent]
-                
+                logger.debug(f"Observation for timestep {self.timestep}: {obs}")
+                logger.debug(f"Infos for timestep {self.timestep}: {infos}")
+                # Check if the agents to initialize reward parameters is not empty.
+                # If it is not empty, we initialize the reward parameters for each agent.
+                if self.agents_to_inizialize_reward_parameters is not Empty:
+                    for agent in obs.keys():
+                        if agent in self.agents_to_inizialize_reward_parameters:
+                            self.reward_fn[agent].set_initial_parameters(infos[agent])
+                            logger.debug(f"Reward function for agent {agent} initialized with infos: {infos[agent]}")
+                            self.agents_to_inizialize_reward_parameters.remove(agent)
+                            logger.debug(f"Reward function initial parameters for agent {agent} initialized.")
+                            logger.debug(f"The agents to inizialize reward parameters: {self.agents_to_inizialize_reward_parameters}")
 
             except (Full, Empty):
                 # Set the terminated variable into True to finish the episode.
