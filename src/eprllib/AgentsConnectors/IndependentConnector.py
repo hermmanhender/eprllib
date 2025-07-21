@@ -8,6 +8,7 @@ and it is returned without modifications, considering only the agent_states prov
 
 from typing import Any, Dict
 from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+from eprllib import logger
 
 class IndependentConnector(DefaultConnector):
     def __init__(

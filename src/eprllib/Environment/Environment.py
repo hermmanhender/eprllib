@@ -6,6 +6,8 @@ This script define the environment of EnergyPlus implemented in RLlib. To works
 need to define the EnergyPlus Runner.
 """
 import tempfile
+import collections
+import numpy as np
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
@@ -18,6 +20,7 @@ from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 # TODO: Add here the availability to run EnergyPlus in Parallel.
 # Run EnergyPlus in Parallel
@@ -88,14 +91,14 @@ class Environment(MultiAgentEnv):
         
         # Episode and multiagent functions
         self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
-        # self.logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
+        logger.debug(f"Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
         self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
-        # self.logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
+        logger.debug(f"Connector configuration: {self.connector_fn.connector_fn_config}")
         
         # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
-        # self.logger.info(f"Possible agents: {self.possible_agents}")
+        logger.info(f"Possible agents: {self.possible_agents}")
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
         self.agents = self.possible_agents
@@ -117,11 +120,41 @@ class Environment(MultiAgentEnv):
             self.action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
             
         self.action_space = spaces.Dict(self.action_space)
-        # self.logger.debug(f"Action space: {self.action_space}")
+        logger.debug(f"Action space: {self.action_space}")
         
+        
+        # Buffer to save the last "history_len" timesteps of observations
+        self.history_len = self.env_config.get("history_len", {agent: 1 for agent in self.agents})
+        for agent in self.agents:
+            assert self.history_len[agent] > 0, "History length must be greater than 0."
+            assert isinstance(self.history_len[agent], int), "History length must be an integer."
+        # Create a deque for each agent to store the last observations.
+        # The deque will have a maximum length of `history_len`.
+        self.obserbation_buffer: Dict[str, collections.deque] = {
+            agent:collections.deque(maxlen=self.history_len[agent] ) for agent in self.agents
+        }
         # asignation of environment observation space.
-        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
-        # self.logger.debug(f"Observation space: {self.observation_space}")
+        self.observation_space = {}
+        original_obs_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
+
+        for agent_id, obs_space_per_agent in original_obs_space.items():
+            if self.history_len[agent_id] > 1:
+                # Asumiendo que obs_space_per_agent es un Box(shape=(feature_dim,))
+                # Si es un Box(shape=(X, Y)), necesitarás aplanar o ajustar.
+                feature_dim = obs_space_per_agent.shape[0] # La dimensión de una única observación
+                self.observation_space[agent_id] = spaces.Box(
+                    low=obs_space_per_agent.low.min(), # Ajusta si tus rangos son por característica
+                    high=obs_space_per_agent.high.max(), # Ajusta si tus rangos son por característica
+                    shape=(self.history_len[agent], feature_dim), # Nueva forma: (N, feature_dim)
+                    dtype=obs_space_per_agent.dtype
+                )
+                logger.debug(f"Observation space for agente {agent_id} with history: {self.observation_space[agent_id]}")
+            else:
+                self.observation_space[agent_id] = obs_space_per_agent
+                logger.debug(f"Observation space for agent {agent_id} without history: {self.observation_space[agent_id]}")
+        
+        self.observation_space = spaces.Dict(self.observation_space)
+        logger.debug(f"Observation space: {self.observation_space}")            
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -148,13 +181,13 @@ class Environment(MultiAgentEnv):
         self.output_path = self.env_config["output_path"]
         if self.output_path is None:
             self.output_path = tempfile.gettempdir()
-        # self.logger.info(f"Output path for EnergyPlus simulation results: {self.output_path}")
+        logger.info(f"Output path for EnergyPlus simulation results: {self.output_path}")
         
         # If epjson_path is a IDF file, transform it into a epJSON file.
         if env_config['epjson_path'].endswith(".idf"):
             print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
-        # self.logger.info("Environment initialization complete")
+        logger.info("Environment initialization complete")
         
     @override(MultiAgentEnv)
     def reset(
@@ -170,6 +203,9 @@ class Environment(MultiAgentEnv):
         """
         # Call super's `reset()` method to (maybe) set the given `seed`.
         super().reset(seed=seed, options=options)
+        # Set a list for the agents that are currently in the environment.
+        # This list will be used to initialize the reward parameters.
+        self.agents_to_inizialize_reward_parameters = self.possible_agents.copy()
         # Increment the counting of episodes in 1.
         self.episode += 1
         # saving the episode in the env_config to use across functions.
@@ -193,7 +229,7 @@ class Environment(MultiAgentEnv):
             try:
                 self.env_config = self.episode_fn.get_episode_config(self.env_config)
                 self.agents = self.episode_fn.get_episode_agents(self.env_config, self.possible_agents)
-                # self.logger.debug(f"Episode configuration: {self.env_config}")
+                logger.debug(f"Episode configuration: {self.env_config}")
             except (ValueError, FileNotFoundError):
                 raise ValueError("The episode configuration is not valid. Please check the episode configuration.")
             
@@ -220,10 +256,41 @@ class Environment(MultiAgentEnv):
             self.last_obs = self.obs_queue.get()
             self.runner.infos_event.wait()
             self.last_infos = self.infos_queue.get()
-        
-        # Asign the obs and infos to the environment.
-        obs = self.last_obs
+            
+            # If the history length is greater than 1, we need to create a buffer for each agent
+            # to store the last observations.
+            for agent in self.agents:
+                if self.history_len[agent] > 1:
+                    self.observation_buffers[agent].clear()
+                    # If the last observation is not empty, we append it to the buffer.
+                    # This is done to ensure that the buffer has the last `history_len` observations.
+                    single_obs_array = np.array(self.last_obs[agent])
+                    for _ in range(self.history_len[agent]):
+                        self.observation_buffers[agent].append(single_obs_array)
+
+        # If the history length is greater than 1, we need to return the last `history_len` observations
+        # for each agent.
+        obs = {agent: [] for agent in self.agents}
+        for agent in self.agents:
+            if self.history_len[agent] > 1:
+                obs[agent] = np.array(self.observation_buffers[agent])
+            else:
+                obs[agent] = self.last_obs[agent]
+            
         infos = self.last_infos
+        
+        # set initial parameters for the reward function.
+        for agent in obs.keys():
+            if self.reward_fn[agent] is not None:
+                # set the initial parameters for the reward function.
+                self.reward_fn[agent].set_initial_parameters(infos[agent])
+                logger.debug(f"Reward function for agent {agent} initialized with infos: {infos[agent]}")
+                self.agents_to_inizialize_reward_parameters.remove(agent)
+                logger.debug(f"Reward function initial parameters for agent {agent} initialized.")
+                logger.debug(f"The agents to inizialize reward parameters: {self.agents_to_inizialize_reward_parameters}")
+            else:
+                logger.warning(f"No reward function defined for agent {agent}.")
+                pass
         
         self.terminateds = False
         self.truncateds = False
@@ -262,7 +329,7 @@ class Environment(MultiAgentEnv):
             cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
             if self.timestep % cut_episode_len_timesteps == 0:
                 self.truncateds = True
-                # self.logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
+                logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
@@ -270,7 +337,7 @@ class Environment(MultiAgentEnv):
         # check for simulation errors.
         if self.runner.failed():
             self.terminateds = True
-            print("EnergyPlus failed with an error!")
+            logger.error("EnergyPlus failed with an error!")
         # simulation_complete is likely to happen after last env step()
         # is called, hence leading to waiting on queue for a timeout.
         if self.runner.simulation_complete:
@@ -292,20 +359,52 @@ class Environment(MultiAgentEnv):
                 
                 # Get the return observation and infos after the action is applied.
                 self.runner.obs_event.wait(timeout=timeout)
-                obs = self.obs_queue.get(timeout=timeout)
+                current_obs = self.obs_queue.get(timeout=timeout)
                 self.runner.infos_event.wait(timeout=timeout)
                 infos = self.infos_queue.get(timeout=timeout)
+                
                 # Upgrade last observation and infos dicts.
-                self.last_obs = obs
+                self.last_obs = current_obs
                 self.last_infos = infos
+                
+                # If the history length is greater than 1, we need to create a buffer for each agent
+                # to store the last observations.
+                obs = {agent: [] for agent in self.agents}
+                for agent in self.agents:
+                    if self.history_len[agent] > 1:
+                        # Append the observation to the buffer.
+                        self.observation_buffers[agent].append(np.array(current_obs[agent]))
+                        # Create the observation dict with the last `history_len` observations.
+                        obs[agent] = np.array(self.observation_buffers[agent])
+                    else:
+                        obs[agent] = current_obs[agent]
+                logger.debug(f"Observation for timestep {self.timestep}: {obs}")
+                logger.debug(f"Infos for timestep {self.timestep}: {infos}")
+                # Check if the agents to initialize reward parameters is not empty.
+                # If it is not empty, we initialize the reward parameters for each agent.
+                if self.agents_to_inizialize_reward_parameters is not Empty:
+                    for agent in obs.keys():
+                        if agent in self.agents_to_inizialize_reward_parameters:
+                            self.reward_fn[agent].set_initial_parameters(infos[agent])
+                            logger.debug(f"Reward function for agent {agent} initialized with infos: {infos[agent]}")
+                            self.agents_to_inizialize_reward_parameters.remove(agent)
+                            logger.debug(f"Reward function initial parameters for agent {agent} initialized.")
+                            logger.debug(f"The agents to inizialize reward parameters: {self.agents_to_inizialize_reward_parameters}")
 
             except (Full, Empty):
                 # Set the terminated variable into True to finish the episode.
                 self.terminateds = True
                 # We use the last observation as a observation for the timestep.
-                obs = self.last_obs
+                obs = {agent: [] for agent in self.agents}
+                for agent in self.agents:
+                    if self.history_len[agent] > 1:
+                        # Create the observation dict with the last `history_len` observations.
+                        obs[agent] = np.array(self.observation_buffers[agent])
+                    else:
+                        obs[agent] = self.last_obs[agent]
+                
                 infos = self.last_infos
-                print("Queue timeout, ending episode early.")
+                logger.warning("Queue timeout, ending episode early.")
         
         # Calculate the reward in the timestep
         reward_dict = {agent: None for agent in obs.keys()}
@@ -336,7 +435,9 @@ class Environment(MultiAgentEnv):
         cls,
         path: str
     ) -> "Environment":
-        return NotImplementedError("Not implemented yet.")
+        msg = "This method is not implemented yet. Please implement it in the child class."
+        logger.error(msg)
+        raise NotImplementedError(msg)
     
     def get_default_config(cls) -> EnvironmentConfig:
         return EnvironmentConfig()

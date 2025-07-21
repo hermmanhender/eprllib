@@ -7,6 +7,7 @@ for the EnergyPlus environment.
 """
 
 from typing import Dict, Any, List
+from eprllib import logger
 
 class BaseEpisode:
     """
@@ -22,6 +23,12 @@ class BaseEpisode:
         Args:
             episode_fn_config (Dict[str, Any]): Configuration dictionary for the episode function.
         """
+        # Check if the episode_fn_config is a dictionary
+        if not isinstance(episode_fn_config, dict):
+            msg = "episode_fn_config must be a dictionary."
+            logger.error(msg)
+            raise ValueError(msg)
+        # Set the episode_fn_config attribute
         self.episode_fn_config = episode_fn_config
 
     def get_episode_config(self, env_config: Dict[str, Any]) -> Dict[str, Any]:

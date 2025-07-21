@@ -17,3 +17,6 @@ The module includes the following classes and functions:
 - BaseRunner: The base class for running EnergyPlus simulations.
 - EnvConfig: The class used to configure the environment.
 """
+
+TIMEOUT = 10.0
+CUT_EPISODE_LEN = 0

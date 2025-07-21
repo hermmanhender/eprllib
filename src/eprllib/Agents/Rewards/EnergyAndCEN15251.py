@@ -8,6 +8,7 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters, HierarchicalEnergyWithMeters
 from eprllib.Agents.Rewards.CEN15251 import CEN15251, HierarchicalCEN15251
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class EnergyAndCEN15251(BaseReward):
     def __init__(
@@ -51,6 +52,14 @@ class EnergyAndCEN15251(BaseReward):
         })
         self.beta = reward_fn_config['beta']
     
+    @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        self.comfort_reward.set_initial_parameters(infos)
+        self.energy_reward.set_initial_parameters(infos)
+        
     @override(BaseReward)
     def get_reward(
     self,
@@ -122,6 +131,14 @@ class HierarchicalEnergyAndCEN15251(BaseReward):
             "cooling_energy_ref": reward_fn_config['cooling_energy_ref'],
             "heating_energy_ref": reward_fn_config['heating_energy_ref']
         })
+        
+    @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        self.comfort_reward.set_initial_parameters(infos)
+        self.energy_reward.set_initial_parameters(infos)
         
     @override(BaseReward)
     def get_reward(

@@ -16,6 +16,7 @@ to transform the dict of agent actions to actuator values.
 """
 from typing import Dict, Any, List
 import gymnasium as gym
+from eprllib import logger
 
 class BaseTrigger:
     """
@@ -32,6 +33,12 @@ class BaseTrigger:
         Args:
             trigger_fn_config (Dict[str, Any]): Configuration for the action transformer function.
         """
+        # Check if the filter_fn_config is a dictionary
+        if not isinstance(trigger_fn_config, dict):
+            msg = "trigger_fn_config must be a dictionary"
+            logger.error(msg)
+            raise TypeError(msg)
+        
         self.trigger_fn_config = trigger_fn_config
     
     def get_action_space_dim(self) -> gym.Space:
@@ -43,7 +50,9 @@ class BaseTrigger:
         Returns:
             gym.Space: Action space of the environment.
         """
-        raise NotImplementedError("This method should be implemented in the child class.")
+        msg = "This method should be implemented in the child class."
+        logger.error(msg)
+        raise NotImplementedError
     
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str, Any]:
         """
@@ -61,7 +70,9 @@ class BaseTrigger:
         Returns:
             Dict[str, Any]: Transformed actions for the actuators.
         """
-        raise NotImplementedError("This method should be implemented in the child class.")
+        msg = "This method should be implemented in the child class."
+        logger.error(msg)
+        raise NotImplementedError(msg)
     
     def get_actuator_action(self, action: float | int, actuator: str) -> int | float:
         """

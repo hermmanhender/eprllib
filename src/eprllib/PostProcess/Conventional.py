@@ -5,12 +5,14 @@ RUN CONVENTIONAL CONTROLS
 This script execute the conventional controls in the evaluation scenario.
 """
 import os
-from eprllib.Environment.Environment import Environment
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import pandas as pd
 import threading
 from queue import Queue, Empty
 from typing import Dict, Any, Optional
+from eprllib.Environment.Environment import Environment
+from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib import logger
+
 
 class rb_evaluation:
     

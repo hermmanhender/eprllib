@@ -17,13 +17,13 @@ Notes:
   finding a way to expand the observation space to adapt to different observation sizes.
 """
 import time
+import numpy as np
+import gymnasium as gym
 from typing import Any, Dict, Tuple
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 from eprllib.Utils.observation_utils import get_actuator_name
-
-import numpy as np
-import gymnasium as gym
+from eprllib import logger
 
 class FullySharedParametersConnector(BaseConnector):
     def __init__(
@@ -162,7 +162,9 @@ class FullySharedParametersConnector(BaseConnector):
         """
         # Check that the lenght of all the dict_agents_obs key values are the same:
         if len(set([len(value) for value in dict_agents_obs.values()])) != 1:
-            raise ValueError("The lenght of all the dict_agents_obs key values must be the same when you use homogeneous fully shared parameters policy.")
+            msg = "The lenght of all the dict_agents_obs key values must be the same when you use homogeneous fully shared parameters policy."
+            logger.error(msg)
+            raise ValueError(msg)
         
         # Add the ID vectors if it's needed
         if self.agent_ids is None:
@@ -172,11 +174,14 @@ class FullySharedParametersConnector(BaseConnector):
                 self.agent_ids.update({agent: id})
                 id += 1
                 if len(self.agent_ids) > self.number_of_agents_total:
-                    raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
+                    msg = f"The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}."
+                    logger.error(msg)
+                    raise ValueError(msg)
 
             if len(self.agent_ids) > self.number_of_agents_total:
-                print(f"The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}.")
-                raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
+                msg = f"The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}."
+                logger.error(msg)
+                raise ValueError(msg)
         
         if self.actuator_ids is None:
             id = 0
@@ -186,7 +191,9 @@ class FullySharedParametersConnector(BaseConnector):
                     self.actuator_ids.update({get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
                     id += 1
                     if len(self.actuator_ids) > self.number_of_actuators_total:
-                        raise ValueError("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
+                        msg = f"The actuators found were: {self.actuator_ids.keys()} with a total of {len(self.actuator_ids.keys())}, that are greather than {self.number_of_actuators_total}."
+                        logger.error(msg)
+                        raise ValueError(msg)
         
         # agents in this timestep
         agent_list = [key for key in dict_agents_obs.keys()]
@@ -200,8 +207,8 @@ class FullySharedParametersConnector(BaseConnector):
                 actuator_name = get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
                 actuator_names[agent].update({actuator_name: agent_states[agent].get(actuator_name, -2)})
                 if actuator_names[agent][actuator_name] == -2:
-                    print(f"Looking for actuator: {actuator_name}")
-                    print(f"Available keys in agent_states[{agent}]: {agent_states[agent].keys()}")
+                    logger.info(f"Looking for actuator: {actuator_name}")
+                    logger.info(f"Available keys in agent_states[{agent}]: {agent_states[agent].keys()}")
                     time.sleep(10)
                     
             

@@ -28,17 +28,19 @@ class TestAgentspec:
         Test the initialization of RewardSpec with default parameters.
         """
         with pytest.raises(NotImplementedError) as e:
-            RewardSpec()
-        assert str(e.value) == "reward_fn must be implemented"
+            RewardSpec().build()
+        assert str(e.value) == "No reward function provided."
 
     def test___setitem___1(self):
         """
         Test that the __setitem__ method correctly sets a new attribute on the RewardSpec object.
         """
         reward_spec = RewardSpec(BaseReward,{})
-        reward_spec['new_attribute'] = 'test_value'
-        assert hasattr(reward_spec, 'new_attribute')
-        assert reward_spec.new_attribute == 'test_value'
+        key = 'new_attribute'
+        with pytest.raises(KeyError)as e:
+            reward_spec[key] = 'test_value'
+            
+        assert str(e.value) == f"'Invalid key: {key}.'"
 
     def test_build_1(self):
         """
@@ -65,8 +67,8 @@ class TestAgentspec:
         This should raise a ValueError as per the validation in the RewardSpec.validation_rew_config method.
         """
         with pytest.raises(TypeError) as e:
-            RewardSpec(reward_fn="invalid_reward_fn", reward_fn_config={})
-        assert str(e.value) == "reward_fn must be a class that inherits from BaseReward"
+            RewardSpec(reward_fn="invalid_reward_fn", reward_fn_config={}).build()
+        assert str(e.value) == "issubclass() arg 1 must be a class"
 
     def test_reward_spec_init_with_not_implemented_reward_fn(self):
         """
@@ -74,18 +76,6 @@ class TestAgentspec:
         This should raise a NotImplementedError as per the validation in the RewardSpec.validation_rew_config method.
         """
         with pytest.raises(NotImplementedError) as e:
-            RewardSpec(reward_fn=NotImplemented)
+            RewardSpec(reward_fn=NotImplemented).build()
             
-        assert str(e.value) == "reward_fn must be implemented"
-
-    def test_validation_rew_config_2(self):
-        """
-        Test that validation_rew_config returns True when reward_fn is implemented.
-        """
-        class TestReward(BaseReward):
-            def __call__(self, env, infos):
-                return 0.0
-
-        reward_spec = RewardSpec(reward_fn=TestReward, reward_fn_config={})
-        assert reward_spec.validation_rew_config() == True
-
+        assert str(e.value) == "No reward function provided."

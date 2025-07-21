@@ -10,6 +10,7 @@ from typing import Dict, Any
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.episode_fn_utils import get_random_weather
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class RandomWeatherEpisode(BaseEpisode):
     """
@@ -26,7 +27,9 @@ class RandomWeatherEpisode(BaseEpisode):
         
         # check that 'epw_files_folder_path' exist in the episode_fn_config
         if 'epw_files_folder_path' not in self.episode_fn_config:
-            raise ValueError("The 'epw_files_folder_path' must be defined in the episode_fn_config.")
+            msg = "The 'epw_files_folder_path' must be defined in the episode_fn_config."
+            logger.error(msg)
+            raise ValueError(msg)
 
     @override(BaseEpisode)
     def get_episode_config(self, env_config: Dict[str,Any]) -> Dict[str,Any]:

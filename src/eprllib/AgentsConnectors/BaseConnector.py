@@ -7,9 +7,9 @@ agents' observations to provide a flexible configuration of the communication be
 Built-in hierarchical (only two levels), fully-shared, centralized, and independent configurations 
 are provided.
 """
-
 from typing import Dict, Any, Tuple
 from gymnasium import spaces
+from eprllib import logger
 
 class BaseConnector:
     def __init__(
@@ -39,7 +39,9 @@ class BaseConnector:
         :return: Agent observation spaces.
         :rtype: gym.spaces.Space
         """
-        raise NotImplementedError("This method must be implemented in the child class.")
+        msg = "This method must be implemented in the child class."
+        logger.error(msg)
+        raise NotImplementedError(msg)
     
     def get_all_agents_obs_spaces_dict(
         self,
