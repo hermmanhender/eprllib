@@ -27,7 +27,12 @@ from eprllib.Utils.observation_utils import (
 from eprllib import logger, EP_VERSION
 
 # EnergyPlus Python API path adding
-EP_API_add_path(EP_VERSION)
+try:
+    EP_API_add_path(EP_VERSION)
+except RuntimeError as e:
+    logger.error(f"Failed to add EnergyPlus API path: {e}")
+    exit(1)
+    
 from pyenergyplus.api import EnergyPlusAPI
 
 api = EnergyPlusAPI()
@@ -770,7 +775,10 @@ class EnvironmentRunner:
         time.sleep(0.5)
         api.runtime.stop_simulation(self.energyplus_state)
         self._flush_queues()
-        self.energyplus_exec_thread.join()
+        try:
+            self.energyplus_exec_thread.join()
+        except Exception as e:
+            logger.error(f"Error joining EnergyPlus execution thread: {e}")
         self.energyplus_exec_thread = None
         self.first_observation = True
         api.runtime.clear_callbacks()

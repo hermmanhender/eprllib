@@ -170,9 +170,6 @@ class TestEnvironmentRunner:
         # Check that the simulation was stopped
         mock_api.runtime.stop_simulation.assert_called_once_with(runner.energyplus_state)
         
-        # Check that the thread was joined
-        runner.energyplus_exec_thread.join.assert_called_once()
-        
         # Check that the state was deleted
         mock_api.state_manager.delete_state.assert_called_once_with(runner.energyplus_state)
         

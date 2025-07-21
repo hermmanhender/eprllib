@@ -148,10 +148,10 @@ class Environment(MultiAgentEnv):
                     shape=(self.history_len[agent], feature_dim), # Nueva forma: (N, feature_dim)
                     dtype=obs_space_per_agent.dtype
                 )
-                self.logger.debug(f"Observation space for agente {agent_id} with history: {self.observation_space[agent_id]}")
+                logger.debug(f"Observation space for agente {agent_id} with history: {self.observation_space[agent_id]}")
             else:
                 self.observation_space[agent_id] = obs_space_per_agent
-                self.logger.debug(f"Observation space for agent {agent_id} without history: {self.observation_space[agent_id]}")
+                logger.debug(f"Observation space for agent {agent_id} without history: {self.observation_space[agent_id]}")
         
         self.observation_space = spaces.Dict(self.observation_space)
         logger.debug(f"Observation space: {self.observation_space}")            

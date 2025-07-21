@@ -13,8 +13,15 @@ from eprllib.Episodes.DefaultEpisode import DefaultEpisode
 from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-from eprllib.Agents.Triggers.SetpointTriggers import SetpointTrigger
-from eprllib.Agents.Rewards.EnergyRewards import EnergyReward
+from eprllib.Agents.Triggers.SetpointTriggers import AvailabilityTrigger
+from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters
+from eprllib.Agents.ObservationSpec import ObservationSpec
+from eprllib.Agents.ActionSpec import ActionSpec
+from eprllib.Agents.Rewards.RewardSpec import RewardSpec
+from eprllib.Agents.AgentSpec import AgentSpec
+from eprllib.Agents.Filters.FilterSpec import FilterSpec
+from eprllib.Agents.Triggers.TriggerSpec import TriggerSpec
+
 
 
 class TestEnvironmentConfig:
@@ -68,7 +75,7 @@ class TestEnvironmentConfig:
                 "observation": {
                     "variables": None,
                     "internal_variables": None,
-                    "meters": None,
+                    "meters": ["Cooling:DistrictCooling", "Heating:DistrictHeatingWater"],
                     "simulation_parameters": {
                         "hour": True,
                         "current_time": True,
@@ -87,19 +94,22 @@ class TestEnvironmentConfig:
                     ]
                 },
                 "reward": {
-                    "reward_fn": EnergyReward,
-                    "reward_fn_config": {}
+                    "reward_fn": EnergyWithMeters,
+                    "reward_fn_config": {
+                        "cooling_name": "Cooling:DistrictCooling",
+                        "heating_name": "Heating:DistrictHeatingWater",
+                        "cooling_energy_ref": 100,
+                        "heating_energy_ref": 100
+                    }
                 },
                 "filter": {
                     "filter_fn": DefaultFilter,
                     "filter_fn_config": {}
                 },
                 "trigger": {
-                    "trigger_fn": SetpointTrigger,
+                    "trigger_fn": AvailabilityTrigger,
                     "trigger_fn_config": {
-                        "min_setpoint": 18.0,
-                        "max_setpoint": 24.0,
-                        "num_actions": 7
+                        "availability_actuator": ["Schedule:Constant", "Schedule Value", "HTGSETP_SCH"]
                     }
                 }
             }
@@ -153,36 +163,42 @@ class TestEnvironmentConfig:
             output_path="path/to/output"
         )
         
-        agent_spec = AgentSpec()
-        agent_spec.observation(
-            variables=None,
-            internal_variables=None,
-            meters=None,
-            simulation_parameters={"hour": True},
-            zone_simulation_parameters={"system_time_step": False},
-            use_one_day_weather_prediction=False
-        )
-        agent_spec.action(
-            actuators=[["Schedule:Constant", "Schedule Value", "HTGSETP_SCH"]]
-        )
-        agent_spec.reward(
-            reward_fn=EnergyReward,
-            reward_fn_config={}
-        )
-        agent_spec.filter(
-            filter_fn=DefaultFilter,
-            filter_fn_config={}
-        )
-        agent_spec.trigger(
-            trigger_fn=SetpointTrigger,
-            trigger_fn_config={
-                "min_setpoint": 18.0,
-                "max_setpoint": 24.0,
-                "num_actions": 7
+        config.agents(
+            agents_config={
+                "agent1": AgentSpec(
+                    observation = ObservationSpec(
+                        variables=None,
+                        internal_variables=None,
+                        meters=["Cooling:DistrictCooling", "Heating:DistrictHeatingWater"],
+                        simulation_parameters={"hour": True},
+                        zone_simulation_parameters={"system_time_step": False},
+                        use_one_day_weather_prediction=False
+                    ),
+                    action = ActionSpec(
+                        actuators=[("Schedule:Constant", "Schedule Value", "HTGSETP_SCH")]
+                    ),
+                    reward = RewardSpec(
+                        reward_fn=EnergyWithMeters,
+                        reward_fn_config={
+                                        "cooling_name": "Cooling:DistrictCooling",
+                                        "heating_name": "Heating:DistrictHeatingWater",
+                                        "cooling_energy_ref": 100,
+                                        "heating_energy_ref": 100
+                                    }
+                    ),
+                    filter = FilterSpec(
+                        filter_fn=DefaultFilter,
+                        filter_fn_config={}
+                    ),
+                    trigger = TriggerSpec(
+                        trigger_fn=AvailabilityTrigger,
+                        trigger_fn_config={
+                            "availability_actuator": ["Schedule:Constant", "Schedule Value", "HTGSETP_SCH"]
+                        }
+                    )
+                )
             }
         )
-        
-        config.agents(agents_config={"agent1": agent_spec})
         
         # Build the configuration
         result = config._build()
