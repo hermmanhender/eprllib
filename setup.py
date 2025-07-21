@@ -1,9 +1,15 @@
 from distutils.core import setup
+import sys
+import os
+
+# Add the src directory to the path so we can import the version
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+from eprllib.version import __version__
 setup(
   name = 'eprllib',         # Nombre de la carpeta (MiLibreria)
   packages = ['eprllib'],   # El mismo que en "name"
 
-  version = '1.5.18',      # Recuerda incrementar la versión con cada cambio
+  version = __version__,      # Versión importada desde version.py
 
   license='MIT',        # Escoje una licencia: https://help.github.com/articles/licensing-a-repository
   description = "program used to investigate the control of natural ventilation in homes based on a DRL model. The program uses the EnergyPlus Python API and Ray's Tune and RLlib libraries.",   # Descripcion corta de mi libreria
@@ -11,7 +17,7 @@ setup(
   author_email = 'hendger.07@gmail.com',      # Tu correo electrónico
   url = 'https://github.com/hermmanhender/eprllib',   # Tu github o tu sitio web
 
-  download_url = 'https://github.com/hermmanhender/eprllib/dist/eprllib-1.5.18.tar.gz',    # Ahora hablamos de esto
+  download_url = f'https://github.com/hermmanhender/eprllib/dist/eprllib-{__version__}.tar.gz',    # URL de descarga con versión dinámica
 
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
   install_requires=[            # Los paquetes que usas en tu librería.

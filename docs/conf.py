@@ -6,11 +6,18 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import sys
+import os
+
+# Add the src directory to the path so we can import the version
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from eprllib.version import __version__
+
 project = 'eprllib'
 copyright = '2024, Germán Rodolfo Henderson'
 author = 'Germán Rodolfo Henderson'
 
-release = '1.5.18'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
