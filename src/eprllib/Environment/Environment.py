@@ -6,6 +6,8 @@ This script define the environment of EnergyPlus implemented in RLlib. To works
 need to define the EnergyPlus Runner.
 """
 import tempfile
+import collections
+import numpy as np
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
@@ -120,9 +122,35 @@ class Environment(MultiAgentEnv):
         self.action_space = spaces.Dict(self.action_space)
         logger.debug(f"Action space: {self.action_space}")
         
+        
+        # Buffer to save the last "history_len" timesteps of observations
+        self.hitory_len = self.env_config.get("history_len", 1)
+        assert self.hitory_len > 0, "History length must be greater than 0."
+        assert isinstance(self.hitory_len, int), "History length must be an integer."
+        # Create a deque for each agent to store the last observations.
+        # The deque will have a maximum length of `history_len`.
+        self.obserbation_buffer: Dict[str, collections.deque] = {
+            agent:collections.deque(maxlen=self.hitory_len ) for agent in self.agents
+        }
         # asignation of environment observation space.
-        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
-        logger.debug(f"Observation space: {self.observation_space}")
+        if self.hitory_len > 1:
+            original_obs_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
+            self.observation_space = {}
+            for agent_id, obs_space_per_agent in original_obs_space.items():
+                # Asumiendo que obs_space_per_agent es un Box(shape=(feature_dim,))
+                # Si es un Box(shape=(X, Y)), necesitarás aplanar o ajustar.
+                feature_dim = obs_space_per_agent.shape[0] # La dimensión de una única observación
+                self.observation_space[agent_id] = spaces.Box(
+                    low=obs_space_per_agent.low.min(), # Ajusta si tus rangos son por característica
+                    high=obs_space_per_agent.high.max(), # Ajusta si tus rangos son por característica
+                    shape=(self.history_len, feature_dim), # Nueva forma: (N, feature_dim)
+                    dtype=obs_space_per_agent.dtype
+                )
+            self.observation_space = spaces.Dict(self.observation_space)
+            self.logger.debug(f"Observation space with history: {self.observation_space}")
+        else:
+            self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
+            logger.debug(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -224,9 +252,27 @@ class Environment(MultiAgentEnv):
             self.last_obs = self.obs_queue.get()
             self.runner.infos_event.wait()
             self.last_infos = self.infos_queue.get()
-        
-        # Asign the obs and infos to the environment.
-        obs = self.last_obs
+            
+            # If the history length is greater than 1, we need to create a buffer for each agent
+            # to store the last observations.
+            if self.hitory_len > 1:
+                for agent in self.agents:
+                    self.observation_buffers[agent].clear()
+                    # If the last observation is not empty, we append it to the buffer.
+                    # This is done to ensure that the buffer has the last `history_len` observations.
+                    single_obs_array = np.array(self.last_obs[agent])
+                    for _ in range(self.history_len):
+                        self.observation_buffers[agent].append(single_obs_array)
+            
+        # If the history length is greater than 1, we need to return the last `history_len` observations
+        # for each agent.
+        if self.hitory_len > 1:
+            obs = {
+                agent: np.array(self.observation_buffers[agent]) for agent in self.agents
+            }
+        else:
+            obs = self.last_obs
+            
         infos = self.last_infos
         
         # set initial parameters for the reward function.
@@ -309,11 +355,12 @@ class Environment(MultiAgentEnv):
                 
                 # Get the return observation and infos after the action is applied.
                 self.runner.obs_event.wait(timeout=timeout)
-                obs = self.obs_queue.get(timeout=timeout)
+                current_obs = self.obs_queue.get(timeout=timeout)
                 self.runner.infos_event.wait(timeout=timeout)
                 infos = self.infos_queue.get(timeout=timeout)
+                
                 # Upgrade last observation and infos dicts.
-                self.last_obs = obs
+                self.last_obs = current_obs
                 self.last_infos = infos
                 
                 if self.agents_to_inizialize_reward_parameters is not Empty:
@@ -328,11 +375,29 @@ class Environment(MultiAgentEnv):
                     logger.debug(f"Observation for timestep {self.timestep}: {obs}")
                     logger.debug(f"Infos for timestep {self.timestep}: {infos}")
 
+                if self.hitory_len > 1:
+                    for agent in self.agents:
+                        # Append the observation to the buffer.
+                        self.observation_buffers[agent].append(np.array(current_obs[agent]))
+                    # Create the observation dict with the last `history_len` observations.
+                    obs = {
+                        agent: np.array(self.observation_buffers[agent]) for agent in self.agents
+                    }
+                else:
+                    obs = current_obs
+
+
             except (Full, Empty):
                 # Set the terminated variable into True to finish the episode.
                 self.terminateds = True
                 # We use the last observation as a observation for the timestep.
-                obs = self.last_obs
+                if self.hitory_len > 1:
+                    obs = {
+                        agent: np.array(self.observation_buffers[agent]) for agent in self.agents
+                    }
+                else:
+                    obs = self.last_obs
+                
                 infos = self.last_infos
                 logger.warning("Queue timeout, ending episode early.")
         
