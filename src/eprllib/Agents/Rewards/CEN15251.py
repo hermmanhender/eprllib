@@ -84,25 +84,10 @@ class CEN15251(BaseReward):
         self.temp_int = None
     
     @override(BaseReward)
-    def get_reward(
+    def set_initial_parameters(
     self,
     infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
-    ) -> float:
-        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
-        amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
-        divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
-        of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
-        Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
-
-        Args:
-            self (Environment): RLlib environment.
-            infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-
-        Returns:
-            float: reward normalize value
-        """
+    ) -> None:
         if self.agent_name is None:
             self.agent_name = get_agent_name(infos)
             self.cat1_name = get_variable_name(
@@ -125,7 +110,27 @@ class CEN15251(BaseReward):
                 "Zone Mean Air Temperature",
                 self.reward_fn_config['thermal_zone']
             )
-        
+            
+    @override(BaseReward)
+    def get_reward(
+    self,
+    infos: Dict[str,Any] = None,
+    terminated_flag: bool = False,
+    truncated_flag: bool = False
+    ) -> float:
+        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+        amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
+        divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
+        of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
+        Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
+
+        Args:
+            self (Environment): RLlib environment.
+            infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
+
+        Returns:
+            float: reward normalize value
+        """
         temp_int = infos.get(self.temp_int, False)
         if temp_int is False:
             msg = f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}"
@@ -191,27 +196,12 @@ class HierarchicalCEN15251(BaseReward):
         self.cat2_name = None
         self.cat3_name = None
         self.temp_int = None
-        
+    
     @override(BaseReward)
-    def get_reward(
+    def set_initial_parameters(
     self,
     infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
-    ) -> float:
-        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
-        amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
-        divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
-        of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
-        Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
-
-        Args:
-            self (Environment): RLlib environment.
-            infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
-
-        Returns:
-            float: reward normalize value
-        """
+    ) -> None:
         if self.agent_name is None:
             self.agent_name = get_agent_name(infos)
             self.cat1_name = get_variable_name(
@@ -234,7 +224,27 @@ class HierarchicalCEN15251(BaseReward):
                 "Zone Mean Air Temperature",
                 self.reward_fn_config['thermal_zone']
             )
-        
+            
+    @override(BaseReward)
+    def get_reward(
+    self,
+    infos: Dict[str,Any] = None,
+    terminated_flag: bool = False,
+    truncated_flag: bool = False
+    ) -> float:
+        """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
+        amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
+        divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
+        of the episode and multiply for a ponderation factor of beta for the energy and (1-beta) for the comfort.
+        Both terms are negatives, representing a penalti for demand energy and for generate discomfort.
+
+        Args:
+            self (Environment): RLlib environment.
+            infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
+
+        Returns:
+            float: reward normalize value
+        """
         reward = 0. 
         
         temp_int = infos.get(self.temp_int, False)

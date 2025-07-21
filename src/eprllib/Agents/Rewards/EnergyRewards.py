@@ -63,6 +63,22 @@ class EnergyWithMeters(BaseReward):
         self.heating = None
     
     @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.cooling = get_meter_name(
+                self.agent_name,
+                self.reward_fn_config['cooling_name']
+            )
+            self.heating = get_meter_name(
+                self.agent_name,
+                self.reward_fn_config['heating_name']
+            )
+        
+    @override(BaseReward)
     def get_reward(
     self,
     infos: Dict[str,Any] = None,
@@ -82,17 +98,6 @@ class EnergyWithMeters(BaseReward):
         Returns:
             float: reward normalize value
         """
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.cooling = get_meter_name(
-                self.agent_name,
-                self.reward_fn_config['cooling_name']
-            )
-            self.heating = get_meter_name(
-                self.agent_name,
-                self.reward_fn_config['heating_name']
-            )
-            
         return - np.clip(
             (infos[self.cooling] / self.reward_fn_config['cooling_energy_ref'] \
                 + infos[self.heating] / self.reward_fn_config['heating_energy_ref']),
@@ -147,6 +152,22 @@ class HierarchicalEnergyWithMeters(BaseReward):
         self.heating = None
     
     @override(BaseReward)
+    def set_initial_parameters(
+    self,
+    infos: Dict[str,Any] = None,
+    ) -> None:
+        if self.agent_name is None:
+            self.agent_name = get_agent_name(infos)
+            self.cooling = get_meter_name(
+                self.agent_name,
+                self.reward_fn_config['cooling_name']
+            )
+            self.heating = get_meter_name(
+                self.agent_name,
+                self.reward_fn_config['heating_name']
+            )
+        
+    @override(BaseReward)
     def get_reward(
         self,
         infos: Dict[str,Any] = None,
@@ -166,17 +187,6 @@ class HierarchicalEnergyWithMeters(BaseReward):
             Returns:
                 float: reward normalize value
             """
-            if self.agent_name is None:
-                self.agent_name = get_agent_name(infos)
-                self.cooling = get_meter_name(
-                    self.agent_name,
-                    self.reward_fn_config['cooling_name']
-                )
-                self.heating = get_meter_name(
-                    self.agent_name,
-                    self.reward_fn_config['heating_name']
-                )
-                
             return - np.clip(
                 (sum(infos[self.cooling]) / (self.reward_fn_config['cooling_energy_ref'] * len(infos[self.cooling])) \
                     + sum(infos[self.heating]) / (self.reward_fn_config['heating_energy_ref'] * len(infos[self.heating]))),
