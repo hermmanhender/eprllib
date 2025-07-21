@@ -26,7 +26,8 @@ class ObservationSpec:
         prediction_hours: int = PREDICTION_HOURS,
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
-        other_obs: Dict[str, float | int] = {}
+        other_obs: Dict[str, float | int] = {},
+        history_len: Dict[str, int] = None,
     ):
         """
         Construction method.
@@ -118,6 +119,16 @@ class ObservationSpec:
         
         # Custom observation dict.
         self.other_obs = other_obs
+        
+        # History length for each agent.
+        if history_len is not None:
+            if not isinstance(history_len, dict):
+                logger.error("history_len must be a dictionary with agent names as keys and history length as values.")
+                raise TypeError("history_len must be a dictionary with agent names as keys and history length as values.")
+                        
+            self.history_len = history_len
+            
+        
         
     def __getitem__(self, key):
         return getattr(self, key)

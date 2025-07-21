@@ -124,33 +124,37 @@ class Environment(MultiAgentEnv):
         
         
         # Buffer to save the last "history_len" timesteps of observations
-        self.hitory_len = self.env_config.get("history_len", 1)
-        assert self.hitory_len > 0, "History length must be greater than 0."
-        assert isinstance(self.hitory_len, int), "History length must be an integer."
+        self.history_len = self.env_config.get("history_len", {agent: 1 for agent in self.agents})
+        for agent in self.agents:
+            assert self.history_len[agent] > 0, "History length must be greater than 0."
+            assert isinstance(self.history_len[agent], int), "History length must be an integer."
         # Create a deque for each agent to store the last observations.
         # The deque will have a maximum length of `history_len`.
         self.obserbation_buffer: Dict[str, collections.deque] = {
-            agent:collections.deque(maxlen=self.hitory_len ) for agent in self.agents
+            agent:collections.deque(maxlen=self.history_len[agent] ) for agent in self.agents
         }
         # asignation of environment observation space.
-        if self.hitory_len > 1:
-            original_obs_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
-            self.observation_space = {}
-            for agent_id, obs_space_per_agent in original_obs_space.items():
+        self.observation_space = {}
+        original_obs_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
+
+        for agent_id, obs_space_per_agent in original_obs_space.items():
+            if self.history_len[agent_id] > 1:
                 # Asumiendo que obs_space_per_agent es un Box(shape=(feature_dim,))
                 # Si es un Box(shape=(X, Y)), necesitarás aplanar o ajustar.
                 feature_dim = obs_space_per_agent.shape[0] # La dimensión de una única observación
                 self.observation_space[agent_id] = spaces.Box(
                     low=obs_space_per_agent.low.min(), # Ajusta si tus rangos son por característica
                     high=obs_space_per_agent.high.max(), # Ajusta si tus rangos son por característica
-                    shape=(self.history_len, feature_dim), # Nueva forma: (N, feature_dim)
+                    shape=(self.history_len[agent], feature_dim), # Nueva forma: (N, feature_dim)
                     dtype=obs_space_per_agent.dtype
                 )
-            self.observation_space = spaces.Dict(self.observation_space)
-            self.logger.debug(f"Observation space with history: {self.observation_space}")
-        else:
-            self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
-            logger.debug(f"Observation space: {self.observation_space}")
+                self.logger.debug(f"Observation space for agente {agent_id} with history: {self.observation_space[agent_id]}")
+            else:
+                self.observation_space[agent_id] = obs_space_per_agent
+                self.logger.debug(f"Observation space for agent {agent_id} without history: {self.observation_space[agent_id]}")
+        
+        self.observation_space = spaces.Dict(self.observation_space)
+        logger.debug(f"Observation space: {self.observation_space}")            
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -252,23 +256,23 @@ class Environment(MultiAgentEnv):
             
             # If the history length is greater than 1, we need to create a buffer for each agent
             # to store the last observations.
-            if self.hitory_len > 1:
-                for agent in self.agents:
+            for agent in self.agents:
+                if self.history_len[agent] > 1:
                     self.observation_buffers[agent].clear()
                     # If the last observation is not empty, we append it to the buffer.
                     # This is done to ensure that the buffer has the last `history_len` observations.
                     single_obs_array = np.array(self.last_obs[agent])
-                    for _ in range(self.history_len):
+                    for _ in range(self.history_len[agent]):
                         self.observation_buffers[agent].append(single_obs_array)
-            
+
         # If the history length is greater than 1, we need to return the last `history_len` observations
         # for each agent.
-        if self.hitory_len > 1:
-            obs = {
-                agent: np.array(self.observation_buffers[agent]) for agent in self.agents
-            }
-        else:
-            obs = self.last_obs
+        obs = {agent: [] for agent in self.agents}
+        for agent in self.agents:
+            if self.history_len[agent] > 1:
+                obs[agent] = np.array(self.observation_buffers[agent])
+            else:
+                obs[agent] = self.last_obs[agent]
             
         infos = self.last_infos
         
@@ -347,28 +351,28 @@ class Environment(MultiAgentEnv):
                 self.last_obs = current_obs
                 self.last_infos = infos
                 
-                if self.hitory_len > 1:
-                    for agent in self.agents:
+                obs = {agent: [] for agent in self.agents}
+                for agent in self.agents:
+                    if self.history_len[agent] > 1:
                         # Append the observation to the buffer.
                         self.observation_buffers[agent].append(np.array(current_obs[agent]))
-                    # Create the observation dict with the last `history_len` observations.
-                    obs = {
-                        agent: np.array(self.observation_buffers[agent]) for agent in self.agents
-                    }
-                else:
-                    obs = current_obs
+                        # Create the observation dict with the last `history_len` observations.
+                        obs[agent] = np.array(self.observation_buffers[agent])
+                    else:
+                        obs[agent] = current_obs[agent]
                 
 
             except (Full, Empty):
                 # Set the terminated variable into True to finish the episode.
                 self.terminateds = True
                 # We use the last observation as a observation for the timestep.
-                if self.hitory_len > 1:
-                    obs = {
-                        agent: np.array(self.observation_buffers[agent]) for agent in self.agents
-                    }
-                else:
-                    obs = self.last_obs
+                obs = {agent: [] for agent in self.agents}
+                for agent in self.agents:
+                    if self.history_len[agent] > 1:
+                        # Create the observation dict with the last `history_len` observations.
+                        obs[agent] = np.array(self.observation_buffers[agent])
+                    else:
+                        obs[agent] = self.last_obs[agent]
                 
                 infos = self.last_infos
                 logger.warning("Queue timeout, ending episode early.")
