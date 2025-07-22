@@ -9,7 +9,6 @@ offering an intuitive and flexible interface for developing intelligent agents t
 interact with building simulations.
 """
 import logging
-logger = logging.getLogger("ray.rllib")
+from .version import __version__, EP_VERSION
 
-__version__ = "1.5.19"
-EP_VERSION = "24-2-0"
+logger = logging.getLogger("ray.rllib")

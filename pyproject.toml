@@ -4,9 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eprllib"
-
-version = "1.5.18"
-
+# La versión se obtiene dinámicamente del archivo version.py
+dynamic = ["version"]
 metadata = "2.2"
 authors = [
   { name="Germán Rodolfo Henderson"},
@@ -32,3 +31,6 @@ license = {file = "LICENSE"}
 "Documentation" = "https://hermmanhender.github.io/eprllib/"
 "GitHub Repository" = "https://github.com/hermmanhender/eprllib"
 "Bug Tracker" = "https://github.com/hermmanhender/eprllib/issues"
+
+[tool.hatch.version]
+path = "src/eprllib/version.py"
