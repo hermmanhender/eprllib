@@ -9,8 +9,9 @@ The actuator state could be added after as a augmented observation vector in the
 class for ``AgentsConnectors``. The use of both methods together avoid the duplication of information in the observation
 space.
 """
-from typing import Any, Dict
 import numpy as np
+from numpy.typing import NDArray
+from typing import Any, Dict # type: ignore
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
@@ -40,7 +41,7 @@ class FullySharedParametersFilter(BaseFilter):
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> np.ndarray:
+    ) -> NDArray[np.float32]:
         """
         Filter the observation for the agent by removing the actuator state from the agent state vector.
 
@@ -63,6 +64,7 @@ class FullySharedParametersFilter(BaseFilter):
         for actuator_config in env_config["agents_config"][self.agent_name]["action"]["actuators"]:
             _ = agent_states_copy.pop(get_actuator_name(self.agent_name, actuator_config[0], actuator_config[1], actuator_config[2]), None)
         
+        logger.debug(f"Filtered observation for agent {self.agent_name}: {agent_states_copy}")
         # Return a flat array with the values of the agent_states_copy without actuators state.
         return np.array(list(agent_states_copy.values()), dtype='float32')
     

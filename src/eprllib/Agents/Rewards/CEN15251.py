@@ -11,11 +11,13 @@ Note that hierarchical versions are the same function but instead of using only 
 value of the variable/meter, the reward is calculated using a list of the last timesteps and
 integrating or averaging them.
 """
-from typing import Any, Dict
+from typing import Any, Dict, List # type: ignore
+from numpy.typing import NDArray
+from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name, config_validation
+from eprllib.Utils.agent_utils import config_validation
 from eprllib import logger
 
 class CEN15251(BaseReward):
@@ -77,46 +79,51 @@ class CEN15251(BaseReward):
         
         super().__init__(reward_fn_config)
         
-        self.agent_name = None
-        self.cat1_name = None
-        self.cat2_name = None
-        self.cat3_name = None
-        self.temp_int = None
+        self.agent_name: str = "None"
+        self.cat1_name:int = 0
+        self.cat2_name:int = 0
+        self.cat3_name:int = 0
+        self.temp_int:int = 0
+        
+        logger.info(f"Reward function config: {reward_fn_config}")
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.cat1_name = get_variable_name(
+        if self.agent_name is "None":
+            self.agent_name = agent_name
+            self.cat1_name = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status",
                 self.reward_fn_config['people_name']
-            )
-            self.cat2_name = get_variable_name(
+            )]
+            self.cat2_name = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status",
                 self.reward_fn_config['people_name']
-            )
-            self.cat3_name = get_variable_name(
+            )]
+            self.cat3_name = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
                 self.reward_fn_config['people_name']
-            )
-            self.temp_int = get_variable_name(
+            )]
+            self.temp_int = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Mean Air Temperature",
                 self.reward_fn_config['thermal_zone']
-            )
+            )]
+        
+        logger.info(f"Agent {self.agent_name} reward function initialized with variables.")
             
     @override(BaseReward)
     def get_reward(
-    self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+        self,
+        obs: NDArray[float32],
+        terminated_flag: bool = False,
+        truncated_flag: bool = False
     ) -> float:
         """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
@@ -129,29 +136,35 @@ class CEN15251(BaseReward):
             infos (dict): infos dict must to provide the occupancy level and the Zone Mean Temperature.
 
         Returns:
-            float: reward normalize value
+            float: reward normalize value.
         """
-        temp_int = infos.get(self.temp_int, False)
-        if temp_int is False:
-            msg = f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}"
-            logger.error(msg)
-            raise KeyError(msg)
+        temp_int:float = obs[self.temp_int]
         
-        if infos[self.cat1_name] == 1:
-            return 0
-        elif infos[self.cat1_name] == 0:
-            if infos[self.cat2_name] == 1:
+        if obs[self.cat1_name] == 1:
+            return 0.
+        elif obs[self.cat1_name] == 0:
+            if obs[self.cat2_name] == 1:
                 return -0.05
-            elif infos[self.cat2_name] == 0:
-                if infos[self.cat3_name] == 1:
+            elif obs[self.cat2_name] == 0:
+                if obs[self.cat3_name] == 1:
                     return -0.50
-                elif infos[self.cat3_name] == 0:
-                    return -1
+                elif obs[self.cat3_name] == 0:
+                    return -1.
+                else:
+                    if temp_int > 29.4 or temp_int < 16.7:
+                        return -1.
+                    else:
+                        return 0.
+            else:
+                if temp_int > 29.4 or temp_int < 16.7:
+                    return -1.
+                else:
+                    return 0.
         else:
             if temp_int > 29.4 or temp_int < 16.7:
-                return -1
+                return -1.
             else:
-                return 0
+                return 0.
 
 
 # === Hierarchical versions ===
@@ -191,46 +204,47 @@ class HierarchicalCEN15251(BaseReward):
         
         super().__init__(reward_fn_config)
         
-        self.agent_name = None
-        self.cat1_name = None
-        self.cat2_name = None
-        self.cat3_name = None
-        self.temp_int = None
+        self.agent_name:str = "None"
+        self.cat1_name:int = 0
+        self.cat2_name:int = 0
+        self.cat3_name:int = 0
+        self.temp_int:int = 0
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.cat1_name = get_variable_name(
+        if self.agent_name is "None":
+            self.agent_name = agent_name
+            self.cat1_name = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Thermal Comfort CEN 15251 Adaptive Model Category I Status",
                 self.reward_fn_config['people_name']
-            )
-            self.cat2_name = get_variable_name(
+            )]
+            self.cat2_name = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Thermal Comfort CEN 15251 Adaptive Model Category II Status",
                 self.reward_fn_config['people_name']
-            )
-            self.cat3_name = get_variable_name(
+            )]
+            self.cat3_name = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Thermal Comfort CEN 15251 Adaptive Model Category III Status",
                 self.reward_fn_config['people_name']
-            )
-            self.temp_int = get_variable_name(
+            )]
+            self.temp_int = obs_indexed[get_variable_name(
                 self.agent_name,
                 "Zone Mean Air Temperature",
                 self.reward_fn_config['thermal_zone']
-            )
+            )]
             
     @override(BaseReward)
     def get_reward(
     self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+    obs: NDArray[float32],
+    terminated: bool = False,
+    truncated: bool = False
     ) -> float:
         """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
@@ -247,24 +261,25 @@ class HierarchicalCEN15251(BaseReward):
         """
         reward = 0. 
         
-        temp_int = infos.get(self.temp_int, False)
-        if temp_int is False:
-            msg = f"The parameter {self.temp_int} not found. The agent name auto-detected was {self.agent_name} and the infos provided is: {infos}"
-            logger.error(msg)
-            raise KeyError(msg)
+        temp_int:List[float] = obs[self.temp_int]
         
-        for ix in range(len(infos[self.cat1_name])):
+        for ix in range(len(obs[self.cat1_name])):
             
-            if infos[self.cat1_name][ix] == 1:
+            if obs[self.cat1_name][ix] == 1:
                 reward += 0
-            elif infos[self.cat1_name][ix] == 0:
-                if infos[self.cat2_name][ix] == 1:
+            elif obs[self.cat1_name][ix] == 0:
+                if obs[self.cat2_name][ix] == 1:
                     reward -= 0.05
-                elif infos[self.cat2_name][ix] == 0:
-                    if infos[self.cat3_name][ix] == 1:
+                elif obs[self.cat2_name][ix] == 0:
+                    if obs[self.cat3_name][ix] == 1:
                         reward -= 0.50
-                    elif infos[self.cat3_name][ix] == 0:
+                    elif obs[self.cat3_name][ix] == 0:
                         reward -= 1
+                    else:
+                        if temp_int[ix] > 29.4 or temp_int[ix] < 16.7:
+                            reward -= 1
+                        else:
+                            reward += 0
             else:
                 if temp_int[ix] > 29.4 or temp_int[ix] < 16.7:
                     reward -= 1

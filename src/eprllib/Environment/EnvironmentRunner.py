@@ -9,8 +9,7 @@ import os
 import threading
 import time
 from queue import Queue
-from typing import Any, Dict, List, Optional, Tuple
-from ctypes import c_void_p
+from typing import Any, Dict, List, Optional, Tuple # type: ignore
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
@@ -33,9 +32,9 @@ except RuntimeError as e:
     logger.error(f"Failed to add EnergyPlus API path: {e}")
     exit(1)
     
-from pyenergyplus.api import EnergyPlusAPI
+from pyenergyplus.api import EnergyPlusAPI # type: ignore
 
-api = EnergyPlusAPI()
+api = EnergyPlusAPI() # type: ignore
 
 class EnvironmentRunner:
     """
@@ -46,10 +45,10 @@ class EnvironmentRunner:
         self,
         env_config: Dict[str, Any],
         episode: int,
-        obs_queue: Queue,
-        act_queue: Queue,
-        infos_queue: Queue,
-        agents: List,
+        obs_queue: Queue[Any],
+        act_queue: Queue[Any],
+        infos_queue: Queue[Any],
+        agents: List[str],
         filter_fn: Dict[str,BaseFilter],
         trigger_fn: Dict[str, BaseTrigger],
         connector_fn: BaseConnector
@@ -83,7 +82,7 @@ class EnvironmentRunner:
         
         # Variables to be used in this thread.
         self.energyplus_exec_thread: Optional[threading.Thread] = None
-        self.energyplus_state: c_void_p = None
+        self.energyplus_state = None
         self.sim_results: int = 0
         self.initialized = False
         self.init_handles = False
@@ -105,7 +104,7 @@ class EnvironmentRunner:
         
         # Declaration of variables, meters and actuators to use in the simulation. Handles
         # are used in _init_handle method.
-        self.agent_variables_and_handles = {}
+        self.agent_variables_and_handles: Dict[str, Any] = {}
         for agent in self.agents:
             variables, variables_handles = self.set_variables(agent)
             internal_variables, internal_variables_handles = self.set_internal_variables(agent)
@@ -128,7 +127,7 @@ class EnvironmentRunner:
         Starts the EnergyPlus simulation.
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
-        self.energyplus_state:c_void_p = api.state_manager.new_state()
+        self.energyplus_state = api.state_manager.new_state()
         # Request variables.
         for agent in self.agents:
             if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
@@ -162,7 +161,7 @@ class EnvironmentRunner:
 
     def _collect_obs(
         self,
-        state_argument: c_void_p
+        state_argument
         ) -> None:
         """
         EnergyPlus callback that collects output variables, meters and actuator actions
@@ -173,7 +172,7 @@ class EnvironmentRunner:
         if not self._init_callback(state_argument) or self.simulation_complete:
             return
         
-        dict_agents_obs = {agent: {} for agent in self.agents}
+        dict_agents_obs: Dict[str, Any] = {agent: {} for agent in self.agents}
         self.infos: Dict[str, Dict[str, Any]] = {agent: {} for agent in self.agents}
         
         # Agents observe: site state, thermal zone state (only the one that it belong), specific object variables 
@@ -226,7 +225,7 @@ class EnvironmentRunner:
                     return
                 # Get the action from the EnergyPlusEnvironment `step` method.
                 actions: Dict[str, int | float] = self.act_queue.get()
-                goals: Dict[str, int | float] = {agent: None for agent in actions.keys()}
+                goals: Dict[str, Optional[int|float]] = {agent: None for agent in actions.keys()}
                 for agent in actions.keys():
                     goals.update({agent: self.trigger_fn[agent].action_to_goal(actions[agent])})
                 
@@ -250,7 +249,7 @@ class EnvironmentRunner:
         This method is used to collect only the first observation of the environment when the episode beggins.
 
         Args:
-            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+            state_argument (): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
         """
         if self.first_observation:
             # print("Collecting the first observation.")
@@ -303,7 +302,7 @@ class EnvironmentRunner:
                     actuator_value=action
                 )
 
-    def set_variables(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
+    def set_variables(self, agent:str) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
         """
         The EnergyPlus variables are defined in the environment configuration.
 
@@ -324,7 +323,7 @@ class EnvironmentRunner:
             })
         return variables, var_handles
 
-    def set_internal_variables(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
+    def set_internal_variables(self, agent:str) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
         """
         Set the internal variables to handle and get the values in the environment.
 
@@ -345,7 +344,7 @@ class EnvironmentRunner:
             })
         return variables, var_handles
 
-    def set_meters(self, agent) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
+    def set_meters(self, agent:str) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
         """The EnergyPlus meters are defined in the environment configuration.
         
         Args:
@@ -364,7 +363,7 @@ class EnvironmentRunner:
             })
         return variables, var_handles
 
-    def set_actuators(self, agent) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str, int]]:
+    def set_actuators(self, agent:str) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str, int]]:
         """The EnergyPlus actuators are defined in the environment configuration.
 
         Args:
@@ -385,13 +384,13 @@ class EnvironmentRunner:
      
     def get_variables_state(
         self,
-        state_argument:c_void_p,
-        agent:str = None
+        state_argument,
+        agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """This funtion takes the state_argument and return a dictionary with the agent actuator values.
 
         Args:
-            state_argument (c_void_p): State argument from EnergyPlus callback.
+            state_argument (): State argument from EnergyPlus callback.
 
         Returns:
             Dict[str,Any]: Agent actuator values for the actual timestep.
@@ -400,24 +399,22 @@ class EnvironmentRunner:
             msg = "The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
-        variables = {
+        variables: Dict[str,Any] = {
             key: api.exchange.get_variable_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_variables"][1].items()
-        }
-        self.infos[agent].update(variables)
-        
+        }        
         return variables
     
     def get_internal_variables_state(
         self,
-        state_argument:c_void_p,
-        agent:str = None
+        state_argument,
+        agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
 
         Args:
-            state_argument (c_void_p): EnergyPlus state.
+            state_argument (): EnergyPlus state.
 
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
@@ -426,24 +423,22 @@ class EnvironmentRunner:
             msg = "The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
-        variables = {
+        variables: Dict[str,Any] = {
             key: api.exchange.get_internal_variable_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_internal_variables"][1].items()
         }
-        self.infos[agent].update(variables)
-        
         return variables
 
     def get_meters_state(
         self,
-        state_argument:c_void_p,
-        agent:str = None
+        state_argument,
+        agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
 
         Args:
-            state_argument (c_void_p): EnergyPlus state.
+            state_argument (): EnergyPlus state.
 
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
@@ -453,24 +448,22 @@ class EnvironmentRunner:
             logger.error(msg)
             raise ValueError(msg)
         
-        variables = {
+        variables: Dict[str,Any] = {
             key: api.exchange.get_meter_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_meters"][1].items()
         }
-        self.infos[agent].update(variables)
-        
         return variables
         
     def get_actuators_state(
         self,
-        state_argument:c_void_p,
-        agent:str = None
+        state_argument,
+        agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """This funtion takes the state_argument and return a dictionary with the agent actuator values.
 
         Args:
-            state_argument (c_void_p): State argument from EnergyPlus callback.
+            state_argument (): State argument from EnergyPlus callback.
 
         Returns:
             Dict[str,Any]: Agent actuator values for the actual timestep.
@@ -480,23 +473,22 @@ class EnvironmentRunner:
             logger.error(msg)
             raise ValueError(msg)
         
-        variables = {
+        variables: Dict[str,Any] = {
             key: api.exchange.get_actuator_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_actuators"][1].items()
         }
-        self.infos[agent].update(variables)
         return variables
     
     def get_simulation_parameters_values(
         self,
-        state_argument:c_void_p,
-        agent:str = None
+        state_argument,
+        agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
 
         Args:
-            state_argument (c_void_p): EnergyPlus state.
+            state_argument (): EnergyPlus state.
             simulation_parameter_list (List): List of the simulation parameters implemented in the observation space.
 
         Returns:
@@ -506,7 +498,7 @@ class EnvironmentRunner:
         hour = api.exchange.hour(state_argument)
         zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
         # Dict with the variables names and methods as values.
-        parameter_methods = {
+        parameter_methods: Dict[str,Any] = {
             'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
             'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
             'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
@@ -554,66 +546,65 @@ class EnvironmentRunner:
         variables = {}
         
         # Return the dictionary with variables names and output values of the methods used.
-        include = []
+        include: List[str] = []
         parameters_keys = [key for key in parameter_methods.keys()]
         for paramater in parameters_keys:
             if self.env_config["agents_config"][agent]['observation']["simulation_parameters"][paramater]:
                 include.append(paramater)
-        variables = {
+        assert isinstance(agent, str), "Agent must be a string."
+        variables: Dict[str,Any] = {
             get_parameter_name(agent,paramater): parameter_methods[paramater] 
             for paramater 
             in include
         }
-        self.infos[agent].update(variables)
-        
         return variables
 
     def get_zone_simulation_parameters_values(
         self,
-        state_argument: c_void_p,
-        agent:str=None,
+        state_argument,
+        agent: Optional[str]=None,
         ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
 
         Args:
-            state_argument (c_void_p): EnergyPlus state.
+            state_argument (): EnergyPlus state.
             simulation_parameter_list (List): List of the simulation parameters implemented in the observation space.
 
         Returns:
             Dict[str,int|float]: Dict of parameter names as keys and parameter values as values.
         """
         # Dict with the variables names and methods as values.
-        parameter_methods = {
+        parameter_methods: Dict[str,Any] = {
             'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
             'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
             'zone_time_step_number': api.exchange.zone_time_step_number(state_argument), # The current zone time step index, from 1 to the number of zone time steps per hour
         }
-        variables = {}
+        variables: Dict[str,Any] = {}
         
         # Return the dictionary with variables names and output values of the methods used.
-        include = []
+        include: List[str] = []
         parameters_keys = [key for key in parameter_methods.keys()]
         for paramater in parameters_keys:
             if self.env_config["agents_config"][agent]['observation']['zone_simulation_parameters'][paramater]:
                 include.append(paramater)
-        variables = {
+        assert isinstance(agent, str), "Agent must be a string."
+        variables: Dict[str,Any] = {
             get_parameter_name(agent,paramater): parameter_methods[paramater] 
             for paramater 
             in include
         }
-        self.infos[agent].update(variables)
-        
         return variables
 
     def get_weather_prediction(
         self,
-        state_argument: c_void_p,
-        agent:str=None
+        state_argument,
+        agent: Optional[str]=None
     ) -> Dict[str,Any]:
+        assert isinstance(agent, str), "Agent must be a string."
         if not self.env_config["agents_config"][agent]['observation']['use_one_day_weather_prediction']:
             return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
-        hour = api.exchange.hour(state_argument)
+        hour: int = api.exchange.hour(state_argument)
         
         prediction_variables_methods: Dict[str,Any] = {
             'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time,
@@ -646,11 +637,11 @@ class EnvironmentRunner:
             'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time,
         }
         
-        variables = {}
+        variables: Dict[str,Any] = {}
         prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
         for h in range(self.env_config["agents_config"][agent]['observation']['prediction_hours']):
             # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
-            prediction_hour = hour+1 + h
+            prediction_hour: int = hour+1 + h
             if prediction_hour < 24:
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
@@ -664,14 +655,12 @@ class EnvironmentRunner:
                         variables.update({
                             get_parameter_prediction_name(agent,key,prediction_hour_t): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,1)
                         })
-        self.infos[agent].update(variables)
-        
         return variables
         
     def get_other_obs(
         self,
         env_config: Dict[str,Any],
-        agent:str = None
+        agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
 
@@ -686,15 +675,13 @@ class EnvironmentRunner:
             logger.error(msg)
             raise ValueError(msg)
         
-        variables = {}
+        variables: Dict[str,Any] = {}
         variables.update({
             get_other_obs_name(agent,key): value 
             for key, value
             in env_config["agents_config"][agent]["observation"]["other_obs"].items()
         })
         env_config["agents_config"][agent]["observation"]["other_obs"]
-        self.infos[agent].update(variables)
-        
         return variables
     
     def _init_callback(self, state_argument) -> bool:
@@ -702,7 +689,7 @@ class EnvironmentRunner:
         Initialize EnergyPlus handles and checks if simulation runtime is ready.
         
         Args:
-            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+            state_argument (): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
 
         Returns:
             bool: True if the simulation is ready to perform actions.
@@ -720,7 +707,7 @@ class EnvironmentRunner:
         Initialize sensors/actuators handles to interact with during simulation.
         
         Args:
-            state_argument (c_void_p): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+            state_argument (): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
 
         Returns:
             bool: True if all handles were initialized successfully.

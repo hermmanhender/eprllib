@@ -3,7 +3,7 @@ Specification for the action space and actuators
 ===========================================================
 This module defines the `ActionSpec` class, which is used to specify the configuration of action space and actuators for agents in reinforcement learning environments.
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any, Optional # type: ignore
 from eprllib import logger
 
 class ActionSpec:
@@ -12,7 +12,7 @@ class ActionSpec:
     """
     def __init__(
         self,
-        actuators: List[Tuple[str, str, str]] = None,
+        actuators: Optional[List[Tuple[str, str, str]]] = None,
     ):
         """
         Construction method.
@@ -45,10 +45,10 @@ class ActionSpec:
             print("No actuators provided.")
             self.actuators = []
     
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
             msg = f"Invalid key: {key}."
@@ -56,7 +56,7 @@ class ActionSpec:
             raise KeyError(msg)
         setattr(self, key, value)
         
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the ActionSpec object.
         """
@@ -68,15 +68,10 @@ class ActionSpec:
         else:
             # Check that the actuators are defined as a list of tuples of 3 elements.
             for actuator in self.actuators:
-                if not isinstance(actuator, tuple):
-                    msg = f"The actuators must be defined as a list of tuples but {type(actuator)} was given."
+                if len(actuator) != 3:
+                    msg = f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
                     logger.error(msg)
                     raise ValueError(msg)
-                else:
-                    if len(actuator) != 3:
-                        msg = f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
-                        logger.error(msg)
-                        raise ValueError(msg)
-            
+        
         return vars(self)
     

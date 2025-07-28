@@ -12,15 +12,16 @@ value of the variable/meter, the reward is calculated using a List of the last t
 integrating or averaging them.
 """
 import numpy as np
-from typing import Any, Dict
+from typing import Any, Dict # type: ignore
+from numpy.typing import NDArray
+from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_meter_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name, config_validation
-from eprllib import logger
+from eprllib.Utils.agent_utils import config_validation
 
 class EnergyWithMeters(BaseReward):
-    REQUIRED_KEYS = {
+    REQUIRED_KEYS: Dict[str,Any] = {
         "cooling_name": str,
         "heating_name": str,
         "cooling_energy_ref": float|int,
@@ -58,32 +59,33 @@ class EnergyWithMeters(BaseReward):
         
         super().__init__(reward_fn_config)
         
-        self.agent_name = None
-        self.cooling = None
-        self.heating = None
+        self.agent_name:str = "None"
+        self.cooling:int = 0
+        self.heating:int = 0
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.cooling = get_meter_name(
+        if self.agent_name is "None":
+            self.agent_name = agent_name
+            self.cooling = obs_indexed[get_meter_name(
                 self.agent_name,
                 self.reward_fn_config['cooling_name']
-            )
-            self.heating = get_meter_name(
+            )]
+            self.heating = obs_indexed[get_meter_name(
                 self.agent_name,
                 self.reward_fn_config['heating_name']
-            )
+            )]
         
     @override(BaseReward)
     def get_reward(
-    self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+        self,
+        obs: NDArray[float32],
+        terminated: bool = False,
+        truncated: bool = False
     ) -> float:
         """
         This function returns the normalize reward calcualted as the sum of the penalty of the energy 
@@ -99,17 +101,17 @@ class EnergyWithMeters(BaseReward):
             float: reward normalize value
         """
         return - np.clip(
-            (infos[self.cooling] / self.reward_fn_config['cooling_energy_ref'] \
-                + infos[self.heating] / self.reward_fn_config['heating_energy_ref']),
-            0,
-            1
+            (obs[self.cooling] / self.reward_fn_config['cooling_energy_ref'] \
+                + obs[self.heating] / self.reward_fn_config['heating_energy_ref']),
+            0.,
+            1.
         )
 
 
 # === Hierarchical versions ===
 
 class HierarchicalEnergyWithMeters(BaseReward):
-    REQUIRED_KEYS = {
+    REQUIRED_KEYS: Dict[str,Any] = {
         "cooling_name": str,
         "heating_name": str,
         "cooling_energy_ref": float|int,
@@ -147,33 +149,34 @@ class HierarchicalEnergyWithMeters(BaseReward):
         
         super().__init__(reward_fn_config)
         
-        self.agent_name = None
-        self.cooling = None
-        self.heating = None
+        self.agent_name = "None"
+        self.cooling:int = 0
+        self.heating:int = 0
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.cooling = get_meter_name(
+        if self.agent_name is "None":
+            self.agent_name = agent_name
+            self.cooling = obs_indexed[get_meter_name(
                 self.agent_name,
                 self.reward_fn_config['cooling_name']
-            )
-            self.heating = get_meter_name(
+            )]
+            self.heating = obs_indexed[get_meter_name(
                 self.agent_name,
                 self.reward_fn_config['heating_name']
-            )
+            )]
         
     @override(BaseReward)
     def get_reward(
         self,
-        infos: Dict[str,Any] = None,
-        terminated_flag: bool = False,
-        truncated_flag: bool = False
-        ) -> float:
+        obs: NDArray[float32],
+        terminated: bool = False,
+        truncated: bool = False
+    ) -> float:
             """
             This function returns the normalize reward calcualted as the sum of the penalty of the energy 
             amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
@@ -188,8 +191,8 @@ class HierarchicalEnergyWithMeters(BaseReward):
                 float: reward normalize value
             """
             return - np.clip(
-                (sum(infos[self.cooling]) / (self.reward_fn_config['cooling_energy_ref'] * len(infos[self.cooling])) \
-                    + sum(infos[self.heating]) / (self.reward_fn_config['heating_energy_ref'] * len(infos[self.heating]))),
+                (sum(obs[self.cooling]) / (self.reward_fn_config['cooling_energy_ref'] * len(obs[self.cooling])) \
+                    + sum(obs[self.heating]) / (self.reward_fn_config['heating_energy_ref'] * len(obs[self.heating]))),
                 0,
                 1
             )

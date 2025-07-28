@@ -75,11 +75,14 @@ Note that hierarchical versions are the same function but instead of using only 
 value of the variable/meter, the reward is calculated using a list of the last timesteps and
 integrating or averaging them.
 """
-from typing import Any, Dict
+from typing import Any, Dict # type: ignore
+from numpy.typing import NDArray
+from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name, config_validation
+from eprllib.Utils.agent_utils import config_validation
+
 from eprllib import logger
 
 class ASHRAE55SimpleModel(BaseReward):
@@ -115,13 +118,14 @@ class ASHRAE55SimpleModel(BaseReward):
         
         super().__init__(reward_fn_config)
         
-        self.agent_name = None
-        self.comfort = None
+        self.agent_name: str = "None"
+        self.comfort_index: int
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
         """
         This method can be overridden in subclasses to set initial parameters based on the provided infos.
@@ -129,20 +133,21 @@ class ASHRAE55SimpleModel(BaseReward):
         Args:
             infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
         """
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.comfort = get_variable_name(
+        if self.agent_name is "None":
+            self.agent_name = agent_name
+            self.comfort_index = obs_indexed[get_variable_name(
                 self.agent_name, 
                 "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
                 self.reward_fn_config['thermal_zone']
-            )
+            )]
+            logger.info(f"Agent name: {self.agent_name}, Comfort variable: {self.comfort_index}")
     
     @override(BaseReward)
     def get_reward(
-    self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+        self,
+        obs: NDArray[float32],
+        terminated: bool = False,
+        truncated: bool = False
     ) -> float:
         """
         This function returns the normalize reward calcualted as the sum of the penalty of the energy 
@@ -157,7 +162,7 @@ class ASHRAE55SimpleModel(BaseReward):
         Returns:
             float: reward value.
         """
-        if infos[self.comfort] > 0:
+        if obs[self.comfort_index] > 0:
             return -1
         else:
             return 0
@@ -180,35 +185,38 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
         
         super().__init__(reward_fn_config)
         
-        self.agent_name = None
-        self.comfort = None
+        self.agent_name = "None"
+        self.comfort: str = "None"
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        obs: NDArray[float32],
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(infos)
-            self.comfort = get_variable_name(
-                self.agent_name,
-                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time",
+        if self.agent_name is "None":
+            self.agent_name = agent_name
+            self.comfort_index = obs_indexed[get_variable_name(
+                self.agent_name, 
+                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
                 self.reward_fn_config['thermal_zone']
-            )
+            )]
+            logger.info(f"Agent name: {self.agent_name}, Comfort variable: {self.comfort_index}")
             
     @override(BaseReward)
     def get_reward(
     self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+    obs: NDArray[float32],
+    terminated: bool = False,
+    truncated: bool = False
     ) -> float:
         """
         """
         reward = 0
-        for ix in range(len(infos[self.comfort])):
-            if infos[self.comfort][ix] > 0:
+        for ix in range(len(obs[self.comfort_index])):
+            if obs[self.comfort_index][ix] > 0:
                 reward -= 1
         
-        return reward/len(infos[self.comfort])
+        return reward/len(obs[self.comfort_index])
       

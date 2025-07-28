@@ -11,8 +11,7 @@ The ``AgentSpec`` class has a method called ``build`` that is used to build the 
 validate the properties of the object and to return the object as a dictionary. It is used internally when you build
 the environment to provide it to RLlib.
 """
-from typing import Dict
-
+from typing import Dict, Any, Optional # type: ignore
 from eprllib.Agents.Rewards.RewardSpec import RewardSpec
 from eprllib.Agents.Filters.FilterSpec import FilterSpec
 from eprllib.Agents.ActionSpec import ActionSpec
@@ -26,12 +25,12 @@ class AgentSpec:
     """
     def __init__(
         self,
-        observation: ObservationSpec = None,
-        filter: FilterSpec = None,
-        action: ActionSpec = None,
-        trigger: TriggerSpec = None,
-        reward: RewardSpec = None,
-        **kwargs):
+        observation: Optional[ObservationSpec] = None,
+        filter: Optional[FilterSpec] = None,
+        action: Optional[ActionSpec] = None,
+        trigger: Optional[TriggerSpec] = None,
+        reward: Optional[RewardSpec] = None,
+    **kwargs: Any) -> None:
         """
         Contruction method for the AgentSpec class.
 
@@ -50,41 +49,41 @@ class AgentSpec:
         """
         if observation is None:
             logger.info("No observation defined. Using default observation.")
-            self.observation = ObservationSpec()
+            self.observation: ObservationSpec|Dict[str, Any] = ObservationSpec()
         else:
             self.observation = observation
         if filter is None:
             logger.info("No filter defined. Using default filter.")
-            self.filter = FilterSpec()
+            self.filter: FilterSpec|Dict[str, Any] = FilterSpec()
         else:
             self.filter = filter
         if action is None:
             logger.info("No action defined. Using default action.")
-            self.action = ActionSpec()
+            self.action: ActionSpec|Dict[str, Any] = ActionSpec()
         else:
             self.action = action
         if trigger is None:
             logger.info("No trigger defined. Using default trigger.")
-            self.trigger = TriggerSpec()
+            self.trigger: TriggerSpec|Dict[str, Any] = TriggerSpec()
         else:
             self.trigger = trigger
         if reward is None:
             logger.info("No reward defined. Using default reward.")
-            self.reward = RewardSpec()
+            self.reward: RewardSpec|Dict[str, Any] = RewardSpec()
         else:
             self.reward = reward
         
         for key, value in kwargs.items():
             setattr(self, key, value)
     
-    def __getitem__(self, key):
+    def __getitem__(self, key:str):
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key:str, value:Any):
         setattr(self, key, value)
         
         
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the AgentSpec object.
         """

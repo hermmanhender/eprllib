@@ -18,11 +18,19 @@ Notes:
 """
 import time
 import numpy as np
-import gymnasium as gym
-from typing import Any, Dict, Tuple
+from gymnasium.spaces import Box
+from typing import Any, Dict, Tuple, Optional # type: ignore
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
-from eprllib.Utils.observation_utils import get_actuator_name
+import eprllib.Utils.observation_utils as observation_utils
+from eprllib.Utils.connector_utils import (
+    set_variables_in_obs,
+    set_internal_variables_in_obs,
+    set_meters_in_obs,
+    set_zone_simulation_parameters_in_obs,
+    set_prediction_variables_in_obs,
+    set_other_obs_in_obs
+    )
 from eprllib import logger
 
 class FullySharedParametersConnector(BaseConnector):
@@ -41,15 +49,15 @@ class FullySharedParametersConnector(BaseConnector):
         super().__init__(connector_fn_config)
         self.number_of_agents_total: int = connector_fn_config['number_of_agents_total']
         self.number_of_actuators_total: int = connector_fn_config['number_of_actuators_total']
-        self.agent_ids: Dict[str, int] = None
-        self.actuator_ids = None
+        self.agent_ids: Optional[Dict[str, Optional[int]]] = None
+        self.actuator_ids: Optional[Dict[str, Optional[int]]] = None
     
     @override(BaseConnector)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str,Any],
-        agent: str = None
-        ) -> gym.Space:
+        agent: str
+        ) -> Box:
         """
         Construct the observation space of the environment.
 
@@ -67,40 +75,23 @@ class FullySharedParametersConnector(BaseConnector):
             raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
         
         if self.number_of_agents_total > 1:
-            obs_space_len += self.number_of_agents_total
+            agents_used = self.number_of_agents_total
+            for agent in agent_list:
+                self.obs_indexed[agent] = obs_space_len
+                obs_space_len += 1
+                agents_used -= 1
+            # Add the rest of the agents as zero vectors
+            if agents_used > 0:
+                for i in range(agents_used):
+                    self.obs_indexed[f"agent_{i}"] = obs_space_len
+                    obs_space_len += 1
         
-        if env_config["agents_config"][agent]["observation"]['variables'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['variables'])
-            
-        if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
-            
-        if env_config["agents_config"][agent]["observation"]['meters'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['meters'])
-            
-            
-        if env_config["agents_config"][agent]["observation"]['simulation_parameters'] is not None:
-            sp_len = 0
-            for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
-                if value:
-                    sp_len += 1
-            obs_space_len += sp_len
-        if env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'] is not None:
-            sp_len = 0
-            for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
-                if value:
-                    sp_len += 1
-            obs_space_len += sp_len
-            
-        if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
-            count_variables = 0
-            for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
-                if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
-                    count_variables += 1
-            obs_space_len += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
-        
-        if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['other_obs'])
+        self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
         
         # Add the actuator state to all the agents obs_space_len
         # Check if at least one agent request the use_actuator_state
@@ -111,16 +102,56 @@ class FullySharedParametersConnector(BaseConnector):
                 break
         if use_actuator_state_flag:
             # Save the total amount of actuators in the environment to create a vector in set_agent_obs
-            actuators = 0
+            actuator_used = self.number_of_actuators_total
             for agent in agent_list:
-                actuators += len(env_config['agents_config'][agent]["action"]["actuators"])
+                for actuator in range(len(env_config["agents_config"][agent]["action"]['actuators'])):
+                    actuator_component_type = env_config["agents_config"][agent]["action"]['actuators'][actuator][0]
+                    actuator_control_type = env_config["agents_config"][agent]["action"]['actuators'][actuator][1]
+                    actuator_key = env_config["agents_config"][agent]["action"]['actuators'][actuator][2]
+                    self.obs_indexed[observation_utils.get_actuator_name(
+                        agent,
+                        actuator_component_type,
+                        actuator_control_type,
+                        actuator_key
+                        )] = obs_space_len
+                    obs_space_len += 1
+                    actuator_used -= 1
+            # Add the rest of the actuators as zero vectors
+            if actuator_used > 0:
+                for i in range(actuator_used):
+                    self.obs_indexed[f"actuator_{i}"] = obs_space_len
+                    obs_space_len += 1
+                    
             # chack that actuators is equal or minor to self.number_of_actuators_total
-            if actuators > self.number_of_actuators_total:
-                raise ValueError("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
-            else:
-                obs_space_len += self.number_of_actuators_total
+            if actuator_used < 0:
+                logger.error("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
         
-        return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
+        assert obs_space_len > 0, "The observation space length must be greater than 0."
+        assert len(self.obs_indexed) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+        
+        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+        
+        return Box(float("-inf"), float("inf"), (obs_space_len, ))
+    
+    @override(BaseConnector)
+    def get_agent_obs_indexed(
+        self,
+        env_config: Dict[str, Any],
+        agent: str
+    ) -> Dict[str, int]:
+        """
+        Get a dictionary of the agent observation parameters and their respective index in the observation array.
+
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :param agent: Agent identifier, optional.
+        :type agent: str, optional
+        :return: Agent observation spaces.
+        :rtype: gym.spaces.Space
+        """
+        if self.obs_indexed == {}:
+            self.get_agent_obs_dim(env_config, agent)
+        return self.obs_indexed
     
     @override(BaseConnector)
     def set_top_level_obs(
@@ -188,7 +219,7 @@ class FullySharedParametersConnector(BaseConnector):
             self.actuator_ids = {}
             for agent in env_config['agents_config'].keys():
                 for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                    self.actuator_ids.update({get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
+                    self.actuator_ids.update({observation_utils.get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
                     id += 1
                     if len(self.actuator_ids) > self.number_of_actuators_total:
                         msg = f"The actuators found were: {self.actuator_ids.keys()} with a total of {len(self.actuator_ids.keys())}, that are greather than {self.number_of_actuators_total}."
@@ -198,13 +229,12 @@ class FullySharedParametersConnector(BaseConnector):
         # agents in this timestep
         agent_list = [key for key in dict_agents_obs.keys()]
         # Add agent indicator for the observation for each agent
-        agents_obs = {agent: np.array([], dtype='float32') for agent in agent_list}
-        actuator_names = {agent: {} for agent in agent_list}
+        actuator_names: Dict[str, Dict[str, Any]] = {agent: {} for agent in agent_list}
         
         for agent in agent_list:
             # Remove from agent_states and save the actuator items.
             for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                actuator_name = get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
+                actuator_name = observation_utils.get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
                 actuator_names[agent].update({actuator_name: agent_states[agent].get(actuator_name, -2)})
                 if actuator_names[agent][actuator_name] == -2:
                     logger.info(f"Looking for actuator: {actuator_name}")

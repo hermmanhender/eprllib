@@ -31,9 +31,11 @@ building properties for each episode. This approach is likely used for training 
 context of a reinforcement learning environment.
 """
 import os
-import numpy as np
 import tempfile
-from typing import Dict, Any, List
+import numpy as np
+from numpy.typing import NDArray
+from numpy import float32
+from typing import Dict, Any, List # type: ignore
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.episode_fn_utils import (
     load_ep_model,
@@ -114,7 +116,7 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
             epjson_path = f"{self.episode_fn_config['epjson_files_folder_path']}/model_{model}.epJSON"
         
         # Establish the epJSON Object, it will be manipulated to modify the building model.
-        epJSON_object: dict = load_ep_model(epjson_path)
+        epJSON_object: Dict[str, Any] = load_ep_model(epjson_path)
         
         # == BUILDING ==
         # The building volume is V=h(high)*w(weiht)*l(large) m3
@@ -127,19 +129,19 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         env_config['building_properties']['aspect_ratio'] = w/l
         
         # Change the dimension of the building and windows
-        window_area_relation = []
+        window_area_relation_list: List[float] = []
         model_window_config = model_window_configs[str(model)]
         for i in range(4):
             if model_window_config[i] == 1:
-                window_area_relation.append((0.9-0.05) * np.random.random_sample() + 0.05)
+                window_area_relation_list.append((0.9-0.05) * np.random.random_sample() + 0.05)
             else:
-                window_area_relation.append(0)
-        env_config['building_properties']['window_area_relation_north'] = window_area_relation[0]
-        env_config['building_properties']['window_area_relation_east'] = window_area_relation[1]
-        env_config['building_properties']['window_area_relation_south'] = window_area_relation[2]
-        env_config['building_properties']['window_area_relation_west'] = window_area_relation[3]
+                window_area_relation_list.append(0)
+        env_config['building_properties']['window_area_relation_north'] = window_area_relation_list[0]
+        env_config['building_properties']['window_area_relation_east'] = window_area_relation_list[1]
+        env_config['building_properties']['window_area_relation_south'] = window_area_relation_list[2]
+        env_config['building_properties']['window_area_relation_west'] = window_area_relation_list[3]
         
-        window_area_relation = np.array(window_area_relation)
+        window_area_relation: NDArray[float32] = np.array(window_area_relation_list)
         epJSON_object = building_dimension(epJSON_object, h, w, l,window_area_relation)
         
         # Define the type of construction (construction properties for each three layers)
@@ -225,10 +227,11 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         # Change the load file profiles
         schedule_file_keys = [key for key in epJSON_object["Schedule:File"].keys()]
         for key in schedule_file_keys:
+            assert isinstance(self.episode_fn_config['load_profiles_folder_path'], str), "The 'load_profiles_folder_path' must be a string."
             epJSON_object["Schedule:File"][key]["file_name"] = self.episode_fn_config['load_profiles_folder_path'] + "/" + np.random.choice(os.listdir(self.episode_fn_config['load_profiles_folder_path']))
 
         # Select the weather site
-        env_config = get_random_weather(self.episode_fn_config['epw_files_folder_path'])
+        env_config["epw_path"] = get_random_weather(self.episode_fn_config['epw_files_folder_path'])
                 
         # Save the model and update the path in the env_config.
         env_config["epjson_path"] = save_ep_model(epJSON_object, self.folder_for_models)
@@ -236,7 +239,7 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         return env_config
         
     @override(BaseEpisode)
-    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the episode configuration in the EnergyPlus environment.
 
@@ -251,7 +254,7 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         return super().get_episode_agents(env_config, possible_agents)
     
     @override(BaseEpisode)
-    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the timestep configuration in the EnergyPlus environment.
 

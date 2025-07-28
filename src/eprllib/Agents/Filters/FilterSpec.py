@@ -4,7 +4,7 @@ Specification for the filter functions
 This module defines the `FilterSpec` class, which is used to specify the configuration of filter functions for agents in reinforcement learning environments.
 It ensures that the filter function is properly defined and adheres to the expected interface.
 """
-from typing import Dict, Any
+from typing import Dict, Any, Optional # type: ignore
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib import logger
@@ -15,7 +15,7 @@ class FilterSpec:
     """
     def __init__(
         self,
-        filter_fn: BaseFilter = None,
+        filter_fn: Optional[BaseFilter] = None,
         filter_fn_config: Dict[str, Any] = {}
     ):
         """
@@ -30,10 +30,10 @@ class FilterSpec:
         self.filter_fn = filter_fn
         self.filter_fn_config = filter_fn_config            
     
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
             msg = f"Invalid key: {key}."
@@ -41,7 +41,7 @@ class FilterSpec:
             raise KeyError(msg)
         setattr(self, key, value)
         
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the FilterSpec object.
         """
@@ -50,16 +50,5 @@ class FilterSpec:
             logger.warning(msg)
             self.filter_fn = DefaultFilter
             self.filter_fn_config = {}
-            
-        if not issubclass(self.filter_fn, BaseFilter):
-            msg = f"The filter function must be based on BaseFilter class but {type(self.filter_fn)} was given."
-            logger.error(msg)
-            raise ValueError(msg)
-
-        if not isinstance(self.filter_fn_config, dict):
-            msg = f"The configuration for the filter function must be a dictionary but {type(self.filter_fn_config)} was given."
-            logger.error(msg)
-            raise ValueError(msg)
-            
         return vars(self)
     

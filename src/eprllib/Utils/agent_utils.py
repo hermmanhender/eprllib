@@ -3,10 +3,10 @@ Agent utilities
 ================
 
 """
-from typing import Any, Dict, List, get_args, get_origin
+from typing import Any, Dict, List, get_args, get_origin # type: ignore
 from eprllib import logger
 
-def get_agent_name(state: Dict[str, Any] | List) -> str:
+def get_agent_name(state: Dict[str, Any] | List[str]) -> str:
     """
     Get the agent name from the state dictionary. The state dictionay can be the agent_states dictionary or the infos 
     dictionary. Both contain the agent name in all the variables keys as: "agent_name: variable[0]: variable[1]: ...".
@@ -32,13 +32,7 @@ def get_agent_name(state: Dict[str, Any] | List) -> str:
             logger.error(msg)
             raise ValueError(msg)
         return state[0].split(':')[0]
-    elif isinstance(state, dict):
-        # Check if the dictionary is empty
-        if not state:
-            msg = "The state dictionary is empty"
-            logger.error(msg)
-            raise ValueError(msg)
-        return list(state.keys())[0].split(':')[0]
+
     else:
         msg = f"The state must be a dictionary or a list, but got a {type(state).__name__}"
         logger.error(msg)

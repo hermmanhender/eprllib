@@ -10,8 +10,9 @@ This class can not be used directly in eprllib, but as a base to create new filt
 must be based in this class.
 """
 from eprllib import logger
-from typing import Any, Dict
-from numpy import ndarray
+from typing import Any, Dict # type: ignore
+from numpy import float32
+from numpy.typing import NDArray
 
 class BaseFilter:
     """
@@ -28,19 +29,13 @@ class BaseFilter:
         Args:
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
         """
-        # Check if the filter_fn_config is a dictionary
-        if not isinstance(filter_fn_config, dict):
-            msg = "filter_fn_config must be a dictionary"
-            logger.error(msg)
-            raise TypeError(msg)
-        
         self.filter_fn_config = filter_fn_config
         
     def get_filtered_obs(
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> ndarray:
+    ) -> NDArray[float32]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter

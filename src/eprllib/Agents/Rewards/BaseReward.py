@@ -11,7 +11,9 @@ and indexing an array may change.
 The terminated and truncated flags are arguments in the reward function ``get_reward`` method to allow
 implementations with dispersed reward. This flags allow return the final reward when the episode ends.
 """
-from typing import Dict, Any
+from typing import Dict, Any # type: ignore
+from numpy.typing import NDArray
+from numpy import float32
 from eprllib import logger
 
 class BaseReward:
@@ -21,24 +23,19 @@ class BaseReward:
     def __init__(
         self,
         reward_fn_config: Dict[str, Any] = {}
-    ):
+    ) -> None:
         """
         Initializes the base reward function with the given configuration.
 
         Args:
             reward_fn_config (Dict[str, Any]): Configuration dictionary for the reward function.
         """
-        # Check if the filter_fn_config is a dictionary
-        if not isinstance(reward_fn_config, dict):
-            msg = "reward_fn_config must be a dictionary"
-            logger.error(msg)
-            raise TypeError(msg)
-        
         self.reward_fn_config = reward_fn_config
     
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
         """
         This method can be overridden in subclasses to set initial parameters based on the provided infos.
@@ -50,7 +47,7 @@ class BaseReward:
     
     def get_reward(
         self,
-        infos: Dict[str, Any],
+        obs: NDArray[float32],
         terminated: bool,
         truncated: bool,
     ) -> float:
