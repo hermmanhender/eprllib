@@ -27,7 +27,7 @@ class ObservationSpec:
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
-        history_len: Optional[Dict[str, int]] = None,
+        history_len: int = 1,
     ):
         """
         Construction method.
@@ -121,8 +121,7 @@ class ObservationSpec:
         self.other_obs = other_obs
         
         # History length for each agent.
-        if history_len is not None:   
-            self.history_len = history_len
+        self.history_len = history_len
             
     def __getitem__(self, key:str) -> Any:
         return getattr(self, key)

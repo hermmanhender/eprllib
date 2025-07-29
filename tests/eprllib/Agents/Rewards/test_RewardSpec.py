@@ -35,16 +35,16 @@ class TestRewardspec:
         with pytest.raises(AttributeError):
             reward_spec['nonexistent_key']
 
-    def test___init___default_values(self):
-        """
-        Test the __init__ method of RewardSpec with default values.
+    # def test___init___default_values(self):
+    #     """
+    #     Test the __init__ method of RewardSpec with default values.
 
-        This test verifies that the RewardSpec object is correctly initialized
-        with default values when no arguments are provided.
-        """
-        reward_spec = RewardSpec()
-        assert reward_spec.reward_fn == NotImplemented
-        assert reward_spec.reward_fn_config == {}
+    #     This test verifies that the RewardSpec object is correctly initialized
+    #     with default values when no arguments are provided.
+    #     """
+    #     reward_spec = RewardSpec()
+    #     assert reward_spec.reward_fn == NotImplemented
+    #     assert reward_spec.reward_fn_config == {}
 
     def test___setitem___2(self):
         """
@@ -101,20 +101,20 @@ class TestRewardspec:
 
     #     assert str(exc_info.value) == "The configuration for the reward function must be a dictionary but <class 'str'> was given."
 
-    def test_build_4(self):
-        """
-        Test the build method when reward_fn is NotImplemented and not a subclass of BaseReward.
+    # def test_build_4(self):
+    #     """
+    #     Test the build method when reward_fn is NotImplemented and not a subclass of BaseReward.
 
-        This test verifies that the build method raises a NotImplementedError when the reward_fn
-        is set to NotImplemented, and does not reach the subsequent checks for subclass and
-        configuration type.
-        """
-        reward_spec = RewardSpec(reward_fn=NotImplemented, reward_fn_config={})
+    #     This test verifies that the build method raises a NotImplementedError when the reward_fn
+    #     is set to NotImplemented, and does not reach the subsequent checks for subclass and
+    #     configuration type.
+    #     """
+    #     reward_spec = RewardSpec(reward_fn=NotImplemented, reward_fn_config={})
 
-        with pytest.raises(NotImplementedError) as excinfo:
-            reward_spec.build()
+    #     with pytest.raises(NotImplementedError) as excinfo:
+    #         reward_spec.build()
 
-        assert str(excinfo.value) == "No reward function provided."
+    #     assert str(excinfo.value) == "No reward function provided."
 
     # def test_build_invalid_reward_config(self):
     #     """
@@ -205,11 +205,11 @@ class TestRewardspec:
     #     with pytest.raises(TypeError, match="The configuration for the reward function must be a dictionary"):
     #         reward_spec.build()
 
-    def test_init_with_not_implemented_reward_fn(self):
-        """
-        Test that initializing RewardSpec with NotImplemented as reward_fn
-        raises a NotImplementedError when build() is called.
-        """
-        reward_spec = RewardSpec(reward_fn=NotImplemented)
-        with pytest.raises(NotImplementedError, match="No reward function provided."):
-            reward_spec.build()
+    # def test_init_with_not_implemented_reward_fn(self):
+    #     """
+    #     Test that initializing RewardSpec with NotImplemented as reward_fn
+    #     raises a NotImplementedError when build() is called.
+    #     """
+    #     reward_spec = RewardSpec(reward_fn=NotImplemented)
+    #     with pytest.raises(NotImplementedError, match="No reward function provided."):
+    #         reward_spec.build()

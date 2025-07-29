@@ -39,11 +39,11 @@ class ActionSpec:
             KeyError: If an invalid key is provided when setting an item.
             
         """
-        self.actuators = actuators
-        
-        if self.actuators is None:
+        if actuators is None:
             print("No actuators provided.")
             self.actuators = []
+        else: 
+            self.actuators = actuators
     
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
