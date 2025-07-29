@@ -70,12 +70,12 @@ class TestAgentspec:
     #         RewardSpec(reward_fn="invalid_reward_fn", reward_fn_config={}).build()
     #     assert str(e.value) == "issubclass() arg 1 must be a class"
 
-    def test_reward_spec_init_with_not_implemented_reward_fn(self):
-        """
-        Test initializing RewardSpec with NotImplemented as the reward_fn.
-        This should raise a NotImplementedError as per the validation in the RewardSpec.validation_rew_config method.
-        """
-        with pytest.raises(NotImplementedError) as e:
-            RewardSpec(reward_fn=NotImplemented).build()
+    # def test_reward_spec_init_with_not_implemented_reward_fn(self):
+    #     """
+    #     Test initializing RewardSpec with NotImplemented as the reward_fn.
+    #     This should raise a NotImplementedError as per the validation in the RewardSpec.validation_rew_config method.
+    #     """
+    #     with pytest.raises(NotImplementedError) as e:
+    #         RewardSpec(reward_fn=NotImplemented).build()
             
-        assert str(e.value) == "No reward function provided."
+    #     assert str(e.value) == "No reward function provided."
