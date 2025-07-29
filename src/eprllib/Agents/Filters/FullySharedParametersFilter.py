@@ -11,7 +11,7 @@ space.
 """
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Dict # type: ignore
+from typing import Any, Dict, Optional # type: ignore
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
@@ -34,7 +34,7 @@ class FullySharedParametersFilter(BaseFilter):
         """
         super().__init__(filter_fn_config)
         
-        self.agent_name = None
+        self.agent_name: Optional[str] = None
     
     @override(BaseFilter)
     def get_filtered_obs(

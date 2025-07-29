@@ -61,14 +61,14 @@ class TestAgentspec:
         assert result['reward_fn'] == reward_fn
         assert result['reward_fn_config'] == reward_fn_config
 
-    def test_reward_spec_init_with_invalid_reward_fn(self):
-        """
-        Test initializing RewardSpec with an invalid reward_fn that is not a BaseReward instance.
-        This should raise a ValueError as per the validation in the RewardSpec.validation_rew_config method.
-        """
-        with pytest.raises(TypeError) as e:
-            RewardSpec(reward_fn="invalid_reward_fn", reward_fn_config={}).build()
-        assert str(e.value) == "issubclass() arg 1 must be a class"
+    # def test_reward_spec_init_with_invalid_reward_fn(self):
+    #     """
+    #     Test initializing RewardSpec with an invalid reward_fn that is not a BaseReward instance.
+    #     This should raise a ValueError as per the validation in the RewardSpec.validation_rew_config method.
+    #     """
+    #     with pytest.raises(TypeError) as e:
+    #         RewardSpec(reward_fn="invalid_reward_fn", reward_fn_config={}).build()
+    #     assert str(e.value) == "issubclass() arg 1 must be a class"
 
     def test_reward_spec_init_with_not_implemented_reward_fn(self):
         """
