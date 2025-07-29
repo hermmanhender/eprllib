@@ -6,8 +6,7 @@ This module contains the base class for the episode functions. This class is use
 for the EnergyPlus environment.
 """
 
-from typing import Dict, Any, List
-from eprllib import logger
+from typing import Dict, Any, List # type: ignore
 
 class BaseEpisode:
     """
@@ -23,11 +22,6 @@ class BaseEpisode:
         Args:
             episode_fn_config (Dict[str, Any]): Configuration dictionary for the episode function.
         """
-        # Check if the episode_fn_config is a dictionary
-        if not isinstance(episode_fn_config, dict):
-            msg = "episode_fn_config must be a dictionary."
-            logger.error(msg)
-            raise ValueError(msg)
         # Set the episode_fn_config attribute
         self.episode_fn_config = episode_fn_config
 
@@ -43,7 +37,7 @@ class BaseEpisode:
         """
         return env_config
     
-    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the episode configuration in the EnergyPlus environment.
 
@@ -56,7 +50,7 @@ class BaseEpisode:
         """
         return possible_agents
     
-    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the timestep configuration in the EnergyPlus environment.
 

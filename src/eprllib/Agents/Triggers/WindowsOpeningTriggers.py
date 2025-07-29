@@ -5,7 +5,7 @@ Windows Opening Triggers
 This module contains classes to implement window opening triggers for controlling actuators in the environment.
 """
 import gymnasium as gym
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple # type: ignore
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
@@ -13,7 +13,7 @@ from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
 class WindowsOpeningTrigger(BaseTrigger):
-    REQUIRED_KEYS = {
+    REQUIRED_KEYS: Dict[str, Any] = {
         "window_actuator": Tuple[str, str, str],
     }
     
@@ -38,7 +38,7 @@ class WindowsOpeningTrigger(BaseTrigger):
         self.window_actuator = None
     
     @override(BaseTrigger)    
-    def get_action_space_dim(self) -> gym.Space:
+    def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
 
@@ -67,6 +67,8 @@ class WindowsOpeningTrigger(BaseTrigger):
                 self.trigger_fn_config['window_actuator'][1],
                 self.trigger_fn_config['window_actuator'][2]
             )
+        
+        assert self.window_actuator is not None, "Window actuator name has not been initialized."
         
         actuator_dict_actions = {actuator: None for actuator in actuators}
         actuator_dict_actions.update({self.window_actuator: action / 10})

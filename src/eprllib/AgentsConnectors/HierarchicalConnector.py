@@ -9,10 +9,22 @@ The low-level agents use a fully-shared-parameter policy.
 """
 
 import numpy as np
-import gymnasium as gym
-from typing import Dict, Any, List, Tuple
+from numpy.typing import NDArray
+from numpy import float32
+from gymnasium.spaces import Box
+from gymnasium import Space
+from typing import Dict, Any, List, Tuple, Optional # type: ignore
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
+from eprllib.Utils.connector_utils import (
+    set_variables_in_obs,
+    set_internal_variables_in_obs,
+    set_meters_in_obs,
+    set_zone_simulation_parameters_in_obs,
+    set_prediction_variables_in_obs,
+    set_other_obs_in_obs,
+    set_actuators_in_obs
+    )
 from eprllib import logger
 
 class HierarchicalTwoLevelsConnector(BaseConnector):
@@ -37,16 +49,18 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         self.top_level_temporal_scale: int = connector_fn_config["top_level_temporal_scale"]
         
         self.timestep_runner: int = -1
-        self.top_level_goal: int | List = None
-        self.top_level_obs: Dict[str, Any] = None
-        self.top_level_trayectory: Dict[str, List[float | int]] = {}
+        self.top_level_goal: Optional[Dict[str, Any]] = None
+        self.top_level_obs: Optional[Dict[str, Any]] = None
+        self.top_level_trayectory: Dict[str, Any] = {}
+        self.obs_indexed_top_level: Dict[str, int] = {}
+        self.obs_indexed_low_level: Dict[str, int] = {}
         
     @override(BaseConnector)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str, Any],
-        agent: str = None
-    ) -> gym.Space:
+        agent: str
+    ) -> Box:
         """
         Construct the observation space of the environment.
 
@@ -59,49 +73,53 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         """
         
         if agent != self.top_level_agent: 
-            observation_space_pre = self.sub_connector_fn.get_agent_obs_dim(env_config, agent)
-            return gym.spaces.Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + 1, ))
+            observation_space_pre: Space[Any]|Box = self.sub_connector_fn.get_agent_obs_dim(env_config, agent)
+            self.obs_indexed_low_level = self.sub_connector_fn.obs_indexed
+            obs_indexed_len = len(self.obs_indexed)
+            self.obs_indexed_low_level["goal"] = obs_indexed_len
+            
+            assert type(observation_space_pre) == Box, "The observation space must not be None."
+            
+            return Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + 1, ))
         
         else:
-            obs_space_len = 0
-            if env_config["agents_config"][agent]["observation"]['variables'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['variables'])
-                
-            if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
-                
-            if env_config["agents_config"][agent]["observation"]['meters'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['meters'])
-                
-            if env_config["agents_config"][agent]["observation"]['simulation_parameters'] is not None:
-                sp_len = 0
-                for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
-                    if value:
-                        sp_len += 1
-                obs_space_len += sp_len
-                
-            if env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'] is not None:
-                sp_len = 0
-                for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
-                    if value:
-                        sp_len += 1
-                obs_space_len += sp_len
-                
-            if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
-                count_variables = 0
-                for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
-                    if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
-                        count_variables += 1
-                obs_space_len += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
+            obs_space_len: int = 0
+        
+            self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed)
+        
+            assert obs_space_len > 0, "The observation space length must be greater than 0."
+            assert len(self.obs_indexed_top_level) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
             
-            if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['other_obs'])
+            logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+        
+            return Box(float("-inf"), float("inf"), (obs_space_len, ))
+    
+    @override(BaseConnector)
+    def get_agent_obs_indexed(
+        self,
+        env_config: Dict[str, Any],
+        agent: str
+    ) -> Dict[str, int]:
+        """
+        Get a dictionary of the agent observation parameters and their respective index in the observation array.
 
-            if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
-                obs_space_len += len(env_config['agents_config'][agent]["action"]["actuators"])
-        
-            return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
-        
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :param agent: Agent identifier, optional.
+        :type agent: str, optional
+        :return: Agent observation spaces.
+        :rtype: gym.spaces.Space
+        """
+        if agent != self.top_level_agent:
+            return self.obs_indexed_low_level
+        else:
+            return self.obs_indexed_top_level
         
     @override(BaseConnector)
     def set_top_level_obs(
@@ -163,7 +181,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         dict_agents_obs: Dict[str,Any],
         infos: Dict[str, Dict[str, Any]],
         goals: Dict[str, Any]
-    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]]]:
+    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         """
         Set the multiagent observation.
 
@@ -272,18 +290,21 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         self.lower_level_agents: List[str] = connector_fn_config["lower_level_agents"]
         
         self.timestep_runner: int = -1
-        self.top_level_goal: int | List = None
-        self.top_level_obs: Dict[str, Any] = None
-        self.top_level_trayectory: Dict[str, List[float | int]] = {}
+        self.top_level_goal: Optional[Dict[str, Any]] = None
+        self.top_level_obs: Optional[Dict[str, Any]] = None
+        self.top_level_trayectory: Dict[str, Any] = {}
         self.middle_level_flag = False
-        self.middle_level_objectives: Dict[str, Any] = None
+        self.middle_level_objectives: Optional[Dict[str, Any]] = None
+        self.obs_indexed_top_level: Dict[str, int] = {}
+        self.obs_indexed_low_level: Dict[str, int] = {}
+        self.obs_indexed_middle_level: Dict[str, int] = {}
         
     @override(BaseConnector)
     def get_agent_obs_dim(
         self,
         env_config: Dict[str, Any],
-        agent: str = None
-    ) -> gym.Space:
+        agent: Optional[str] = None
+    ) -> Space[Any]:
         """
         Construct the observation space of the environment.
 
@@ -295,58 +316,73 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             gym.Space: The observation space of the environment.
         """
         
-        if agent in self.lower_level_agents: 
-            observation_space_pre = self.lower_level_connector_fn.get_agent_obs_dim(env_config, agent)
-            return gym.spaces.Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + 1, ))
+        if agent in self.lower_level_agents:  
+            observation_space_pre: Space[Any]|Box = self.lower_level_connector_fn.get_agent_obs_dim(env_config, agent)
+            self.obs_indexed_low_level = self.lower_level_connector_fn.obs_indexed
+            obs_indexed_len = len(self.obs_indexed)
+            self.obs_indexed_low_level["goal"] = obs_indexed_len
+            
+            assert type(observation_space_pre) == Box, "The observation space must not be None."
+            
+            return Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + 1, ))
         
         elif agent in self.middle_level_agents:
-            observation_space_pre = self.middle_level_connector_fn.get_agent_obs_dim(env_config, agent)
-            return gym.spaces.Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + env_config["agents_config"][agent]["trigger"]["trigger_fn_config"]["action_space_dim"]*2,))
+            observation_space_pre: Space[Any]|Box = self.middle_level_connector_fn.get_agent_obs_dim(env_config, agent)
+            self.obs_indexed_middle_level = self.middle_level_connector_fn.obs_indexed
+            obs_indexed_len = len(self.obs_indexed)
+            self.obs_indexed_middle_level["goal"] = obs_indexed_len
+            
+            assert type(observation_space_pre) == Box, "The observation space must not be None."
+            
+            return Box(float("-inf"), float("inf"), (observation_space_pre.shape[0] + 1, ))
         
         elif agent == self.top_level_agent:
-            obs_space_len = 0
-            if env_config["agents_config"][agent]["observation"]['variables'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['variables'])
-                
-            if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
-                
-            if env_config["agents_config"][agent]["observation"]['meters'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['meters'])
-                
-            if env_config["agents_config"][agent]["observation"]['simulation_parameters'] is not None:
-                sp_len = 0
-                for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
-                    if value:
-                        sp_len += 1
-                obs_space_len += sp_len
-                
-            if env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'] is not None:
-                sp_len = 0
-                for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
-                    if value:
-                        sp_len += 1
-                obs_space_len += sp_len
-                
-            if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
-                count_variables = 0
-                for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
-                    if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
-                        count_variables += 1
-                obs_space_len += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
-            
-            if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
-                obs_space_len += len(env_config["agents_config"][agent]["observation"]['other_obs'])
+            obs_space_len: int = 0
 
-            if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
-                obs_space_len += len(env_config['agents_config'][agent]["action"]["actuators"])
+            assert agent != None, "The agent identifier must not be None."
+            
+            self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed, obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed)
+            
+            assert obs_space_len > 0, "The observation space length must be greater than 0."
+            assert len(self.obs_indexed_top_level) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+            
+            logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
-            return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
+            return Box(float("-inf"), float("inf"), (obs_space_len, ))
         
         else:
             msg = f"Agent {agent} not found in the environment configuration."
             logger.error(msg)
             raise ValueError(msg)
+        
+    @override(BaseConnector)
+    def get_agent_obs_indexed(
+        self,
+        env_config: Dict[str, Any],
+        agent: str
+    ) -> Dict[str, int]:
+        """
+        Get a dictionary of the agent observation parameters and their respective index in the observation array.
+
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :param agent: Agent identifier, optional.
+        :type agent: str, optional
+        :return: Agent observation spaces.
+        :rtype: gym.spaces.Space
+        """
+        if agent in self.lower_level_agents:
+            return self.obs_indexed_low_level
+        elif agent in self.middle_level_agents:
+            return self.obs_indexed_middle_level
+        else:
+            return self.obs_indexed_top_level
         
     @override(BaseConnector)
     def set_top_level_obs(
@@ -408,7 +444,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         dict_agents_obs: Dict[str,Any],
         infos: Dict[str, Dict[str, Any]],
         goals: Dict[str, Any]
-    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]]]:
+    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         """
         Set the multiagent observation.
 
@@ -510,7 +546,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         dict_agents_obs: Dict[str,Any],
         infos: Dict[str, Dict[str, Any]],
         objectives: Dict[str, List[int | float]]
-        ) -> Tuple[Dict[str,np.ndarray], Dict[str, Dict[str, Any]]]:
+        ) -> Tuple[Dict[str,NDArray[float32]], Dict[str, Dict[str, Any]]]:
         """
         Processes a dictionary of agent objectives to generate a combined vector.
         

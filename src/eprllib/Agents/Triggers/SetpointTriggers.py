@@ -5,7 +5,7 @@ Setpoint triggers
 This module contains classes to implement setpoint triggers for controlling actuators in the environment.
 """
 import gymnasium as gym
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional # type: ignore
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
@@ -13,7 +13,7 @@ from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
 class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
-    REQUIRED_KEYS = {
+    REQUIRED_KEYS: Dict[str, Any] = {
         "temperature_range": Tuple[int|float, int|float],
         "actuator_for_cooling": Tuple[str, str, str],
         "actuator_for_heating": Tuple[str, str, str],
@@ -40,14 +40,14 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         
         super().__init__(trigger_fn_config)
         
-        self.agent_name = None
+        self.agent_name: Optional[str] = None
         self.temperature_range: Tuple[int, int] = trigger_fn_config['temperature_range']
         self.actuator_for_cooling = None
         self.actuator_for_heating = None
         self.availability_actuator = None
     
     @override(BaseTrigger)    
-    def get_action_space_dim(self) -> gym.Space:
+    def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
 
@@ -90,7 +90,11 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
                 self.trigger_fn_config['availability_actuator'][2]
             )
             
-        actuator_dict_actions = {actuator: None for actuator in actuators}
+        actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
+        
+        assert self.actuator_for_cooling is not None, "Cooling actuator name has not been initialized."
+        assert self.actuator_for_heating is not None, "Heating actuator name has not been initialized."
+        assert self.availability_actuator is not None, "Availability actuator name has not been initialized."
         
         if action == 0:
             actuator_dict_actions.update({
@@ -153,11 +157,11 @@ class AvailabilityTrigger(BaseTrigger):
         
         super().__init__(trigger_fn_config)
         
-        self.agent_name = None
-        self.availability_actuator = None
+        self.agent_name: Optional[str] = None
+        self.availability_actuator: Optional[str] = None
     
     @override(BaseTrigger)    
-    def get_action_space_dim(self) -> gym.Space:
+    def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
 
@@ -189,7 +193,9 @@ class AvailabilityTrigger(BaseTrigger):
             )
 
         
-        actuator_dict_actions = {actuator: None for actuator in actuators}
+        actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
+        
+        assert self.availability_actuator is not None, "Availability actuator name has not been initialized."
         
         if action == 0:
             actuator_dict_actions.update({

@@ -5,8 +5,9 @@ Annotations
 
 """
 from eprllib import logger
+from typing import Type, Callable, Any # type: ignore
 
-def override(parent_cls):
+def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for documenting method overrides.
 
     Args:
@@ -39,11 +40,11 @@ def override(parent_cls):
     """
 
     class OverrideCheck:
-        def __init__(self, func, expected_parent_cls):
+        def __init__(self, func: Callable[..., Any], expected_parent_cls: Type[Any]) -> None:
             self.func = func
             self.expected_parent_cls = expected_parent_cls
 
-        def __set_name__(self, owner, name):
+        def __set_name__(self, owner: Type[Any], name: str) -> None:
             # Check if the owner (the class) is a subclass of the expected base class
             if not issubclass(owner, self.expected_parent_cls):
                 msg = (
@@ -55,7 +56,7 @@ def override(parent_cls):
             # Set the function as a regular method on the class.
             setattr(owner, name, self.func)
 
-    def decorator(method):
+    def decorator(method: Callable[..., Any]) -> Callable[..., Any]:
         # Check, whether `method` is actually defined by the parent class.
         if method.__name__ not in dir(parent_cls):
             msg = (
