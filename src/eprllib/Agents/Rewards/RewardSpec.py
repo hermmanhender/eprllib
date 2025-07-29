@@ -4,7 +4,7 @@ Specification for agent reward functions
 This module defines the `RewardSpec` class, which is used to specify the configuration of reward functions for agents in reinforcement learning environments.
 It ensures that the reward function is properly defined and adheres to the expected interface.
 """
-from typing import Dict, Any # type: ignore
+from typing import Dict, Any, Optional, Type # type: ignore
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib import logger
 
@@ -14,7 +14,7 @@ class RewardSpec:
     """
     def __init__(
         self,
-        reward_fn: BaseReward = NotImplemented,
+        reward_fn: Optional[Type[BaseReward]] = None,
         reward_fn_config: Dict[str, Any] = {},
         ):
         """
@@ -46,7 +46,7 @@ class RewardSpec:
         """
         This method is used to build the RewardSpec object.
         """
-        if self.reward_fn == NotImplemented:
+        if self.reward_fn == None:
             msg = "No reward function provided."
             logger.error(msg)
             raise NotImplementedError(msg)

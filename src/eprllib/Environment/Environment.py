@@ -134,10 +134,12 @@ class Environment(MultiAgentEnv):
         
         
         # Buffer to save the last "history_len" timesteps of observations
-        self.history_len = self.env_config.get("history_len", {agent: 1 for agent in self.agents})
+        self.history_len: Dict[str, int] = {}
         for agent in self.agents:
-            assert self.history_len[agent] > 0, "History length must be greater than 0."
-            assert isinstance(self.history_len[agent], int), "History length must be an integer."
+            self.history_len[agent] = self.env_config["agents_config"][agent]["observation"].get("history_len", 1) # Default history length is 1
+        
+            assert self.history_len[agent] > 0, f"History length must be greater than 0. Agent: {agent}, History length: {self.history_len[agent]}"
+            assert isinstance(self.history_len[agent], int), f"History length must be an integer. Agent: {agent}, History length: {self.history_len[agent]}"
         # Create a deque for each agent to store the last observations.
         # The deque will have a maximum length of `history_len`.
         self.observation_buffers: Dict[str, collections.deque[Any]] = {
@@ -146,8 +148,11 @@ class Environment(MultiAgentEnv):
         # asignation of environment observation space.
         observation_space: Dict[str, Any]|spaces.Dict = {}
         original_obs_space: spaces.Dict = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
-
+        logger.info(f"Originar observation space: {original_obs_space}")
+        
         for agent_id, obs_space_per_agent in original_obs_space.items():
+            logger.info(f"Observation space for agent {agent_id}: {obs_space_per_agent}")
+            logger.info(f"History length for agent {agent_id}: {self.history_len[agent_id]}")
             if self.history_len[agent_id] > 1:
                 # Asumiendo que obs_space_per_agent es un Box(shape=(feature_dim,))
                 # Si es un Box(shape=(X, Y)), necesitarás aplanar o ajustar.
@@ -161,13 +166,13 @@ class Environment(MultiAgentEnv):
                     shape=(self.history_len[agent_id], feature_dim), # Nueva forma: (N, feature_dim)
                     dtype=obs_space_per_agent.dtype
                 )
-                logger.debug(f"Observation space for agente {agent_id} with history: {observation_space[agent_id]}")
+                logger.info(f"Observation space for agente {agent_id} with history: {observation_space[agent_id]}")
             else:
                 observation_space[agent_id] = obs_space_per_agent
-                logger.debug(f"Observation space for agent {agent_id} without history: {observation_space[agent_id]}")
+                logger.info(f"Observation space for agent {agent_id} without history: {observation_space[agent_id]}")
         
         self.observation_space: spaces.Dict = spaces.Dict(observation_space)
-        logger.debug(f"Observation space: {self.observation_space}")
+        logger.info(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -280,16 +285,10 @@ class Environment(MultiAgentEnv):
                     single_obs_array = np.array(self.last_obs[agent])
                     for _ in range(self.history_len[agent]):
                         self.observation_buffers[agent].append(single_obs_array)
-
+                    self.last_obs[agent] = np.array(self.observation_buffers[agent])
         # If the history length is greater than 1, we need to return the last `history_len` observations
         # for each agent.
-        obs = {agent: np.array([]) for agent in self.agents}
-        for agent in self.agents:
-            if self.history_len[agent] > 1:
-                obs[agent] = np.array(self.observation_buffers[agent])
-            else:
-                obs[agent] = self.last_obs[agent]
-            
+        obs = self.last_obs
         infos = self.last_infos
         
         # set initial parameters for the reward function.
@@ -366,6 +365,7 @@ class Environment(MultiAgentEnv):
             # we use the last observation as a observation for the timestep.
             obs = self.last_obs
             infos = self.last_infos
+            logger.info(f"Simulation completed after {self.timestep} timesteps.")
 
         # if the simulation is not complete, enqueue action (received by EnergyPlus through 
         # dedicated callback) and then wait to get next observation.
@@ -386,10 +386,6 @@ class Environment(MultiAgentEnv):
                 self.runner.infos_event.wait(timeout=timeout)
                 infos = self.infos_queue.get(timeout=timeout)
                 
-                # Upgrade last observation and infos dicts.
-                self.last_obs = current_obs
-                self.last_infos = infos
-                
                 # If the history length is greater than 1, we need to create a buffer for each agent
                 # to store the last observations.
                 obs = {agent: np.array([]) for agent in self.agents}
@@ -401,8 +397,8 @@ class Environment(MultiAgentEnv):
                         obs[agent] = np.array(self.observation_buffers[agent])
                     else:
                         obs[agent] = current_obs[agent]
-                logger.debug(f"Observation for timestep {self.timestep}: {obs}")
-                logger.debug(f"Infos for timestep {self.timestep}: {infos}")
+                # logger.info(f"Observation for normal timestep {self.timestep}")
+                # logger.info(f"Infos for timestep {self.timestep}: {infos}")
                 # Check if the agents to initialize reward parameters is not empty.
                 # If it is not empty, we initialize the reward parameters for each agent.
                 if self.agents_to_inizialize_reward_parameters is not Empty:
@@ -414,25 +410,19 @@ class Environment(MultiAgentEnv):
                                     agent,
                                     self.connector_fn.obs_indexed
                                     )
-                                logger.debug(f"Reward function for agent {agent} initialized with infos: {infos[agent]}")
                                 self.agents_to_inizialize_reward_parameters.remove(agent)
-                                logger.debug(f"Reward function initial parameters for agent {agent} initialized.")
-                                logger.debug(f"The agents to inizialize reward parameters: {self.agents_to_inizialize_reward_parameters}")
-
+                # Upgrade last observation and infos dicts.
+                self.last_obs = obs
+                self.last_infos = infos
+                
             except (Full, Empty):
+                # logger.info("Queue timeout, ending episode early.")
                 # Set the terminated variable into True to finish the episode.
                 self.terminateds = True
                 # We use the last observation as a observation for the timestep.
-                obs = {agent: np.array([]) for agent in self.agents}
-                for agent in self.agents:
-                    if self.history_len[agent] > 1:
-                        # Create the observation dict with the last `history_len` observations.
-                        obs[agent] = np.array(self.observation_buffers[agent])
-                    else:
-                        obs[agent] = self.last_obs[agent]
-                
+                obs = self.last_obs
                 infos = self.last_infos
-                logger.warning("Queue timeout, ending episode early.")
+                # logger.info(f"Observation for terminal timestep {self.timestep}")
         
         # Calculate the reward in the timestep
         reward_dict: Dict[str, float] = {}
@@ -441,8 +431,13 @@ class Environment(MultiAgentEnv):
             # We use .get() for safer access and check for None.
             reward_fn_instance = self.reward_fn.get(agent)
             if reward_fn_instance:
+                if self.history_len[agent] > 1:
+                    # If the history length is greater than 1, we use only the last observation in the buffer.
+                    obs_to_reward = np.array(self.observation_buffers[agent][-1])
+                else:
+                    obs_to_reward = np.array(obs[agent])
                 reward_dict[agent] = reward_fn_instance.get_reward(
-                    obs[agent], self.terminateds, self.truncateds
+                    obs_to_reward, self.terminateds, self.truncateds
                 )
             else:
                 # Assign a default reward of 0.0 if no reward function is found.
