@@ -7,7 +7,7 @@ agents' observations to provide a flexible configuration of the communication be
 Built-in hierarchical (only two levels), fully-shared, centralized, and independent configurations 
 are provided.
 """
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple # type: ignore
 from gymnasium import spaces
 from eprllib import logger
 
@@ -23,14 +23,43 @@ class BaseConnector:
         :type connector_fn_config: Dict[str, Any], optional
         """
         self.connector_fn_config = connector_fn_config
+        self.obs_indexed: Dict[str, int] = {}
+    
+    def __name__(self):
+        """
+        Returns the name of the connector function.
+
+        :return: Name of the connector function.
+        :rtype: str
+        """
+        return self.__class__.__name__
     
     def get_agent_obs_dim(
         self,
         env_config: Dict[str, Any],
-        agent: str = None
-    ) -> spaces.Space:
+        agent: str
+    ) -> spaces.Space[Any]:
         """
         Get the agent observation dimension.
+
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :param agent: Agent identifier, optional.
+        :type agent: str, optional
+        :return: Agent observation spaces.
+        :rtype: gym.spaces.Space
+        """
+        msg = "This method must be implemented in the child class."
+        logger.error(msg)
+        raise NotImplementedError(msg)
+    
+    def get_agent_obs_indexed(
+        self,
+        env_config: Dict[str, Any],
+        agent: str
+    ) -> Dict[str, int]:
+        """
+        Get a dictionary of the agent observation parameters and their respective index in the observation array.
 
         :param env_config: Environment configuration.
         :type env_config: Dict[str, Any]
@@ -56,7 +85,7 @@ class BaseConnector:
         :rtype: gym.spaces.Dict
         """
         possible_agents = [key for key in env_config["agents_config"].keys()]
-        observation_space_dict = {agent: None for agent in possible_agents}
+        observation_space_dict: Dict[str, Any] = {agent: None for agent in possible_agents}
         for agent in possible_agents:
             observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
         return spaces.Dict(observation_space_dict)

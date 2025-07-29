@@ -4,7 +4,7 @@ Specification for the trigger functions
 This module defines the `TriggerSpec` class, which is used to specify the configuration of trigger 
 functions for agents in reinforcement learning environments.
 """
-from typing import Dict, Any
+from typing import Dict, Any # type: ignore
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib import logger
 
@@ -34,10 +34,10 @@ class TriggerSpec:
         self.trigger_fn = trigger_fn
         self.trigger_fn_config = trigger_fn_config
     
-    def __getitem__(self, key):
+    def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key:str, value:Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
             msg = f"Invalid key: {key}."
@@ -45,22 +45,12 @@ class TriggerSpec:
             raise KeyError(msg)
         setattr(self, key, value)
     
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the TriggerSpec object.
         """
         if self.trigger_fn == NotImplemented:
             msg = "The trigger function must be defined."
-            logger.error(msg)
-            raise ValueError(msg)
-        
-        if not issubclass(self.trigger_fn, BaseTrigger):
-            msg = f"The trigger function must be based on BaseTrigger class but {type(self.trigger_fn)} was given."
-            logger.error(msg)
-            raise ValueError(msg)
-
-        if not isinstance(self.trigger_fn_config, dict):
-            msg = f"The configuration for the trigger function must be a dictionary but {type(self.trigger_fn_config)} was given."
             logger.error(msg)
             raise ValueError(msg)
             

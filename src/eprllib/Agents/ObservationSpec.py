@@ -4,7 +4,7 @@ Specification for the observation space and parameters
 This module defines the `ObservationSpec` class, which is used to specify the configuration of observation space and parameters for agents in reinforcement learning environments.
 It ensures that the observation space is properly defined and adheres to the expected interface.
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Any # type: ignore
 from eprllib.Agents import (
     SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, 
     PREDICTION_VARIABLES, PREDICTION_HOURS
@@ -17,9 +17,9 @@ class ObservationSpec:
     """
     def __init__(
         self,
-        variables: List[Tuple[str, str]] = None,
-        internal_variables: List[str] = None,
-        meters: List[str] = None,
+        variables: Optional[List[Tuple[str, str]]] = None,
+        internal_variables: Optional[List[str]] = None,
+        meters: Optional[List[str]] = None,
         simulation_parameters: Dict[str, bool] = {},
         zone_simulation_parameters: Dict[str, bool] = {},
         use_one_day_weather_prediction: bool = False,
@@ -27,7 +27,7 @@ class ObservationSpec:
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
-        history_len: Dict[str, int] = None,
+        history_len: Optional[Dict[str, int]] = None,
     ):
         """
         Construction method.
@@ -121,19 +121,13 @@ class ObservationSpec:
         self.other_obs = other_obs
         
         # History length for each agent.
-        if history_len is not None:
-            if not isinstance(history_len, dict):
-                logger.error("history_len must be a dictionary with agent names as keys and history length as values.")
-                raise TypeError("history_len must be a dictionary with agent names as keys and history length as values.")
-                        
+        if history_len is not None:   
             self.history_len = history_len
             
-        
-        
-    def __getitem__(self, key):
+    def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key:str, value:Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
             logger.error(f"Invalid key: {key}")
@@ -141,7 +135,7 @@ class ObservationSpec:
         setattr(self, key, value)
         
     
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the ObservationSpec object.
         """

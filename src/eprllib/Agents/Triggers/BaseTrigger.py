@@ -14,7 +14,7 @@ ActionFunction must be defined in the EnvConfig definition to create the environ
 called in the EnergyPlusEnvironment.EnergyPlusEnv_v0 class and used in the EnergyPlusRunner.EnergyPlusRunner class
 to transform the dict of agent actions to actuator values.
 """
-from typing import Dict, Any, List
+from typing import Dict, Any, List # type: ignore
 import gymnasium as gym
 from eprllib import logger
 
@@ -33,15 +33,9 @@ class BaseTrigger:
         Args:
             trigger_fn_config (Dict[str, Any]): Configuration for the action transformer function.
         """
-        # Check if the filter_fn_config is a dictionary
-        if not isinstance(trigger_fn_config, dict):
-            msg = "trigger_fn_config must be a dictionary"
-            logger.error(msg)
-            raise TypeError(msg)
-        
         self.trigger_fn_config = trigger_fn_config
     
-    def get_action_space_dim(self) -> gym.Space:
+    def get_action_space_dim(self) -> gym.Space[Any]:
         """This method is used to get the action space of the environment.
 
         Raises:

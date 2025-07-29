@@ -8,7 +8,8 @@ import torch
 import shap
 from ray.rllib.policy.policy import Policy
 from ray.rllib.algorithms.algorithm import Algorithm
-import numpy as np
+from numpy.typing import NDArray
+from numpy import float32
 from eprllib import logger
 
 
@@ -34,13 +35,13 @@ class eprllibSHAP:
         try:
             self.POLICY: Policy = algorithm.get_policy(policy_name)
         except ValueError as e:
-            msg = f"Policy '{policy_name}' not found in the algorithm. Available policies: {list(algorithm.get_policy_map().keys())}"
+            msg = f"Policy '{policy_name}' not found in the algorithm."
             logger.error(msg)
             raise ValueError(msg) from e
         
     def model_predict(
         self,
-        data: np.ndarray,
+        data: NDArray[float32],
     ):
         """
         Predict actions using the RLlib policy.
@@ -53,15 +54,15 @@ class eprllibSHAP:
         """
         data_tensor = torch.tensor(data, dtype=torch.float32)
         with torch.no_grad():
-            predictions = self.POLICY.compute_actions(obs_batch=data_tensor.numpy(),exploration=False)[0]
+            predictions: NDArray[float32] = self.POLICY.compute_actions(obs_batch=data_tensor.numpy(),exploration=False)[0]
         return predictions
 
 
     def EPExplainer(
         self,
-        data,
-        feature_names,
-        sample_size:int = None
+        data: NDArray[float32],
+        feature_names: List[str],
+        sample_size: Optional[int] = None
     ) -> shap.KernelExplainer:
         """
         Create a SHAP KernelExplainer for the RLlib policy.
@@ -76,6 +77,7 @@ class eprllibSHAP:
         """
         # apply sample data if given
         if sample_size is not None:
+            assert isinstance(sample_size, int), "sample_size must be an integer."
             data = shap.sample(data, sample_size)
         
         return shap.KernelExplainer(self.model_predict, data, feature_names)

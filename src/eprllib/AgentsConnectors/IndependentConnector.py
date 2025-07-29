@@ -6,7 +6,7 @@ This module implements the default observation function where each agent has its
 and it is returned without modifications, considering only the agent_states provided in the BaseRunner class.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict # type: ignore
 from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 from eprllib import logger
 
@@ -22,3 +22,4 @@ class IndependentConnector(DefaultConnector):
             connector_fn_config (Dict[str, Any]): Configuration dictionary for the multi-agent function.
         """
         super().__init__(connector_fn_config)
+        logger.debug("IndependentConnector initialized with configuration: %s", connector_fn_config)

@@ -10,11 +10,20 @@ To avoid parameter repetitions in the central agent observation, only implement 
 in a single agent. For example, if two agents are present in the same thermal zone and both of them have
 access to the thermal zone mean air temperature, only declare this parameter in one of them.
 """
-import gymnasium as gym
+from gymnasium.spaces import Box
 import numpy as np
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple # type: ignore
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
+from eprllib.Utils.connector_utils import (
+    set_variables_in_obs,
+    set_internal_variables_in_obs,
+    set_meters_in_obs,
+    set_zone_simulation_parameters_in_obs,
+    set_prediction_variables_in_obs,
+    set_other_obs_in_obs,
+    set_actuators_in_obs
+    )
 from eprllib import logger
 
 class CentralizedConnector(BaseConnector):
@@ -36,8 +45,8 @@ class CentralizedConnector(BaseConnector):
     def get_agent_obs_dim(
         self,
         env_config: Dict[str, Any],
-        agent: str = None
-    ) -> gym.Space:
+        agent: str
+    ) -> Box:
         """
         Construct the observation space of the environment.
 
@@ -50,45 +59,42 @@ class CentralizedConnector(BaseConnector):
         """
         obs_space_len: int = 0
         
-        if env_config["agents_config"][agent]["observation"]['variables'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['variables'])
-            
-        if env_config["agents_config"][agent]["observation"]['internal_variables'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['internal_variables'])
-            
-        if env_config["agents_config"][agent]["observation"]['meters'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['meters'])
-            
-        if env_config["agents_config"][agent]["observation"]['simulation_parameters'] is not None:
-            sp_len = 0
-            for value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].values():
-                if value:
-                    sp_len += 1
-            obs_space_len += sp_len
-            
-        if env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'] is not None:
-            sp_len = 0
-            for value in env_config["agents_config"][agent]["observation"]['zone_simulation_parameters'].values():
-                if value:
-                    sp_len += 1
-            obs_space_len += sp_len
-            
-        if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
-            count_variables = 0
-            for key in env_config["agents_config"][agent]["observation"]['prediction_variables'].keys():
-                if env_config["agents_config"][agent]["observation"]['prediction_variables'][key]:
-                    count_variables += 1
-            obs_space_len += env_config["agents_config"][agent]["observation"]['prediction_hours']*count_variables
-            
-        if env_config["agents_config"][agent]["observation"]['other_obs'] is not None:
-            obs_space_len += len(env_config["agents_config"][agent]["observation"]['other_obs'])
-            
-        if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
-            obs_space_len += len(env_config["agents_config"][agent]["action"]['actuators'])
+        self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed, obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed)
         
-        return gym.spaces.Box(float("-inf"), float("inf"), (obs_space_len, ))
+        assert obs_space_len > 0, "The observation space length must be greater than 0."
+        assert len(self.obs_indexed) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+        
+        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+        
+        return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
-    @override(BaseConnector)   
+    @override(BaseConnector)
+    def get_agent_obs_indexed(
+        self,
+        env_config: Dict[str, Any],
+        agent: str
+    ) -> Dict[str, int]:
+        """
+        Get a dictionary of the agent observation parameters and their respective index in the observation array.
+
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :param agent: Agent identifier, optional.
+        :type agent: str, optional
+        :return: Agent observation spaces.
+        :rtype: gym.spaces.Space
+        """
+        if self.obs_indexed == {}:
+            self.get_agent_obs_dim(env_config, agent)
+        return self.obs_indexed
+    
+    @override(BaseConnector)
     def set_top_level_obs(
         self,
         env_config: Dict[str, Any],

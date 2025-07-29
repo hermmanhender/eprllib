@@ -5,7 +5,7 @@ Windows Shading Triggers
 This module contains classes to implement window shading triggers for controlling actuators in the environment.
 """
 import gymnasium as gym
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional # type: ignore
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
@@ -13,7 +13,7 @@ from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
 class WindowsShadingTrigger(BaseTrigger):
-    REQUIRED_KEYS = {
+    REQUIRED_KEYS: Dict[str, Any] = {
         "shading_actuator": Tuple[str, str, str],
     }
     
@@ -34,11 +34,11 @@ class WindowsShadingTrigger(BaseTrigger):
         
         super().__init__(trigger_fn_config)
         
-        self.agent_name = None
-        self.shading_actuator = None
+        self.agent_name: Optional[str] = None
+        self.shading_actuator: Optional[str] = None
     
     @override(BaseTrigger)    
-    def get_action_space_dim(self) -> gym.Space:
+    def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
 
@@ -60,7 +60,7 @@ class WindowsShadingTrigger(BaseTrigger):
             Dict[str, Any]: Dictionary with the actions for the actuators.
         """
         if self.agent_name is None:
-            self.agent_name = get_agent_name(self.shading_actuator)
+            self.agent_name = get_agent_name(actuators)
             self.shading_actuator = get_actuator_name(
                 self.agent_name,
                 self.trigger_fn_config['shading_actuator'][0],
@@ -68,7 +68,9 @@ class WindowsShadingTrigger(BaseTrigger):
                 self.trigger_fn_config['shading_actuator'][2]
             )
         
-        actuator_dict_actions = {actuator: None for actuator in actuators}
+        assert self.shading_actuator is not None, "Shading actuator name has not been initialized."
+        
+        actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
         if action == 0:  # Shading device is off (applies to shades and blinds).
             actuator_dict_actions.update({self.shading_actuator: 0})
         else:  # 3.0: Exterior shade is on.

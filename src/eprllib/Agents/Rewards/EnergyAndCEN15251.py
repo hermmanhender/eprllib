@@ -3,12 +3,13 @@ Energy and CEN 15251 reward function
 =====================================
 
 """
-from typing import Any, Dict
+from typing import Any, Dict # type: ignore
+from numpy.typing import NDArray
+from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters, HierarchicalEnergyWithMeters
 from eprllib.Agents.Rewards.CEN15251 import CEN15251, HierarchicalCEN15251
 from eprllib.Utils.annotations import override
-from eprllib import logger
 
 class EnergyAndCEN15251(BaseReward):
     def __init__(
@@ -54,18 +55,19 @@ class EnergyAndCEN15251(BaseReward):
     
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        self.comfort_reward.set_initial_parameters(infos)
-        self.energy_reward.set_initial_parameters(infos)
+        self.comfort_reward.set_initial_parameters(agent_name, obs_indexed)
+        self.energy_reward.set_initial_parameters(agent_name, obs_indexed)
         
     @override(BaseReward)
     def get_reward(
-    self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+        self,
+        obs: NDArray[float32],
+        terminated: bool = False,
+        truncated: bool = False
     ) -> float:
         """
         This function returns the normalize reward calcualted as the sum of the penalty of the energy 
@@ -79,13 +81,10 @@ class EnergyAndCEN15251(BaseReward):
 
         Returns:
             float: reward normalize value
-        """
-        if infos.get("goal"):
-            self.beta = infos["goal"]
-        
+        """        
         reward = 0.
-        reward += (1-self.beta) * self.comfort_reward.get_reward(infos, terminated_flag, truncated_flag)
-        reward += self.beta * self.energy_reward.get_reward(infos, terminated_flag, truncated_flag)
+        reward += (1-self.beta) * self.comfort_reward.get_reward(obs, terminated, truncated)
+        reward += self.beta * self.energy_reward.get_reward(obs, terminated, truncated)
         return reward
 
 # === Hierarchical version ===
@@ -134,18 +133,19 @@ class HierarchicalEnergyAndCEN15251(BaseReward):
         
     @override(BaseReward)
     def set_initial_parameters(
-    self,
-    infos: Dict[str,Any] = None,
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
     ) -> None:
-        self.comfort_reward.set_initial_parameters(infos)
-        self.energy_reward.set_initial_parameters(infos)
+        self.comfort_reward.set_initial_parameters(agent_name, obs_indexed)
+        self.energy_reward.set_initial_parameters(agent_name, obs_indexed)
         
     @override(BaseReward)
     def get_reward(
-    self,
-    infos: Dict[str,Any] = None,
-    terminated_flag: bool = False,
-    truncated_flag: bool = False
+        self,
+        obs: NDArray[float32],
+        terminated: bool = False,
+        truncated: bool = False
     ) -> float:
         """
         This function returns the normalize reward calcualted as the sum of the penalty of the energy 
@@ -161,8 +161,8 @@ class HierarchicalEnergyAndCEN15251(BaseReward):
             float: reward normalize value
         """
         reward = 0.
-        reward += (1-self.beta) * self.comfort_reward.get_reward(infos, terminated_flag, truncated_flag)
-        reward += self.beta * self.energy_reward.get_reward(infos, terminated_flag, truncated_flag)
+        reward += (1-self.beta) * self.comfort_reward.get_reward(obs, terminated, truncated)
+        reward += self.beta * self.energy_reward.get_reward(obs, terminated, truncated)
         
         return reward
     

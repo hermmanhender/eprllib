@@ -84,22 +84,22 @@ class TestRewardspec:
 
         assert str(excinfo.value) == "'Invalid key: invalid_key.'"
 
-    def test_build_3(self):
-        """
-        Test the build method when reward_fn is a subclass of BaseReward but reward_fn_config is not a dictionary.
+    # def test_build_3(self):
+    #     """
+    #     Test the build method when reward_fn is a subclass of BaseReward but reward_fn_config is not a dictionary.
 
-        This test verifies that the build method raises a TypeError when the reward_fn_config
-        is not a dictionary, even if the reward_fn is a valid subclass of BaseReward.
-        """
-        class ValidReward(BaseReward):
-            pass
+    #     This test verifies that the build method raises a TypeError when the reward_fn_config
+    #     is not a dictionary, even if the reward_fn is a valid subclass of BaseReward.
+    #     """
+    #     class ValidReward(BaseReward):
+    #         pass
 
-        reward_spec = RewardSpec(reward_fn=ValidReward, reward_fn_config="invalid_config")
+    #     reward_spec = RewardSpec(reward_fn=ValidReward, reward_fn_config="invalid_config")
 
-        with pytest.raises(TypeError) as exc_info:
-            reward_spec.build()
+    #     with pytest.raises(TypeError) as exc_info:
+    #         reward_spec.build()
 
-        assert str(exc_info.value) == "The configuration for the reward function must be a dictionary but <class 'str'> was given."
+    #     assert str(exc_info.value) == "The configuration for the reward function must be a dictionary but <class 'str'> was given."
 
     def test_build_4(self):
         """
@@ -116,52 +116,52 @@ class TestRewardspec:
 
         assert str(excinfo.value) == "No reward function provided."
 
-    def test_build_invalid_reward_config(self):
-        """
-        Test the build method when an invalid reward function configuration (not a dictionary) is provided.
-        This should raise a TypeError.
-        """
-        class ValidReward(BaseReward):
-            pass
+    # def test_build_invalid_reward_config(self):
+    #     """
+    #     Test the build method when an invalid reward function configuration (not a dictionary) is provided.
+    #     This should raise a TypeError.
+    #     """
+    #     class ValidReward(BaseReward):
+    #         pass
 
-        reward_spec = RewardSpec(reward_fn=ValidReward, reward_fn_config="invalid_config")
-        with pytest.raises(TypeError) as excinfo:
-            reward_spec.build()
-        assert str(excinfo.value) == f"The configuration for the reward function must be a dictionary but <class 'str'> was given."
+    #     reward_spec = RewardSpec(reward_fn=ValidReward, reward_fn_config="invalid_config")
+    #     with pytest.raises(TypeError) as excinfo:
+    #         reward_spec.build()
+    #     assert str(excinfo.value) == f"The configuration for the reward function must be a dictionary but <class 'str'> was given."
 
-    def test_build_invalid_reward_fn_and_config(self):
-        """
-        Test the build method when reward_fn is not a subclass of BaseReward
-        and reward_fn_config is not a dictionary.
+    # def test_build_invalid_reward_fn_and_config(self):
+    #     """
+    #     Test the build method when reward_fn is not a subclass of BaseReward
+    #     and reward_fn_config is not a dictionary.
 
-        This test covers the following path constraints:
-        - self.reward_fn is not NotImplemented
-        - self.reward_fn is not a subclass of BaseReward
-        - self.reward_fn_config is not a dictionary
+    #     This test covers the following path constraints:
+    #     - self.reward_fn is not NotImplemented
+    #     - self.reward_fn is not a subclass of BaseReward
+    #     - self.reward_fn_config is not a dictionary
 
-        Expected behavior: 
-        - Raises a TypeError due to invalid reward_fn
-        - The error about reward_fn_config is not reached due to the previous error
-        """
-        reward_spec = RewardSpec(reward_fn=str, reward_fn_config="invalid_config")
+    #     Expected behavior: 
+    #     - Raises a TypeError due to invalid reward_fn
+    #     - The error about reward_fn_config is not reached due to the previous error
+    #     """
+    #     reward_spec = RewardSpec(reward_fn=str, reward_fn_config="invalid_config")
 
-        with pytest.raises(TypeError) as excinfo:
-            reward_spec.build()
+    #     with pytest.raises(TypeError) as excinfo:
+    #         reward_spec.build()
 
-        assert "The reward function must be based on BaseReward class" in str(excinfo.value)
+    #     assert "The reward function must be based on BaseReward class" in str(excinfo.value)
 
-    def test_build_invalid_reward_function(self):
-        """
-        Test the build method when an invalid reward function (not a subclass of BaseReward) is provided.
-        This should raise a TypeError.
-        """
-        class InvalidReward:
-            pass
+    # def test_build_invalid_reward_function(self):
+    #     """
+    #     Test the build method when an invalid reward function (not a subclass of BaseReward) is provided.
+    #     This should raise a TypeError.
+    #     """
+    #     class InvalidReward:
+    #         pass
 
-        reward_spec = RewardSpec(reward_fn=InvalidReward)
-        with pytest.raises(TypeError) as excinfo:
-            reward_spec.build()
-        assert str(excinfo.value) == f"The reward function must be based on BaseReward class but <class 'type'> was given."
+    #     reward_spec = RewardSpec(reward_fn=InvalidReward)
+    #     with pytest.raises(TypeError) as excinfo:
+    #         reward_spec.build()
+    #     assert str(excinfo.value) == f"The reward function must be based on BaseReward class but <class 'type'> was given."
 
     def test_build_no_reward_function(self):
         """
@@ -181,29 +181,29 @@ class TestRewardspec:
         with pytest.raises(NotImplementedError, match="No reward function provided."):
             reward_spec.build()
 
-    def test_init_with_non_basereward_subclass(self):
-        """
-        Test that initializing RewardSpec with a reward_fn that is not a subclass
-        of BaseReward raises a TypeError when build() is called.
-        """
-        class InvalidReward:
-            pass
+    # def test_init_with_non_basereward_subclass(self):
+    #     """
+    #     Test that initializing RewardSpec with a reward_fn that is not a subclass
+    #     of BaseReward raises a TypeError when build() is called.
+    #     """
+    #     class InvalidReward:
+    #         pass
 
-        reward_spec = RewardSpec(reward_fn=InvalidReward)
-        with pytest.raises(TypeError, match="The reward function must be based on BaseReward class"):
-            reward_spec.build()
+    #     reward_spec = RewardSpec(reward_fn=InvalidReward)
+    #     with pytest.raises(TypeError, match="The reward function must be based on BaseReward class"):
+    #         reward_spec.build()
 
-    def test_init_with_non_dict_reward_fn_config(self):
-        """
-        Test that initializing RewardSpec with a non-dict reward_fn_config
-        raises a TypeError when build() is called.
-        """
-        class ValidReward(BaseReward):
-            pass
+    # def test_init_with_non_dict_reward_fn_config(self):
+    #     """
+    #     Test that initializing RewardSpec with a non-dict reward_fn_config
+    #     raises a TypeError when build() is called.
+    #     """
+    #     class ValidReward(BaseReward):
+    #         pass
 
-        reward_spec = RewardSpec(reward_fn=ValidReward, reward_fn_config="invalid_config")
-        with pytest.raises(TypeError, match="The configuration for the reward function must be a dictionary"):
-            reward_spec.build()
+    #     reward_spec = RewardSpec(reward_fn=ValidReward, reward_fn_config="invalid_config")
+    #     with pytest.raises(TypeError, match="The configuration for the reward function must be a dictionary"):
+    #         reward_spec.build()
 
     def test_init_with_not_implemented_reward_fn(self):
         """

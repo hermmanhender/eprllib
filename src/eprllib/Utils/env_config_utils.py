@@ -5,13 +5,11 @@ Utilities for the environment configuration
 Work in progress...
 """
 
-from typing import Set, Dict, Optional, List
+from typing import Set, Dict, Optional, List, Any # type: ignore
 import inspect
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from gymnasium.spaces import Box, Discrete
 import sys
-import os
-import shutil
 import numpy as np
 from typing import get_origin, get_args, Union, _SpecialGenericAlias
 
@@ -93,7 +91,7 @@ def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:
 
 def to_json(
     MyEnvConfig: EnvironmentConfig,
-    output_path: str = None
+    output_path: Optional[str] = None
     ) -> str:
     """Convert an EnvConfig object into a json string before to be used in the env_config parameter of RLlib environment config.
 
@@ -107,7 +105,7 @@ def to_json(
     import json
     import time
     
-    env_config_json = json.dumps(MyEnvConfig.build())
+    env_config_json = json.dumps(MyEnvConfig.to_dict())
 
     # generate a unique number based on time
     time_id = str(int(time.time()))
@@ -162,7 +160,7 @@ def discrete_action_space(n:int=2):
 
 def variable_checking(
     epJSON_file:str,
-) -> Set:
+) -> Set[Any]|None:
     """
     This function check if the epJSON file has the required variables.
 
@@ -174,7 +172,7 @@ def variable_checking(
     """
     pass
 
-def validate_properties(obj, expected_types):
+def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> bool:
     """
     Enhanced version that supports Union types and optional properties
     
@@ -185,7 +183,7 @@ def validate_properties(obj, expected_types):
                        - A tuple of types (Union)
                        - (type, bool) tuple where bool indicates if property is optional
     """
-    errors = []
+    errors: List[str] = []
     is_valid = True
     
     for prop_name, type_spec in expected_types.items():
@@ -193,8 +191,10 @@ def validate_properties(obj, expected_types):
         is_optional = False
         expected_type = type_spec
         
-        if isinstance(type_spec, tuple) and len(type_spec) == 2 and isinstance(type_spec[1], bool):
-            expected_type, is_optional = type_spec
+        if isinstance(type_spec, tuple):
+            if len(type_spec) == 2:
+                if isinstance(type_spec[1], bool):
+                    expected_type, is_optional = type_spec
             
         # Check if property exists
         if not hasattr(obj, prop_name):

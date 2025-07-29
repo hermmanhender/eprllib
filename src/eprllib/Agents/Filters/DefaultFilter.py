@@ -7,7 +7,8 @@ The `DefaultFilter` class extends the `BaseFilter` class and provides a basic im
 as-is or extended to create custom filters.
 """
 import numpy as np
-from typing import Any, Dict
+from typing import Any, Dict # type: ignore
+from numpy.typing import NDArray
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.annotations import override
 from eprllib import logger
@@ -38,7 +39,7 @@ class DefaultFilter(BaseFilter):
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> np.ndarray:
+    ) -> NDArray[np.float32]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
@@ -57,12 +58,6 @@ class DefaultFilter(BaseFilter):
             TypeError: If agent_states is not a dictionary.
             ValueError: If agent_states is empty or contains non-numeric values.
         """
-        # Check the type of the agent_states argument
-        if not isinstance(agent_states, dict):
-            msg = "agent_states must be a dictionary"
-            logger.error(msg)
-            raise TypeError(msg)
-        
         # Check if the agent_states dictionary is empty
         if not agent_states:
             msg = "agent_states dictionary is empty"

@@ -5,15 +5,17 @@ Episode Functions Utils
 Work in progress...
 """
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any, List # type: ignore
 import os
 import numpy as np
+from numpy.typing import NDArray
+from numpy import float32
 import json
 import pandas as pd
 import datetime
 from eprllib import logger
 
-def load_ep_model(model_path):
+def load_ep_model(model_path: str) -> Dict[str, Any]:
     """
     Load the episode model from the given path.
 
@@ -38,10 +40,10 @@ def load_ep_model(model_path):
     
     # Open the file
     with open(model_path, 'rb') as f:
-        model: Dict = json.load(f)
+        model: Dict[str, Any] = json.load(f)
     return model
 
-def save_ep_model(model: Dict, model_folder_path) -> str:
+def save_ep_model(model: Dict[str, Any], model_folder_path: str) -> str:
     """
     Save the episode model to the given path.
 
@@ -147,12 +149,12 @@ def max_day_in_month(month:int) -> int:
     return max_day
 
 def building_dimension(
-    epJSON_object: Dict, 
+    epJSON_object: Dict[str, Any], 
     h:float, 
     w:float, 
     l:float, 
-    window_area_relation: np.ndarray,
-    ) -> Dict:
+    window_area_relation: NDArray[float32],
+    ) -> Dict[str, Any]:
     """
     This function modify the building dimensions and the windows positions in the epJSON file.
 
@@ -167,7 +169,7 @@ def building_dimension(
         Dict: The modified epJSON file.
     """
     # Reshape the position vectors
-    surface_coordenates = {
+    surface_coordenates: Dict[str, Any] = {
         'wall_north': [[0,0,h],[0,0,0],[w,0,0],[w,0,h]],
         'wall_east': [[w,0,h],[w,0,0],[w,l,0],[w,l,h]],
         'wall_south': [[w,l,h],[w,l,0],[0,l,0],[0,l,h]],
@@ -187,7 +189,7 @@ def building_dimension(
     south_window_proportion = window_area_relation[2]
     west_window_proportion = window_area_relation[3]
     
-    window_coordinates = {}
+    window_coordinates: Dict[str, Any] = {}
     
     # add the new coordinates to the windows that exist in the model
     if north_window_proportion > 0:
@@ -245,7 +247,7 @@ def building_dimension(
     return epJSON_object
 
 
-def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
+def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:float):
     """
     Given a epJSON_object, return another epJSON_object with diferent size of windows.
 
@@ -257,7 +259,7 @@ def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
     Returns:
         json: Devuelve el objeto epJSON modificado.
     """
-    window_vertexs = {}
+    window_vertexs: Dict[str, Any] = {}
     # se extraen los valores de los vértices de cada ventana según el epJSON
     window_vertexs['v1x'] = epJSON_object['FenestrationSurface:Detailed'][window]['vertex_1_x_coordinate']
     window_vertexs['v1y'] = epJSON_object['FenestrationSurface:Detailed'][window]['vertex_1_y_coordinate']
@@ -272,7 +274,7 @@ def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
     window_vertexs['v4y'] = epJSON_object['FenestrationSurface:Detailed'][window]['vertex_4_y_coordinate']
     window_vertexs['v4z'] = epJSON_object['FenestrationSurface:Detailed'][window]['vertex_4_z_coordinate']
     
-    L = [] # agrupa los vertices en forma de lista: [[x1,y1,z1],[x2,y2,z2],[x3,y3,z3],[x4,y4,z4]]
+    L: List[List[float]] = [] # agrupa los vertices en forma de lista: [[x1,y1,z1],[x2,y2,z2],[x3,y3,z3],[x4,y4,z4]]
     for l in range(1,5,1):
         vertex_x = 'v'+str(l)+'x'
         vertex_y = 'v'+str(l)+'y'
@@ -280,10 +282,10 @@ def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
         L.append([window_vertexs[vertex_x], window_vertexs[vertex_y], window_vertexs[vertex_z]])
 
     # Se calcula el factor de escala de la ventana
-    area_ventana_old = fenestration_area(epJSON_object, window)
-    factor_escala = area_ventana/area_ventana_old
-    centro = calcular_centro(L)
-    ventana_escalada = []
+    area_ventana_old: float = fenestration_area(epJSON_object, window)
+    factor_escala: float = area_ventana/area_ventana_old
+    centro: List[float] = calcular_centro(L)
+    ventana_escalada: List[List[float]] = []
     for punto in L:
         nuevo_punto = [centro[0] + (punto[0] - centro[0]) * factor_escala**(1/2),
                     centro[1] + (punto[1] - centro[1]) * factor_escala**(1/2),
@@ -295,7 +297,7 @@ def window_size_epJSON(epJSON_object, window:str, area_ventana:float):
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_y_coordinate'] = ventana_escalada[l-1][1]
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_z_coordinate'] = ventana_escalada[l-1][2]
 
-def calcular_centro(ventana):
+def calcular_centro(ventana: List[List[float]]) -> List[float]:
     # Calcula el centro de la ventana
     centro = [(ventana[0][0] + ventana[1][0] + ventana[2][0] + ventana[3][0]) / 4,
             (ventana[0][1] + ventana[1][1] + ventana[2][1] + ventana[3][1]) / 4,
@@ -303,29 +305,35 @@ def calcular_centro(ventana):
     return centro
 
 
-def generate_variated_schedule(input_path, output_path, variation_percentage=10):
+def generate_variated_schedule(
+    input_path: str,
+    output_path: str,
+    variation_percentage: float = 0.1):
     """
     Generates a new CSV with variations in schedule data.
     
     Parameters:
     - input_path: str, path to the input CSV file.
     - output_path: str, path to save the output CSV file.
-    - variation_percentage: float, maximum percentage variation for each value (default: 10).
+    - variation_percentage: float, maximum variation for each value (default: 0.1).
     """
     # Load the input CSV
-    data = pd.read_csv(input_path)
+    assert os.path.exists(input_path), f"Input file {input_path} does not exist."
+    assert input_path.endswith('.csv'), "Input file must be a CSV."
+    
+    data: pd.DataFrame = pd.read_csv(input_path)
     
     # Calculate variation range
-    variation_factor = variation_percentage / 100.0
+    variation_factor = variation_percentage
     
     # Apply random variations within the specified range
-    def apply_variation(value):
+    def apply_variation(value: float) -> float:
         variation = np.random.uniform(-variation_factor, variation_factor)
         new_value = value * (1 + variation)
         return np.clip(new_value, 0, 1)  # Ensure values stay within [0, 1]
 
     # Apply variation to all columns
-    variated_data = data.applymap(apply_variation)
+    variated_data: pd.DataFrame = data.applymap(apply_variation)
     
     # Save the new dataset to the specified output path
     variated_data.to_csv(output_path, index=False)
@@ -775,7 +783,7 @@ def material_area(epJSON_object, nombre_superficie):
     area = 0.5 * (abs(producto_vectorial[0]) + abs(producto_vectorial[1]) + abs(producto_vectorial[2]))
     return area
 
-def fenestration_area(epJSON_object, fenestration):
+def fenestration_area(epJSON_object: Dict[str, Any], fenestration: str) -> float:
     """
     _summary_
 
