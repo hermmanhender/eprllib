@@ -18,7 +18,7 @@ class ObservationSpec:
     def __init__(
         self,
         variables: Optional[List[Tuple[str, str]]] = None,
-        internal_variables: Optional[List[str]] = None,
+        internal_variables: Optional[List[Tuple[str, str]]] = None,
         meters: Optional[List[str]] = None,
         simulation_parameters: Dict[str, bool] = {},
         zone_simulation_parameters: Dict[str, bool] = {},
