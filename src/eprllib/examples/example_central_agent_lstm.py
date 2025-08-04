@@ -14,7 +14,6 @@ from ray import air, tune
 from ray.tune import register_env
 from ray.rllib.algorithms.ppo.ppo import PPOConfig
 from ray.rllib.policy.policy import PolicySpec
-from ray.rllib.models import ModelCatalog
 
 from eprllib.Environment.Environment import Environment
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
@@ -34,14 +33,13 @@ from eprllib.examples.example_central_agent_files.trigger import CentralAgentTri
 from eprllib.examples.example_central_agent_files.reward_function import IAQThermalComfortEnergyReward
 from eprllib.examples.example_central_agent_files.episode_fn import task_cofiguration
 from eprllib.examples.example_central_agent_files.policy_mapping import policy_map_fn
-from eprllib.examples.example_central_agent_files.policy_model import CustomTransformerModel
 
 # read the json config file as a dict.
 with open("src/eprllib/examples/example_central_agent_files/episode_fn_config.json", "r") as f:
     episode_config = json.load(f)
 
 experiment_name = "example_central_agent"
-name = "transformer"
+name = "lstm"
 tuning = False
 restore = False
 checkpoint_path = ""
@@ -138,7 +136,6 @@ assert eprllib_config.agents_config is not None, "Agents configuration is not de
 number_of_agents = len([keys for keys in eprllib_config.agents_config.keys()])
 ray.init(_temp_dir='C:/Users/grhen/ray_results/tmp')
 register_env(name="EPEnv", env_creator=lambda args: Environment(args))
-ModelCatalog.register_custom_model("custom_transformer", CustomTransformerModel)
 env_config = eprllib_config.to_dict()
 
 if not restore:
@@ -158,14 +155,13 @@ if not restore:
         
         # === Policy Model configuration ===
         model = {
-            "custom_model": "custom_transformer",
-            "custom_model_config": {
-                "num_encoder_layers": 2,
-                "nhead": 4,
-                "d_model": 64,
-                "dim_feedforward": 128,
-                "dropout": 0.1
-            },
+            # FC Hidden layers
+            "fcnet_hiddens": [64,64],
+            "fcnet_activation": "tanh",
+            # LSTM
+            "use_lstm": True,
+            "max_seq_len": 12,
+            "lstm_cell_size": 64,
         },
         # === PPO Configs ===
         use_critic = True,
