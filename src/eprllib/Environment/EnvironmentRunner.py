@@ -204,8 +204,8 @@ class EnvironmentRunner:
             agent_states[agent].update(self.get_zone_simulation_parameters_values(state_argument, agent))
             agent_states[agent].update(self.get_weather_prediction(state_argument, agent))
             agent_states[agent].update(self.get_actuators_state(state_argument, agent))
-            agent_states[agent].update(self.get_other_obs(self.env_config, agent))
-            agent_states[agent].update(self.get_user_occupation_forecast(state_argument, self.env_config, agent))
+            agent_states[agent].update(self.get_other_obs(agent))
+            agent_states[agent].update(self.get_user_occupation_forecast(state_argument, agent))
         
         dict_agents_obs = {agent: None for agent in self.agents}
         for agent in self.agents:
@@ -332,7 +332,7 @@ class EnvironmentRunner:
         The EnergyPlus variables are defined in the environment configuration.
 
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent (str): The AgentID. 
 
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
@@ -353,7 +353,7 @@ class EnvironmentRunner:
         Set the internal variables to handle and get the values in the environment.
 
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent (str): The AgentID.
 
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
@@ -373,7 +373,7 @@ class EnvironmentRunner:
         """The EnergyPlus meters are defined in the environment configuration.
         
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent (str): The AgentID.
 
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The meters and their handles.
@@ -392,7 +392,7 @@ class EnvironmentRunner:
         """The EnergyPlus actuators are defined in the environment configuration.
 
         Args:
-            agent str: The EnvConfig dictionary.
+            agent (str): The AgentID.
 
         Returns:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
@@ -411,7 +411,7 @@ class EnvironmentRunner:
         """The EnergyPlus actuators are defined in the environment configuration.
 
         Args:
-            agent str: The EnvConfig dictionary.
+            internal_actuators (List[Tuple[str,str,str]]): List of actuator to be commanded internally.
 
         Returns:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
@@ -703,13 +703,12 @@ class EnvironmentRunner:
         
     def get_other_obs(
         self,
-        env_config: Dict[str,Any],
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
 
         Args:
-            env_config (Dict[str,Any]): Environment coniguration.
+            agent (str): The AgentID.
 
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
@@ -723,19 +722,28 @@ class EnvironmentRunner:
         variables.update({
             get_other_obs_name(agent,key): value 
             for key, value
-            in env_config["agents_config"][agent]["observation"]["other_obs"].items()
+            in self.env_config["agents_config"][agent]["observation"]["other_obs"].items()
         })
-        env_config["agents_config"][agent]["observation"]["other_obs"]
+        self.env_config["agents_config"][agent]["observation"]["other_obs"]
         return variables
     
     def get_user_occupation_forecast(
         self,
         state_argument: c_void_p,
-        env_config: Dict[str,Any],
         agent: Optional[str]=None
     ) -> Dict[str,Any]:
+        """
+        Get the user occupation forecast for the actual timestep.
+
+        Args:
+            state_argument (): EnergyPlus state.
+            agent (str): The AgentID.
+
+        Returns:
+            Dict[str,Any]: User occupation forecast dict values for the actual timestep.
+        """
         assert isinstance(agent, str), "Agent must be a string."
-        if not env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
+        if not self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
             return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
         variables: Dict[str,Any] = {}
@@ -745,12 +753,12 @@ class EnvironmentRunner:
             api.exchange.month(state_argument),
             api.exchange.year(state_argument),
             api.exchange.holiday_index(state_argument) > 0,
-            env_config["agents_config"][agent]['observation']['user_type'],
-            env_config["agents_config"][agent]['observation']['zone_type'],
-            env_config["agents_config"][agent]['observation']['num_simulations'],
-            env_config["agents_config"][agent]['observation']['probability_variation'],
-            env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
-            env_config["agents_config"][agent]['observation']['summer_months']
+            self.env_config["agents_config"][agent]['observation']['user_type'],
+            self.env_config["agents_config"][agent]['observation']['zone_type'],
+            self.env_config["agents_config"][agent]['observation']['num_simulations'],
+            self.env_config["agents_config"][agent]['observation']['probability_variation'],
+            self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
+            self.env_config["agents_config"][agent]['observation']['summer_months']
         )
         for h in range(24):
             variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
