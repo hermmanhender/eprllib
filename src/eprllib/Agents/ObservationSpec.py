@@ -37,7 +37,7 @@ class ObservationSpec:
         probability_variation_evening_night_hours: float = 0.20,
         summer_months: List[int] = [6, 7, 8, 9],
         occupation_schedule: Optional[Tuple[str, str, str]] = None
-    ):
+    ) -> None:
         """
         Construction method.
         
@@ -93,9 +93,29 @@ class ObservationSpec:
                 'outdoor_barometric_pressure', 'outdoor_dew_point', 'outdoor_dry_bulb', 'outdoor_relative_humidity',
                 'sky_temperature', 'wind_direction', 'wind_speed'.
             
-            use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
+            use_actuator_state (bool): Define if the actuator state will be used as an observation for the agent.
             
             other_obs (Dict[str, float | int]): Custom observation dictionary.
+            
+            history_len (int): History length for each agent.
+            
+            user_occupation_forecast (bool): Define if the user occupation forecast will be used. Default is False.
+            
+            user_type (str): Type of user. Default is 'Residential'
+            
+            zone_type (str): Type of zone. Default is 'Office'
+            
+            num_simulations (int): Number of simulations for the user occupation forecast. Default is 100.
+            
+            probability_variation (float): Probability variation for the user occupation forecast. Default is 0.15.
+
+            
+            probability_variation_evening_night_hours (float): Probability variation for the user occupation forecast. Default is 0.20.
+            
+            summer_months (List[int]): Summer months for the user occupation forecast. Default is [6, 7, 8, 9].
+            
+            occupation_schedule (Tuple[str, str, str]): Occupation schedule for the user occupation forecast. Default is None.
+
         """
         # Variables
         self.variables = variables
@@ -205,6 +225,10 @@ class ObservationSpec:
         
         if counter == 0:
             raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
+        
+        if self.history_len <= 0:
+            self.history_len = 1
+            logger.warning(f"The variable 'history_len' must be greater than 0. It is taken the value of 1.")
         
         return vars(self)
             
