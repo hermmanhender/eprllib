@@ -133,7 +133,7 @@ class ASHRAE55SimpleModel(BaseReward):
         Args:
             infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
         """
-        if self.agent_name is "None":
+        if self.agent_name == "None":
             self.agent_name = agent_name
             self.comfort_index = obs_indexed[get_variable_name(
                 self.agent_name, 
@@ -195,7 +195,7 @@ class HierarchicalASHRAE55SimpleModel(BaseReward):
         agent_name: str,
         obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is "None":
+        if self.agent_name == "None":
             self.agent_name = agent_name
             self.comfort_index = obs_indexed[get_variable_name(
                 self.agent_name, 

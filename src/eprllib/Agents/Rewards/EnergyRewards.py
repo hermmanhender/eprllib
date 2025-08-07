@@ -69,7 +69,7 @@ class EnergyWithMeters(BaseReward):
         agent_name: str,
         obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is "None":
+        if self.agent_name == "None":
             self.agent_name = agent_name
             self.cooling = obs_indexed[get_meter_name(
                 self.agent_name,
@@ -159,7 +159,7 @@ class HierarchicalEnergyWithMeters(BaseReward):
         agent_name: str,
         obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is "None":
+        if self.agent_name == "None":
             self.agent_name = agent_name
             self.cooling = obs_indexed[get_meter_name(
                 self.agent_name,

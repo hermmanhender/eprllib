@@ -93,7 +93,7 @@ class CEN15251(BaseReward):
         agent_name: str,
         obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is "None":
+        if self.agent_name == "None":
             self.agent_name = agent_name
             self.cat1_name = obs_indexed[get_variable_name(
                 self.agent_name,
@@ -216,7 +216,7 @@ class HierarchicalCEN15251(BaseReward):
         agent_name: str,
         obs_indexed: Dict[str, int]
     ) -> None:
-        if self.agent_name is "None":
+        if self.agent_name == "None":
             self.agent_name = agent_name
             self.cat1_name = obs_indexed[get_variable_name(
                 self.agent_name,
