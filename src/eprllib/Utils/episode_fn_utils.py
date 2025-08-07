@@ -184,10 +184,10 @@ def building_dimension(
             for xyz in range(3):
                 epJSON_object['BuildingSurface:Detailed'][surface_name]['vertices'][_]['vertex_'+coordinate[xyz]+'_coordinate'] = surface_coordenates[surface_name][_][xyz]
     
-    north_window_proportion = window_area_relation[0]
-    east_window_proportion = window_area_relation[1]
-    south_window_proportion = window_area_relation[2]
-    west_window_proportion = window_area_relation[3]
+    north_window_proportion = float(window_area_relation[0])
+    east_window_proportion = float(window_area_relation[1])
+    south_window_proportion = float(window_area_relation[2])
+    west_window_proportion = float(window_area_relation[3])
     
     window_coordinates: Dict[str, Any] = {}
     
@@ -247,7 +247,7 @@ def building_dimension(
     return epJSON_object
 
 
-def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:float):
+def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:float) -> Dict[str, Any]:
     """
     Given a epJSON_object, return another epJSON_object with diferent size of windows.
 
@@ -296,6 +296,8 @@ def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:f
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_x_coordinate'] = ventana_escalada[l-1][0]
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_y_coordinate'] = ventana_escalada[l-1][1]
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_z_coordinate'] = ventana_escalada[l-1][2]
+
+    return epJSON_object
 
 def calcular_centro(ventana: List[List[float]]) -> List[float]:
     # Calcula el centro de la ventana
