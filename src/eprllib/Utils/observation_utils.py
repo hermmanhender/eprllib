@@ -6,7 +6,6 @@ This module contain some utilities used within the observation space, function, 
 of the programm related with the observations.
 
 """
-from eprllib import logger
 
 def get_variable_name(agent: str, variable_name:str, variable_key:str) -> str:
     """
@@ -103,3 +102,19 @@ def get_other_obs_name(agent: str, other_obs_name:str) -> str:
         str: The other observation name in the observation space.
     """
     return f"{agent}: {other_obs_name}"
+
+def get_user_occupation_forecast_name(agent: str, hour:int) -> str:
+    """
+    This function is used to get the parameter prediction name in the observation space.
+
+    Args:
+        agent (str): The agent name.
+        parameter_name (str): The parameter name.
+        hour (int): The hour.
+
+    Returns:
+        str: The parameter prediction name in the observation space.
+    """
+    if hour < 1 or hour > 24:
+        raise ValueError("Hour must be between 0 and 24.")
+    return f"{agent}: User Occupation Forecast: {hour}"

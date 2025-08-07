@@ -29,7 +29,8 @@ from eprllib.Utils.connector_utils import (
     set_meters_in_obs,
     set_zone_simulation_parameters_in_obs,
     set_prediction_variables_in_obs,
-    set_other_obs_in_obs
+    set_other_obs_in_obs,
+    set_user_occupation_forecast_in_obs
     )
 from eprllib import logger
 
@@ -70,45 +71,47 @@ class FullySharedParametersConnector(BaseConnector):
         """
         agent_list = [key for key in env_config["agents_config"].keys()]
         obs_space_len: int = 0
+        self.obs_indexed[agent] = {}
         
         if len(agent_list) > self.number_of_agents_total:
             raise ValueError("The number of agents must be greater than the number of agents in the environment configuration.")
         
         if self.number_of_agents_total > 1:
             agents_used = self.number_of_agents_total
-            for agent in agent_list:
-                self.obs_indexed[agent] = obs_space_len
+            for agent_name in agent_list:
+                self.obs_indexed[agent][agent_name] = obs_space_len
                 obs_space_len += 1
                 agents_used -= 1
             # Add the rest of the agents as zero vectors
             if agents_used > 0:
                 for i in range(agents_used):
-                    self.obs_indexed[f"agent_{i}"] = obs_space_len
+                    self.obs_indexed[agent][f"not_used_agent_{i+1}"] = obs_space_len
                     obs_space_len += 1
-        
-        self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
+        assert obs_space_len == len(self.obs_indexed[agent]), f"The observation space length must be equal to the number of indexed observations. Obs indexed:{len(self.obs_indexed[agent])} != Obs space len:{obs_space_len}."
+        self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_user_occupation_forecast_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         
         # Add the actuator state to all the agents obs_space_len
         # Check if at least one agent request the use_actuator_state
         use_actuator_state_flag = False
-        for agent in agent_list:
-            if env_config["agents_config"][agent]["observation"]['use_actuator_state']:
+        for agent_name in agent_list:
+            if env_config["agents_config"][agent_name]["observation"]['use_actuator_state']:
                 use_actuator_state_flag = True
                 break
         if use_actuator_state_flag:
             # Save the total amount of actuators in the environment to create a vector in set_agent_obs
             actuator_used = self.number_of_actuators_total
-            for agent in agent_list:
-                for actuator in range(len(env_config["agents_config"][agent]["action"]['actuators'])):
-                    actuator_component_type = env_config["agents_config"][agent]["action"]['actuators'][actuator][0]
-                    actuator_control_type = env_config["agents_config"][agent]["action"]['actuators'][actuator][1]
-                    actuator_key = env_config["agents_config"][agent]["action"]['actuators'][actuator][2]
-                    self.obs_indexed[observation_utils.get_actuator_name(
+            for agent_name in agent_list:
+                for actuator in range(len(env_config["agents_config"][agent_name]["action"]['actuators'])):
+                    actuator_component_type = env_config["agents_config"][agent_name]["action"]['actuators'][actuator][0]
+                    actuator_control_type = env_config["agents_config"][agent_name]["action"]['actuators'][actuator][1]
+                    actuator_key = env_config["agents_config"][agent_name]["action"]['actuators'][actuator][2]
+                    self.obs_indexed[agent][observation_utils.get_actuator_name(
                         agent,
                         actuator_component_type,
                         actuator_control_type,
@@ -119,7 +122,7 @@ class FullySharedParametersConnector(BaseConnector):
             # Add the rest of the actuators as zero vectors
             if actuator_used > 0:
                 for i in range(actuator_used):
-                    self.obs_indexed[f"actuator_{i}"] = obs_space_len
+                    self.obs_indexed[agent][f"not_used_actuator_{i+1}"] = obs_space_len
                     obs_space_len += 1
                     
             # chack that actuators is equal or minor to self.number_of_actuators_total
@@ -127,11 +130,11 @@ class FullySharedParametersConnector(BaseConnector):
                 logger.error("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
         
         assert obs_space_len > 0, "The observation space length must be greater than 0."
-        assert len(self.obs_indexed) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+        assert len(self.obs_indexed[agent]) == obs_space_len, f"The observation space length must be equal to the number of indexed observations. Obs indexed:{len(self.obs_indexed)} != Obs space len:{obs_space_len}. The agent {agent} has the following indexed observations: {self.obs_indexed[agent]}."
+        obs_space_len += 1
+        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
-        logger.debug(f"Observation space length for agent {agent}: {obs_space_len+1}")
-        
-        return Box(float("-inf"), float("inf"), (obs_space_len+1, ))
+        return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
     @override(BaseConnector)
     def get_agent_obs_indexed(
@@ -151,7 +154,7 @@ class FullySharedParametersConnector(BaseConnector):
         """
         if self.obs_indexed == {}:
             self.get_agent_obs_dim(env_config, agent)
-        return self.obs_indexed
+        return self.obs_indexed[agent]
     
     @override(BaseConnector)
     def set_top_level_obs(

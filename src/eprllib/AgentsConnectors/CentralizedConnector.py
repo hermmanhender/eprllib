@@ -22,7 +22,8 @@ from eprllib.Utils.connector_utils import (
     set_zone_simulation_parameters_in_obs,
     set_prediction_variables_in_obs,
     set_other_obs_in_obs,
-    set_actuators_in_obs
+    set_actuators_in_obs,
+    set_user_occupation_forecast_in_obs
     )
 from eprllib import logger
 
@@ -58,21 +59,23 @@ class CentralizedConnector(BaseConnector):
             gym.Space: The observation space of the environment.
         """
         obs_space_len: int = 0
+        self.obs_indexed[agent] = {}
         
-        self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
-        self.obs_indexed, obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed)
+        self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_user_occupation_forecast_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         
         assert obs_space_len > 0, "The observation space length must be greater than 0."
-        assert len(self.obs_indexed) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+        assert len(self.obs_indexed[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+        obs_space_len += 1
+        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
-        logger.debug(f"Observation space length for agent {agent}: {obs_space_len+1}")
-        
-        return Box(float("-inf"), float("inf"), (obs_space_len+1, ))
+        return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
     @override(BaseConnector)
     def get_agent_obs_indexed(
@@ -92,7 +95,7 @@ class CentralizedConnector(BaseConnector):
         """
         if self.obs_indexed == {}:
             self.get_agent_obs_dim(env_config, agent)
-        return self.obs_indexed
+        return self.obs_indexed[agent]
     
     @override(BaseConnector)
     def set_top_level_obs(

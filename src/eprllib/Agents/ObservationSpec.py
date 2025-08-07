@@ -9,6 +9,7 @@ from eprllib.Agents import (
     SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, 
     PREDICTION_VARIABLES, PREDICTION_HOURS
 )
+from eprllib.Utils import VALID_USER_TYPES, VALID_ZONE_TYPES
 from eprllib import logger
 
 class ObservationSpec:
@@ -28,6 +29,14 @@ class ObservationSpec:
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
         history_len: int = 1,
+        user_occupation_forecast: bool = False,
+        user_type: str = VALID_USER_TYPES[0],
+        zone_type: str = VALID_ZONE_TYPES[0],
+        num_simulations: int = 100,
+        probability_variation: float = 0.15,
+        probability_variation_evening_night_hours: float = 0.20,
+        summer_months: List[int] = [6, 7, 8, 9],
+        occupation_schedule: Optional[Tuple[str, str, str]] = None
     ):
         """
         Construction method.
@@ -122,7 +131,20 @@ class ObservationSpec:
         
         # History length for each agent.
         self.history_len = history_len
-            
+        
+        # User occupation forecast profile.
+        self.user_occupation_forecast = user_occupation_forecast
+        if self.user_occupation_forecast:
+            self.user_type = user_type
+            self.zone_type = zone_type
+            self.num_simulations = num_simulations
+            self.probability_variation = probability_variation
+            self.probability_variation_evening_night_hours = probability_variation_evening_night_hours
+            self.summer_months = summer_months
+            if occupation_schedule is None:
+                raise ValueError("occupation_schedule must be provided if user_occupation_forecast is True.")
+            self.occupation_schedule = occupation_schedule
+        
     def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
 
