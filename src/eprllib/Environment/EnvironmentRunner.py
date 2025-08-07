@@ -789,9 +789,9 @@ class EnvironmentRunner:
             if not api.exchange.api_data_fully_ready(state_argument):
                 return False
         
-        self.agent_variables_and_handles["internal_actuators"][1].update({
+        self.internal_variables_and_handles["internal_actuators"][1].update({
             key: api.exchange.get_actuator_handle(state_argument, *actuator)
-            for key, actuator in self.agent_variables_and_handles["internal_actuators"][0].items()
+            for key, actuator in self.internal_variables_and_handles["internal_actuators"][0].items()
         })
         
         for agent in self.agents:
