@@ -23,7 +23,7 @@ class BaseConnector:
         :type connector_fn_config: Dict[str, Any], optional
         """
         self.connector_fn_config = connector_fn_config
-        self.obs_indexed: Dict[str, int] = {}
+        self.obs_indexed: Dict[str,Dict[str, int]] = {}
     
     def __name__(self):
         """
@@ -85,7 +85,7 @@ class BaseConnector:
         :rtype: gym.spaces.Dict
         """
         possible_agents = [key for key in env_config["agents_config"].keys()]
-        observation_space_dict: Dict[str, Any] = {agent: None for agent in possible_agents}
+        observation_space_dict: Dict[str, Any] = {}
         for agent in possible_agents:
             observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
         return spaces.Dict(observation_space_dict)
