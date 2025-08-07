@@ -300,7 +300,7 @@ class Environment(MultiAgentEnv):
                 
                 reward_fn_instance.set_initial_parameters(
                     agent,
-                    self.connector_fn.obs_indexed
+                    self.connector_fn.obs_indexed[agent]
                     )
                 logger.debug(f"Reward function for agent {agent} initialized with infos: {infos[agent]}")
                 self.agents_to_inizialize_reward_parameters.remove(agent)
@@ -408,7 +408,7 @@ class Environment(MultiAgentEnv):
                             if reward_fn_instance is not None:
                                 reward_fn_instance.set_initial_parameters(
                                     agent,
-                                    self.connector_fn.obs_indexed
+                                    self.connector_fn.obs_indexed[agent]
                                     )
                                 self.agents_to_inizialize_reward_parameters.remove(agent)
                 # Upgrade last observation and infos dicts.
