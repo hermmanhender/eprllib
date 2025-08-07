@@ -64,15 +64,15 @@ from eprllib.Agents.AgentSpec import (
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
 
-from eprllib.examples.example_thermostat_files.reward_function import EnergyAndASHRAE55SimpleModel
+from eprllib.Agents.Rewards.EnergyAndAshrae55SimpleModel import EnergyAndASHRAE55SimpleModel
 from eprllib.examples.example_thermostat_files.episode_fn import task_cofiguration
 from eprllib.examples.example_thermostat_files.policy_mapping import policy_map_fn
 
 with open("src/eprllib/examples/example_thermostat_files/episode_fn_config.json", "r") as f:
     episode_config = json.load(f)
 
-experiment_name:str = "example_thermostat"
-name:str = "dnn_simple"
+experiment_name:str = "07-CTD-V"
+name:str = "base"
 tuning:bool = False
 restore:bool = False
 checkpoint_path:str = ""
@@ -113,14 +113,17 @@ eprllib_config.agents(
                     "Cooling:DistrictCooling",
                 ],
                 use_actuator_state = True,
-                use_one_day_weather_prediction = True,
-                prediction_hours = 3,
+                use_one_day_weather_prediction = False,
+                prediction_hours = 24,
                 prediction_variables = {
                     'outdoor_dry_bulb': True,
                 },
                 internal_variables = [
                     ("Zone Floor Area", "Thermal Zone"),
                 ],
+                history_len=1,
+                user_occupation_forecast = False
+                
             ),
             action = ActionSpec(
                 actuators = [
