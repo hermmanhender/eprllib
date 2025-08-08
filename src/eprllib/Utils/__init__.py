@@ -13,12 +13,12 @@ from typing import Dict, Any
 OCCUPATION_PROFILES: Dict[str, Dict[str, Any]] = {
     "Single with an office job": {
         "total_people": 1,
-        "zonas_daytime": {
+        "zone_daytime": {
             "weekdays":        [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
             "weekends": [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
         },
-        "zonas_nightly": {
-            "semana":        [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "zone_nightly": {
+            "weekdays":        [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
             "weekends": [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
         },
     },
