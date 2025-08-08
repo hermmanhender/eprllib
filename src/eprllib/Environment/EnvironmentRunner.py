@@ -743,8 +743,10 @@ class EnvironmentRunner:
             Dict[str,Any]: User occupation forecast dict values for the actual timestep.
         """
         assert isinstance(agent, str), "Agent must be a string."
+                
         if not self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
-            return {}
+            if not self.env_config["agents_config"][agent]['observation']['user_occupation_funtion']:
+                return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
         variables: Dict[str,Any] = {}
         self.occupancy_next_timestep, forecast_vector = calculate_occupancy_and_forecast(
@@ -760,6 +762,9 @@ class EnvironmentRunner:
             self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
             self.env_config["agents_config"][agent]['observation']['summer_months']
         )
+        if not self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
+            return {}
+        
         for h in range(24):
             variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
             

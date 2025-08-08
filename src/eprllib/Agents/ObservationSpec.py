@@ -29,6 +29,7 @@ class ObservationSpec:
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
         history_len: int = 1,
+        user_occupation_funtion: bool = False,
         user_occupation_forecast: bool = False,
         user_type: str = VALID_USER_TYPES[0],
         zone_type: str = VALID_ZONE_TYPES[0],
@@ -99,6 +100,8 @@ class ObservationSpec:
             
             history_len (int): History length for each agent.
             
+            user_occupation_funtion (bool): Define if the user occupation function will be used. Default is False.
+            
             user_occupation_forecast (bool): Define if the user occupation forecast will be used. Default is False.
             
             user_type (str): Type of user. Default is 'Residential'
@@ -108,7 +111,6 @@ class ObservationSpec:
             num_simulations (int): Number of simulations for the user occupation forecast. Default is 100.
             
             probability_variation (float): Probability variation for the user occupation forecast. Default is 0.15.
-
             
             probability_variation_evening_night_hours (float): Probability variation for the user occupation forecast. Default is 0.20.
             
@@ -154,16 +156,20 @@ class ObservationSpec:
         
         # User occupation forecast profile.
         self.user_occupation_forecast = user_occupation_forecast
-        if self.user_occupation_forecast:
+        self.user_occupation_funtion = user_occupation_funtion
+        if self.user_occupation_funtion or self.user_occupation_forecast: # This ensure that if forecast is used, the occupancy function is used as well.
             self.user_type = user_type
             self.zone_type = zone_type
+            self.summer_months = summer_months
             self.num_simulations = num_simulations
             self.probability_variation = probability_variation
             self.probability_variation_evening_night_hours = probability_variation_evening_night_hours
-            self.summer_months = summer_months
             if occupation_schedule is None:
                 raise ValueError("occupation_schedule must be provided if user_occupation_forecast is True.")
-            self.occupation_schedule = occupation_schedule
+            else:
+                assert isinstance(occupation_schedule, tuple), "occupation_schedule must be a tuple."
+                self.occupation_schedule = occupation_schedule            
+            
         
     def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
