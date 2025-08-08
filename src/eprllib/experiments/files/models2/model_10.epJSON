@@ -719,7 +719,7 @@
             "mean_radiant_temperature_calculation_type": "EnclosureAveraged",
             "number_of_people": 1,
             "number_of_people_calculation_method": "People",
-            "number_of_people_schedule_name": "occupants schedule",
+            "number_of_people_schedule_name": "occupants_schedule",
             "sensible_heat_fraction": 0.563,
             "thermal_comfort_model_1_type": "AdaptiveCEN15251",
             "work_efficiency_schedule_name": "Work Efficiency",
@@ -820,6 +820,10 @@
         },
         "ventilation_factor": {
             "hourly_value": 0,
+            "schedule_type_limits_name": "Fraction"
+        },
+        "occupants_schedule": {
+            "hourly_value": 1,
             "schedule_type_limits_name": "Fraction"
         }
     },
