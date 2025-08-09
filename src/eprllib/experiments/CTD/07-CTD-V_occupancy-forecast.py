@@ -232,8 +232,8 @@ if not restore:
         gamma = 0.99,#tune.grid_search([0.7,0.9,0.99]) if tuning else 0.8,#
         lr_schedule = [
             (0, 3e-4),
-            (4e6, 1e-4),
-            (8e6, 5e-5)
+            (1.5e6, 1e-4),
+            (3e6, 5e-5)
             ],#tune.grid_search([0.0001,0.001,0.01]) if tuning else 0.003,#
         train_batch_size = 100000,#tune.grid_search([100,1000,10000,100000]) if tuning else 12961*7,
         # Each episode has a lenght of 144*3+1=433. To train the model with batch_mode=episodes_complete and using the 8 processes in parallel
@@ -283,8 +283,8 @@ if not restore:
         vf_loss_coeff = 0.5,#tune.quniform(0.1, 1, 0.1) if tuning else 0.9,#
         entropy_coeff_schedule = [
             (0, 0.02),
-            (4e6, 0.005),
-            (8e6, 0.001)
+            (1.5e6, 0.005),
+            (3e6, 0.001)
             ],#tune.choice([0.,0.1,0.2]) if tuning else 0.01,#
         clip_param = 0.25,#tune.quniform(0.1, 0.3, 0.05) if tuning else 0.25,#
         vf_clip_param = 0.25,#tune.quniform(0.1, 0.3, 0.05) if tuning else 0.3,#
@@ -400,7 +400,7 @@ if not restore:
                 algorithm = "PPO",
             ),
             storage_path = f'C:/Users/grhen/ray_results/{experiment_name}',
-            stop = {"info/num_env_steps_trained": 1008 * 10000},
+            stop = {"info/num_env_steps_trained": 1008 * 4000},
             log_to_file = True,
             
             checkpoint_config=air.CheckpointConfig(
