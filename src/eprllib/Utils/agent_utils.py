@@ -52,7 +52,11 @@ def _validate_type(value: Any, expected_type: Any, path: str = "") -> None:
     origin = get_origin(expected_type)
     
     if origin is tuple:
-        if not isinstance(value, tuple):
+        # if the origin is a list, try to convert in a tuple
+        if isinstance(value, list):
+            value = tuple(value)
+        
+        elif not isinstance(value, tuple):
             msg = f"Expected tuple at {path}, got {type(value).__name__}"
             logger.error(msg)
             raise TypeError(msg)
