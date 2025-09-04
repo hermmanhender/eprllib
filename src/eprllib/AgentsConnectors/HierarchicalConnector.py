@@ -20,6 +20,7 @@ from eprllib.Utils.connector_utils import (
     set_variables_in_obs,
     set_internal_variables_in_obs,
     set_meters_in_obs,
+    set_simulation_parameters_in_obs,
     set_zone_simulation_parameters_in_obs,
     set_prediction_variables_in_obs,
     set_other_obs_in_obs,
@@ -90,6 +91,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
             self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
             self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent])
@@ -98,7 +100,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         
             assert obs_space_len > 0, "The observation space length must be greater than 0."
             assert len(self.obs_indexed_top_level[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
-            obs_space_len += 1
+            # obs_space_len += 1
             logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
             return Box(float("-inf"), float("inf"), (obs_space_len, ))
@@ -347,6 +349,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
             self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent])
             self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent])
@@ -355,7 +358,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             
             assert obs_space_len > 0, "The observation space length must be greater than 0."
             assert len(self.obs_indexed_top_level[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
-            obs_space_len += 1
+            # obs_space_len += 1
             logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
             return Box(float("-inf"), float("inf"), (obs_space_len, ))

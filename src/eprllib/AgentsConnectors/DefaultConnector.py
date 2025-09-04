@@ -14,6 +14,7 @@ from eprllib.Utils.connector_utils import (
     set_variables_in_obs,
     set_internal_variables_in_obs,
     set_meters_in_obs,
+    set_simulation_parameters_in_obs,
     set_zone_simulation_parameters_in_obs,
     set_prediction_variables_in_obs,
     set_other_obs_in_obs,
@@ -55,6 +56,7 @@ class DefaultConnector(BaseConnector):
         self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
@@ -63,7 +65,7 @@ class DefaultConnector(BaseConnector):
                 
         assert obs_space_len > 0, "The observation space length must be greater than 0."
         assert len(self.obs_indexed[agent]) == obs_space_len, f"The observation space length must be equal to the number of indexed observations. Obs indexed:{len(self.obs_indexed[agent])} != Obs space len:{obs_space_len}."
-        obs_space_len += 1
+        # obs_space_len += 1
         logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
         return Box(float("-inf"), float("inf"), (obs_space_len, ))
