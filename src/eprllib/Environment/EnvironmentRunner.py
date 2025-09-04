@@ -8,6 +8,7 @@ Python API in the version 24.2.0.
 import os
 import threading
 import time
+import numpy as np
 from queue import Queue
 from typing import Any, Dict, List, Optional, Tuple
 from ctypes import c_void_p
@@ -541,18 +542,25 @@ class EnvironmentRunner:
         # Get timestep variables that are needed as input for some data_exchange methods.
         hour = api.exchange.hour(state_argument)
         zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
+        month = api.exchange.month(state_argument)
+        if month == 2:
+            max_day = 28
+        elif month in [4,6,9,11]:
+            max_day = 30
+        else:
+            max_day = 31
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
             'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
             'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
-            'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
-            'day_of_month': api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
-            'day_of_week': api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
-            'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
+            'current_time': np.sin(2 * np.pi * (api.exchange.current_time(state_argument)) / 24), # Get the current time of day in hours, where current time represents the end time of the current time step.
+            'day_of_month': np.sin(2 * np.pi * (api.exchange.day_of_month(state_argument)-1) / (max_day-1)), # Get the current day of month (1-31)
+            'day_of_week': np.sin(2 * np.pi * (api.exchange.day_of_week(state_argument)-1) / 6), # Get the current day of the week (1-7)
+            'day_of_year': np.sin(2 * np.pi * (api.exchange.day_of_year(state_argument)-1) / 365), # Get the current day of the year (1-366)
             'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
-            'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
-            'minutes': api.exchange.minutes(state_argument), # Get the current minutes into the hour (1-60)
-            'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
+            'hour': np.sin(2 * np.pi * (api.exchange.hour(state_argument)) / 23), # Get the current hour of the simulation (0-23)
+            'minutes': np.sin(2 * np.pi * (api.exchange.hour(state_argument)-1) / 59), # Get the current minutes into the hour (1-60)
+            'month': np.sin(2 * np.pi * (api.exchange.month(state_argument)-1) / 11), # Get the current month of the simulation (1-12)
             'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
             'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
             'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
@@ -617,11 +625,12 @@ class EnvironmentRunner:
         Returns:
             Dict[str,int|float]: Dict of parameter names as keys and parameter values as values.
         """
+        num_time_steps_in_hour = api.exchange.num_time_steps_in_hour(state_argument)
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
             'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
             'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
-            'zone_time_step_number': api.exchange.zone_time_step_number(state_argument), # The current zone time step index, from 1 to the number of zone time steps per hour
+            'zone_time_step_number': np.sin(2 * np.pi * (api.exchange.zone_time_step_number(state_argument)) / num_time_steps_in_hour), # The current zone time step index, from 1 to the number of zone time steps per hour
         }
         variables: Dict[str,Any] = {}
         
