@@ -4,17 +4,9 @@ RUN DRL CONTROLS
 
 This script execute the conventional controls in the evaluation scenario.
 """
-import os
-import numpy as np
-import pandas as pd
-import threading
-import torch
-from queue import Queue, Empty
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 from ray.rllib.policy.policy import Policy
 from eprllib.Environment.Environment import Environment
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
-from eprllib import logger
 
 
 def generate_experience(
@@ -22,7 +14,7 @@ def generate_experience(
     env_config: Dict[str, Any],
     policies: Dict[str, Policy],
     num_episodes: int = 1
-) -> pd.DataFrame:
+) -> Dict[str, Any]:
     """
     Function to generate experience and store it in a structured dictionary.
 
@@ -56,7 +48,7 @@ def generate_experience(
                         }
     """
     # Instantiate the environment
-    env_instance = env(env_config)
+    env_instance: Environment = env(env_config)
     
     # Main dictionary to store all experiment data
     experiment_data: Dict[str, Any] = {'experiment': {}}
@@ -78,7 +70,7 @@ def generate_experience(
         obs, info = env_instance.reset()
 
         # List the agents in the environment for the first timestep.
-        _agent_ids = list(obs.keys())
+        _agent_ids: List[str] = list(obs.keys())
 
         # Reward for timestep 0 (initial state, no action taken yet).
         reward = {agent: 0 for agent in _agent_ids}
@@ -90,7 +82,7 @@ def generate_experience(
         timestep_counter += 1
         timestep_data: Dict[str, Any] = {}
         for agent in _agent_ids:
-            agent_experience = {
+            agent_experience: Dict[str, Any] = {
                 'observation': obs[agent],
                 'action': None, # No action taken yet at timestep 0
                 'reward': reward[agent],
