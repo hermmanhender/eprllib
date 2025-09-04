@@ -86,6 +86,34 @@ def set_meters_in_obs(
     assert obs_space_len == len(obs_indexed), f"The observation space length is not equal to the length of the observation indexed dictionary. {obs_space_len} != {len(obs_indexed)}"
     return obs_indexed, obs_space_len
 
+def set_simulation_parameters_in_obs(
+    env_config: Dict[str, Any],
+    agent: str,
+    obs_indexed: Dict[str, int],
+    obs_space_len: int = 0
+) -> Tuple[Dict[str,int], int]:
+    """
+    Set zone simulation parameters in the observation indexed dictionary.
+    :param env_config: environment configuration
+    :type env_config: Dict[str, Any]
+    :param agent: agent name
+    :type agent: str
+    :param obs_indexed: indexed observation dictionary
+    :type obs_indexed: Dict[str, int]
+    :return: indexed observation dictionary and observation space length
+    :rtype: Tuple[Dict[str, int], int]
+    """
+    if env_config["agents_config"][agent]["observation"]['simulation_parameters'] is not None:
+        for key, value in env_config["agents_config"][agent]["observation"]['simulation_parameters'].items():
+            if value:
+                obs_indexed.update({observation_utils.get_parameter_name(
+                    agent,
+                    key
+                    ): obs_space_len})
+                obs_space_len += 1
+    assert obs_space_len == len(obs_indexed), f"The observation space length is not equal to the length of the observation indexed dictionary. {obs_space_len} != {len(obs_indexed)}"
+    return obs_indexed, obs_space_len
+
 def set_zone_simulation_parameters_in_obs(
     env_config: Dict[str, Any],
     agent: str,
