@@ -93,8 +93,8 @@ def run_period(julian_day:int, days_period:int=28) -> Tuple[int,int,int,int]:
         msg = 'Julian day must be between 1 and (365-days_period)'
         logger.error(msg)
         raise ValueError(msg)
-    if days_period < 1:
-        msg = 'Days period must be greater than 0'
+    if days_period < 0:
+        msg = 'Days period must be integer and positive'
         logger.error(msg)
         raise ValueError(msg)
     
