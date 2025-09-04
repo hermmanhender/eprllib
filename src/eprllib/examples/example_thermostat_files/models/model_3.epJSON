@@ -1,7 +1,7 @@
 {
     "AirflowNetwork:MultiZone:Component:SimpleOpening": {
         "SimpleOpening": {
-            "air_mass_flow_coefficient_when_opening_is_closed": 0.05,
+            "air_mass_flow_coefficient_when_opening_is_closed": 0.8,
             "air_mass_flow_exponent_when_opening_is_closed": 0.65,
             "discharge_coefficient": 1,
             "minimum_density_difference_for_two_way_flow": 0.0001
@@ -469,9 +469,9 @@
             "density": 2000,
             "roughness": "Rough",
             "solar_absorptance": 0.3,
-            "specific_heat": 1000,
+            "specific_heat": 2500,
             "thermal_absorptance": 0.93,
-            "thickness": 0.02,
+            "thickness": 0.5,
             "visible_absorptance": 0.7
         },
         "Piso_Madera": {
@@ -486,10 +486,10 @@
         },
         "internal_mass": {
             "conductivity": 0.93,
-            "density": 1900,
+            "density": 2500,
             "roughness": "Rough",
             "solar_absorptance": 0.7,
-            "specific_heat": 1050,
+            "specific_heat": 2500,
             "thermal_absorptance": 0.9,
             "thickness": 0.25,
             "visible_absorptance": 0.7
@@ -645,6 +645,16 @@
             "key_value": "*",
             "reporting_frequency": "Timestep",
             "variable_name": "Zone Air Humidity Ratio"
+        },
+        "Output:Variable 14": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Operative Temperature"
+        },
+        "Output:Variable 15": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Zone Thermal Comfort Fanger Model PMV"
         }
     },
     "Output:VariableDictionary": {
@@ -698,7 +708,9 @@
     "People": {
         "People": {
             "activity_level_schedule_name": "occupants activity schedule",
+            "air_velocity_schedule_name": "air_velocity",
             "carbon_dioxide_generation_rate": 3.82e-08,
+            "clothing_insulation_calculation_method": "DynamicClothingModelASHRAE55",
             "enable_ashrae_55_comfort_warnings": "No",
             "fraction_radiant": 0.31417,
             "mean_radiant_temperature_calculation_type": "EnclosureAveraged",
@@ -707,6 +719,7 @@
             "number_of_people_schedule_name": "occupants schedule",
             "sensible_heat_fraction": 0.563,
             "thermal_comfort_model_1_type": "AdaptiveCEN15251",
+            "thermal_comfort_model_2_type": "Fanger",
             "work_efficiency_schedule_name": "Work Efficiency",
             "zone_or_zonelist_or_space_or_spacelist_name": "Thermal Zone"
         }
@@ -776,7 +789,7 @@
             "schedule_type_limits_name": "On/Off"
         },
         "HVAC_OnOff": {
-            "hourly_value": 1,
+            "hourly_value": 0,
             "schedule_type_limits_name": "AviabilityType"
         },
         "Work Efficiency": {
@@ -798,6 +811,10 @@
         "shading_control": {
             "hourly_value": 0,
             "schedule_type_limits_name": "Fraction"
+        },
+        "air_velocity": {
+            "hourly_value": 0.1,
+            "schedule_type_limits_name": "Any Number"
         }
     },
     "Schedule:Day:Interval": {
