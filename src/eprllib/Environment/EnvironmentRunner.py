@@ -26,7 +26,7 @@ from eprllib.Utils.observation_utils import (
     get_parameter_prediction_name,
     get_user_occupation_forecast_name
 )
-from eprllib.Utils.env_utils import calculate_occupancy_and_forecast
+from eprllib.Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
 from eprllib import logger, EP_VERSION
 
 # EnergyPlus Python API path adding
@@ -123,7 +123,7 @@ class EnvironmentRunner:
             })
         internal_actuators: List[Tuple[str,str,str]] = []
         for agent in self.agents:
-            if self.env_config["agents_config"][agent]['observation']["user_occupation_forecast"]:
+            if self.env_config["agents_config"][agent]['observation']["user_occupation_funtion"]:
                 internal_actuators.append(self.env_config["agents_config"][agent]['observation']["occupation_schedule"])
             # delete duplicate actuators in actuators_list
             internal_actuators = list(set(internal_actuators))
@@ -753,31 +753,48 @@ class EnvironmentRunner:
         """
         assert isinstance(agent, str), "Agent must be a string."
                 
-        if not self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
-            if not self.env_config["agents_config"][agent]['observation']['user_occupation_funtion']:
-                return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
-        variables: Dict[str,Any] = {}
-        self.occupancy_next_timestep, forecast_vector = calculate_occupancy_and_forecast(
-            api.exchange.hour(state_argument),
-            api.exchange.day_of_month(state_argument),
-            api.exchange.month(state_argument),
-            api.exchange.year(state_argument),
-            api.exchange.holiday_index(state_argument) > 0,
-            self.env_config["agents_config"][agent]['observation']['user_type'],
-            self.env_config["agents_config"][agent]['observation']['zone_type'],
-            self.env_config["agents_config"][agent]['observation']['num_simulations'],
-            self.env_config["agents_config"][agent]['observation']['probability_variation'],
-            self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
-            self.env_config["agents_config"][agent]['observation']['summer_months']
-        )
-        if not self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
+        if self.env_config["agents_config"][agent]['observation']['user_occupation_funtion']:
+            
+            self.occupancy_next_timestep  = calculate_occupancy(
+                api.exchange.hour(state_argument),
+                api.exchange.day_of_month(state_argument),
+                api.exchange.month(state_argument),
+                api.exchange.year(state_argument),
+                api.exchange.holiday_index(state_argument) > 0,
+                self.env_config["agents_config"][agent]['observation']['user_type'],
+                self.env_config["agents_config"][agent]['observation']['zone_type'],
+                self.env_config["agents_config"][agent]['observation']['num_simulations'],
+                self.env_config["agents_config"][agent]['observation']['probability_variation'],
+                self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
+                self.env_config["agents_config"][agent]['observation']['summer_months']
+            )
+        
+        if self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
+            variables: Dict[str,Any] = {}
+            forecast_vector = calculate_occupancy_forecast(
+                api.exchange.hour(state_argument),
+                api.exchange.day_of_month(state_argument),
+                api.exchange.month(state_argument),
+                api.exchange.year(state_argument),
+                api.exchange.holiday_index(state_argument) > 0,
+                self.env_config["agents_config"][agent]['observation']['user_type'],
+                self.env_config["agents_config"][agent]['observation']['zone_type'],
+                self.env_config["agents_config"][agent]['observation']['num_simulations'],
+                self.env_config["agents_config"][agent]['observation']['probability_variation'],
+                self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
+                self.env_config["agents_config"][agent]['observation']['summer_months']
+            )
+            
+            for h in range(24):
+                variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
+                
+            return variables
+            
+        else:
             return {}
         
-        for h in range(24):
-            variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
-            
-        return variables
+        
     
     def _init_callback(self, state_argument: c_void_p) -> bool:
         """
