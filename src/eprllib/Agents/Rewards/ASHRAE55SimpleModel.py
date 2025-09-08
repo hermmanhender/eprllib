@@ -75,9 +75,11 @@ Note that hierarchical versions are the same function but instead of using only 
 value of the variable/meter, the reward is calculated using a list of the last timesteps and
 integrating or averaging them.
 """
-from typing import Any, Dict # type: ignore
+from typing import Any, Dict, Tuple, List # type: ignore
+import numpy as np
 from numpy.typing import NDArray
 from numpy import float32
+from shapely.geometry import Point, Polygon
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name
 from eprllib.Utils.annotations import override
@@ -119,7 +121,15 @@ class ASHRAE55SimpleModel(BaseReward):
         super().__init__(reward_fn_config)
         
         self.agent_name: str = "None"
-        self.comfort_index: int
+        self.zone_operative_temperature_index: int = 0
+        self.zone_air_humidity_ratio_index: int = 0
+        self.zone_people_occupant_count_index: int = 0
+        
+        self.max_delta_temperature: float = reward_fn_config.get("max_delta_temperature", 1.0)
+        self.max_delta_humidity: float = reward_fn_config.get("max_delta_humidity", 0.002)
+        self.thermal_zone_poligon: List[Tuple[float, float]] = reward_fn_config.get("thermal_zone_poligon", [(21.7, 0.0), (28.3, 0.0), (26.8, 0.012), (19.6, 0.012)])
+        
+        self.thermal_zone = Polygon([(x / self.max_delta_temperature, y / self.max_delta_humidity) for x, y in self.thermal_zone_poligon])
     
     @override(BaseReward)
     def set_initial_parameters(
@@ -135,12 +145,27 @@ class ASHRAE55SimpleModel(BaseReward):
         """
         if self.agent_name == "None":
             self.agent_name = agent_name
-            self.comfort_index = obs_indexed[get_variable_name(
+            self.zone_operative_temperature_index = obs_indexed[get_variable_name(
                 self.agent_name, 
-                "Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", 
+                "Zone Operative Temperature", 
                 self.reward_fn_config['thermal_zone']
             )]
-            logger.info(f"Agent name: {self.agent_name}, Comfort variable: {self.comfort_index}")
+            logger.info(f"Agent name: {self.agent_name}, Zone Operative Temperature Index: {self.zone_operative_temperature_index}")
+            
+            self.zone_air_humidity_ratio_index = obs_indexed[get_variable_name(
+                self.agent_name, 
+                "Zone Air Humidity Ratio", 
+                self.reward_fn_config['thermal_zone']
+            )]
+            logger.info(f"Agent name: {self.agent_name}, Zone Air Humidity Ratio Index: {self.zone_air_humidity_ratio_index}")
+    
+            self.zone_people_occupant_count_index = obs_indexed[get_variable_name(
+                self.agent_name, 
+                "Zone People Occupant Count", 
+                self.reward_fn_config['thermal_zone']
+            )]
+            logger.info(f"Agent name: {self.agent_name}, Zone People Occupant Count Index: {self.zone_people_occupant_count_index}")
+    
     
     @override(BaseReward)
     def get_reward(
@@ -162,11 +187,24 @@ class ASHRAE55SimpleModel(BaseReward):
         Returns:
             float: reward value.
         """
-        if obs[self.comfort_index] > 0:
-            return -1
-        else:
-            return 0
+        if obs[self.zone_people_occupant_count_index] == 0:
+            return 0.0
+        
+        actual_state = Point((obs[self.zone_operative_temperature_index] / self.max_delta_temperature, 
+                              obs[self.zone_air_humidity_ratio_index] / self.max_delta_humidity))
+        
 
+        # If the point is inside the polygon, the penalty is 0.
+        if self.thermal_zone.contains(actual_state) or self.thermal_zone.touches(actual_state):
+            return 0.0
+        
+        # If the point is outside, we calculate the minimum distance to the polygon.
+        # minimum_distance = self.thermal_zone.exterior.distance(actual_state)
+        
+        # Normalize the distance and convert it into a penalty.
+        # normalized_distance = np.clip(minimum_distance, 0.0, 1.0)
+        return -self.thermal_zone.exterior.distance(actual_state)
+    
 # === Hierarchical versions ===
 
 class HierarchicalASHRAE55SimpleModel(BaseReward):

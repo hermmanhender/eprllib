@@ -82,9 +82,14 @@ class EnergyAndASHRAE55SimpleModel(BaseReward):
             float: reward normalize value
         """
         reward = 0.
-        reward += (1-self.beta) * self.comfort_reward.get_reward(obs, terminated, truncated)
-        reward += self.beta * self.energy_reward.get_reward(obs, terminated, truncated)
+        # If desoccupied only energy matters
+        if obs[self.comfort_reward.zone_people_occupant_count_index] == 0:
+            reward += self.energy_reward.get_reward(obs, terminated, truncated)
+        else:
+            reward += (1-self.beta) * self.comfort_reward.get_reward(obs, terminated, truncated)
+            reward += self.beta * self.energy_reward.get_reward(obs, terminated, truncated)
         return reward
+
 
 # === Hierarchical version ===
 
