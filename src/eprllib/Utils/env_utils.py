@@ -47,7 +47,7 @@ def _calculate_occupancy_once(
     return max(0, min(base_occupation, total_people_profile))
 
 
-def calculate_occupancy_and_forecast(
+def calculate_occupancy(
     current_time: int,
     current_day: int,
     current_month: int,
@@ -59,7 +59,7 @@ def calculate_occupancy_and_forecast(
     probability_variation: float = 0.15,
     probability_variation_evening_night_hours: float = 0.20,
     summer_months: List[int] = [6, 7, 8, 9]
-) -> tuple[int, list[float]]:
+) -> int:
     """
     Calculates current occupancy and a probability forecast for a specific area type.
 
@@ -95,6 +95,50 @@ def calculate_occupancy_and_forecast(
         probability_variation, probability_variation_evening_night_hours, summer_months
     )
 
+    return current_occupation
+
+def calculate_occupancy_forecast(
+    current_time: int,
+    current_day: int,
+    current_month: int,
+    current_year: int,
+    current_holiday: bool,
+    user_type: str,
+    zone_type: str,
+    num_simulations: int = 100,
+    probability_variation: float = 0.15,
+    probability_variation_evening_night_hours: float = 0.20,
+    summer_months: List[int] = [6, 7, 8, 9]
+) -> list[float]:
+    """
+    Calculates current occupancy and a probability forecast for a specific area type.
+
+    Args:
+        current_time (int): Current time (0-23).
+        current_day (int): Day of the month (1-31).
+        current_month (int): Month of the year (1-12).
+        current_year (int): Current year (e.g., 2023).
+        current_holiday (bool): True if the current day is a holiday.
+        user_type (str): The occupancy profile to use.
+        zone_type (str): The type of zone to simulate ('day' or 'night').
+        num_simulations (int): Number of iterations for the probability calculation.
+        probability_variation (float): Probability that occupancy will vary within an hour.
+        probability_variation_evening_night_hours (float): Probability that occupancy will vary in the evening/evening hours.
+        summer_months (List[int]): List of months considered summer months (1-12).
+
+    Returns:
+        tuple[int, list[float]]: Una tupla conteniendo:
+            - int: El número estimado de personas presentes en la hora actual.
+            - list[float]: Una lista con 24 valores de probabilidad (0-1) de ocupación.
+    """
+    # --- INPUTS VALIDATION ---
+    if user_type not in VALID_USER_TYPES:
+        raise ValueError(f"User type '{user_type}' is not valid. Options: {VALID_USER_TYPES}")
+    if zone_type not in VALID_ZONE_TYPES:
+        raise ValueError(f"Zone type '{zone_type}' is not valid. Options: {VALID_ZONE_TYPES}")
+
+    current_time_obj = datetime(current_year, current_month, current_day, current_time)
+    
     forecast_probabilities: list[float] = []
     for h in range(1, 25):
         future_time = current_time_obj + timedelta(hours=h)
@@ -112,5 +156,4 @@ def calculate_occupancy_and_forecast(
         
         forecast_probabilities.append(times_busy / num_simulations)
 
-    return (current_occupation, forecast_probabilities)
-
+    return forecast_probabilities
