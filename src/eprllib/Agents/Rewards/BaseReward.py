@@ -47,10 +47,12 @@ class BaseReward:
     
     def get_reward(
         self,
+        prev_obs: NDArray[float32],
+        prev_action: Any,
         obs: NDArray[float32],
         terminated: bool,
-        truncated: bool,
-    ) -> float:
+        truncated: bool
+        ) -> float:
         """
         This method must be implemented in the subclass to calculate the reward.
 
