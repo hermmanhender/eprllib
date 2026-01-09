@@ -11,7 +11,7 @@ Note that hierarchical versions are the same function but instead of using only 
 value of the variable/meter, the reward is calculated using a list of the last timesteps and
 integrating or averaging them.
 """
-from typing import Any, Dict, List # type: ignore
+from typing import Any, Dict, List
 from numpy.typing import NDArray
 from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
@@ -121,10 +121,12 @@ class CEN15251(BaseReward):
     @override(BaseReward)
     def get_reward(
         self,
+        prev_obs: NDArray[float32],
+        prev_action: Any,
         obs: NDArray[float32],
-        terminated_flag: bool = False,
-        truncated_flag: bool = False
-    ) -> float:
+        terminated: bool,
+        truncated: bool
+        ) -> float:
         """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
         divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
@@ -144,7 +146,7 @@ class CEN15251(BaseReward):
             return 0.
         elif obs[self.cat1_name] == 0:
             if obs[self.cat2_name] == 1:
-                return -0.05
+                return -0.1
             elif obs[self.cat2_name] == 0:
                 if obs[self.cat3_name] == 1:
                     return -0.50
@@ -241,11 +243,13 @@ class HierarchicalCEN15251(BaseReward):
             
     @override(BaseReward)
     def get_reward(
-    self,
-    obs: NDArray[float32],
-    terminated: bool = False,
-    truncated: bool = False
-    ) -> float:
+        self,
+        prev_obs: NDArray[float32],
+        prev_action: Any,
+        obs: NDArray[float32],
+        terminated: bool,
+        truncated: bool
+        ) -> float:
         """This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
         divide per the maximal PPF value that can be take (100). Also, each term is divide per the longitude
