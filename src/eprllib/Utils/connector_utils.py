@@ -162,7 +162,7 @@ def set_prediction_variables_in_obs(
     if env_config["agents_config"][agent]["observation"]['use_one_day_weather_prediction']:
         for key, value in env_config["agents_config"][agent]["observation"]['prediction_variables'].items():
             if value:
-                for hour in range(env_config["agents_config"][agent]["observation"]['prediction_hours']):
+                for hour in range(env_config["agents_config"][agent]["observation"]['weather_prediction_hours']):
                     obs_indexed.update({observation_utils.get_parameter_prediction_name(
                         agent,
                         key,
@@ -190,7 +190,7 @@ def set_user_occupation_forecast_in_obs(
     :rtype: Tuple[Dict[str, int], int]
     """
     if env_config["agents_config"][agent]["observation"]['user_occupation_forecast']:
-        for hour in range(1, 25):
+        for hour in range(1,env_config["agents_config"][agent]["observation"]['occupation_prediction_hours']+1):
             obs_indexed.update({observation_utils.get_user_occupation_forecast_name(
                 agent,
                 hour
