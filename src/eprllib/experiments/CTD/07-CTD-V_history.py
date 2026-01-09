@@ -399,7 +399,7 @@ if not restore:
                 algorithm = "PPO",
             ),
             storage_path = f'C:/Users/grhen/ray_results/{experiment_name}',
-            stop = {"info/num_env_steps_trained": 1008 * 4000},
+            stop = {"info/num_env_steps_trained": 1008 * 10000},
             log_to_file = True,
             
             checkpoint_config=air.CheckpointConfig(

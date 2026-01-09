@@ -70,7 +70,7 @@ from eprllib.examples.example_thermostat_files.policy_mapping import policy_map_
 with open("src/eprllib/examples/example_thermostat_files/episode_fn_config_VNC.json", "r") as f:
     episode_config = json.load(f)
     
-experiment_name = "07-VNC-V"
+experiment_name = "07_VNC_V"
 name = "history"
 tuning = False
 restore = False
@@ -443,7 +443,7 @@ if not restore:
                 algorithm = "PPO",
             ),
             storage_path = f'C:/Users/grhen/ray_results/{experiment_name}',
-            stop = {"info/num_env_steps_trained": 1008 * 5000},
+            stop = {"info/num_env_steps_trained": 1008 * 10000},
             log_to_file = True,
             
             checkpoint_config=air.CheckpointConfig(

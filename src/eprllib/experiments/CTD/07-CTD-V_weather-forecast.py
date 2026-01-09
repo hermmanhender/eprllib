@@ -50,6 +50,10 @@ from ray.tune import register_env
 from ray.rllib.algorithms.ppo.ppo import PPOConfig
 from ray.rllib.policy.policy import PolicySpec
 
+from ray.rllib.models import ModelCatalog
+from eprllib.examples.example_central_agent_files.policy_model import CustomTransformerModel
+ModelCatalog.register_custom_model("custom_transformer", CustomTransformerModel)
+
 from eprllib.Environment.Environment import Environment
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
@@ -101,10 +105,12 @@ eprllib_config.agents(
                     ("Site Outdoor Air Relative Humidity", "Environment"),
                     ("Zone Mean Air Temperature", "Thermal Zone"),
                     ("Zone Air Relative Humidity", "Thermal Zone"),
+                    ("Zone Air Humidity Ratio", "Thermal Zone"),
                     ("Zone People Occupant Count", "Thermal Zone"),
-                    ("Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", "Thermal Zone"),
+                    ("Zone Operative Temperature", "Thermal Zone")
                 ],
                 simulation_parameters = {
+                    'hour': True,
                     'today_weather_horizontal_ir_at_time': True,
                 },
                 meters = [
@@ -114,14 +120,14 @@ eprllib_config.agents(
                 ],
                 use_actuator_state = True,
                 use_one_day_weather_prediction = True,
-                prediction_hours = 24,
+                prediction_hours = 6,
                 prediction_variables = {
                     'outdoor_dry_bulb': True,
                 },
                 internal_variables = [
                     ("Zone Floor Area", "Thermal Zone"),
                 ],
-                history_len=1,
+                history_len=6,
                 user_occupation_funtion = True,
                 occupation_schedule = ("Schedule:Constant", "Schedule Value", "occupancy_schedule"),
                 user_occupation_forecast = False
@@ -141,7 +147,6 @@ eprllib_config.agents(
             trigger= TriggerSpec(
                 trigger_fn = DualSetpointTriggerDiscreteAndAvailabilityTrigger,
                 trigger_fn_config = {
-                    "agent_name": "HVAC",
                     'temperature_range': (18, 28),
                     'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                     'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -151,7 +156,6 @@ eprllib_config.agents(
             reward = RewardSpec(
                 reward_fn = EnergyAndASHRAE55SimpleModel,
                 reward_fn_config = {
-                    "agent_name": "HVAC",
                     "thermal_zone": "Thermal Zone",
                     "beta": 0.001,
                     'people_name': "People",
@@ -234,19 +238,29 @@ if not restore:
             (1.5e6, 1e-4),
             (3e6, 5e-5)
             ],#tune.grid_search([0.0001,0.001,0.01]) if tuning else 0.003,#
-        train_batch_size = 100000,#tune.grid_search([100,1000,10000,100000]) if tuning else 12961*7,
+        train_batch_size = 50000,#tune.grid_search([100,1000,10000,100000]) if tuning else 12961*7,
         # Each episode has a lenght of 144*3+1=433. To train the model with batch_mode=episodes_complete and using the 8 processes in parallel
         # for each iteration it is possible to set train_batch_size_per_learner=433*8=3464
-        minibatch_size = 20000,#tune.grid_search([5000,10000,20000]) if tuning else 12961*7,
+        minibatch_size = 10000,#tune.grid_search([5000,10000,20000]) if tuning else 12961*7,
         # We can separate the batch into 8 batches of 433 timesteps.
-        num_epochs = 30,#tune.grid_search([5,10,15,30]) if tuning else 30,
+        num_epochs = 20,#tune.grid_search([5,10,15,30]) if tuning else 30,
         vf_share_layers = False,
         
         # === Policy Model configuration ===
         model = {
+            "custom_model": "custom_transformer",
+            "custom_model_config": {
+                "num_encoder_layers": 2,
+                "nhead": 2,
+                "d_model": 32,
+                "dim_feedforward": 64,
+                "dropout": 0.1
+            },
+        },
+        # model = {
             # FC Hidden layers
-            "fcnet_hiddens": [32,32],#tune.grid_search([[64,64],[128,128],[64,64,64]]) if tuning else [64,64],
-            "fcnet_activation": "tanh",
+            # "fcnet_hiddens": [32,32],#tune.grid_search([[64,64],[128,128],[64,64,64]]) if tuning else [64,64],
+            # "fcnet_activation": "tanh",
             
             # # LSTM
             # "use_lstm": True,
@@ -269,7 +283,7 @@ if not restore:
             # # Post FC layers
             # "post_fcnet_hiddens": [64,64],
             # "post_fcnet_activation": "tanh",
-            },
+            # },
         
         # === PPO Configs ===
         use_critic = True,
@@ -399,12 +413,12 @@ if not restore:
                 algorithm = "PPO",
             ),
             storage_path = f'C:/Users/grhen/ray_results/{experiment_name}',
-            stop = {"info/num_env_steps_trained": 1008 * 4000},
+            stop = {"info/num_env_steps_trained": 1008 * 10000},
             log_to_file = True,
             
             checkpoint_config=air.CheckpointConfig(
                 checkpoint_at_end = True,
-                checkpoint_frequency = 20,
+                checkpoint_frequency = 10,
                 num_to_keep = 20,
             ),
             failure_config=air.FailureConfig(

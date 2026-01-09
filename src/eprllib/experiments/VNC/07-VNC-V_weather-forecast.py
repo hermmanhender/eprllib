@@ -67,11 +67,15 @@ from eprllib.Agents.Rewards.ASHRAE55SimpleModel import ASHRAE55SimpleModel
 from eprllib.examples.example_thermostat_files.episode_fn_VNC import task_cofiguration
 from eprllib.examples.example_thermostat_files.policy_mapping import policy_map_fn
 
+from ray.rllib.models import ModelCatalog
+from eprllib.examples.example_central_agent_files.policy_model import CustomTransformerModel
+ModelCatalog.register_custom_model("custom_transformer", CustomTransformerModel)
+
 with open("src/eprllib/examples/example_thermostat_files/episode_fn_config_VNC.json", "r") as f:
     episode_config = json.load(f)
     
-experiment_name = "07-VNC-V"
-name = "weather-forecast"
+experiment_name = "07_VNC_V"
+name = "weather_forecast"
 tuning = False
 restore = False
 checkpoint_path = "C:/Users/grhen/ray_results/07-VNNC-V/20250812155207_base_PPO"
@@ -104,10 +108,12 @@ eprllib_config.agents(
                     ("Site Outdoor Air Relative Humidity", "Environment"),
                     ("Zone Mean Air Temperature", "Thermal Zone"),
                     ("Zone Air Relative Humidity", "Thermal Zone"),
+                    ("Zone Air Humidity Ratio", "Thermal Zone"),
                     ("Zone People Occupant Count", "Thermal Zone"),
-                    ("Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", "Thermal Zone"),
+                    ("Zone Operative Temperature", "Thermal Zone")
                 ],
                 simulation_parameters = {
+                    'hour': True,
                     'today_weather_horizontal_ir_at_time': True,
                 },
                 meters = [
@@ -124,7 +130,7 @@ eprllib_config.agents(
                 internal_variables = [
                     ("Zone Floor Area", "Thermal Zone"),
                 ],
-                history_len=1,
+                history_len=6,
                 user_occupation_funtion = True,
                 occupation_schedule = ("Schedule:Constant", "Schedule Value", "occupancy_schedule"),
                 user_occupation_forecast = False
@@ -159,10 +165,12 @@ eprllib_config.agents(
                     ("Site Outdoor Air Relative Humidity", "Environment"),
                     ("Zone Mean Air Temperature", "Thermal Zone"),
                     ("Zone Air Relative Humidity", "Thermal Zone"),
+                    ("Zone Air Humidity Ratio", "Thermal Zone"),
                     ("Zone People Occupant Count", "Thermal Zone"),
-                    ("Zone Thermal Comfort ASHRAE 55 Simple Model Summer or Winter Clothes Not Comfortable Time", "Thermal Zone"),
+                    ("Zone Operative Temperature", "Thermal Zone")
                 ],
                 simulation_parameters = {
+                    'hour': True,
                     'today_weather_horizontal_ir_at_time': True,
                 },
                 meters = [
@@ -179,7 +187,7 @@ eprllib_config.agents(
                 internal_variables = [
                     ("Zone Floor Area", "Thermal Zone"),
                 ],
-                history_len=1,
+                history_len=6,
                 user_occupation_funtion = True,
                 occupation_schedule = ("Schedule:Constant", "Schedule Value", "occupancy_schedule"),
                 user_occupation_forecast = False
@@ -287,10 +295,10 @@ if not restore:
         vf_share_layers = False,
         
         # === Policy Model configuration ===
-        model = {
+        # model = {
             # FC Hidden layers
-            "fcnet_hiddens": [32,32],#tune.grid_search([[64,64],[128,128],[64,64,64]]) if tuning else [64,64],
-            "fcnet_activation": "tanh",
+            # "fcnet_hiddens": [32,32],#tune.grid_search([[64,64],[128,128],[64,64,64]]) if tuning else [64,64],
+            # "fcnet_activation": "tanh",
             
             # # LSTM
             # "use_lstm": True,
@@ -313,8 +321,18 @@ if not restore:
             # # Post FC layers
             # "post_fcnet_hiddens": [64,64],
             # "post_fcnet_activation": "tanh",
-            },
+            # },
         
+        model = {
+            "custom_model": "custom_transformer",
+            "custom_model_config": {
+                "num_encoder_layers": 2,
+                "nhead": 4,
+                "d_model": 64,
+                "dim_feedforward": 128,
+                "dropout": 0.1
+            },
+        },
         # === PPO Configs ===
         use_critic = True,
         use_gae = True,
@@ -443,7 +461,7 @@ if not restore:
                 algorithm = "PPO",
             ),
             storage_path = f'C:/Users/grhen/ray_results/{experiment_name}',
-            stop = {"info/num_env_steps_trained": 1008 * 5000},
+            stop = {"info/num_env_steps_trained": 1008 * 50000},
             log_to_file = True,
             
             checkpoint_config=air.CheckpointConfig(
