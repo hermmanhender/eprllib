@@ -306,8 +306,8 @@ class task_cofiguration(BaseEpisode):
             # Change the load file profiles names to the new copy of schedule
             schedule_file_keys = [key for key in epJSON_object["Schedule:File"].keys()]
             for key in schedule_file_keys:
-                epJSON_object["Schedule:File"][key]["file_name"] = self.load_profiles_folder_path + "/" + np.random.choice(os.listdir(self.load_profiles_folder_path))
-
+                epJSON_object["Schedule:File"][key]["file_name"] = self.load_profil_file
+                
             for metric in epJSON_object['OutputControl:Files']['OutputControl:Files 1'].keys():
                 epJSON_object['OutputControl:Files']['OutputControl:Files 1'][metric] = "No"
         

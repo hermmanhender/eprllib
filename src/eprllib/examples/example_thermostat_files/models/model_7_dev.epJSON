@@ -1,7 +1,7 @@
 {
     "AirflowNetwork:MultiZone:Component:SimpleOpening": {
         "SimpleOpening": {
-            "air_mass_flow_coefficient_when_opening_is_closed": 0.8,
+            "air_mass_flow_coefficient_when_opening_is_closed": 0.5,
             "air_mass_flow_exponent_when_opening_is_closed": 0.65,
             "discharge_coefficient": 1,
             "minimum_density_difference_for_two_way_flow": 0.0001
@@ -340,35 +340,35 @@
             "building_surface_name": "wall_north",
             "construction_name": "Window",
             "surface_type": "Window",
-            "vertex_1_x_coordinate": 1.0,
+            "vertex_1_x_coordinate": 0.5857864376269049,
             "vertex_1_y_coordinate": 0,
-            "vertex_1_z_coordinate": 2.43,
-            "vertex_2_x_coordinate": 1.0,
+            "vertex_1_z_coordinate": 2.3045941546018396,
+            "vertex_2_x_coordinate": 0.5857864376269049,
             "vertex_2_y_coordinate": 0,
-            "vertex_2_z_coordinate": 0.1,
-            "vertex_3_x_coordinate": 3.0,
+            "vertex_2_z_coordinate": 0.3954058453981608,
+            "vertex_3_x_coordinate": 3.414213562373095,
             "vertex_3_y_coordinate": 0,
-            "vertex_3_z_coordinate": 0.1,
-            "vertex_4_x_coordinate": 3.0,
+            "vertex_3_z_coordinate": 0.3954058453981608,
+            "vertex_4_x_coordinate": 3.414213562373095,
             "vertex_4_y_coordinate": 0,
-            "vertex_4_z_coordinate": 2.43
+            "vertex_4_z_coordinate": 2.3045941546018396
         },
         "window_south": {
             "building_surface_name": "wall_south",
             "construction_name": "Window",
             "surface_type": "Window",
-            "vertex_1_x_coordinate": 3.6,
+            "vertex_1_x_coordinate": 2.8944271909999157,
             "vertex_1_y_coordinate": 5.0,
-            "vertex_1_z_coordinate": 2.43,
-            "vertex_2_x_coordinate": 3.6,
+            "vertex_1_z_coordinate": 1.9537383539249433,
+            "vertex_2_x_coordinate": 2.8944271909999157,
             "vertex_2_y_coordinate": 5.0,
-            "vertex_2_z_coordinate": 0.1,
-            "vertex_3_x_coordinate": 0.4,
+            "vertex_2_z_coordinate": 0.7462616460750569,
+            "vertex_3_x_coordinate": 1.1055728090000843,
             "vertex_3_y_coordinate": 5.0,
-            "vertex_3_z_coordinate": 0.1,
-            "vertex_4_x_coordinate": 0.4,
+            "vertex_3_z_coordinate": 0.7462616460750569,
+            "vertex_4_x_coordinate": 1.1055728090000843,
             "vertex_4_y_coordinate": 5.0,
-            "vertex_4_z_coordinate": 2.43
+            "vertex_4_z_coordinate": 1.9537383539249433
         }
     },
     "GlobalGeometryRules": {
@@ -378,6 +378,75 @@
             "rectangular_surface_coordinate_system": "Relative",
             "starting_vertex_position": "UpperLeftCorner",
             "vertex_entry_direction": "Counterclockwise"
+        }
+    },
+    "HVACTemplate:System:UnitaryHeatPump:AirToAir": {
+        "HeatPump": {
+            "control_zone_or_thermostat_location_name": "Thermal Zone",
+            "cooling_coil_availability_schedule_name": "Always On",
+            "cooling_coil_gross_rated_cop": 3,
+            "cooling_coil_gross_rated_sensible_heat_ratio": 0.7,
+            "cooling_coil_gross_rated_total_capacity": 2300,
+            "cooling_coil_type": "SingleSpeedDX",
+            "cooling_design_supply_air_temperature": 12.8,
+            "cooling_supply_air_flow_rate": 0.15,
+            "economizer_lockout": "NoLockout",
+            "economizer_type": "NoEconomizer",
+            "heat_pump_defrost_control": "Timed",
+            "heat_pump_defrost_maximum_outdoor_dry_bulb_temperature": 5,
+            "heat_pump_defrost_strategy": "ReverseCycle",
+            "heat_pump_defrost_time_period_fraction": 0.058333,
+            "heat_pump_heating_coil_availability_schedule_name": "Always On",
+            "heat_pump_heating_coil_gross_rated_capacity": 2500,
+            "heat_pump_heating_coil_rated_cop": 3.2,
+            "heat_pump_heating_coil_type": "SingleSpeedDXHeatPump",
+            "heat_pump_heating_minimum_outdoor_dry_bulb_temperature": -8,
+            "heat_recovery_type": "None",
+            "heating_design_supply_air_temperature": 50,
+            "heating_supply_air_flow_rate": 0.15,
+            "humidifier_rated_capacity": 1e-06,
+            "humidifier_rated_electric_power": "Autosize",
+            "humidifier_setpoint": 30,
+            "humidifier_type": "None",
+            "latent_heat_recovery_effectiveness": 0.65,
+            "maximum_outdoor_air_flow_rate": 0,
+            "minimum_outdoor_air_flow_rate": 0,
+            "night_cycle_control": "StayOff",
+            "no_load_supply_air_flow_rate": 0.05,
+            "return_fan": "No",
+            "return_fan_delta_pressure": 500,
+            "return_fan_motor_efficiency": 0.9,
+            "return_fan_motor_in_air_stream_fraction": 1,
+            "return_fan_total_efficiency": 0.7,
+            "sensible_heat_recovery_effectiveness": 0.7,
+            "supplemental_gas_heating_coil_efficiency": 0.8,
+            "supplemental_heating_coil_availability_schedule_name": "Always On",
+            "supplemental_heating_coil_capacity": 1000,
+            "supplemental_heating_coil_maximum_outdoor_dry_bulb_temperature": 21,
+            "supplemental_heating_coil_type": "Electric",
+            "supply_fan_delta_pressure": 75,
+            "supply_fan_motor_efficiency": 0.9,
+            "supply_fan_motor_in_air_stream_fraction": 0.9,
+            "supply_fan_placement": "DrawThrough",
+            "supply_fan_total_efficiency": 0.7,
+            "system_availability_schedule_name": "HVAC_OnOff"
+        }
+    },
+    "HVACTemplate:Zone:Unitary": {
+        "HVACTemplate:Zone:Unitary 1": {
+            "baseboard_heating_capacity": "Autosize",
+            "baseboard_heating_type": "None",
+            "outdoor_air_flow_rate_per_person": 0.00944,
+            "outdoor_air_method": "Flow/Person",
+            "supply_air_maximum_flow_rate": 0.15,
+            "template_unitary_system_name": "HeatPump",
+            "zone_cooling_design_supply_air_temperature": 12.8,
+            "zone_cooling_design_supply_air_temperature_difference": 11.11,
+            "zone_cooling_design_supply_air_temperature_input_method": "SystemSupplyAirTemperature",
+            "zone_heating_design_supply_air_temperature": 50,
+            "zone_heating_design_supply_air_temperature_difference": 30,
+            "zone_heating_design_supply_air_temperature_input_method": "SystemSupplyAirTemperature",
+            "zone_name": "Thermal Zone"
         }
     },
     "HeatBalanceAlgorithm": {
@@ -601,6 +670,16 @@
             "key_value": "*",
             "reporting_frequency": "Timestep",
             "variable_name": "Zone Thermal Comfort Fanger Model PMV"
+        },
+        "Output:Variable 16": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Cooling Coil Total Cooling Energy"
+        },
+        "Output:Variable 17": {
+            "key_value": "*",
+            "reporting_frequency": "Timestep",
+            "variable_name": "Heating Coil Heating Energy"
         }
     },
     "Output:VariableDictionary": {
@@ -611,38 +690,38 @@
     },
     "OutputControl:Files": {
         "OutputControl:Files 1": {
-            "output_audit": "No",
-            "output_bnd": "No",
-            "output_csv": "No",
-            "output_dbg": "No",
-            "output_delightdfdmp": "No",
-            "output_delighteldmp": "No",
-            "output_delightin": "No",
-            "output_dfs": "No",
-            "output_dxf": "No",
-            "output_edd": "No",
-            "output_eio": "No",
-            "output_end": "No",
-            "output_eso": "No",
-            "output_extshd": "No",
-            "output_glhe": "No",
-            "output_json": "No",
-            "output_mdd": "No",
-            "output_mtd": "No",
-            "output_mtr": "No",
-            "output_perflog": "No",
-            "output_rdd": "No",
-            "output_sci": "No",
-            "output_screen": "No",
-            "output_shd": "No",
-            "output_sln": "No",
-            "output_space_sizing": "No",
-            "output_sqlite": "No",
-            "output_system_sizing": "No",
-            "output_tabular": "No",
-            "output_tarcog": "No",
-            "output_wrl": "No",
-            "output_zone_sizing": "No"
+            "output_audit": "Yes",
+            "output_bnd": "Yes",
+            "output_csv": "Yes",
+            "output_dbg": "Yes",
+            "output_delightdfdmp": "Yes",
+            "output_delighteldmp": "Yes",
+            "output_delightin": "Yes",
+            "output_dfs": "Yes",
+            "output_dxf": "Yes",
+            "output_edd": "Yes",
+            "output_eio": "Yes",
+            "output_end": "Yes",
+            "output_eso": "Yes",
+            "output_extshd": "Yes",
+            "output_glhe": "Yes",
+            "output_json": "Yes",
+            "output_mdd": "Yes",
+            "output_mtd": "Yes",
+            "output_mtr": "Yes",
+            "output_perflog": "Yes",
+            "output_rdd": "Yes",
+            "output_sci": "Yes",
+            "output_screen": "Yes",
+            "output_shd": "Yes",
+            "output_sln": "Yes",
+            "output_space_sizing": "Yes",
+            "output_sqlite": "Yes",
+            "output_system_sizing": "Yes",
+            "output_tabular": "Yes",
+            "output_tarcog": "Yes",
+            "output_wrl": "Yes",
+            "output_zone_sizing": "Yes"
         }
     },
     "OutputControl:Table:Style": {
@@ -676,7 +755,7 @@
             "begin_day_of_month": 21,
             "begin_month": 6,
             "day_of_week_for_start_day": "Sunday",
-            "end_day_of_month": 28,
+            "end_day_of_month": 22,
             "end_month": 6,
             "treat_weather_as_actual": "No",
             "use_weather_file_daylight_saving_period": "No",
@@ -698,7 +777,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 25
+                    "field": 25.0
                 }
             ],
             "schedule_type_limits_name": "Temperature"
@@ -715,7 +794,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 19
+                    "field": 24.0
                 }
             ],
             "schedule_type_limits_name": "Temperature"
@@ -793,7 +872,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 7,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -804,7 +883,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 6,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -815,7 +894,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 4,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -826,7 +905,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 5,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -837,7 +916,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 11,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -848,7 +927,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 1,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -859,7 +938,7 @@
             "adjust_schedule_for_daylight_savings": "Yes",
             "column_number": 8,
             "column_separator": "Comma",
-            "file_name": "C:/Users/grhen/Documents/GitHub/eprllib_experiments/general_learning/files/epjson/schedules.csv",
+            "file_name": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_thermostat_files/evaluation/allways_off.csv",
             "interpolate_to_timestep": "No",
             "minutes_per_item": 10,
             "number_of_hours_of_data": 8760,
@@ -909,11 +988,31 @@
         "SimulationControl 1": {
             "do_hvac_sizing_simulation_for_sizing_periods": "No",
             "do_plant_sizing_calculation": "No",
-            "do_system_sizing_calculation": "No",
-            "do_zone_sizing_calculation": "No",
+            "do_system_sizing_calculation": "Yes",
+            "do_zone_sizing_calculation": "Yes",
             "maximum_number_of_hvac_sizing_simulation_passes": 1,
             "run_simulation_for_sizing_periods": "No",
             "run_simulation_for_weather_file_run_periods": "Yes"
+        }
+    },
+    "SizingPeriod:WeatherFileDays": {
+        "DesignDaySummer": {
+            "begin_day_of_month": 1,
+            "begin_month": 1,
+            "day_of_week_for_start_day": "Monday",
+            "end_day_of_month": 1,
+            "end_month": 1,
+            "use_weather_file_daylight_saving_period": "Yes",
+            "use_weather_file_rain_and_snow_indicators": "Yes"
+        },
+        "DesignDayWinter": {
+            "begin_day_of_month": 1,
+            "begin_month": 6,
+            "day_of_week_for_start_day": "Monday",
+            "end_day_of_month": 1,
+            "end_month": 6,
+            "use_weather_file_daylight_saving_period": "Yes",
+            "use_weather_file_rain_and_snow_indicators": "Yes"
         }
     },
     "SurfaceConvectionAlgorithm:Inside": {
@@ -1047,46 +1146,6 @@
             "control_1_object_type": "ThermostatSetpoint:DualSetpoint",
             "control_type_schedule_name": "ZONE CONTROL TYPE SCHED",
             "zone_or_zonelist_name": "Thermal Zone"
-        }
-    },
-    "ZoneHVAC:EquipmentConnections": {
-        "ZoneHVAC:EquipmentConnections 1": {
-            "zone_air_inlet_node_or_nodelist_name": "ZoneInlets",
-            "zone_air_node_name": "NODE 4",
-            "zone_conditioning_equipment_list_name": "Equipos",
-            "zone_name": "Thermal Zone",
-            "zone_return_air_node_or_nodelist_name": "NODE 5"
-        }
-    },
-    "ZoneHVAC:EquipmentList": {
-        "Equipos": {
-            "equipment": [
-                {
-                    "zone_equipment_cooling_sequence": 1,
-                    "zone_equipment_heating_or_no_load_sequence": 1,
-                    "zone_equipment_name": "IdealHVAC",
-                    "zone_equipment_object_type": "ZoneHVAC:IdealLoadsAirSystem"
-                }
-            ],
-            "load_distribution_scheme": "SequentialLoad"
-        }
-    },
-    "ZoneHVAC:IdealLoadsAirSystem": {
-        "IdealHVAC": {
-            "availability_schedule_name": "HVAC_OnOff",
-            "cooling_limit": "LimitFlowRateAndCapacity",
-            "dehumidification_control_type": "None",
-            "heating_limit": "LimitFlowRateAndCapacity",
-            "humidification_control_type": "None",
-            "maximum_cooling_air_flow_rate": 0.125,
-            "maximum_heating_air_flow_rate": 0.125,
-            "maximum_heating_supply_air_humidity_ratio": 0.0156,
-            "maximum_heating_supply_air_temperature": 50,
-            "maximum_sensible_heating_capacity": 2500,
-            "maximum_total_cooling_capacity": 2300,
-            "minimum_cooling_supply_air_humidity_ratio": 0.0077,
-            "minimum_cooling_supply_air_temperature": 0,
-            "zone_supply_air_node_name": "NODE 1"
         }
     }
 }

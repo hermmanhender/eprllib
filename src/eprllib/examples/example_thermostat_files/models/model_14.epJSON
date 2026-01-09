@@ -76,7 +76,7 @@
         "Building 1": {
             "loads_convergence_tolerance_value": 0.04,
             "maximum_number_of_warmup_days": 25,
-            "minimum_number_of_warmup_days": 3,
+            "minimum_number_of_warmup_days": 15,
             "north_axis": 0,
             "solar_distribution": "FullInteriorAndExterior",
             "temperature_convergence_tolerance_value": 0.4,
@@ -91,24 +91,24 @@
             "surface_type": "Floor",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 0.0
                 }
             ],
             "wind_exposure": "NoWind",
@@ -121,24 +121,24 @@
             "surface_type": "Roof",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0
                 }
             ],
             "wind_exposure": "WindExposed",
@@ -151,24 +151,24 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0
                 }
             ],
             "wind_exposure": "WindExposed",
@@ -181,24 +181,24 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0
                 }
             ],
             "wind_exposure": "WindExposed",
@@ -211,24 +211,24 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 0,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 0.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 3.0
                 }
             ],
             "wind_exposure": "WindExposed",
@@ -241,24 +241,24 @@
             "surface_type": "Wall",
             "vertices": [
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 3.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 0,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 0.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 0
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 0.0
                 },
                 {
-                    "vertex_x_coordinate": 3,
-                    "vertex_y_coordinate": 3,
-                    "vertex_z_coordinate": 3
+                    "vertex_x_coordinate": 3.0,
+                    "vertex_y_coordinate": 3.0,
+                    "vertex_z_coordinate": 3.0
                 }
             ],
             "wind_exposure": "WindExposed",
@@ -678,7 +678,7 @@
             "mean_radiant_temperature_calculation_type": "EnclosureAveraged",
             "number_of_people": 1,
             "number_of_people_calculation_method": "People",
-            "number_of_people_schedule_name": "occupants schedule",
+            "number_of_people_schedule_name": "occupancy_schedule",
             "sensible_heat_fraction": 0.563,
             "thermal_comfort_model_1_type": "AdaptiveCEN15251",
             "thermal_comfort_model_2_type": "Fanger",
@@ -714,7 +714,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 24
+                    "field": 24.0
                 }
             ],
             "schedule_type_limits_name": "Temperature"
@@ -731,7 +731,7 @@
                     "field": "Until: 24:00"
                 },
                 {
-                    "field": 19
+                    "field": 19.0
                 }
             ],
             "schedule_type_limits_name": "Temperature"
@@ -758,6 +758,14 @@
             "hourly_value": 4,
             "schedule_type_limits_name": "Any Number"
         },
+        "air_velocity": {
+            "hourly_value": 0.1,
+            "schedule_type_limits_name": "Any Number"
+        },
+        "occupancy_schedule": {
+            "hourly_value": 1.0,
+            "schedule_type_limits_name": "Fraction"
+        },
         "occupants activity schedule": {
             "hourly_value": 100,
             "schedule_type_limits_name": "Any Number"
@@ -765,10 +773,6 @@
         "shading_control": {
             "hourly_value": 0,
             "schedule_type_limits_name": "Fraction"
-        },
-        "air_velocity": {
-            "hourly_value": 0.1,
-            "schedule_type_limits_name": "Any Number"
         }
     },
     "Schedule:Day:Interval": {
@@ -776,7 +780,7 @@
             "data": [
                 {
                     "time": "24:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -786,7 +790,7 @@
             "data": [
                 {
                     "time": "24:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -796,7 +800,7 @@
             "data": [
                 {
                     "time": "24:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -1104,7 +1108,7 @@
                 },
                 {
                     "time": "19:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "20:00",
@@ -1460,7 +1464,7 @@
                 },
                 {
                     "time": "21:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "22:00",
@@ -2582,7 +2586,7 @@
                 },
                 {
                     "time": "21:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "22:00",
@@ -3828,15 +3832,15 @@
             "data": [
                 {
                     "time": "07:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "19:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 },
                 {
                     "time": "24:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -3846,15 +3850,15 @@
             "data": [
                 {
                     "time": "07:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "17:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 },
                 {
                     "time": "24:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -3864,15 +3868,15 @@
             "data": [
                 {
                     "time": "17:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "22:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 },
                 {
                     "time": "24:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -3882,15 +3886,15 @@
             "data": [
                 {
                     "time": "11:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 },
                 {
                     "time": "16:00",
-                    "value_until_time": 0
+                    "value_until_time": 0.0
                 },
                 {
                     "time": "24:00",
-                    "value_until_time": 1
+                    "value_until_time": 1.0
                 }
             ],
             "interpolate_to_timestep": "No",
@@ -4823,7 +4827,7 @@
     },
     "Version": {
         "Version 1": {
-            "version_identifier": "24.2"
+            "version_identifier": "25.1"
         }
     },
     "WindowMaterial:Shade": {

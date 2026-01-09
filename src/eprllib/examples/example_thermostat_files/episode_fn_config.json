@@ -55,6 +55,7 @@
     "im_surface_area_factor": 0.4,
     "heating_specific_power": 100,
     "cooling_heating_ratio": 0.8,
+    
     "runperiod_begin_month": 12,
     "runperiod_begin_day": 14,
     "runperiod_end_month": 12,

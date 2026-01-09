@@ -22,7 +22,7 @@
     "Material_wall_exterior_solar_absorptance": 0.7,
 
     "Material_wall_inter_thickness": 0.1,
-    "Material_wall_inter_conductivity": 0.03,
+    "Material_wall_inter_conductivity": 0.018,
     "Material_wall_inter_density": 35.0,
     "Material_wall_inter_specific_heat": 1200.0,
     "Material_wall_inter_thermal_absorptance": 0.5,
@@ -31,13 +31,13 @@
     "Material_wall_inner_thickness": 0.25,
     "Material_wall_inner_conductivity": 0.9,
     "Material_wall_inner_density": 2000.0,
-    "Material_wall_inner_specific_heat": 2000.0,
+    "Material_wall_inner_specific_heat": 1000.0,
     "Material_wall_inner_thermal_absorptance": 0.9,
     "Material_wall_inner_solar_absorptance": 0.5,
     
     "Material_roof_exterior_thickness": 0.15,
-    "Material_roof_exterior_conductivity": 0.03,
-    "Material_roof_exterior_density": 1200.0,
+    "Material_roof_exterior_conductivity": 0.018,
+    "Material_roof_exterior_density": 35.0,
     "Material_roof_exterior_specific_heat": 1200.0,
     "Material_roof_exterior_thermal_absorptance": 0.5,
     "Material_roof_exterior_solar_absorptance": 0.7,
@@ -52,13 +52,16 @@
     "WindowMaterial:SimpleGlazingSystem_WindowMaterial_u_factor": 1.0,
     "WindowMaterial:SimpleGlazingSystem_WindowMaterial_solar_heat_gain_coefficient": 0.6,
 
-    "im_surface_area_factor": 0.4,
-    "heating_specific_power": 100,
-    "cooling_heating_ratio": 0.8,
+    "im_surface_area_factor": 2.0,
 
+    "heating_specific_power": 200,
+    "cooling_heating_ratio": 0.8,
+    
+    "julian_day": 172,
+    "days_period": 7,
     "runperiod_begin_month": 1,
-    "runperiod_begin_day": 12,
-    "runperiod_end_month": 1,
-    "runperiod_end_day": 18
+    "runperiod_begin_day": 1,
+    "runperiod_end_month": 12,
+    "runperiod_end_day": 31
     
 }
