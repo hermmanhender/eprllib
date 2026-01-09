@@ -20,7 +20,6 @@ def _calculate_occupancy_once(
     Internal function that calculates the number of occupants for a single stochastic simulation.
     """
     profile = OCCUPATION_PROFILES[user_type]
-    total_people_profile = profile["total_people"]
     
     # Selecting the correct zone profile
     profile_zone = profile[f"zone_{zone_type}"]
@@ -34,17 +33,17 @@ def _calculate_occupancy_once(
 
     if random.random() < probability_variation:
         # Random variation cannot exceed the total number of people in the profile.
-        if base_occupation < total_people_profile and random.random() < 0.5:
-            base_occupation += 1
-        elif base_occupation > 0:
-            base_occupation -= 1
+        if base_occupation == 0:
+            base_occupation = 1
+        elif base_occupation == 1:
+            base_occupation = 0
 
     late_evening_hours = range(18, 23)
     if current_month in summer_months and current_time in late_evening_hours and base_occupation > 0:
         if random.random() < probability_variation_evening_night_hours:
-            base_occupation -= 1
+            base_occupation = 0
 
-    return max(0, min(base_occupation, total_people_profile))
+    return base_occupation
 
 
 def calculate_occupancy(
@@ -55,7 +54,6 @@ def calculate_occupancy(
     current_holiday: bool,
     user_type: str,
     zone_type: str,
-    num_simulations: int = 100,
     probability_variation: float = 0.15,
     probability_variation_evening_night_hours: float = 0.20,
     summer_months: List[int] = [6, 7, 8, 9]
@@ -102,13 +100,13 @@ def calculate_occupancy_forecast(
     current_day: int,
     current_month: int,
     current_year: int,
-    current_holiday: bool,
     user_type: str,
     zone_type: str,
     num_simulations: int = 100,
     probability_variation: float = 0.15,
     probability_variation_evening_night_hours: float = 0.20,
-    summer_months: List[int] = [6, 7, 8, 9]
+    summer_months: List[int] = [6, 7, 8, 9],
+    occupation_prediction_hours: int = 24
 ) -> list[float]:
     """
     Calculates current occupancy and a probability forecast for a specific area type.
@@ -140,7 +138,7 @@ def calculate_occupancy_forecast(
     current_time_obj = datetime(current_year, current_month, current_day, current_time)
     
     forecast_probabilities: list[float] = []
-    for h in range(1, 25):
+    for h in range(1, occupation_prediction_hours+1):
         future_time = current_time_obj + timedelta(hours=h)
         is_a_future_holiday = False  # Simplification for forecasting
 
