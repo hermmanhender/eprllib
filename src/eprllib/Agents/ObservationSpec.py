@@ -24,12 +24,12 @@ class ObservationSpec:
         simulation_parameters: Dict[str, bool] = {},
         zone_simulation_parameters: Dict[str, bool] = {},
         use_one_day_weather_prediction: bool = False,
-        prediction_hours: int = PREDICTION_HOURS,
+        weather_prediction_hours: int = PREDICTION_HOURS,
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
         history_len: int = 1,
-        user_occupation_funtion: bool = False,
+        user_occupation_function: bool = False,
         user_occupation_forecast: bool = False,
         user_type: str = VALID_USER_TYPES[0],
         zone_type: str = VALID_ZONE_TYPES[0],
@@ -37,7 +37,8 @@ class ObservationSpec:
         probability_variation: float = 0.15,
         probability_variation_evening_night_hours: float = 0.20,
         summer_months: List[int] = [6, 7, 8, 9],
-        occupation_schedule: Optional[Tuple[str, str, str]] = None
+        occupation_schedule: Optional[Tuple[str, str, str]] = None,
+        occupation_prediction_hours: int = 24
     ) -> None:
         """
         Construction method.
@@ -83,10 +84,10 @@ class ObservationSpec:
                 'system_time_step', 'zone_time_step', 'zone_time_step_number'
             
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a 
-            prediction of the weather time ahead. You can specify the `prediction_hours` and the prediction variables
+            prediction of the weather time ahead. You can specify the `weather_prediction_hours` and the prediction variables
             listed on `prediction_variables`.
             
-            prediction_hours (int): Default is 24
+            weather_prediction_hours (int): Default is 24
             
             prediction_variables (Dict[str, bool]): See `use_one_day_weather_prediction`. The variables are (by default 
             all False):
@@ -100,7 +101,7 @@ class ObservationSpec:
             
             history_len (int): History length for each agent.
             
-            user_occupation_funtion (bool): Define if the user occupation function will be used. Default is False.
+            user_occupation_function (bool): Define if the user occupation function will be used. Default is False.
             
             user_occupation_forecast (bool): Define if the user occupation forecast will be used. Default is False.
             
@@ -117,6 +118,9 @@ class ObservationSpec:
             summer_months (List[int]): Summer months for the user occupation forecast. Default is [6, 7, 8, 9].
             
             occupation_schedule (Tuple[str, str, str]): Occupation schedule for the user occupation forecast. Default is None.
+            
+            occupation_prediction_hours (int): Occupation prediction hours for the user occupation forecast. Default is 24.
+            
 
         """
         # Variables
@@ -143,7 +147,7 @@ class ObservationSpec:
         if self.use_one_day_weather_prediction:
             # Update the boolean values in the self.prediction_variables Dict.
             self.prediction_variables.update(prediction_variables)
-        self.prediction_hours = prediction_hours
+        self.weather_prediction_hours = weather_prediction_hours
             
         # Actuator value in the observation.
         self.use_actuator_state = use_actuator_state
@@ -156,20 +160,19 @@ class ObservationSpec:
         
         # User occupation forecast profile.
         self.user_occupation_forecast = user_occupation_forecast
-        self.user_occupation_funtion = user_occupation_funtion
-        if self.user_occupation_funtion or self.user_occupation_forecast: # This ensure that if forecast is used, the occupancy function is used as well.
-            self.user_type = user_type
-            self.zone_type = zone_type
-            self.summer_months = summer_months
-            self.num_simulations = num_simulations
-            self.probability_variation = probability_variation
-            self.probability_variation_evening_night_hours = probability_variation_evening_night_hours
-            if occupation_schedule is None:
-                raise ValueError("occupation_schedule must be provided if user_occupation_forecast is True.")
-            else:
-                assert isinstance(occupation_schedule, tuple), "occupation_schedule must be a tuple."
-                self.occupation_schedule = occupation_schedule            
-            
+        self.user_occupation_function = user_occupation_function
+        if self.user_occupation_forecast: # This ensure that if forecast is used, the occupancy function is used as well.
+            self.user_occupation_function = True
+        
+        # User type and zone type.
+        self.user_type = user_type
+        self.zone_type = zone_type
+        self.summer_months = summer_months
+        self.num_simulations = num_simulations
+        self.probability_variation = probability_variation
+        self.probability_variation_evening_night_hours = probability_variation_evening_night_hours
+        self.occupation_schedule = occupation_schedule            
+        self.occupation_prediction_hours = occupation_prediction_hours
         
     def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
@@ -210,10 +213,19 @@ class ObservationSpec:
                     logger.error(msg)
                     raise ValueError(msg)
         
-        if self.prediction_hours <= 0 or self.prediction_hours > 24:
-            self.prediction_hours = PREDICTION_HOURS
-            logger.warning(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {self.prediction_hours}. The value of 24 is used.")
+        if self.weather_prediction_hours <= 0 or self.weather_prediction_hours > 24:
+            self.weather_prediction_hours = PREDICTION_HOURS
+            logger.warning(f"The variable 'weather_prediction_hours' must be between 1 and 24. It is taken the value of {self.weather_prediction_hours}. The value of 24 is used.")
         
+        if self.occupation_prediction_hours <= 0 or self.occupation_prediction_hours > 24:
+                self.occupation_prediction_hours = 24
+                logger.warning(f"The variable 'occupation_prediction_hours' must be between 1 and 24. It is taken the value of {self.occupation_prediction_hours}. The value of 24 is used.")
+        
+        if self.user_occupation_forecast:
+            if self.occupation_schedule is None:
+                raise ValueError("occupation_schedule must be provided if user_occupation_forecast is True.")
+            else:
+                assert isinstance(self.occupation_schedule, tuple), "occupation_schedule must be a tuple."
         # Check that at least one variable/meter/actuator/parameter is defined.
         counter = 0
         if self.variables is not None:
