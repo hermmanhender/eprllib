@@ -80,7 +80,7 @@ class Environment(MultiAgentEnv):
     def __init__(
         self,
         env_config: Dict[str, Any]
-    ) -> None:
+        ) -> None:
         """
         Initializes the BaseEnvironment class.
 
@@ -129,7 +129,7 @@ class Environment(MultiAgentEnv):
             
             action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
             
-        self.action_space: spaces.Dict = spaces.Dict(action_space)
+        self.action_space = spaces.Dict(action_space)
         logger.debug(f"Action space: {self.action_space}")
         
         
@@ -171,7 +171,7 @@ class Environment(MultiAgentEnv):
                 observation_space[agent_id] = obs_space_per_agent
                 logger.info(f"Observation space for agent {agent_id} without history: {observation_space[agent_id]}")
         
-        self.observation_space: spaces.Dict = spaces.Dict(observation_space)
+        self.observation_space = spaces.Dict(observation_space)
         logger.info(f"Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
@@ -212,7 +212,7 @@ class Environment(MultiAgentEnv):
         self, *,
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None
-    ):
+        ):
         """
         Sets up a new episode of the environment.
 
@@ -330,8 +330,6 @@ class Environment(MultiAgentEnv):
             Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]: 
                 Observations, rewards, done flags, truncated flags, and additional info for each agent.
         """
-        # increment the timestep in 1.
-        self.timestep += 1
         # ===CONTROLS=== #
         # terminated variable is used to determine the end of a episode. Is stablished as False until the
         # environment present a terminal state.
@@ -344,10 +342,10 @@ class Environment(MultiAgentEnv):
         elif cut_episode_len == 0:
             self.truncateds = False
         else:
-            cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
-            if self.timestep % cut_episode_len_timesteps == 0:
+            # cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
+            if self.timestep % cut_episode_len == 0:
                 self.truncateds = True
-                logger.debug(f"Episode truncated after {cut_episode_len_timesteps} timesteps.")
+                logger.debug(f"Episode truncated after {cut_episode_len} timesteps.")
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
@@ -411,9 +409,6 @@ class Environment(MultiAgentEnv):
                                     self.connector_fn.obs_indexed[agent]
                                     )
                                 self.agents_to_inizialize_reward_parameters.remove(agent)
-                # Upgrade last observation and infos dicts.
-                self.last_obs = obs
-                self.last_infos = infos
                 
             except (Full, Empty):
                 # logger.info("Queue timeout, ending episode early.")
@@ -429,15 +424,24 @@ class Environment(MultiAgentEnv):
         for agent in obs.keys():
             # The reward function instance can be None if not defined for an agent.
             # We use .get() for safer access and check for None.
+            
+            assert type(agent) == str, f"Agent {agent} is not a string."
+            
             reward_fn_instance = self.reward_fn.get(agent)
             if reward_fn_instance:
                 if self.history_len[agent] > 1:
                     # If the history length is greater than 1, we use only the last observation in the buffer.
-                    obs_to_reward = np.array(self.observation_buffers[agent][-1])
+                    obs_to_reward = np.array(self.last_obs[agent][-1])
+                    next_obs_to_reward = np.array(self.observation_buffers[agent][-1])
                 else:
-                    obs_to_reward = np.array(obs[agent])
+                    obs_to_reward = np.array(self.last_obs[agent])
+                    next_obs_to_reward = np.array(obs[agent])
                 reward_dict[agent] = reward_fn_instance.get_reward(
-                    obs_to_reward, self.terminateds, self.truncateds
+                    obs_to_reward,
+                    actions.get(agent),
+                    next_obs_to_reward,
+                    self.terminateds,
+                    self.truncateds
                 )
             else:
                 # Assign a default reward of 0.0 if no reward function is found.
@@ -445,6 +449,13 @@ class Environment(MultiAgentEnv):
         
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
+        
+        # Upgrade last observation and infos dicts.
+        self.last_obs = obs
+        self.last_infos = infos
+        
+        # increment the timestep in 1.
+        self.timestep += 1
         
         return obs, reward_dict, terminated, truncated, infos
 
