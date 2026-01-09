@@ -121,9 +121,12 @@ class EnvironmentRunner:
                 f"{agent}_meters": [meters, meters_handles],
                 f"{agent}_actuators": [actuators, actuators_handles]
             })
+        
+        # Declaration of internal actuators for funtions and not agents.
         internal_actuators: List[Tuple[str,str,str]] = []
         for agent in self.agents:
-            if self.env_config["agents_config"][agent]['observation']["user_occupation_funtion"]:
+            # Occupation funtion.
+            if self.env_config["agents_config"][agent]['observation']["user_occupation_function"]:
                 internal_actuators.append(self.env_config["agents_config"][agent]['observation']["occupation_schedule"])
             # delete duplicate actuators in actuators_list
             internal_actuators = list(set(internal_actuators))
@@ -144,7 +147,13 @@ class EnvironmentRunner:
         Starts the EnergyPlus simulation.
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
-        self.energyplus_state = api.state_manager.new_state()
+        try:
+            self.energyplus_state = api.state_manager.new_state()
+            if self.energyplus_state is None:
+                raise RuntimeError("Failed to create EnergyPlus state")
+        except Exception as e:
+            logger.error(f"Error creating EnergyPlus state: {e}")
+            raise
         # Request variables.
         for agent in self.agents:
             if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
@@ -164,11 +173,16 @@ class EnvironmentRunner:
             """
             Run EnergyPlus in a non-blocking way with Threads.
             """
-            cmd_args = self.make_eplus_args()
-            logger.info(f"running EnergyPlus with args: {cmd_args}")
-            assert self.energyplus_state is not None, "EnergyPlus state is None."
-            self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
-            self.simulation_complete = True
+            try:
+                cmd_args = self.make_eplus_args()
+                logger.info(f"running EnergyPlus with args: {cmd_args}")
+                assert self.energyplus_state is not None, "EnergyPlus state is None."
+                self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
+            except Exception as e:
+                logger.error(f"Error running EnergyPlus: {e}")
+                self.sim_results = -1
+            finally:
+                self.simulation_complete = True
             
         self.energyplus_exec_thread = threading.Thread(
             target=_run_energyplus,
@@ -542,25 +556,19 @@ class EnvironmentRunner:
         # Get timestep variables that are needed as input for some data_exchange methods.
         hour = api.exchange.hour(state_argument)
         zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
-        month = api.exchange.month(state_argument)
-        if month == 2:
-            max_day = 28
-        elif month in [4,6,9,11]:
-            max_day = 30
-        else:
-            max_day = 31
+        
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
             'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
             'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
-            'current_time': np.sin(2 * np.pi * (api.exchange.current_time(state_argument)) / 24), # Get the current time of day in hours, where current time represents the end time of the current time step.
-            'day_of_month': np.sin(2 * np.pi * (api.exchange.day_of_month(state_argument)-1) / (max_day-1)), # Get the current day of month (1-31)
-            'day_of_week': np.sin(2 * np.pi * (api.exchange.day_of_week(state_argument)-1) / 6), # Get the current day of the week (1-7)
-            'day_of_year': np.sin(2 * np.pi * (api.exchange.day_of_year(state_argument)-1) / 365), # Get the current day of the year (1-366)
+            'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
+            'day_of_month': api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
+            'day_of_week': api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
+            'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
             'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
-            'hour': np.sin(2 * np.pi * (api.exchange.hour(state_argument)) / 23), # Get the current hour of the simulation (0-23)
-            'minutes': np.sin(2 * np.pi * (api.exchange.hour(state_argument)-1) / 59), # Get the current minutes into the hour (1-60)
-            'month': np.sin(2 * np.pi * (api.exchange.month(state_argument)-1) / 11), # Get the current month of the simulation (1-12)
+            'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
+            'minutes': api.exchange.hour(state_argument), # Get the current minutes into the hour (1-60)
+            'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
             'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
             'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
             'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
@@ -692,21 +700,21 @@ class EnvironmentRunner:
         
         variables: Dict[str,Any] = {}
         prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
-        for h in range(self.env_config["agents_config"][agent]['observation']['prediction_hours']):
+        for h in range(self.env_config["agents_config"][agent]['observation']['weather_prediction_hours']):
             # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
             prediction_hour: int = hour+1 + h
             if prediction_hour < 24:
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
                         variables.update({
-                            get_parameter_prediction_name(agent,key,prediction_hour): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,1)
+                            get_parameter_prediction_name(agent,key,h): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,1)
                         })
             else:
                 prediction_hour_t = prediction_hour - 24
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
                         variables.update({
-                            get_parameter_prediction_name(agent,key,prediction_hour_t): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,1)
+                            get_parameter_prediction_name(agent,key,h): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,1)
                         })
         return variables
         
@@ -754,7 +762,7 @@ class EnvironmentRunner:
         assert isinstance(agent, str), "Agent must be a string."
                 
         # Get timestep variables that are needed as input for some data_exchange methods.
-        if self.env_config["agents_config"][agent]['observation']['user_occupation_funtion']:
+        if self.env_config["agents_config"][agent]['observation']['user_occupation_function']:
             
             self.occupancy_next_timestep  = calculate_occupancy(
                 api.exchange.hour(state_argument),
@@ -764,7 +772,6 @@ class EnvironmentRunner:
                 api.exchange.holiday_index(state_argument) > 0,
                 self.env_config["agents_config"][agent]['observation']['user_type'],
                 self.env_config["agents_config"][agent]['observation']['zone_type'],
-                self.env_config["agents_config"][agent]['observation']['num_simulations'],
                 self.env_config["agents_config"][agent]['observation']['probability_variation'],
                 self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
                 self.env_config["agents_config"][agent]['observation']['summer_months']
@@ -777,16 +784,16 @@ class EnvironmentRunner:
                 api.exchange.day_of_month(state_argument),
                 api.exchange.month(state_argument),
                 api.exchange.year(state_argument),
-                api.exchange.holiday_index(state_argument) > 0,
                 self.env_config["agents_config"][agent]['observation']['user_type'],
                 self.env_config["agents_config"][agent]['observation']['zone_type'],
                 self.env_config["agents_config"][agent]['observation']['num_simulations'],
                 self.env_config["agents_config"][agent]['observation']['probability_variation'],
                 self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
-                self.env_config["agents_config"][agent]['observation']['summer_months']
+                self.env_config["agents_config"][agent]['observation']['summer_months'],
+                self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']
             )
             
-            for h in range(24):
+            for h in range(self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']):
                 variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
                 
             return variables
@@ -810,9 +817,14 @@ class EnvironmentRunner:
             # print("Initializing handles...")
             self.init_handles = self._init_handles(state_argument)
         
-        self.initialized = self.init_handles and not api.exchange.warmup_flag(state_argument)
+        if api.exchange.warmup_flag(state_argument):
+            self.initialized = False
+            # print("Warmup phase still alive...")
+            return self.initialized
         
-        return self.initialized
+        else:
+            self.initialized = self.init_handles
+            return self.initialized
 
     def _init_handles(self, state_argument: c_void_p) -> bool:
         """
@@ -876,18 +888,36 @@ class EnvironmentRunner:
         # print("Stopping EnergyPlus simulation...")
         if not self.simulation_complete:
             self.simulation_complete = True
-        if self.energyplus_state is not None:
-            api.runtime.stop_simulation(self.energyplus_state)
+        
+        try:
+            if self.energyplus_state is not None:
+                api.runtime.stop_simulation(self.energyplus_state)
+        except Exception as e:
+            logger.warning(f"Error stopping EnergyPlus simulation: {e}")
+        
         self._flush_queues()
+        
         if self.energyplus_exec_thread is not None:
-            self.energyplus_exec_thread.join()
+            try:
+                self.energyplus_exec_thread.join(timeout=30)
+            except Exception as e:
+                logger.warning(f"Error joining EnergyPlus thread: {e}")
         
         self.energyplus_exec_thread = None
         self.first_observation = True
-        api.runtime.clear_callbacks()
+        
+        try:
+            api.runtime.clear_callbacks()
+        except Exception as e:
+            logger.warning(f"Error clearing callbacks: {e}")
+        
         if self.energyplus_state is not None:
-            api.state_manager.delete_state(self.energyplus_state)
-            self.energyplus_state = None
+            try:
+                api.state_manager.delete_state(self.energyplus_state)
+            except Exception as e:
+                logger.warning(f"Error deleting EnergyPlus state: {e}")
+            finally:
+                self.energyplus_state = None
 
     def failed(self) -> bool:
         """
