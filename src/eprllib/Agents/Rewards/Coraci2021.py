@@ -139,6 +139,7 @@ class Coraci2021(BaseReward):
         self.cumulated_reward: List[float] = []
         self.reward_timestep: int = 0
         self.timesteptoreward: int = reward_fn_config.get("timesteptoreward", 1)
+        self.clip: float = reward_fn_config.get("clip", 0.15)
     
     @override(BaseReward)
     def set_initial_parameters(
@@ -205,9 +206,9 @@ class Coraci2021(BaseReward):
             
             # === COMFORT ===
             # Get the internal temperature
-            dt = abs(obs[self.dt_index] * 10 )
+            dt = np.clip(abs(obs[self.dt_index]),self.clip,1) # El clip a 0.15 hace que la recompensa por confort no aumente con temperaturas más elevadas de 20.5°C
             # Calculate the reward for the actual state.
-            reward += - self.beta * np.clip(((dt)**3)/(2**3),0,1)
+            reward += - self.beta * np.clip(((dt)**3),0,1)
         
         # Save the time step reward to use it with timesteptoreward. 
         self.cumulated_reward.append(reward)
@@ -217,7 +218,7 @@ class Coraci2021(BaseReward):
 
         # If is the end of the episode or the time steps to reward is complete, delivery the mean reward.
         if terminated or truncated or (self.reward_timestep % self.timesteptoreward == 0):
-            reward2return = float(np.mean(self.cumulated_reward))
+            reward2return = float(sum(self.cumulated_reward))
             self.cumulated_reward = []
             self.reward_timestep = 0
             return reward2return
