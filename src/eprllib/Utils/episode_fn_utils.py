@@ -5,12 +5,11 @@ Episode Functions Utils
 Work in progress...
 """
 
-from typing import Dict, Tuple, Any, List # type: ignore
+from typing import Dict, Tuple, Any, List
 import os
 import numpy as np
 from numpy.typing import NDArray
 from numpy import float32
-import shapely
 import json
 import pandas as pd
 import datetime

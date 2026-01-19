@@ -109,7 +109,6 @@ def get_user_occupation_forecast_name(agent: str, hour:int) -> str:
 
     Args:
         agent (str): The agent name.
-        parameter_name (str): The parameter name.
         hour (int): The hour.
 
     Returns:
@@ -117,4 +116,4 @@ def get_user_occupation_forecast_name(agent: str, hour:int) -> str:
     """
     if hour < 1 or hour > 24:
         raise ValueError("Hour must be between 1 and 24.")
-    return f"{agent}: User Occupation Forecast: {hour}"
+    return f"{agent}: User Occupation Forecast: +{hour}h"

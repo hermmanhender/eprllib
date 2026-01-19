@@ -1,7 +1,7 @@
 
 
 import eprllib.Utils.observation_utils as observation_utils
-from typing import Dict, Any, Tuple # type: ignore
+from typing import Dict, Any, Tuple
 
 def set_variables_in_obs(
     env_config: Dict[str, Any],
