@@ -5,7 +5,7 @@ src/eprllib/experiments/
 __pycache__/
 *.py[codz]
 *$py.class
-.pyc
+*.pyc
 /__pycache__/
 
 # C extensions
