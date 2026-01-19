@@ -7,7 +7,7 @@ The `DefaultFilter` class extends the `BaseFilter` class and provides a basic im
 as-is or extended to create custom filters.
 """
 import numpy as np
-from typing import Any, Dict # type: ignore
+from typing import Any, Dict
 from numpy.typing import NDArray
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.annotations import override
