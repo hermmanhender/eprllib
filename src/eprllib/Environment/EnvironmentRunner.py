@@ -10,8 +10,9 @@ import threading
 import time
 import numpy as np
 from queue import Queue
-from typing import Any, Dict, List, Optional, Tuple
 from ctypes import c_void_p
+from typing import Any, Dict, List, Optional, Tuple, cast
+from types import FunctionType
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
@@ -96,7 +97,7 @@ class EnvironmentRunner:
         self.infos = {agent: {} for agent in self.agents}
         self.unique_id = time.time()
         self.is_last_timestep: bool = False
-        self.occupancy_next_timestep: int = 0
+        self.occupancy_next_timestep: float = 0.
         
         # create a variable to save the obs dict key to use in posprocess
         # self.obs_keys = []
@@ -131,11 +132,10 @@ class EnvironmentRunner:
             # delete duplicate actuators in actuators_list
             internal_actuators = list(set(internal_actuators))
         self.internal_variables_and_handles: Dict[str, Any] = {}
-        actuators, actuators_handles = self.set_internal_actuators(internal_actuators)
+        int_actuators, int_actuators_handles = self.set_internal_actuators(internal_actuators)
         self.internal_variables_and_handles.update({
-                "internal_actuators": [actuators, actuators_handles]
+                "internal_actuators": [int_actuators, int_actuators_handles]
             })
-        
     
     def progress_handler(self, progress: int) -> None:
         # print(f"Simulation progress: {progress}%")
@@ -149,8 +149,7 @@ class EnvironmentRunner:
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         try:
             self.energyplus_state = api.state_manager.new_state()
-            if self.energyplus_state is None:
-                raise RuntimeError("Failed to create EnergyPlus state")
+            assert self.energyplus_state is not None, "Failed to create EnergyPlus state"
         except Exception as e:
             logger.error(f"Error creating EnergyPlus state: {e}")
             raise
@@ -164,9 +163,9 @@ class EnvironmentRunner:
                         variable_key = variable[1]
                     )
                     # print(f"Variable {get_variable_name(agent,variable[0],variable[1])} requested.")
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
-        api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
-        api.runtime.callback_progress(self.energyplus_state, self.progress_handler)
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, cast(FunctionType, self._send_actions))
+        api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, cast(FunctionType, self._collect_obs))
+        api.runtime.callback_progress(self.energyplus_state, cast(FunctionType, self.progress_handler))
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
         
         def _run_energyplus():
@@ -290,8 +289,8 @@ class EnvironmentRunner:
             self.first_observation = False
         else:
             return
-
-    def _send_actions(self, state_argument: c_void_p):
+    
+    def _send_actions(self, state_argument: c_void_p) -> None:
         """EnergyPlus callback that sets actuator value from last decided action
         """
           
@@ -334,14 +333,14 @@ class EnvironmentRunner:
                     actuator_handle=self.agent_variables_and_handles[f"{agent}_actuators"][1][actuator],
                     actuator_value=action
                 )
-        
+                
         for actuator in self.internal_variables_and_handles["internal_actuators"][0].keys():
             api.exchange.set_actuator_value(
                 state=state_argument,
                 actuator_handle=self.internal_variables_and_handles["internal_actuators"][1][actuator],
                 actuator_value=self.occupancy_next_timestep
             )
-
+            
     def set_variables(self, agent:str) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
         """
         The EnergyPlus variables are defined in the environment configuration.
@@ -772,9 +771,7 @@ class EnvironmentRunner:
                 api.exchange.holiday_index(state_argument) > 0,
                 self.env_config["agents_config"][agent]['observation']['user_type'],
                 self.env_config["agents_config"][agent]['observation']['zone_type'],
-                self.env_config["agents_config"][agent]['observation']['probability_variation'],
-                self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
-                self.env_config["agents_config"][agent]['observation']['summer_months']
+                self.env_config["agents_config"][agent]['observation']['confidence_level']
             )
         
         if self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
@@ -786,11 +783,9 @@ class EnvironmentRunner:
                 api.exchange.year(state_argument),
                 self.env_config["agents_config"][agent]['observation']['user_type'],
                 self.env_config["agents_config"][agent]['observation']['zone_type'],
-                self.env_config["agents_config"][agent]['observation']['num_simulations'],
-                self.env_config["agents_config"][agent]['observation']['probability_variation'],
-                self.env_config["agents_config"][agent]['observation']['probability_variation_evening_night_hours'],
-                self.env_config["agents_config"][agent]['observation']['summer_months'],
-                self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']
+                self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours'],
+                self.env_config["agents_config"][agent]['observation']['confidence_level'],
+                self.env_config["agents_config"][agent]['observation']['lambdaa']
             )
             
             for h in range(self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']):
@@ -928,14 +923,14 @@ class EnvironmentRunner:
         """
         return self.sim_results != 0
 
-    def make_eplus_args(self) -> List[str]:
+    def make_eplus_args(self) -> List[str|bytes]:
         """
         Make command line arguments to pass to EnergyPlus.
         
         Return:
             List[str]: List of arguments to pass to EnergyPlusEnv.
         """
-        eplus_args = ["-r"] if self.env_config.get("csv", False) else []
+        eplus_args: List[str|bytes] = ["-r"] if self.env_config.get("csv", False) else []
         eplus_args += [
             "-w",
             self.env_config["epw_path"],
