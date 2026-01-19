@@ -1,15 +1,20 @@
 """
 Specification for the observation space and parameters
 ===========================================================
-This module defines the `ObservationSpec` class, which is used to specify the configuration of observation space and parameters for agents in reinforcement learning environments.
+This module defines the `ObservationSpec` class, which is used to specify the configuration of 
+observation space and parameters for agents in reinforcement learning environments.
+
 It ensures that the observation space is properly defined and adheres to the expected interface.
 """
-from typing import Dict, List, Tuple, Optional, Any # type: ignore
+from typing import Dict, List, Tuple, Optional, Any
 from eprllib.Agents import (
-    SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, 
-    PREDICTION_VARIABLES, PREDICTION_HOURS
+    SIMULATION_PARAMETERS,
+    ZONE_SIMULATION_PARAMETERS, 
+    PREDICTION_VARIABLES,
+    PREDICTION_HOURS,
+    VALID_USER_TYPES,
+    VALID_ZONE_TYPES
 )
-from eprllib.Utils import VALID_USER_TYPES, VALID_ZONE_TYPES
 from eprllib import logger
 
 class ObservationSpec:
@@ -33,12 +38,10 @@ class ObservationSpec:
         user_occupation_forecast: bool = False,
         user_type: str = VALID_USER_TYPES[0],
         zone_type: str = VALID_ZONE_TYPES[0],
-        num_simulations: int = 100,
-        probability_variation: float = 0.15,
-        probability_variation_evening_night_hours: float = 0.20,
-        summer_months: List[int] = [6, 7, 8, 9],
         occupation_schedule: Optional[Tuple[str, str, str]] = None,
-        occupation_prediction_hours: int = 24
+        occupation_prediction_hours: int = 24,
+        confidence_level: float = 0.95,
+        lambdaa: float = 0.05
     ) -> None:
         """
         Construction method.
@@ -109,18 +112,13 @@ class ObservationSpec:
             
             zone_type (str): Type of zone. Default is 'Office'
             
-            num_simulations (int): Number of simulations for the user occupation forecast. Default is 100.
-            
-            probability_variation (float): Probability variation for the user occupation forecast. Default is 0.15.
-            
-            probability_variation_evening_night_hours (float): Probability variation for the user occupation forecast. Default is 0.20.
-            
-            summer_months (List[int]): Summer months for the user occupation forecast. Default is [6, 7, 8, 9].
-            
             occupation_schedule (Tuple[str, str, str]): Occupation schedule for the user occupation forecast. Default is None.
             
             occupation_prediction_hours (int): Occupation prediction hours for the user occupation forecast. Default is 24.
             
+            confidence_level (float): Confidence level for the user occupation forecast. Default is 0.95.
+            
+            lambdaa (float): Decay value of the confidence level. Default is 0.05.
 
         """
         # Variables
@@ -166,13 +164,20 @@ class ObservationSpec:
         
         # User type and zone type.
         self.user_type = user_type
+        
+        if user_type not in VALID_USER_TYPES:
+            raise ValueError(f"User type '{user_type}' is not valid. Options: {VALID_USER_TYPES}")
+        
         self.zone_type = zone_type
-        self.summer_months = summer_months
-        self.num_simulations = num_simulations
-        self.probability_variation = probability_variation
-        self.probability_variation_evening_night_hours = probability_variation_evening_night_hours
-        self.occupation_schedule = occupation_schedule            
+        if zone_type not in VALID_ZONE_TYPES:
+            raise ValueError(f"Zone type '{zone_type}' is not valid. Options: {VALID_ZONE_TYPES}")
+        
+        self.confidence_level = confidence_level
+        
+        # Occupation forecast.
+        self.occupation_schedule = occupation_schedule
         self.occupation_prediction_hours = occupation_prediction_hours
+        self.lambdaa = lambdaa
         
     def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
