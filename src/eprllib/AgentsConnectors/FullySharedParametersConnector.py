@@ -19,7 +19,7 @@ Notes:
 import time
 import numpy as np
 from gymnasium.spaces import Box
-from typing import Any, Dict, Tuple, Optional # type: ignore
+from typing import Any, Dict, Tuple, Optional
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 import eprllib.Utils.observation_utils as observation_utils

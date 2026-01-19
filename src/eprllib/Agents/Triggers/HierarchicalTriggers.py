@@ -7,7 +7,7 @@ This class uses a discrete action space. The size of the action space must be sp
 """
 from gymnasium import Space
 from gymnasium.spaces import Discrete, MultiDiscrete
-from typing import Any, List, Dict # type: ignore
+from typing import Any, List, Dict
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import config_validation

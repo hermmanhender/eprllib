@@ -11,7 +11,7 @@ and indexing an array may change.
 The terminated and truncated flags are arguments in the reward function ``get_reward`` method to allow
 implementations with dispersed reward. This flags allow return the final reward when the episode ends.
 """
-from typing import Dict, Any # type: ignore
+from typing import Dict, Any
 from numpy.typing import NDArray
 from numpy import float32
 from eprllib import logger

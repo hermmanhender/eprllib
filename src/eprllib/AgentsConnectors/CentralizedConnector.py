@@ -12,7 +12,7 @@ access to the thermal zone mean air temperature, only declare this parameter in 
 """
 from gymnasium.spaces import Box
 import numpy as np
-from typing import Any, Dict, Tuple # type: ignore
+from typing import Any, Dict, Tuple
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 from eprllib.Utils.connector_utils import (

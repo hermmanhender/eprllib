@@ -11,7 +11,7 @@ import numpy as np
 from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
-from typing import Any, Dict, Optional, Tuple # type: ignore
+from typing import Any, Dict, Optional, Tuple
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Rewards.BaseReward import BaseReward

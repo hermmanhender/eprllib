@@ -7,7 +7,7 @@ agents' observations to provide a flexible configuration of the communication be
 Built-in hierarchical (only two levels), fully-shared, centralized, and independent configurations 
 are provided.
 """
-from typing import Dict, Any, Tuple # type: ignore
+from typing import Dict, Any, Tuple
 from gymnasium import spaces
 from eprllib import logger
 

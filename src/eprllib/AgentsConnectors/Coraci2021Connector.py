@@ -6,22 +6,10 @@ This module defines the default connector class that allows the combination of a
 to provide a flexible configuration of the communication between agents. Built-in hierarchical 
 (only two levels), fully-shared, centralized, and independent configurations are provided.
 """
-from typing import Dict, Any, Tuple # type: ignore
+from typing import Dict, Any, Tuple
 from gymnasium.spaces import Box
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
-from eprllib.Utils.connector_utils import (
-    set_variables_in_obs,
-    set_internal_variables_in_obs,
-    set_meters_in_obs,
-    set_simulation_parameters_in_obs,
-    set_zone_simulation_parameters_in_obs,
-    set_prediction_variables_in_obs,
-    set_other_obs_in_obs,
-    set_actuators_in_obs,
-    set_user_occupation_forecast_in_obs
-    )
-from eprllib import logger
 
 class Coraci2021Connector(BaseConnector):
     def __init__(

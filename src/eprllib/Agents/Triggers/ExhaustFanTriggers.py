@@ -6,7 +6,7 @@ This module contains classes to implement triggers for controlling exhaust fan a
 """
 import gymnasium as gym
 import numpy as np
-from typing import Any, Dict, List, Tuple, Optional # type: ignore
+from typing import Any, Dict, List, Tuple, Optional
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override

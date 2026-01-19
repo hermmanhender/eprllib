@@ -35,7 +35,7 @@ import tempfile
 import numpy as np
 from numpy.typing import NDArray
 from numpy import float32
-from typing import Dict, Any, List # type: ignore
+from typing import Dict, Any, List
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.episode_fn_utils import (
     load_ep_model,
