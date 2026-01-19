@@ -1,9 +1,11 @@
 """
 Specification for the action space and actuators
 ===========================================================
-This module defines the `ActionSpec` class, which is used to specify the configuration of action space and actuators for agents in reinforcement learning environments.
+This module defines the `ActionSpec` class, which is used to specify the 
+configuration of action space and actuators for agents in reinforcement 
+learning environments.
 """
-from typing import Dict, List, Tuple, Any, Optional # type: ignore
+from typing import Dict, List, Tuple, Any, Optional
 from eprllib import logger
 
 class ActionSpec:
@@ -60,18 +62,12 @@ class ActionSpec:
         """
         This method is used to build the ActionSpec object.
         """
-        # Check that the actuators are defined as a list of tuples.
-        if not isinstance(self.actuators, list):
-            msg = f"The actuators must be defined as a list of tuples but {type(self.actuators)} was given."
-            logger.error(msg)
-            raise ValueError(msg)
-        else:
-            # Check that the actuators are defined as a list of tuples of 3 elements.
-            for actuator in self.actuators:
-                if len(actuator) != 3:
-                    msg = f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
-                    logger.error(msg)
-                    raise ValueError(msg)
+        # Check that the actuators are defined as a list of tuples of 3 elements.
+        for actuator in self.actuators:
+            if len(actuator) != 3:
+                msg = f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
+                logger.error(msg)
+                raise ValueError(msg)
         
         return vars(self)
     
