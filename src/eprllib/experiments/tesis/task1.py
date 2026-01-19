@@ -15,7 +15,7 @@ from ray.rllib.algorithms.ppo.ppo import PPOConfig
 from ray.rllib.policy.policy import PolicySpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from ray.rllib.models import ModelCatalog
-from eprllib.examples.example_central_agent_files.policy_model import CustomTransformerModel
+from eprllib.experiments.tesis.configurations.policy_model import CustomTransformerModel
 ModelCatalog.register_custom_model("custom_transformer", CustomTransformerModel)
 
 from eprllib.experiments.files.rl_module_transformer import TransformerRLModule
@@ -45,11 +45,11 @@ from eprllib.Agents.Rewards.Coraci2021 import Coraci2021
 from eprllib.Agents.Filters.CoraciObsSpace import CoraciObsSpaceFilter
 from eprllib.AgentsConnectors.Coraci2021Connector import Coraci2021Connector
 
-from eprllib.examples.example_thermostat_files.curriculum_learning import episode_fn
-from eprllib.examples.example_thermostat_files.policy_mapping import policy_map_fn
+from eprllib.experiments.tesis.configurations.curriculum_learning import episode_fn
+from eprllib.experiments.tesis.configurations.policy_mapping import policy_map_fn
 # from eprllib.experiments.tesis.callbacks import ActionDistributionCallback
 
-with open("src/eprllib/examples/example_thermostat_files/curriculum_task1.json", "r") as f:
+with open("src/eprllib/experiments/tesis/configurations/curriculum_task1.json", "r") as f:
     episode_config = json.load(f)
 
 experiment_name:str = "tesis"
@@ -180,7 +180,7 @@ eprllib_config.agents(
                     "t_low": 20.0,
                     "t_high": 24.0,
                     "timesteptoreward": 1,
-                    'beta': 0.8,
+                    'beta': 0.97,
                     'cooling_name': "Cooling:DistrictCooling",
                     'heating_name': "Heating:DistrictHeatingWater"
                 },
@@ -258,7 +258,7 @@ algo.resources(
 algo.rl_module(
     model_config = DefaultModelConfig(
     #     # FC Hidden layers
-        fcnet_hiddens= [256,256],#tune.grid_search([[64,64],[128,128],[64,64,64]]) if tuning else [64,64],
+        fcnet_hiddens= [256,256,64,64],#tune.grid_search([[64,64],[128,128],[64,64,64]]) if tuning else [64,64],
         fcnet_activation= "relu",
     ),
 
@@ -316,7 +316,7 @@ algo.training(
     kl_target = 0.7,
     shuffle_batch_per_epoch = True,
     vf_loss_coeff = 0.25,
-    entropy_coeff = 0.3, #tune.quniform(0.01, 0.1, 0.01),
+    entropy_coeff = 0.01, #tune.quniform(0.01, 0.1, 0.01),
     # entropy_coeff = [
     #     (0, 0.05),
     #     (5e4, 0.05),
@@ -329,7 +329,7 @@ algo.env_runners(
 
     num_env_runners = 7,
     num_envs_per_env_runner = 1,
-    sample_timeout_s = 1000000,
+    sample_timeout_s = 3000000,
     rollout_fragment_length = 'auto',
     batch_mode = "complete_episodes", #"truncate_episodes", "complete_episodes",
     explore = True,
