@@ -4,7 +4,8 @@ Agents
 
 This module contains classes for representing and manipulating agents in the
 environment. The agents are responsible for taking actions in the environment
-following a specified policy.
+following a specified policy that responses to the current state of the
+environment.
 
 In this module, you will find:
 
@@ -12,16 +13,18 @@ In this module, you will find:
   filter, action, trigger, and reward specifications.
 - ``ObservationSpec``: Defines the observation space for the agent.
 - ``FilterSpec``: Defines filters to preprocess observations before they are fed to 
-  the agent.
+  the agent. NOTE: This object must to be coordinated with ``AgentsConnectors``.
 - ``ActionSpec``: Defines the action space and actuators for the agent.
 - ``TriggerSpec``: Defines triggers that determine when the agent should take an action.
 - ``RewardSpec``: Defines the reward function for the agent.
 
 Additionally, you will find base classes and some applications for Filters, Rewards, 
-and Triggers, which are essential parts of an agent in eprllib.
+and Triggers, which are essential parts of an agent in ``eprllib``.
 """
 
-SIMULATION_PARAMETERS = {
+from typing import Dict, Any
+
+SIMULATION_PARAMETERS: Dict[str, bool] = {
     'actual_date_time': False,
     'actual_time': False,
     'current_time': False,
@@ -66,13 +69,13 @@ SIMULATION_PARAMETERS = {
     'tomorrow_weather_wind_speed_at_time': False,
 }
 
-ZONE_SIMULATION_PARAMETERS = {
+ZONE_SIMULATION_PARAMETERS: Dict[str, bool] = {
     'system_time_step': False,
     'zone_time_step': False,
     'zone_time_step_number': False,
 }
 
-PREDICTION_VARIABLES = {
+PREDICTION_VARIABLES: Dict[str, bool] = {
     'albedo': False,
     'beam_solar': False,
     'diffuse_solar': False,
@@ -89,4 +92,60 @@ PREDICTION_VARIABLES = {
     'wind_speed': False,
 }
 
-PREDICTION_HOURS = 24
+PREDICTION_HOURS: int = 24
+
+# --- CONFIGURING USER PROFILES BY ZONE ---
+# Each profile now distinguishes between day and night zones.
+# The sum of occupants in both zones at a given hour reflects the distribution of people.
+
+OCCUPATION_PROFILES: Dict[str, Dict[str, Any]] = {
+    "Office schedule": {
+        "total_people": 1,
+        "zone_daytime": {
+            "weekdays": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+            "weekends": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        },
+        "zone_nightly": {
+            "weekdays": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+            "weekends": [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        },
+    },
+    "Single with an office job": {
+        "total_people": 1,
+        "zone_daytime": {
+            "weekdays": [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+            "weekends": [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+        },
+        "zone_nightly": {
+            "weekdays": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+            "weekends": [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        },
+    },
+    "Typical family, office job": { # 2 adults, 2 children
+        "total_people": 1,
+        "zone_daytime": {
+            "weekdays": [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+            "weekends": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+        },
+        "zone_nightly": {
+            "weekdays": [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+            "weekends": [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+        },
+    },
+    "Always present": {
+        "total_people": 1,
+        "zone_daytime": {
+            "weekdays": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "weekends": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        },
+        "zone_nightly": {
+            "weekdays": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "weekends": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        },
+    },
+    # More profiles can be added here with the same structure.
+}
+
+# Validation list for allowed user types.
+VALID_USER_TYPES = list(OCCUPATION_PROFILES.keys())
+VALID_ZONE_TYPES = ["daytime", "nightly"]
