@@ -18,7 +18,6 @@ from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_meter_name
 from eprllib.Utils.observation_utils import get_variable_name
-from eprllib.Utils.filter_utils import desnormalization_minmax
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import config_validation
 
@@ -217,9 +216,10 @@ class EnergyWithMetersEnded(BaseReward):
         """
         reward: float = 0.0
         
-        e_norm = ((obs[self.cooling] + obs[self.heating]))/abs(self.comfort_temperature - (desnormalization_minmax(obs[self.site_temperature_index], -20.0 +273.15, 50.0 + 273.15)-273.15))
+        # e_norm = ((obs[self.cooling] + obs[self.heating]))/abs(self.comfort_temperature - (desnormalization_minmax(obs[self.site_temperature_index], -20.0 +273.15, 50.0 + 273.15)-273.15))
+        e_norm = ((obs[self.cooling] + obs[self.heating]))
         
-        reward += - np.log10(e_norm + 1)
+        reward += - np.clip(np.log2(e_norm + 1), 0, 1)
         # # If the place is occupied then normalize the use of energy.
         # if obs[self.zone_people_occupant_count_index] != 0:
         #     # Calculate the reward for the actual state.
