@@ -4,7 +4,7 @@ Specification for the filter functions
 This module defines the `FilterSpec` class, which is used to specify the configuration of filter functions for agents in reinforcement learning environments.
 It ensures that the filter function is properly defined and adheres to the expected interface.
 """
-from typing import Dict, Any, Optional # type: ignore
+from typing import Dict, Any, Optional, Type
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib import logger
@@ -15,7 +15,7 @@ class FilterSpec:
     """
     def __init__(
         self,
-        filter_fn: Optional[BaseFilter] = None,
+        filter_fn: Optional[Type[BaseFilter]] = None,
         filter_fn_config: Dict[str, Any] = {}
     ):
         """
@@ -28,7 +28,7 @@ class FilterSpec:
             filter_fn_config (Dict[str, Any]): The configuration of the filter function.
         """
         self.filter_fn = filter_fn
-        self.filter_fn_config = filter_fn_config            
+        self.filter_fn_config = filter_fn_config
     
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
@@ -50,5 +50,6 @@ class FilterSpec:
             logger.warning(msg)
             self.filter_fn = DefaultFilter
             self.filter_fn_config = {}
+        
         return vars(self)
     

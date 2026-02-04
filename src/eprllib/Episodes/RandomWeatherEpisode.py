@@ -6,7 +6,7 @@ Given a path for a folder with epw files, this function update the epw file rand
 each episode during the training process.
 """
 
-from typing import Dict, Any # type: ignore
+from typing import Dict, Any
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.episode_fn_utils import get_random_weather
 from eprllib.Utils.annotations import override

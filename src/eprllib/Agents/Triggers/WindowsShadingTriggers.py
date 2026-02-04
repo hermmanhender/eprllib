@@ -5,7 +5,7 @@ Windows Shading Triggers
 This module contains classes to implement window shading triggers for controlling actuators in the environment.
 """
 import gymnasium as gym
-from typing import Any, Dict, List, Tuple, Optional # type: ignore
+from typing import Any, Dict, List, Tuple, Optional
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override

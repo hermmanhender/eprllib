@@ -4,7 +4,7 @@ Environment Configuration
 
 This module contains the class and methods used to configure the environment.
 """
-from typing import Optional, Dict, Any, Type # type: ignore
+from typing import Optional, Dict, Any, Type
 from tempfile import TemporaryDirectory
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode
@@ -115,10 +115,6 @@ class EnvironmentConfig:
         if self.output_path is None:
             self.output_path = TemporaryDirectory("eprllib_output").name
             logger.warning(f"The output_path is not defined. {self.output_path} will be used.")
-        else:
-            msg = f"The output_path is not a string: {self.output_path}"
-            logger.error(msg)
-            raise ValueError(msg)
         
         # === AGENTS === #
         if self.agents_config is None:

@@ -5,7 +5,7 @@ Utilities for the environment configuration
 Work in progress...
 """
 
-from typing import Set, Dict, Optional, List, Any # type: ignore
+from typing import Set, Dict, Optional, List, Any
 import inspect
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from gymnasium.spaces import Box, Discrete
@@ -13,12 +13,6 @@ import sys
 import numpy as np
 from typing import get_origin, get_args, Union, _SpecialGenericAlias
 
-# Importar las clases que deseas validar
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
-from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib.Agents.Rewards.BaseReward import BaseReward
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
-from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib import logger
 
 def EP_API_add_path(path: Optional[str] = None) -> str:

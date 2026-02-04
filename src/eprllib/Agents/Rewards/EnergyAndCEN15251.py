@@ -3,7 +3,7 @@ Energy and CEN 15251 reward function
 =====================================
 
 """
-from typing import Any, Dict # type: ignore
+from typing import Any, Dict
 from numpy.typing import NDArray
 from numpy import float32
 from eprllib.Agents.Rewards.BaseReward import BaseReward
@@ -65,10 +65,12 @@ class EnergyAndCEN15251(BaseReward):
     @override(BaseReward)
     def get_reward(
         self,
+        prev_obs: NDArray[float32],
+        prev_action: Any,
         obs: NDArray[float32],
-        terminated: bool = False,
-        truncated: bool = False
-    ) -> float:
+        terminated: bool,
+        truncated: bool
+        ) -> float:
         """
         This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
@@ -83,8 +85,8 @@ class EnergyAndCEN15251(BaseReward):
             float: reward normalize value
         """        
         reward = 0.
-        reward += (1-self.beta) * self.comfort_reward.get_reward(obs, terminated, truncated)
-        reward += self.beta * self.energy_reward.get_reward(obs, terminated, truncated)
+        reward += (1-self.beta) * self.comfort_reward.get_reward(prev_obs, prev_action, obs, terminated, truncated)
+        reward += self.beta * self.energy_reward.get_reward(prev_obs, prev_action, obs, terminated, truncated)
         return reward
 
 # === Hierarchical version ===
@@ -143,10 +145,12 @@ class HierarchicalEnergyAndCEN15251(BaseReward):
     @override(BaseReward)
     def get_reward(
         self,
+        prev_obs: NDArray[float32],
+        prev_action: Any,
         obs: NDArray[float32],
-        terminated: bool = False,
-        truncated: bool = False
-    ) -> float:
+        terminated: bool,
+        truncated: bool
+        ) -> float:
         """
         This function returns the normalize reward calcualted as the sum of the penalty of the energy 
         amount of one week divide per the maximun reference energy demand and the average PPD comfort metric
@@ -161,8 +165,8 @@ class HierarchicalEnergyAndCEN15251(BaseReward):
             float: reward normalize value
         """
         reward = 0.
-        reward += (1-self.beta) * self.comfort_reward.get_reward(obs, terminated, truncated)
-        reward += self.beta * self.energy_reward.get_reward(obs, terminated, truncated)
+        reward += (1-self.beta) * self.comfort_reward.get_reward(prev_obs, prev_action, obs, terminated, truncated)
+        reward += self.beta * self.energy_reward.get_reward(prev_obs, prev_action, obs, terminated, truncated)
         
         return reward
     
