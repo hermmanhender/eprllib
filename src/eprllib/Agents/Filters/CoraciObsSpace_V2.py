@@ -163,22 +163,22 @@ class CoraciObsSpaceFilter(BaseFilter):
             )] + 273.15,
             t_min, t_max)
         
-        # Create a emptly list to save the temperature predictions.
-        t_o_predictions: List[float|int] = []
-        weather_prediction_hours = env_config["agents_config"][self.agent_name]["observation"]["weather_prediction_hours"]
-        if weather_prediction_hours != 12:
-            print(f"The parameter 'weather_prediction_hours' must be 12 but is {weather_prediction_hours}. Consider to change it. 12 will be used.")
-            weather_prediction_hours = 12
+        # # Create a emptly list to save the temperature predictions.
+        # t_o_predictions: List[float|int] = []
+        # weather_prediction_hours = env_config["agents_config"][self.agent_name]["observation"]["weather_prediction_hours"]
+        # if weather_prediction_hours != 12:
+        #     print(f"The parameter 'weather_prediction_hours' must be 12 but is {weather_prediction_hours}. Consider to change it. 12 will be used.")
+        #     weather_prediction_hours = 12
         
-        # Save the values for the next 12 hours in the list.
-        for hour in range(3):
-            t_o_predictions.append(normalization_minmax(
-                agent_states_copy[get_parameter_prediction_name(
-                self.agent_name, 
-                "outdoor_dry_bulb",
-                hour)],
-                t_min, t_max)
-            )
+        # # Save the values for the next 12 hours in the list.
+        # for hour in range(3):
+        #     t_o_predictions.append(normalization_minmax(
+        #         agent_states_copy[get_parameter_prediction_name(
+        #         self.agent_name, 
+        #         "outdoor_dry_bulb",
+        #         hour)],
+        #         t_min, t_max)
+        #     )
         
         # 4. Occupancy status and prediction of 12 hours.
         # ==================================================
@@ -195,7 +195,7 @@ class CoraciObsSpaceFilter(BaseFilter):
         )])
         
         occupation_prediction: List[float] = []
-        for hour in range(3):
+        for hour in range(6):
             occupation_prediction.append(float(agent_states_copy[get_user_occupation_forecast_name(
                 self.agent_name,
                 hour+1)])
@@ -221,6 +221,6 @@ class CoraciObsSpaceFilter(BaseFilter):
             "Heating:DistrictHeatingWater"
         )] / (3.6*10**6) / zone_floor_area / e_max, 0, 1)
         
-        
-        return np.array([to_sin_transformation(actual_hour,0,23),minutes, *self.dt_list, t_o, *t_o_predictions, cooling, heating, occupancy_status, *occupation_prediction], dtype='float32')
+        # Remove (t_o, *t_o_predictions)
+        return np.array([to_sin_transformation(actual_hour,0,23),minutes, *self.dt_list, cooling, heating, occupancy_status, *occupation_prediction, t_o], dtype='float32')
     
