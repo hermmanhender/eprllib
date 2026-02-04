@@ -11,6 +11,7 @@ from ray.rllib.core.rl_module.rl_module import RLModule
 from eprllib.Environment.Environment import Environment
 import torch
 import numpy as np
+import tree
 
 def generate_experience(
     env: Environment,
@@ -217,6 +218,7 @@ def generate_experience_V2(
         # Dictionary to store data for the current episode
         episode_data: Dict[str, Any] = {}
         timestep_counter = 0
+        prev_action: Dict[str, Any] = {agent: 0 for agent in agent_list}
         
         # Initialize RNN states for agents that use them
         current_states: Dict[str, Any]= {
@@ -258,16 +260,32 @@ def generate_experience_V2(
             # Action dictionary for the current timestep.
             action: Dict[str, Any] = {agent: None for agent in _agent_ids}
             obs_batch: Dict[str, Any] = {agent: None for agent in _agent_ids}
-            new_states: Dict[str, Any]= {agent: None for agent in _agent_ids}
             
             # Get the action for each agent in the timestep.
             for agent in _agent_ids:
-                # Compute the next action from a batch (B=1) of observations.
-                obs_batch[agent] = torch.from_numpy(obs[agent]).unsqueeze(0)  # add batch B=1 dimension
-                
+                                
                 if rl_module_dict[agent].is_stateful(): # Check rnn_use for the specific agent
+                    
+                    # Compute the next action from a batch (B=1) of observations.
+                    obs_batch[agent] = torch.from_numpy(obs[agent]).float().view(1, 1, -1)
+                    # current_states[agent] = torch.from_numpy(np.array(current_states[agent].values(), dtype=np.float32)).unsqueeze(0)  # add batch B=1 dimension
+                    current_states[agent] = tree.map_structure(
+                        lambda x: x.unsqueeze(0) if x.ndim == 2 else x, 
+                        current_states[agent]
+                    )
+                    prev_action_tensor = torch.tensor([[prev_action[agent]]], dtype=torch.int64)
+                    
                     # Compute action with RNN state
-                    model_outputs = rl_module_dict[agent].forward_inference({"obs": obs_batch[agent]})
+                    input_dict: Dict[str, Any] = {
+                        "obs": obs_batch[agent],
+                        "state_in": current_states[agent],
+                        "prev_actions": prev_action_tensor,
+                        "seq_lens": torch.tensor([1], dtype=torch.int32)
+                    }
+                    
+                    with torch.no_grad():
+                        model_outputs = rl_module_dict[agent].forward_inference(input_dict)
+                    
                     # Extract the action distribution parameters from the output and dissolve batch dim.
                     action_dist_params = model_outputs["action_dist_inputs"][0].numpy()
                     
@@ -284,9 +302,12 @@ def generate_experience_V2(
                     # new_states[agent] = agent_state
                     
                     # Update current_states for the next iteration if RNN is used by any agent
-                    current_states[agent] = new_states[agent]
+                    current_states[agent] = model_outputs["state_out"]
+                    prev_action[agent] = action[agent]
                     
                 else:
+                    # Compute the next action from a batch (B=1) of observations.
+                    obs_batch[agent] = torch.from_numpy(obs[agent]).unsqueeze(0)
                     # Compute action without RNN state
                     model_outputs  = rl_module_dict[agent].forward_inference({"obs": obs_batch[agent]})
                     # Extract the action distribution parameters from the output and dissolve batch dim.
