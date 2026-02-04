@@ -177,16 +177,6 @@ class EnergyWithMetersEnded(BaseReward):
                 self.agent_name,
                 self.reward_fn_config['heating_name']
             )]
-            self.site_temperature_index = obs_indexed[get_variable_name(
-                self.agent_name, 
-                "Site Outdoor Air Drybulb Temperature", 
-                "Environment"
-            )]
-            self.zone_people_occupant_count_index = obs_indexed[get_variable_name(
-                self.agent_name, 
-                "Zone People Occupant Count", 
-                self.reward_fn_config['thermal_zone']
-            )]
             
             # Reset the state
             self.cumulated_reward = []
@@ -216,18 +206,9 @@ class EnergyWithMetersEnded(BaseReward):
         """
         reward: float = 0.0
         
-        # e_norm = ((obs[self.cooling] + obs[self.heating]))/abs(self.comfort_temperature - (desnormalization_minmax(obs[self.site_temperature_index], -20.0 +273.15, 50.0 + 273.15)-273.15))
         e_norm = ((obs[self.cooling] + obs[self.heating]))
         
         reward += - np.clip(np.log2(e_norm + 1), 0, 1)
-        # # If the place is occupied then normalize the use of energy.
-        # if obs[self.zone_people_occupant_count_index] != 0:
-        #     # Calculate the reward for the actual state.
-        #     reward += - ((obs[self.cooling] + obs[self.heating]))/abs(self.comfort_temperature - (desnormalization_minmax(obs[self.site_temperature_index], -20.0 +273.15, 50.0 + 273.15)-273.15))
-        # # If the place is not occupied calculate the reward as a linear function of the energy consumption.
-        # else:
-        #     # Calculate the reward for the actual state.
-        #     reward += - ((obs[self.cooling] + obs[self.heating]))
         
         # Save the time step reward to use it with timesteptoreward. 
         self.cumulated_reward.append(reward)
