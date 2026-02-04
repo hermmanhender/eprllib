@@ -38,7 +38,7 @@ class Coraci2021Connector(BaseConnector):
         :return: agent observation spaces
         :rtype: Dict[str, gym.Space]
         """
-        obs_space_len: int = 16
+        
         self.obs_indexed[agent] = {
             f"{agent}: hour": 0,
             f"{agent}: minutes": 1,
@@ -46,17 +46,22 @@ class Coraci2021Connector(BaseConnector):
             f"{agent}: dt: -2ts": 3,
             f"{agent}: dt: -1ts": 4,
             f"{agent}: dt: 0": 5,
-            f"{agent}: Site Outdoor Air Drybulb Temperature: Environment": 6,
-            f"{agent}: outdoor_dry_bulb: 0": 7,
-            f"{agent}: outdoor_dry_bulb: 1": 8,
-            f"{agent}: outdoor_dry_bulb: 2": 9,
-            f"{agent}: Cooling:DistrictCooling": 10,
-            f"{agent}: Heating:DistrictHeatingWater": 11,
-            f"{agent}: Zone People Occupant Count: Thermal Zone": 12,
-            f"{agent}: User Occupation Forecast +1h": 13,
-            f"{agent}: User Occupation Forecast +2h": 14,
-            f"{agent}: User Occupation Forecast +3h": 15
+            # f"{agent}: outdoor_dry_bulb: 0": 7,
+            # f"{agent}: outdoor_dry_bulb: 1": 8,
+            # f"{agent}: outdoor_dry_bulb: 2": 9,
+            f"{agent}: Cooling:DistrictCooling": 6,
+            f"{agent}: Heating:DistrictHeatingWater": 7,
+            f"{agent}: Zone People Occupant Count: Thermal Zone": 8,
+            f"{agent}: User Occupation Forecast +1h": 9,
+            f"{agent}: User Occupation Forecast +2h": 10,
+            f"{agent}: User Occupation Forecast +3h": 11,
+            f"{agent}: User Occupation Forecast +4h": 12,
+            f"{agent}: User Occupation Forecast +5h": 13,
+            f"{agent}: User Occupation Forecast +6h": 14,
+            f"{agent}: Site Outdoor Air Drybulb Temperature: Environment": 15,
         }
+        obs_space_len: int = len(self.obs_indexed[agent])
+        
         return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
     @override(BaseConnector)
