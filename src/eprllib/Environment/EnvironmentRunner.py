@@ -8,8 +8,11 @@ Python API in the version 24.2.0.
 import os
 import threading
 import time
+import numpy as np
 from queue import Queue
-from typing import Any, Dict, List, Optional, Tuple # type: ignore
+from ctypes import c_void_p
+from typing import Any, Dict, List, Optional, Tuple, cast
+from types import FunctionType
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
@@ -21,8 +24,10 @@ from eprllib.Utils.observation_utils import (
     get_parameter_name,
     get_other_obs_name,
     get_variable_name,
-    get_parameter_prediction_name
+    get_parameter_prediction_name,
+    get_user_occupation_forecast_name
 )
+from eprllib.Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
 from eprllib import logger, EP_VERSION
 
 # EnergyPlus Python API path adding
@@ -32,9 +37,9 @@ except RuntimeError as e:
     logger.error(f"Failed to add EnergyPlus API path: {e}")
     exit(1)
     
-from pyenergyplus.api import EnergyPlusAPI # type: ignore
+from pyenergyplus.api import EnergyPlusAPI
 
-api = EnergyPlusAPI() # type: ignore
+api = EnergyPlusAPI()
 
 class EnvironmentRunner:
     """
@@ -82,7 +87,7 @@ class EnvironmentRunner:
         
         # Variables to be used in this thread.
         self.energyplus_exec_thread: Optional[threading.Thread] = None
-        self.energyplus_state = None
+        self.energyplus_state: Optional[c_void_p] = None
         self.sim_results: int = 0
         self.initialized = False
         self.init_handles = False
@@ -92,6 +97,7 @@ class EnvironmentRunner:
         self.infos = {agent: {} for agent in self.agents}
         self.unique_id = time.time()
         self.is_last_timestep: bool = False
+        self.occupancy_next_timestep: float = 0.
         
         # create a variable to save the obs dict key to use in posprocess
         # self.obs_keys = []
@@ -116,6 +122,20 @@ class EnvironmentRunner:
                 f"{agent}_meters": [meters, meters_handles],
                 f"{agent}_actuators": [actuators, actuators_handles]
             })
+        
+        # Declaration of internal actuators for funtions and not agents.
+        internal_actuators: List[Tuple[str,str,str]] = []
+        for agent in self.agents:
+            # Occupation funtion.
+            if self.env_config["agents_config"][agent]['observation']["user_occupation_function"]:
+                internal_actuators.append(self.env_config["agents_config"][agent]['observation']["occupation_schedule"])
+            # delete duplicate actuators in actuators_list
+            internal_actuators = list(set(internal_actuators))
+        self.internal_variables_and_handles: Dict[str, Any] = {}
+        int_actuators, int_actuators_handles = self.set_internal_actuators(internal_actuators)
+        self.internal_variables_and_handles.update({
+                "internal_actuators": [int_actuators, int_actuators_handles]
+            })
     
     def progress_handler(self, progress: int) -> None:
         # print(f"Simulation progress: {progress}%")
@@ -127,7 +147,12 @@ class EnvironmentRunner:
         Starts the EnergyPlus simulation.
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
-        self.energyplus_state = api.state_manager.new_state()
+        try:
+            self.energyplus_state = api.state_manager.new_state()
+            assert self.energyplus_state is not None, "Failed to create EnergyPlus state"
+        except Exception as e:
+            logger.error(f"Error creating EnergyPlus state: {e}")
+            raise
         # Request variables.
         for agent in self.agents:
             if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
@@ -138,19 +163,25 @@ class EnvironmentRunner:
                         variable_key = variable[1]
                     )
                     # print(f"Variable {get_variable_name(agent,variable[0],variable[1])} requested.")
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, self._send_actions)
-        api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, self._collect_obs)
-        api.runtime.callback_progress(self.energyplus_state, self.progress_handler)
+        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, cast(FunctionType, self._send_actions))
+        api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, cast(FunctionType, self._collect_obs))
+        api.runtime.callback_progress(self.energyplus_state, cast(FunctionType, self.progress_handler))
         api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
         
         def _run_energyplus():
             """
             Run EnergyPlus in a non-blocking way with Threads.
             """
-            cmd_args = self.make_eplus_args()
-            logger.info(f"running EnergyPlus with args: {cmd_args}")
-            self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
-            self.simulation_complete = True
+            try:
+                cmd_args = self.make_eplus_args()
+                logger.info(f"running EnergyPlus with args: {cmd_args}")
+                assert self.energyplus_state is not None, "EnergyPlus state is None."
+                self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
+            except Exception as e:
+                logger.error(f"Error running EnergyPlus: {e}")
+                self.sim_results = -1
+            finally:
+                self.simulation_complete = True
             
         self.energyplus_exec_thread = threading.Thread(
             target=_run_energyplus,
@@ -161,7 +192,7 @@ class EnvironmentRunner:
 
     def _collect_obs(
         self,
-        state_argument
+        state_argument: c_void_p
         ) -> None:
         """
         EnergyPlus callback that collects output variables, meters and actuator actions
@@ -187,7 +218,8 @@ class EnvironmentRunner:
             agent_states[agent].update(self.get_zone_simulation_parameters_values(state_argument, agent))
             agent_states[agent].update(self.get_weather_prediction(state_argument, agent))
             agent_states[agent].update(self.get_actuators_state(state_argument, agent))
-            agent_states[agent].update(self.get_other_obs(self.env_config, agent))
+            agent_states[agent].update(self.get_other_obs(agent))
+            agent_states[agent].update(self.get_user_occupation_forecast(state_argument, agent))
         
         dict_agents_obs = {agent: None for agent in self.agents}
         for agent in self.agents:
@@ -244,7 +276,7 @@ class EnvironmentRunner:
                 self.infos_event.set()
         
 
-    def _collect_first_obs(self, state_argument):
+    def _collect_first_obs(self, state_argument: c_void_p):
         """
         This method is used to collect only the first observation of the environment when the episode beggins.
 
@@ -257,8 +289,8 @@ class EnvironmentRunner:
             self.first_observation = False
         else:
             return
-
-    def _send_actions(self, state_argument):
+    
+    def _send_actions(self, state_argument: c_void_p) -> None:
         """EnergyPlus callback that sets actuator value from last decided action
         """
           
@@ -301,13 +333,20 @@ class EnvironmentRunner:
                     actuator_handle=self.agent_variables_and_handles[f"{agent}_actuators"][1][actuator],
                     actuator_value=action
                 )
-
+                
+        for actuator in self.internal_variables_and_handles["internal_actuators"][0].keys():
+            api.exchange.set_actuator_value(
+                state=state_argument,
+                actuator_handle=self.internal_variables_and_handles["internal_actuators"][1][actuator],
+                actuator_value=self.occupancy_next_timestep
+            )
+            
     def set_variables(self, agent:str) -> Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]:
         """
         The EnergyPlus variables are defined in the environment configuration.
 
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent (str): The AgentID. 
 
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
@@ -328,7 +367,7 @@ class EnvironmentRunner:
         Set the internal variables to handle and get the values in the environment.
 
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent (str): The AgentID.
 
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The environment variables and their handles.
@@ -348,7 +387,7 @@ class EnvironmentRunner:
         """The EnergyPlus meters are defined in the environment configuration.
         
         Args:
-            env_config (Dict[str, Any]): The EnvConfig dictionary.
+            agent (str): The AgentID.
 
         Returns:
             Tuple[Dict[str, Tuple [str, str]], Dict[str, int]]: The meters and their handles.
@@ -367,7 +406,7 @@ class EnvironmentRunner:
         """The EnergyPlus actuators are defined in the environment configuration.
 
         Args:
-            agent str: The EnvConfig dictionary.
+            agent (str): The AgentID.
 
         Returns:
             Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
@@ -381,10 +420,29 @@ class EnvironmentRunner:
             })
         
         return actuators, actuator_handles
-     
+    
+    def set_internal_actuators(self, internal_actuators: List[Tuple[str,str,str]]) -> Tuple[Dict[str,Tuple[str,str,str]], Dict[str, int]]:
+        """The EnergyPlus actuators are defined in the environment configuration.
+
+        Args:
+            internal_actuators (List[Tuple[str,str,str]]): List of actuator to be commanded internally.
+
+        Returns:
+            Tuple[Dict[str,Tuple[str,str,str]], Dict[str,int]]: The actuators and their handles.
+        """
+        actuators: Dict[str,Tuple[str,str,str]] = {}
+        actuator_handles: Dict[str, int] = {}
+        
+        for actuator_config in internal_actuators:
+            actuators.update({
+                get_actuator_name("internal",actuator_config[0],actuator_config[1],actuator_config[2]): actuator_config
+            })
+        
+        return actuators, actuator_handles
+    
     def get_variables_state(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """This funtion takes the state_argument and return a dictionary with the agent actuator values.
@@ -408,7 +466,7 @@ class EnvironmentRunner:
     
     def get_internal_variables_state(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
@@ -432,7 +490,7 @@ class EnvironmentRunner:
 
     def get_meters_state(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
@@ -457,7 +515,7 @@ class EnvironmentRunner:
         
     def get_actuators_state(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """This funtion takes the state_argument and return a dictionary with the agent actuator values.
@@ -482,7 +540,7 @@ class EnvironmentRunner:
     
     def get_simulation_parameters_values(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
@@ -497,6 +555,7 @@ class EnvironmentRunner:
         # Get timestep variables that are needed as input for some data_exchange methods.
         hour = api.exchange.hour(state_argument)
         zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
+        
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
             'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
@@ -507,7 +566,7 @@ class EnvironmentRunner:
             'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
             'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
             'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
-            'minutes': api.exchange.minutes(state_argument), # Get the current minutes into the hour (1-60)
+            'minutes': api.exchange.hour(state_argument), # Get the current minutes into the hour (1-60)
             'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
             'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
             'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
@@ -561,7 +620,7 @@ class EnvironmentRunner:
 
     def get_zone_simulation_parameters_values(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str]=None,
         ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
@@ -573,11 +632,12 @@ class EnvironmentRunner:
         Returns:
             Dict[str,int|float]: Dict of parameter names as keys and parameter values as values.
         """
+        num_time_steps_in_hour = api.exchange.num_time_steps_in_hour(state_argument)
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
             'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
             'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
-            'zone_time_step_number': api.exchange.zone_time_step_number(state_argument), # The current zone time step index, from 1 to the number of zone time steps per hour
+            'zone_time_step_number': np.sin(2 * np.pi * (api.exchange.zone_time_step_number(state_argument)) / num_time_steps_in_hour), # The current zone time step index, from 1 to the number of zone time steps per hour
         }
         variables: Dict[str,Any] = {}
         
@@ -597,7 +657,7 @@ class EnvironmentRunner:
 
     def get_weather_prediction(
         self,
-        state_argument,
+        state_argument: c_void_p,
         agent: Optional[str]=None
     ) -> Dict[str,Any]:
         assert isinstance(agent, str), "Agent must be a string."
@@ -639,33 +699,32 @@ class EnvironmentRunner:
         
         variables: Dict[str,Any] = {}
         prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
-        for h in range(self.env_config["agents_config"][agent]['observation']['prediction_hours']):
+        for h in range(self.env_config["agents_config"][agent]['observation']['weather_prediction_hours']):
             # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
             prediction_hour: int = hour+1 + h
             if prediction_hour < 24:
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
                         variables.update({
-                            get_parameter_prediction_name(agent,key,prediction_hour): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,1)
+                            get_parameter_prediction_name(agent,key,h): prediction_variables_methods[f'today_weather_{key}_at_time'](state_argument,prediction_hour,1)
                         })
             else:
                 prediction_hour_t = prediction_hour - 24
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
                         variables.update({
-                            get_parameter_prediction_name(agent,key,prediction_hour_t): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,1)
+                            get_parameter_prediction_name(agent,key,h): prediction_variables_methods[f'tomorrow_weather_{key}_at_time'](state_argument,prediction_hour_t,1)
                         })
         return variables
         
     def get_other_obs(
         self,
-        env_config: Dict[str,Any],
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
 
         Args:
-            env_config (Dict[str,Any]): Environment coniguration.
+            agent (str): The AgentID.
 
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
@@ -679,12 +738,67 @@ class EnvironmentRunner:
         variables.update({
             get_other_obs_name(agent,key): value 
             for key, value
-            in env_config["agents_config"][agent]["observation"]["other_obs"].items()
+            in self.env_config["agents_config"][agent]["observation"]["other_obs"].items()
         })
-        env_config["agents_config"][agent]["observation"]["other_obs"]
+        self.env_config["agents_config"][agent]["observation"]["other_obs"]
         return variables
     
-    def _init_callback(self, state_argument) -> bool:
+    def get_user_occupation_forecast(
+        self,
+        state_argument: c_void_p,
+        agent: Optional[str]=None
+    ) -> Dict[str,Any]:
+        """
+        Get the user occupation forecast for the actual timestep.
+
+        Args:
+            state_argument (): EnergyPlus state.
+            agent (str): The AgentID.
+
+        Returns:
+            Dict[str,Any]: User occupation forecast dict values for the actual timestep.
+        """
+        assert isinstance(agent, str), "Agent must be a string."
+                
+        # Get timestep variables that are needed as input for some data_exchange methods.
+        if self.env_config["agents_config"][agent]['observation']['user_occupation_function']:
+            
+            self.occupancy_next_timestep  = calculate_occupancy(
+                api.exchange.hour(state_argument),
+                api.exchange.day_of_month(state_argument),
+                api.exchange.month(state_argument),
+                api.exchange.year(state_argument),
+                api.exchange.holiday_index(state_argument) > 0,
+                self.env_config["agents_config"][agent]['observation']['user_type'],
+                self.env_config["agents_config"][agent]['observation']['zone_type'],
+                self.env_config["agents_config"][agent]['observation']['confidence_level']
+            )
+        
+        if self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
+            variables: Dict[str,Any] = {}
+            forecast_vector = calculate_occupancy_forecast(
+                api.exchange.hour(state_argument),
+                api.exchange.day_of_month(state_argument),
+                api.exchange.month(state_argument),
+                api.exchange.year(state_argument),
+                self.env_config["agents_config"][agent]['observation']['user_type'],
+                self.env_config["agents_config"][agent]['observation']['zone_type'],
+                self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours'],
+                self.env_config["agents_config"][agent]['observation']['confidence_level'],
+                self.env_config["agents_config"][agent]['observation']['lambdaa']
+            )
+            
+            for h in range(self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']):
+                variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
+                
+            return variables
+            
+        else:
+            return {}
+        
+        
+    
+    def _init_callback(self, state_argument: c_void_p) -> bool:
         """
         Initialize EnergyPlus handles and checks if simulation runtime is ready.
         
@@ -698,11 +812,16 @@ class EnvironmentRunner:
             # print("Initializing handles...")
             self.init_handles = self._init_handles(state_argument)
         
-        self.initialized = self.init_handles and not api.exchange.warmup_flag(state_argument)
+        if api.exchange.warmup_flag(state_argument):
+            self.initialized = False
+            # print("Warmup phase still alive...")
+            return self.initialized
         
-        return self.initialized
+        else:
+            self.initialized = self.init_handles
+            return self.initialized
 
-    def _init_handles(self, state_argument) -> bool:
+    def _init_handles(self, state_argument: c_void_p) -> bool:
         """
         Initialize sensors/actuators handles to interact with during simulation.
         
@@ -715,6 +834,11 @@ class EnvironmentRunner:
         if not self.init_handles:
             if not api.exchange.api_data_fully_ready(state_argument):
                 return False
+        
+        self.internal_variables_and_handles["internal_actuators"][1].update({
+            key: api.exchange.get_actuator_handle(state_argument, *actuator)
+            for key, actuator in self.internal_variables_and_handles["internal_actuators"][0].items()
+        })
         
         for agent in self.agents:
             self.agent_variables_and_handles[f"{agent}_variables"][1].update({
@@ -759,17 +883,36 @@ class EnvironmentRunner:
         # print("Stopping EnergyPlus simulation...")
         if not self.simulation_complete:
             self.simulation_complete = True
-        time.sleep(0.5)
-        api.runtime.stop_simulation(self.energyplus_state)
-        self._flush_queues()
+        
         try:
-            self.energyplus_exec_thread.join()
+            if self.energyplus_state is not None:
+                api.runtime.stop_simulation(self.energyplus_state)
         except Exception as e:
-            logger.error(f"Error joining EnergyPlus execution thread: {e}")
+            logger.warning(f"Error stopping EnergyPlus simulation: {e}")
+        
+        self._flush_queues()
+        
+        if self.energyplus_exec_thread is not None:
+            try:
+                self.energyplus_exec_thread.join(timeout=30)
+            except Exception as e:
+                logger.warning(f"Error joining EnergyPlus thread: {e}")
+        
         self.energyplus_exec_thread = None
         self.first_observation = True
-        api.runtime.clear_callbacks()
-        api.state_manager.delete_state(self.energyplus_state)
+        
+        try:
+            api.runtime.clear_callbacks()
+        except Exception as e:
+            logger.warning(f"Error clearing callbacks: {e}")
+        
+        if self.energyplus_state is not None:
+            try:
+                api.state_manager.delete_state(self.energyplus_state)
+            except Exception as e:
+                logger.warning(f"Error deleting EnergyPlus state: {e}")
+            finally:
+                self.energyplus_state = None
 
     def failed(self) -> bool:
         """
@@ -780,14 +923,14 @@ class EnvironmentRunner:
         """
         return self.sim_results != 0
 
-    def make_eplus_args(self) -> List[str]:
+    def make_eplus_args(self) -> List[str|bytes]:
         """
         Make command line arguments to pass to EnergyPlus.
         
         Return:
             List[str]: List of arguments to pass to EnergyPlusEnv.
         """
-        eplus_args = ["-r"] if self.env_config.get("csv", False) else []
+        eplus_args: List[str|bytes] = ["-r"] if self.env_config.get("csv", False) else []
         eplus_args += [
             "-w",
             self.env_config["epw_path"],

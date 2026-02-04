@@ -6,7 +6,7 @@ This module implements the default observation function where each agent has its
 and it is returned without modifications, considering only the agent_states provided in the BaseRunner class.
 """
 
-from typing import Any, Dict # type: ignore
+from typing import Any, Dict
 from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 from eprllib import logger
 

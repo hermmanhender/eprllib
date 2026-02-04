@@ -13,17 +13,19 @@ from numpy.typing import NDArray
 from numpy import float32
 from gymnasium.spaces import Box
 from gymnasium import Space
-from typing import Dict, Any, List, Tuple, Optional # type: ignore
+from typing import Dict, Any, List, Tuple, Optional
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 from eprllib.Utils.connector_utils import (
     set_variables_in_obs,
     set_internal_variables_in_obs,
     set_meters_in_obs,
+    set_simulation_parameters_in_obs,
     set_zone_simulation_parameters_in_obs,
     set_prediction_variables_in_obs,
     set_other_obs_in_obs,
-    set_actuators_in_obs
+    set_actuators_in_obs,
+    set_user_occupation_forecast_in_obs
     )
 from eprllib import logger
 
@@ -52,8 +54,8 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         self.top_level_goal: Optional[Dict[str, Any]] = None
         self.top_level_obs: Optional[Dict[str, Any]] = None
         self.top_level_trayectory: Dict[str, Any] = {}
-        self.obs_indexed_top_level: Dict[str, int] = {}
-        self.obs_indexed_low_level: Dict[str, int] = {}
+        self.obs_indexed_top_level: Dict[str, Dict[str, int]] = {}
+        self.obs_indexed_low_level: Dict[str, Dict[str, int]] = {}
         
     @override(BaseConnector)
     def get_agent_obs_dim(
@@ -76,7 +78,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
             observation_space_pre: Space[Any]|Box = self.sub_connector_fn.get_agent_obs_dim(env_config, agent)
             self.obs_indexed_low_level = self.sub_connector_fn.obs_indexed
             obs_indexed_len = len(self.obs_indexed)
-            self.obs_indexed_low_level["goal"] = obs_indexed_len
+            self.obs_indexed_low_level[agent]["goal"] = obs_indexed_len
             
             assert type(observation_space_pre) == Box, "The observation space must not be None."
             
@@ -84,21 +86,24 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         
         else:
             obs_space_len: int = 0
+            self.obs_indexed[agent] = {}
         
-            self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+            self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_user_occupation_forecast_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         
             assert obs_space_len > 0, "The observation space length must be greater than 0."
-            assert len(self.obs_indexed_top_level) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
-            
-            logger.debug(f"Observation space length for agent {agent}: {obs_space_len+1}")
+            assert len(self.obs_indexed_top_level[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+            # obs_space_len += 1
+            logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
-            return Box(float("-inf"), float("inf"), (obs_space_len+1, ))
+            return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
     @override(BaseConnector)
     def get_agent_obs_indexed(
@@ -117,9 +122,9 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         :rtype: gym.spaces.Space
         """
         if agent != self.top_level_agent:
-            return self.obs_indexed_low_level
+            return self.obs_indexed_low_level[agent]
         else:
-            return self.obs_indexed_top_level
+            return self.obs_indexed_top_level[agent]
         
     @override(BaseConnector)
     def set_top_level_obs(
@@ -295,9 +300,9 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         self.top_level_trayectory: Dict[str, Any] = {}
         self.middle_level_flag = False
         self.middle_level_objectives: Optional[Dict[str, Any]] = None
-        self.obs_indexed_top_level: Dict[str, int] = {}
-        self.obs_indexed_low_level: Dict[str, int] = {}
-        self.obs_indexed_middle_level: Dict[str, int] = {}
+        self.obs_indexed_top_level: Dict[str, Dict[str, int]] = {}
+        self.obs_indexed_low_level: Dict[str, Dict[str, int]] = {}
+        self.obs_indexed_middle_level: Dict[str, Dict[str, int]] = {}
         
     @override(BaseConnector)
     def get_agent_obs_dim(
@@ -318,9 +323,9 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         
         if agent in self.lower_level_agents:  
             observation_space_pre: Space[Any]|Box = self.lower_level_connector_fn.get_agent_obs_dim(env_config, agent)
-            self.obs_indexed_low_level = self.lower_level_connector_fn.obs_indexed
+            self.obs_indexed_low_level[agent] = self.lower_level_connector_fn.obs_indexed[agent]
             obs_indexed_len = len(self.obs_indexed)
-            self.obs_indexed_low_level["goal"] = obs_indexed_len
+            self.obs_indexed_low_level[agent]["goal"] = obs_indexed_len
             
             assert type(observation_space_pre) == Box, "The observation space must not be None."
             
@@ -330,7 +335,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             observation_space_pre: Space[Any]|Box = self.middle_level_connector_fn.get_agent_obs_dim(env_config, agent)
             self.obs_indexed_middle_level = self.middle_level_connector_fn.obs_indexed
             obs_indexed_len = len(self.obs_indexed)
-            self.obs_indexed_middle_level["goal"] = obs_indexed_len
+            self.obs_indexed_middle_level[agent]["goal"] = obs_indexed_len
             
             assert type(observation_space_pre) == Box, "The observation space must not be None."
             
@@ -341,20 +346,22 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
 
             assert agent != None, "The agent identifier must not be None."
             
-            self.obs_indexed, obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed)
-            self.obs_indexed, obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed)
+            self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+            self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed[agent])
+            self.obs_indexed[agent], obs_space_len = set_user_occupation_forecast_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
             
             assert obs_space_len > 0, "The observation space length must be greater than 0."
-            assert len(self.obs_indexed_top_level) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
-            
-            logger.debug(f"Observation space length for agent {agent}: {obs_space_len+1}")
+            assert len(self.obs_indexed_top_level[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
+            # obs_space_len += 1
+            logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
         
-            return Box(float("-inf"), float("inf"), (obs_space_len+1, ))
+            return Box(float("-inf"), float("inf"), (obs_space_len, ))
         
         else:
             msg = f"Agent {agent} not found in the environment configuration."
@@ -378,11 +385,11 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         :rtype: gym.spaces.Space
         """
         if agent in self.lower_level_agents:
-            return self.obs_indexed_low_level
+            return self.obs_indexed_low_level[agent]
         elif agent in self.middle_level_agents:
-            return self.obs_indexed_middle_level
+            return self.obs_indexed_middle_level[agent]
         else:
-            return self.obs_indexed_top_level
+            return self.obs_indexed_top_level[agent]
         
     @override(BaseConnector)
     def set_top_level_obs(

@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import threading
 from queue import Queue, Empty
-from typing import Dict, Any, Optional, List # type: ignore
+from typing import Dict, Any, Optional, List
 from eprllib.Environment.Environment import Environment
 from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger

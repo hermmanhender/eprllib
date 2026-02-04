@@ -8,7 +8,9 @@ disciplines has been complex and laborious. ``eprllib`` aims to simplify this pr
 offering an intuitive and flexible interface for developing intelligent agents that 
 interact with building simulations.
 """
-import logging
+# Version management.
 from .version import __version__, EP_VERSION
 
-logger = logging.getLogger("ray.rllib")
+# Log configuration.
+import logging
+logger = logging.getLogger("ray.rllib") # See: https://docs.ray.io/en/latest/rllib/rllib-env.html#:~:text=(config))-,Tip,-When%20using%20logging

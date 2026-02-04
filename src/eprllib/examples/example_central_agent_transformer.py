@@ -33,23 +33,23 @@ from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib.examples.example_central_agent_files.trigger import CentralAgentTrigger
 from eprllib.examples.example_central_agent_files.reward_function import IAQThermalComfortEnergyReward
 from eprllib.examples.example_central_agent_files.episode_fn import task_cofiguration
-from eprllib.examples.example_central_agent_files.polocy_mapping import policy_map_fn
+from eprllib.examples.example_central_agent_files.policy_mapping import policy_map_fn
 from eprllib.examples.example_central_agent_files.policy_model import CustomTransformerModel
 
 # read the json config file as a dict.
-with open("C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_central_agent_files/episode_fn_config.json", "r") as f:
+with open("src/eprllib/examples/example_central_agent_files/episode_fn_config.json", "r") as f:
     episode_config = json.load(f)
 
 experiment_name = "example_central_agent"
-name = "office"
+name = "transformer"
 tuning = False
 restore = False
 checkpoint_path = ""
 
 eprllib_config = EnvironmentConfig()
 eprllib_config.generals(
-    epjson_path = "C:/Users/grhen/Documents/GitHub2/eprllib/examples/example_central_agent_files/model.epJSON",
-    epw_path = "C:/Users/grhen/Documents/GitHub2/eprllib/examples/example_central_agent_files/weathers/ESP_PV_San.Sebastian-Igueldo.080270_TMYx.2004-2018.epw",
+    epjson_path = "src/eprllib/examples/example_central_agent_files/model.epJSON",
+    epw_path = "src/eprllib/examples/example_central_agent_files/weathers/ESP_PV_San.Sebastian-Igueldo.080270_TMYx.2004-2018.epw",
     output_path = TemporaryDirectory("output","",'C:/Users/grhen/Documents/Resultados_RLforEP').name,
     ep_terminal_output = False,
     timeout = 10,

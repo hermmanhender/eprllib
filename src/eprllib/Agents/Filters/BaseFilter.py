@@ -10,7 +10,7 @@ This class can not be used directly in eprllib, but as a base to create new filt
 must be based in this class.
 """
 from eprllib import logger
-from typing import Any, Dict # type: ignore
+from typing import Any, Dict
 from numpy import float32
 from numpy.typing import NDArray
 

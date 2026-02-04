@@ -5,7 +5,7 @@ Annotations
 
 """
 from eprllib import logger
-from typing import Type, Callable, Any # type: ignore
+from typing import Type, Callable, Any
 
 def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for documenting method overrides.

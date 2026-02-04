@@ -11,7 +11,7 @@ space.
 """
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Dict, Optional # type: ignore
+from typing import Any, Dict, Optional
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override

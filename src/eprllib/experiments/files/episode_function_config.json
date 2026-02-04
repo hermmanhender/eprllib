@@ -1,0 +1,67 @@
+{
+    "epjson_files_folder_path": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/experiments/files/models2",
+        
+    "building_size_h": [2, 4],
+    "building_size_w": [5, 20],
+    "building_size_l": [5, 20],
+    
+    "war_factor_range": [0.1, 0.9],
+    
+    "muro_exterior_thickness": [0.01, 0.2],
+    "muro_exterior_conductivity": [0.2, 2.0],
+    "muro_exterior_density": [1000.0, 2500.0],
+    "muro_exterior_specific_heat": [700.0, 1100.0],
+    "muro_exterior_thermal_absorptance": [0.7, 0.95],
+    "muro_exterior_solar_absorptance": [0.4, 0.9],
+
+    "muro_intermedio_thickness": [0.02, 0.2],
+    "muro_intermedio_conductivity": [0.02, 0.08],
+    "muro_intermedio_density": [10.0, 150.0],
+    "muro_intermedio_specific_heat": [900.0, 1500.0],
+    "muro_intermedio_thermal_absorptance": [0.3, 0.6],
+    "muro_intermedio_solar_absorptance": [0.2, 0.4],
+
+    "muro_interior_thickness": [0.01, 0.15],
+    "muro_interior_conductivity": [0.3, 1.8],
+    "muro_interior_density": [800.0, 2400.0],
+    "muro_interior_specific_heat": [800.0, 1200.0],
+    "muro_interior_thermal_absorptance": [0.8, 0.95],
+    "muro_interior_solar_absorptance": [0.3, 0.6],
+    
+    "techo_exterior_thickness": [0.02, 0.25],
+    "techo_exterior_conductivity": [0.02, 0.10],
+    "techo_exterior_density": [20.0, 300.0],
+    "techo_exterior_specific_heat": [900.0, 1600.0],
+    "techo_exterior_thermal_absorptance": [0.3, 0.6],
+    "techo_exterior_solar_absorptance": [0.5, 0.95],
+    
+    "techo_interior_thickness": [0.01, 0.2],
+    "techo_interior_conductivity": [0.3, 1.5],
+    "techo_interior_density": [600.0, 2200.0],
+    "techo_interior_specific_heat": [800.0, 1200.0],
+    "techo_interior_thermal_absorptance": [0.7, 0.95],
+    "techo_interior_solar_absorptance": [0.3, 0.6],
+    
+    "window_u_factor": [0.8, 6.0],
+    "window_solar_heat_gain_coefficient": [0.1, 0.87],
+    
+    "im_surface_area_factor": [0.2, 0.4],
+    
+    "episode_len": 7,
+    
+    "specific_power_hvac": [10.0, 250.0],
+    "cooling_heating_ratio": [0.7, 0.9],
+    
+    "epw_files_folder_path": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/experiments/files/weathers",
+    
+    "load_profiles_folder_path": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/experiments/files/schedules",
+    
+    "occupancy_profile_folder_path": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/experiments/files/occupancy",
+
+    "exhaust_fan_use": false,
+    
+    "training_task": [
+        "NaturalVentilation",
+        "ShadingControl"
+    ]
+}

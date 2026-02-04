@@ -6,7 +6,7 @@ This module contains the base class for the episode functions. This class is use
 for the EnergyPlus environment.
 """
 
-from typing import Dict, Any, List # type: ignore
+from typing import Dict, Any, List
 
 class BaseEpisode:
     """

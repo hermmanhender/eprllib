@@ -5,7 +5,7 @@ Default Episode
 This module contains the default implementation of the episode functions for the EnergyPlus environment.
 """
 
-from typing import Dict, Any, List # type: ignore
+from typing import Dict, Any, List
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
 

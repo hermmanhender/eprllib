@@ -4,7 +4,7 @@ Environment Configuration
 
 This module contains the class and methods used to configure the environment.
 """
-from typing import Optional, Dict, Any, Type # type: ignore
+from typing import Optional, Dict, Any, Type
 from tempfile import TemporaryDirectory
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode

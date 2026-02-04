@@ -5,7 +5,7 @@ Episode Functions Utils
 Work in progress...
 """
 
-from typing import Dict, Tuple, Any, List # type: ignore
+from typing import Dict, Tuple, Any, List
 import os
 import numpy as np
 from numpy.typing import NDArray
@@ -93,8 +93,8 @@ def run_period(julian_day:int, days_period:int=28) -> Tuple[int,int,int,int]:
         msg = 'Julian day must be between 1 and (365-days_period)'
         logger.error(msg)
         raise ValueError(msg)
-    if days_period < 1:
-        msg = 'Days period must be greater than 0'
+    if days_period < 0:
+        msg = 'Days period must be integer and positive'
         logger.error(msg)
         raise ValueError(msg)
     
@@ -184,70 +184,116 @@ def building_dimension(
             for xyz in range(3):
                 epJSON_object['BuildingSurface:Detailed'][surface_name]['vertices'][_]['vertex_'+coordinate[xyz]+'_coordinate'] = surface_coordenates[surface_name][_][xyz]
     
-    north_window_proportion = window_area_relation[0]
-    east_window_proportion = window_area_relation[1]
-    south_window_proportion = window_area_relation[2]
-    west_window_proportion = window_area_relation[3]
+    # Calculate the centroid of each wall
+    centroid_coordenates: Dict[str, Any] = {
+        'wall_north': [w/2,0,h/2],
+        'wall_east': [w,l/2,h/2],
+        'wall_south': [w/2,l,h/2],
+        'wall_west': [0,l/2,h/2],
+        'roof': [w/2,l/2,h],
+        'floor': [w/2,l/2,0]
+    }
     
-    window_coordinates: Dict[str, Any] = {}
+    # Calculate the relative coordinates of each surface vertex with respect to its centroid
+    relative_coordenates: Dict[str, Any] = {}
+    for surface_name, vertices in surface_coordenates.items():
+        centroid = np.array(centroid_coordenates[surface_name])
+        relative_vertices = [np.array(vertex) - centroid for vertex in vertices]
+        relative_coordenates[surface_name] = relative_vertices
     
-    # add the new coordinates to the windows that exist in the model
-    if north_window_proportion > 0:
-        window_coordinates.update(
-            {
-                'window_north': [
-                    [0+(w*north_window_proportion)/2,0,h*0.9],
-                    [0+(w*north_window_proportion)/2,0,0.1],
-                    [w-(w*north_window_proportion)/2,0,0.1],
-                    [w-(w*north_window_proportion)/2,0,h*0.9]
-                ],
-            }
-        )
-    if east_window_proportion > 0:
-        window_coordinates.update(
-            {
-                'window_east': [
-                    [w,0+(l*east_window_proportion)/2,h*0.9],
-                    [w,0+(l*east_window_proportion)/2,0.1],
-                    [w,l-(l*east_window_proportion)/2,0.1],
-                    [w,l-(l*east_window_proportion)/2,h*0.9]
-                ],
-            }
-        )
-    if south_window_proportion > 0:
-        window_coordinates.update(
-            {
-                'window_south': [
-                    [w-(w*south_window_proportion)/2,l,h*0.9],
-                    [w-(w*south_window_proportion)/2,l,0.1],
-                    [0+(w*south_window_proportion)/2,l,0.1],
-                    [0+(w*south_window_proportion)/2,l,h*0.9]
-                ],
-            }
-        )
-    if west_window_proportion > 0:
-        window_coordinates.update(
-            {
-                'window_west': [
-                    [0,l-(l*west_window_proportion)/2,h*0.9],
-                    [0,l-(l*west_window_proportion)/2,0.1],
-                    [0,0+(l*west_window_proportion)/2,0.1],
-                    [0,0+(l*west_window_proportion)/2,h*0.9]
-                ],
-            }
-        )
+    window_area_relation: Dict[str, float] = {
+        'wall_north': float(window_area_relation[0]),
+        'wall_east': float(window_area_relation[1]),
+        'wall_south': float(window_area_relation[2]),
+        'wall_west': float(window_area_relation[3])
+    }
     
+    # Calculate the relative coordinates of the windows
+    relative_window_coordenates: Dict[str, Any] = {}
+
+    wall_dimensions: Dict[str, Dict[str, float]] = {
+        'wall_north': {'width': w, 'height': h},
+        'wall_east': {'width': l, 'height': h},
+        'wall_south': {'width': w, 'height': h},
+        'wall_west': {'width': l, 'height': h}
+    }
+
+
+    for surface_name, relation in window_area_relation.items():
+        if relation > 0 and surface_name in wall_dimensions:  # Only consider walls with windows
+            centroid = np.array(centroid_coordenates[surface_name])
+            wall_width = wall_dimensions[surface_name]['width']
+            wall_height = wall_dimensions[surface_name]['height']
+
+            # Calculate window dimensions assuming the window is centered and scales proportionally
+            window_area = wall_width * wall_height * relation
+            # Assuming the window maintains the same aspect ratio as the wall for simplicity
+            # We can adjust this if a specific aspect ratio is needed
+            window_width = np.sqrt(window_area * wall_width / wall_height)
+            window_height = np.sqrt(window_area * wall_height / wall_width)
+
+
+            # Calculate window coordinates relative to the wall centroid
+            # Assuming the centroid is at the center of the wall
+            half_window_width = window_width / 2
+            half_window_height = window_height / 2
+
+            if surface_name == 'wall_north':
+                window_coords = [
+                    [centroid[0] - half_window_width, centroid[1], centroid[2] + half_window_height],
+                    [centroid[0] - half_window_width, centroid[1], centroid[2] - half_window_height],
+                    [centroid[0] + half_window_width, centroid[1], centroid[2] - half_window_height],
+                    [centroid[0] + half_window_width, centroid[1], centroid[2] + half_window_height],
+                ]
+            elif surface_name == 'wall_east':
+                window_coords = [
+                    [centroid[0], centroid[1] - half_window_width, centroid[2] + half_window_height],
+                    [centroid[0], centroid[1] - half_window_width, centroid[2] - half_window_height],
+                    [centroid[0], centroid[1] + half_window_width, centroid[2] - half_window_height],
+                    [centroid[0], centroid[1] + half_window_width, centroid[2] + half_window_height],
+                ]
+            elif surface_name == 'wall_south':
+                window_coords = [
+                    [centroid[0] + half_window_width, centroid[1], centroid[2] + half_window_height],
+                    [centroid[0] + half_window_width, centroid[1], centroid[2] - half_window_height],
+                    [centroid[0] - half_window_width, centroid[1], centroid[2] - half_window_height],
+                    [centroid[0] - half_window_width, centroid[1], centroid[2] + half_window_height],
+                ]
+            elif surface_name == 'wall_west':
+                window_coords = [
+                    [centroid[0], centroid[1] + half_window_width, centroid[2] + half_window_height],
+                    [centroid[0], centroid[1] + half_window_width, centroid[2] - half_window_height],
+                    [centroid[0], centroid[1] - half_window_width, centroid[2] - half_window_height],
+                    [centroid[0], centroid[1] - half_window_width, centroid[2] + half_window_height],
+                ]
+            else:
+                continue
+
+
+            relative_window_vertices = [np.array(vertex) - centroid for vertex in window_coords]
+            relative_window_coordenates[f'window_{surface_name.split("_")[1]}'] = relative_window_vertices
+
+    # Transform relative window coordinates back to original coordinates
+    window_coordenates_original: Dict[str, Any] = {}
+
+    for window_name, relative_vertices in relative_window_coordenates.items():
+        # Extract the original wall surface name from the window name
+        surface_name = f"wall_{window_name.split('_')[1]}"
+        centroid = np.array(centroid_coordenates[surface_name])
+        original_vertices = [vertex + centroid for vertex in relative_vertices]
+        window_coordenates_original[window_name] = original_vertices
     
-    for window_name in [key for key in window_coordinates.keys()]:
+    # Change the values in the epJSON file
+    for window_name in [key for key in window_coordenates_original.keys()]:
         # Iterate over the four vertices of the surface
         for _ in range(1,5,1):
             for xyz in range(3):
-                epJSON_object['FenestrationSurface:Detailed'][window_name]['vertex_'+str(_)+'_'+coordinate[xyz]+'_coordinate'] = window_coordinates[window_name][_-1][xyz]
+                epJSON_object['FenestrationSurface:Detailed'][window_name]['vertex_'+str(_)+'_'+coordinate[xyz]+'_coordinate'] = window_coordenates_original[window_name][_-1][xyz]
         
     return epJSON_object
 
 
-def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:float):
+def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:float) -> Dict[str, Any]:
     """
     Given a epJSON_object, return another epJSON_object with diferent size of windows.
 
@@ -297,12 +343,13 @@ def window_size_epJSON(epJSON_object: Dict[str, Any], window:str, area_ventana:f
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_y_coordinate'] = ventana_escalada[l-1][1]
         epJSON_object['FenestrationSurface:Detailed'][window]['vertex_'+str(l)+'_z_coordinate'] = ventana_escalada[l-1][2]
 
-def calcular_centro(ventana: List[List[float]]) -> List[float]:
-    # Calcula el centro de la ventana
-    centro = [(ventana[0][0] + ventana[1][0] + ventana[2][0] + ventana[3][0]) / 4,
-            (ventana[0][1] + ventana[1][1] + ventana[2][1] + ventana[3][1]) / 4,
-            (ventana[0][2] + ventana[1][2] + ventana[2][2] + ventana[3][2]) / 4]
-    return centro
+    return epJSON_object
+
+def calcular_centro(surface: List[List[float]]) -> List[float]:
+    # Calcula el centro de un cuadrilátero
+    return [(surface[0][0] + surface[1][0] + surface[2][0] + surface[3][0]) / 4,
+            (surface[0][1] + surface[1][1] + surface[2][1] + surface[3][1]) / 4,
+            (surface[0][2] + surface[1][2] + surface[2][2] + surface[3][2]) / 4]
 
 
 def generate_variated_schedule(
@@ -941,3 +988,122 @@ def from_julian_day(julian_day:int):
             return (day, month + 1)
         day -= days_in_month
         
+        
+
+def extract_epw_location_data(epw_file_path: str) -> Tuple[float, float, float, float]:
+    """
+    Extrae la latitud, longitud, huso horario y altitud de un archivo EPW.
+
+    Args:
+        epw_file_path (str): La ruta al archivo de clima en formato EPW.
+
+    Returns:
+        tuple: Una tupla que contiene (latitud, longitud, huso horario, altitud).
+               Retorna None si el archivo no es válido o no se encuentra.
+    """
+    try:
+        # Lee el archivo EPW. Los primeros 8-9 son la información del encabezado
+        # dependiendo de la versión del archivo.
+        # La información de la ubicación está en la segunda línea.
+        header_lines: List[str] = []
+        with open(epw_file_path, 'r', encoding='utf-8') as f:
+            for _ in range(8):
+                try:
+                    header_lines.append(next(f))
+                except StopIteration:
+                    break # Stop if we reach the end of the file
+
+        # Check if we have at least one line to process for location
+        if not header_lines:
+            print(f"Error: El archivo EPW está vacío o no contiene líneas de encabezado: {epw_file_path}")
+            return 0.,0.,0.,0.
+
+        # El encabezado EPW tiene campos separados por comas.
+        # La línea de ubicación es la primera (índice 0).
+        location_line: List[str] = header_lines[0].strip().split(',')
+
+        # Los índices corresponden a los campos en la línea de ubicación EPW:
+        # [0] Ciudad, [1] Estado/Provincia, [2] País/Región,
+        # [3] Fuente, [4] WMO, [5] Latitud,
+        # [6] Longitud, [7] Huso Horario, [8] Altitud
+
+        # Ensure we have enough fields in the location line
+        if len(location_line) < 9:
+             print(f"Error: La línea de ubicación en el archivo EPW no tiene el formato esperado. Se encontraron {len(location_line)} campos, se esperaban al menos 9.")
+             return 0.,0.,0.,0.
+
+        latitude = float(location_line[6])
+        longitude = float(location_line[7])
+        time_zone = float(location_line[8])
+        altitude = float(location_line[9])
+
+        return (latitude, longitude, time_zone, altitude)
+
+    except FileNotFoundError:
+        print(f"Error: No se encontró el archivo en la ruta especificada: {epw_file_path}")
+        return 0.,0.,0.,0.
+    except (IndexError, ValueError) as e:
+        print(f"Error: Formato de archivo EPW inválido. No se pudo analizar la información de ubicación. Detalles: {e}")
+        return 0.,0.,0.,0.
+    
+def select_epjson_model(war_list: List[float]) -> Tuple[int, List[int]]:
+    """
+    Select the epjson model based on the window area ratios.
+
+    Args:
+        war_list (List[float]): List of window area ratios.
+
+    Returns:
+        int: Selected model number.
+    
+    Example:
+        war_list = [0.2, 0.3, 0.1, 0.4]  # Example window area ratios for [n, e, s, w]
+        model_number = select_epjson_model(war_list)
+        print(f"Selected model number: {model_number}")
+    """
+    model_window_configs = {
+        "1": [1,1,1,1], # all windows: [n,e,s,w]
+        "2": [1,1,1,0],
+        "3": [1,1,0,1],
+        "4": [1,0,1,1],
+        "5": [0,1,1,1],
+        "6": [1,1,0,0],
+        "7": [1,0,1,0],
+        "8": [0,1,1,0],
+        "9": [1,0,0,1],
+        "10": [0,1,0,1],
+        "11": [0,0,1,1],
+        "12": [1,0,0,0],
+        "13": [0,1,0,0],
+        "14": [0,0,1,0],
+        "15": [0,0,0,1],
+    }
+    
+    war_list_bin = [1 if war > 0 else 0 for war in war_list]
+    for model, config in model_window_configs.items():
+        if config == war_list_bin:
+            logger.info(f"Selected model {model} for window area ratios {war_list}")
+            return int(model), config
+    
+    logger.warning("No matching model found for the given window area ratios. Defaulting to model 1.")
+    return 1, [1,1,1,1]  # Default model if no match found
+
+def get_random_parameter(min: float, max: float, step: float) -> float:
+    """
+    Generate a random parameter value within a specified range and step.
+
+    Args:
+        min (float): Minimum value of the range.
+        max (float): Maximum value of the range.
+        step (float): Step size for the values.
+
+    Returns:
+        float: A random value within the specified range and step.
+    
+    Example:
+        random_value = get_random_parameter(0.0, 1.0, 0.1)
+        print(f"Random value: {random_value}")
+    """
+    num_steps = int((max - min) / step) + 1
+    random_step = np.random.randint(0, num_steps)
+    return min + random_step * step
