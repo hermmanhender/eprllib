@@ -165,7 +165,7 @@ class EnvironmentConfig:
         ep_terminal_output: bool = True,
         timeout: float|int = TIMEOUT,
         evaluation: bool = False,
-    ):
+        ) -> None:
         """
         This method is used to modify the general configuration of the environment.
 
@@ -187,7 +187,7 @@ class EnvironmentConfig:
     def agents(
         self,
         agents_config: Optional[Dict[str,AgentSpec|Dict[str,Any]]] = None,
-        ):
+        ) -> None:
         """
         This method is used to modify the agents configuration of the environment.
 
@@ -203,7 +203,7 @@ class EnvironmentConfig:
         self,
         connector_fn: Optional[Type[BaseConnector]] = None,
         connector_fn_config: Dict[str, Any] = {},
-        ):
+        ) -> None:
         """
         This method is used to modify the agents connector configuration of the environment.
 
@@ -222,7 +222,7 @@ class EnvironmentConfig:
         episode_fn: Optional[Type[BaseEpisode]] = None,
         episode_fn_config: Dict[str,Any] = {},
         cut_episode_len: int = 0,
-        ):
+        ) -> None:
         """
         This method configure episode functions to improve the use of eprllib.
 
