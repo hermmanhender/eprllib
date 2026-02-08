@@ -121,7 +121,7 @@ eprllib_config.agents(
                 internal_variables = [
                     ("Zone Floor Area", "Thermal Zone"),
                 ],
-                history_len=1,
+                # history_len=1,
                 user_occupation_forecast = False
                 
             ),

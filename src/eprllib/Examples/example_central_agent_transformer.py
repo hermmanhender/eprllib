@@ -87,7 +87,7 @@ eprllib_config.agents(
                 prediction_variables = {
                     'outdoor_dry_bulb': True,
                 },
-                history_len = 6,
+                # history_len = 6,
             ),
             action = ActionSpec(
                 actuators = [
