@@ -6,8 +6,6 @@ __pycache__/
 *.py[codz]
 *$py.class
 *.pyc
-/__pycache__/
-.pyc
 
 # C extensions
 *.so
