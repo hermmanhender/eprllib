@@ -43,7 +43,7 @@ def EP_API_add_path(path: Optional[str] = None) -> str:
         RuntimeError: If auto-detection fails to find any suitable EnergyPlus installation,
                       or if copying the installation to a temporary directory fails.
     """
-    logger.debug("Attempting to auto-detect EnergyPlus installation...")
+    logger.debug("EnvConfigUtils: Attempting to auto-detect EnergyPlus installation...")
     os_platform = sys.platform
     original_ep_path: Optional[str] = None
     if os_platform.startswith("linux"):  # Covers "linux" and "linux2"
@@ -56,14 +56,14 @@ def EP_API_add_path(path: Optional[str] = None) -> str:
     if original_ep_path is not None:
         if original_ep_path not in sys.path:
             sys.path.insert(0, original_ep_path)
-            logger.debug(f"EnergyPlus API path added to sys.path: {original_ep_path}")
+            logger.debug(f"EnvConfigUtils: EnergyPlus API path added to sys.path: {original_ep_path}")
         else:
-            logger.debug(f"EnergyPlus API path already in sys.path: {original_ep_path}")
+            logger.debug(f"EnvConfigUtils: EnergyPlus API path already in sys.path: {original_ep_path}")
         
         return original_ep_path
     
     else:
-        logger.error(f"Warning: EnergyPlus auto-detection is not configured for this OS: {os_platform}. "
+        logger.error(f"EnvConfigUtils: Warning: EnergyPlus auto-detection is not configured for this OS: {os_platform}. "
                 "Please provide the path manually if detection fails.")
         raise RuntimeError(f"EnergyPlus auto-detection failed for OS: {os_platform}. "
                            "Please provide the path manually or ensure EnergyPlus is installed correctly.")
@@ -78,7 +78,7 @@ def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:
     allowed_vars = inspect.get_annotations(EnvironmentConfig).keys()
     for var in vars(MyEnvConfig):
         if var not in allowed_vars:
-            msg = f"The variable '{var}' is not allowed in EnvConfig. Allowed variables are: {allowed_vars}"
+            msg = f"EnvConfigUtils: The variable '{var}' is not allowed in EnvConfig. Allowed variables are: {allowed_vars}"
             logger.error(msg)
             raise ValueError(msg)
     return True
@@ -111,7 +111,7 @@ def to_json(
     with open(path, 'x') as f:
         f.write(env_config_json)
     
-    logger.info(f"EnvConfig saved to {path}")
+    logger.info(f"EnvConfigUtils: EnvConfig saved to {path}")
     
     return path
 

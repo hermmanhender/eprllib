@@ -64,6 +64,6 @@ class BaseReward:
         Returns:
             float: The calculated reward.
         """
-        msg = "This method must be implemented in the subclass."
+        msg = "BaseReward: This method must be implemented in the subclass."
         logger.error(msg)
         raise NotImplementedError(msg)

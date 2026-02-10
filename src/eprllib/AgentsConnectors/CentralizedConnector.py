@@ -75,7 +75,7 @@ class CentralizedConnector(BaseConnector):
         assert obs_space_len > 0, "The observation space length must be greater than 0."
         assert len(self.obs_indexed[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
         # obs_space_len += 1
-        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+        logger.debug(f"CentralizedConnector: Observation space length for agent {agent}: {obs_space_len}")
         
         return Box(float("-inf"), float("inf"), (obs_space_len, ))
     

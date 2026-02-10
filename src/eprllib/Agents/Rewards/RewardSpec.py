@@ -39,7 +39,7 @@ class RewardSpec:
     def __setitem__(self, key:str, value:Any):
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            msg = f"Invalid key: {key}."
+            msg = f"RewardSpec: Invalid key: {key}."
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
@@ -49,7 +49,7 @@ class RewardSpec:
         This method is used to build the RewardSpec object.
         """
         if self.reward_fn == None:
-            msg = "No reward function provided."
+            msg = "RewardSpec: No reward function provided."
             logger.error(msg)
             raise NotImplementedError(msg)
         

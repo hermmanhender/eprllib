@@ -101,7 +101,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
             assert obs_space_len > 0, "The observation space length must be greater than 0."
             assert len(self.obs_indexed_top_level[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
             # obs_space_len += 1
-            logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+            logger.debug(f"HierarchicalTwoLevelsConnector: Observation space length for agent {agent}: {obs_space_len}")
         
             return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
@@ -224,7 +224,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
         # Add the goal to the observation of all the other agents.
         if type(goals[self.top_level_agent]) == List: # This means a multi-discrete action_space
             if len(dict_agents_obs) != len(goals[self.top_level_agent]):
-                msg = "The MultiDiscrete space must contain a goal for each agent."
+                msg = "HierarchicalTwoLevelsConnector: The MultiDiscrete space must contain a goal for each agent."
                 logger.error(msg)
                 raise ValueError(msg)
             else:
@@ -252,7 +252,7 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
                 infos[agent].update({'goal': goals[self.top_level_agent]})
         
         else:
-            msg = "The action space of the top_level_agent must be Discrete or MultiDiscrete spaces."
+            msg = "HierarchicalTwoLevelsConnector: The action space of the top_level_agent must be Discrete or MultiDiscrete spaces."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -359,12 +359,12 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
             assert obs_space_len > 0, "The observation space length must be greater than 0."
             assert len(self.obs_indexed_top_level[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
             # obs_space_len += 1
-            logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+            logger.debug(f"HierarchicalThreeLevelsConnector: Observation space length for agent {agent}: {obs_space_len}")
         
             return Box(float("-inf"), float("inf"), (obs_space_len, ))
         
         else:
-            msg = f"Agent {agent} not found in the environment configuration."
+            msg = f"HierarchicalThreeLevelsConnector: Agent {agent} not found in the environment configuration."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -513,7 +513,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         # Add the goal to the observation of all the other agents.
         if type(goals[self.top_level_agent]) == List: # This means a multi-discrete action_space
             if len(dict_agents_obs) != len(goals[self.top_level_agent]):
-                msg = "The MultiDiscrete space must contain a goal for each agent."
+                msg = "HierarchicalThreeLevelsConnector: The MultiDiscrete space must contain a goal for each agent."
                 logger.error(msg)
                 raise ValueError(msg)
             else:
@@ -541,7 +541,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
                 infos[agent].update({'goal': goals[self.top_level_agent]})
         
         else:
-            msg = "The action space of the top_level_agent must be Discrete or MultiDiscrete spaces."
+            msg = "HierarchicalThreeLevelsConnector: The action space of the top_level_agent must be Discrete or MultiDiscrete spaces."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -581,7 +581,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         
         # Verify that all lists have the same length
         if not all(len(vec) == len(matrix[0]) for vec in matrix):
-            msg = "All agents must have vectors of the same length."
+            msg = "HierarchicalThreeLevelsConnector: All agents must have vectors of the same length."
             logger.error(msg)
             raise ValueError(msg)
         

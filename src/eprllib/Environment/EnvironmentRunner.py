@@ -34,7 +34,7 @@ from eprllib import logger, EP_VERSION
 try:
     EP_API_add_path(EP_VERSION)
 except RuntimeError as e:
-    logger.error(f"Failed to add EnergyPlus API path: {e}")
+    logger.error(f"EnvironmentRunner: Failed to add EnergyPlus API path: {e}")
     exit(1)
     
 from pyenergyplus.api import EnergyPlusAPI
@@ -151,8 +151,10 @@ class EnvironmentRunner:
             self.energyplus_state = api.state_manager.new_state()
             assert self.energyplus_state is not None, "Failed to create EnergyPlus state"
         except Exception as e:
-            logger.error(f"Error creating EnergyPlus state: {e}")
-            raise
+            msg = f"EnvironmentRunner: Error creating EnergyPlus state: {e}"
+            logger.error(f"msg")
+            raise RuntimeError(msg)
+        
         # Request variables.
         for agent in self.agents:
             if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
@@ -174,11 +176,12 @@ class EnvironmentRunner:
             """
             try:
                 cmd_args = self.make_eplus_args()
-                logger.info(f"running EnergyPlus with args: {cmd_args}")
+                logger.info(f"EnvironmentRunner: running EnergyPlus with args: {cmd_args}")
                 assert self.energyplus_state is not None, "EnergyPlus state is None."
                 self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
             except Exception as e:
-                logger.error(f"Error running EnergyPlus: {e}")
+                msg = f"EnvironmentRunner: Error running EnergyPlus: {e}"
+                logger.error(msg)
                 self.sim_results = -1
             finally:
                 self.simulation_complete = True
@@ -321,7 +324,7 @@ class EnvironmentRunner:
             # Check if there is an actuator_dict_actions value equal to None.
             for actuator in actuator_list:
                 if actuator_actions[actuator] is None:
-                    msg = f"The actuator {actuator} has no action defined in the action dict for agent {agent}."
+                    msg = f"EnvironmentRunner: The actuator {actuator} has no action defined in the action dict for agent {agent}."
                     logger.error(msg)
                     raise ValueError(msg)
                 
@@ -454,7 +457,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
         if agent is None:
-            msg = "The agent must be defined."
+            msg = "EnvironmentRunner: The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
         variables: Dict[str,Any] = {
@@ -478,7 +481,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            msg = "The agent must be defined."
+            msg = "EnvironmentRunner: The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
         variables: Dict[str,Any] = {
@@ -502,7 +505,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            msg = "The agent must be defined."
+            msg = "EnvironmentRunner: The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -527,7 +530,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Agent actuator values for the actual timestep.
         """
         if agent is None:
-            msg = "The agent must be defined."
+            msg = "EnvironmentRunner: The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -730,7 +733,7 @@ class EnvironmentRunner:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
         if agent is None:
-            msg = "The agent must be defined."
+            msg = "EnvironmentRunner: The agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -867,6 +870,7 @@ class EnvironmentRunner:
                 if any([v == -1 for v in handles.values()]):
                     available_data = api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
                     msg = (
+                        f"EnvironmentRunner: \n" 
                         f"Some handles were not initialized correctly for agent {agent}.\n"
                         f"> handles with error: {handles}\n"
                         f"> available EnergyPlus API data: {available_data}"
@@ -888,7 +892,7 @@ class EnvironmentRunner:
             if self.energyplus_state is not None:
                 api.runtime.stop_simulation(self.energyplus_state)
         except Exception as e:
-            logger.warning(f"Error stopping EnergyPlus simulation: {e}")
+            logger.warning(f"EnvironmentRunner: Error stopping EnergyPlus simulation: {e}")
         
         self._flush_queues()
         
@@ -896,7 +900,7 @@ class EnvironmentRunner:
             try:
                 self.energyplus_exec_thread.join(timeout=30)
             except Exception as e:
-                logger.warning(f"Error joining EnergyPlus thread: {e}")
+                logger.warning(f"EnvironmentRunner: Error joining EnergyPlus thread: {e}")
         
         self.energyplus_exec_thread = None
         self.first_observation = True
@@ -904,13 +908,13 @@ class EnvironmentRunner:
         try:
             api.runtime.clear_callbacks()
         except Exception as e:
-            logger.warning(f"Error clearing callbacks: {e}")
+            logger.warning(f"EnvironmentRunner: Error clearing callbacks: {e}")
         
         if self.energyplus_state is not None:
             try:
                 api.state_manager.delete_state(self.energyplus_state)
             except Exception as e:
-                logger.warning(f"Error deleting EnergyPlus state: {e}")
+                logger.warning(f"EnvironmentRunner: Error deleting EnergyPlus state: {e}")
             finally:
                 self.energyplus_state = None
 

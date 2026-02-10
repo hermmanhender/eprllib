@@ -60,13 +60,13 @@ class DefaultFilter(BaseFilter):
         """
         # Check if the agent_states dictionary is empty
         if not agent_states:
-            msg = "agent_states dictionary is empty"
+            msg = "DefaultFilter: The agent_states dictionary is empty"
             logger.error(msg)
             raise ValueError(msg)
         
         # Check if all values in the agent_states dictionary are numeric
         if not all(isinstance(value, (int, float)) for value in agent_states.values()):
-            msg = "All values in agent_states must be numeric"
+            msg = "DefaultFilter: All values in agent_states must be numeric"
             logger.error(msg)
             raise ValueError(msg)
         

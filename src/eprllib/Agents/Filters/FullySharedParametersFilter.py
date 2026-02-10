@@ -64,7 +64,7 @@ class FullySharedParametersFilter(BaseFilter):
         for actuator_config in env_config["agents_config"][self.agent_name]["action"]["actuators"]:
             _ = agent_states_copy.pop(get_actuator_name(self.agent_name, actuator_config[0], actuator_config[1], actuator_config[2]), None)
         
-        logger.debug(f"Filtered observation for agent {self.agent_name}: {agent_states_copy}")
+        logger.debug(f"FullySharedParametersFilter: Filtered observation for agent {self.agent_name}: {agent_states_copy}")
         # Return a flat array with the values of the agent_states_copy without actuators state.
         return np.array(list(agent_states_copy.values()), dtype='float32')
     

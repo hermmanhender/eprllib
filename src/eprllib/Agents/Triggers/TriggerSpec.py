@@ -40,7 +40,7 @@ class TriggerSpec:
     def __setitem__(self, key:str, value:Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            msg = f"Invalid key: {key}."
+            msg = f"TriggerSpec: Invalid key: {key}."
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
@@ -50,7 +50,7 @@ class TriggerSpec:
         This method is used to build the TriggerSpec object.
         """
         if self.trigger_fn == None:
-            msg = "The trigger function must be defined."
+            msg = "TriggerSpec: The trigger function must be defined."
             logger.error(msg)
             raise ValueError(msg)
             

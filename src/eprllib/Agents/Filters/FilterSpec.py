@@ -36,7 +36,7 @@ class FilterSpec:
     def __setitem__(self, key: str, value: Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            msg = f"Invalid key: {key}."
+            msg = f"FilterSpec: Invalid key: {key}."
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
@@ -46,7 +46,7 @@ class FilterSpec:
         This method is used to build the FilterSpec object.
         """
         if self.filter_fn is None:
-            msg = "No filter function provided. Using DefaultFilter."
+            msg = "FilterSpec: No filter function provided. Using DefaultFilter."
             logger.warning(msg)
             self.filter_fn = DefaultFilter
             self.filter_fn_config = {}

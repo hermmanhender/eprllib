@@ -50,6 +50,6 @@ class BaseFilter:
         Returns:
             NDarray: Filtered observations as a numpy array of float32 values.
         """
-        msg = "This method should be implemented in a subclass."
+        msg = "BaseFilter: This method should be implemented in a subclass."
         logger.error(msg)
         raise NotImplementedError(msg)

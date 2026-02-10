@@ -22,7 +22,7 @@ def trial_str_creator(trial: Trial, name:str='eprllib'):
     """
     # Validar que trial tenga los atributos esperados
     if not (hasattr(trial, 'trainable_name') and hasattr(trial, 'trial_id')):
-        msg = "The 'trial' argument must have 'trainable_name' and 'trial_id' attributes."
+        msg = "TrialStrCreator: The 'trial' argument must have 'trainable_name' and 'trial_id' attributes."
         logger.error(msg)
         raise ValueError(msg)
     

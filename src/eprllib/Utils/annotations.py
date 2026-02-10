@@ -48,6 +48,7 @@ def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[.
             # Check if the owner (the class) is a subclass of the expected base class
             if not issubclass(owner, self.expected_parent_cls):
                 msg = (
+                    f"Annotations: \n"
                     f"When using the @override decorator, {owner.__name__} must be a "
                     f"subclass of {parent_cls.__name__}!"
                 )
@@ -60,6 +61,7 @@ def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[.
         # Check, whether `method` is actually defined by the parent class.
         if method.__name__ not in dir(parent_cls):
             msg = (
+                f"Annotations: \n"
                 f"When using the @override decorator, {method.__name__} must override "
                 f"the respective method (with the same name) of {parent_cls.__name__}!"
             )
