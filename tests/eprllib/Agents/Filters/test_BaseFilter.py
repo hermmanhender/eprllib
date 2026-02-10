@@ -29,7 +29,7 @@ class TestBasefilter:
         with pytest.raises(NotImplementedError) as excinfo:
             base_filter.get_filtered_obs(env_config, agent_states)
 
-        assert str(excinfo.value) == "This method should be implemented in a subclass."
+        assert str(excinfo.value) == "BaseFilter: This method should be implemented in a subclass."
 
     def test_get_filtered_obs_not_implemented(self):
         """
@@ -39,7 +39,7 @@ class TestBasefilter:
         base_filter = BaseFilter({})
         with pytest.raises(NotImplementedError) as excinfo:
             base_filter.get_filtered_obs({}, {})
-        assert str(excinfo.value) == "This method should be implemented in a subclass."
+        assert str(excinfo.value) == "BaseFilter: This method should be implemented in a subclass."
 
 
     def test_init_with_empty_dict(self):

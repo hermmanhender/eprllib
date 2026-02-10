@@ -56,7 +56,7 @@ class TestFilterspec:
         filter_spec = FilterSpec()
         with pytest.raises(KeyError) as excinfo:
             filter_spec['invalid_key'] = 'some_value'
-        assert str(excinfo.value) == "'Invalid key: invalid_key.'"
+        assert str(excinfo.value) == "'FilterSpec: Invalid key: invalid_key.'"
 
     def test___setitem___invalid_key_2(self):
         """
@@ -66,7 +66,7 @@ class TestFilterspec:
         filter_spec = FilterSpec()
         with pytest.raises(KeyError) as exc_info:
             filter_spec['invalid_key'] = 'some_value'
-        assert str(exc_info.value) == "'Invalid key: invalid_key.'"
+        assert str(exc_info.value) == "'FilterSpec: Invalid key: invalid_key.'"
 
     def test_build_default_filter(self):
         """

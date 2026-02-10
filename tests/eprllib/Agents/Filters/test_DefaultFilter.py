@@ -54,7 +54,7 @@ class TestDefaultfilter:
         with pytest.raises(ValueError) as excinfo:
             default_filter.get_filtered_obs(env_config, agent_states)
             
-        assert str(excinfo.value) == "agent_states dictionary is empty"
+        assert str(excinfo.value) == "DefaultFilter: The agent_states dictionary is empty"
 
 
     def test_get_filtered_obs_with_non_numeric_values(self):
@@ -70,7 +70,7 @@ class TestDefaultfilter:
         with pytest.raises(ValueError) as excinfo:
             default_filter.get_filtered_obs(env_config, agent_states)
         
-        assert str(excinfo.value) == "All values in agent_states must be numeric"
+        assert str(excinfo.value) == "DefaultFilter: All values in agent_states must be numeric"
 
 
     def test_init_with_empty_dict(self):
