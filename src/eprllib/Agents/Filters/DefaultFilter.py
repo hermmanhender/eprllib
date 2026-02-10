@@ -19,7 +19,7 @@ class DefaultFilter(BaseFilter):
 
     This class extends the `BaseFilter` class and provides a basic implementation that can be used
     as-is or extended to create custom filters. The `get_filtered_obs` method returns the agent
-    states as a numpy array of float32 values.
+    states as a numpy array of float64 values.
     """
     def __init__(
         self,
@@ -39,7 +39,7 @@ class DefaultFilter(BaseFilter):
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> NDArray[np.float32]:
+    ) -> NDArray[np.float64]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
@@ -52,7 +52,7 @@ class DefaultFilter(BaseFilter):
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            NDarray: Filtered observations as a numpy array of float32 values.
+            NDarray: Filtered observations as a numpy array of float64 values.
             
         Raises:
             TypeError: If agent_states is not a dictionary.
@@ -70,5 +70,5 @@ class DefaultFilter(BaseFilter):
             logger.error(msg)
             raise ValueError(msg)
         
-        return np.array(list(agent_states.values()), dtype='float32')
+        return np.array(list(agent_states.values()), dtype='float64')
     

@@ -11,7 +11,7 @@ must be based in this class.
 """
 from eprllib import logger
 from typing import Any, Dict
-from numpy import float32
+from numpy import float64
 from numpy.typing import NDArray
 
 class BaseFilter:
@@ -35,7 +35,7 @@ class BaseFilter:
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> NDArray[float32]:
+    ) -> NDArray[float64]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
@@ -48,7 +48,7 @@ class BaseFilter:
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            NDarray: Filtered observations as a numpy array of float32 values.
+            NDarray: Filtered observations as a numpy array of float64 values.
         """
         msg = "BaseFilter: This method should be implemented in a subclass."
         logger.error(msg)

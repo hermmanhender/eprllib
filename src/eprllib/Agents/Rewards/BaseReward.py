@@ -13,7 +13,7 @@ implementations with dispersed reward. This flags allow return the final reward 
 """
 from typing import Dict, Any
 from numpy.typing import NDArray
-from numpy import float32
+from numpy import float64
 from eprllib import logger
 
 class BaseReward:
@@ -47,9 +47,9 @@ class BaseReward:
     
     def get_reward(
         self,
-        prev_obs: NDArray[float32],
+        prev_obs: NDArray[float64],
         prev_action: Any,
-        obs: NDArray[float32],
+        obs: NDArray[float64],
         terminated: bool,
         truncated: bool
         ) -> float:

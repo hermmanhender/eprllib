@@ -41,7 +41,7 @@ class FullySharedParametersFilter(BaseFilter):
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> NDArray[np.float32]:
+    ) -> NDArray[np.float64]:
         """
         Filter the observation for the agent by removing the actuator state from the agent state vector.
 
@@ -50,7 +50,7 @@ class FullySharedParametersFilter(BaseFilter):
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            NDarray: Filtered observations as a numpy array of float32 values.
+            NDarray: Filtered observations as a numpy array of float64 values.
         """
         # Generate a copy of the agent_states to avoid conflicts with global variables.
         agent_states_copy = agent_states.copy()
@@ -66,5 +66,5 @@ class FullySharedParametersFilter(BaseFilter):
         
         logger.debug(f"FullySharedParametersFilter: Filtered observation for agent {self.agent_name}: {agent_states_copy}")
         # Return a flat array with the values of the agent_states_copy without actuators state.
-        return np.array(list(agent_states_copy.values()), dtype='float32')
+        return np.array(list(agent_states_copy.values()), dtype='float64')
     

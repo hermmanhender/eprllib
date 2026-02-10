@@ -263,7 +263,7 @@ class FullySharedParametersConnector(BaseConnector):
                         agent_id_vector,
                         dict_agents_obs[agent]
                     ),
-                    dtype='float32'
+                    dtype='float64'
                 )
             
         # if apply, add the actuator state as a vector of all agents.
@@ -286,7 +286,7 @@ class FullySharedParametersConnector(BaseConnector):
                         dict_agents_obs[agent],
                         actuator_id_vector,
                     ),
-                    dtype='float32'
+                    dtype='float64'
                 )
             
         return dict_agents_obs, infos, True

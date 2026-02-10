@@ -140,7 +140,7 @@ def continuous_action_space():
     Returns:
         gym.Box: Continuous action space with limits between [0,1].
     """
-    return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+    return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float64)
 
 def discrete_action_space(n:int=2):
     """

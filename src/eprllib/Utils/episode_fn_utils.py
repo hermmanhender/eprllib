@@ -9,7 +9,7 @@ from typing import Dict, Tuple, Any, List
 import os
 import numpy as np
 from numpy.typing import NDArray
-from numpy import float32
+from numpy import float64
 import json
 import pandas as pd
 import datetime
@@ -153,7 +153,7 @@ def building_dimension(
     h:float, 
     w:float, 
     l:float, 
-    window_area_relation: NDArray[float32],
+    window_area_relation: NDArray[float64],
     ) -> Dict[str, Any]:
     """
     This function modify the building dimensions and the windows positions in the epJSON file.
