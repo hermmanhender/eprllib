@@ -5,6 +5,17 @@ def to_sin_transformation(
     min: float,
     max: float
     ) -> float:
+    """
+    Transform a value to a sin function.
+    
+    Args:
+        value (float): The value to transform.
+        min (float): The minimum value of the range.
+        max (float): The maximum value of the range.
+        
+    Returns:
+        float: The transformed value.
+    """
     return np.sin(2 * np.pi * (value - min) / (max - min))
 
 def normalization_minmax(
