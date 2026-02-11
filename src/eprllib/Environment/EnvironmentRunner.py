@@ -149,7 +149,7 @@ class EnvironmentRunner:
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         try:
             self.energyplus_state = api.state_manager.new_state()
-            assert self.energyplus_state is not None, "Failed to create EnergyPlus state"
+            assert self.energyplus_state is not None, "EnvironmentRunner: Failed to create EnergyPlus state"
         except Exception as e:
             msg = f"EnvironmentRunner: Error creating EnergyPlus state: {e}"
             logger.error(f"msg")
@@ -177,7 +177,7 @@ class EnvironmentRunner:
             try:
                 cmd_args = self.make_eplus_args()
                 logger.info(f"EnvironmentRunner: running EnergyPlus with args: {cmd_args}")
-                assert self.energyplus_state is not None, "EnergyPlus state is None."
+                assert self.energyplus_state is not None, "EnvironmentRunner: EnergyPlus state is None."
                 self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
             except Exception as e:
                 msg = f"EnvironmentRunner: Error running EnergyPlus: {e}"
@@ -613,7 +613,7 @@ class EnvironmentRunner:
         for paramater in parameters_keys:
             if self.env_config["agents_config"][agent]['observation']["simulation_parameters"][paramater]:
                 include.append(paramater)
-        assert isinstance(agent, str), "Agent must be a string."
+        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
         variables: Dict[str,Any] = {
             get_parameter_name(agent,paramater): parameter_methods[paramater] 
             for paramater 
@@ -650,7 +650,7 @@ class EnvironmentRunner:
         for paramater in parameters_keys:
             if self.env_config["agents_config"][agent]['observation']['zone_simulation_parameters'][paramater]:
                 include.append(paramater)
-        assert isinstance(agent, str), "Agent must be a string."
+        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
         variables: Dict[str,Any] = {
             get_parameter_name(agent,paramater): parameter_methods[paramater] 
             for paramater 
@@ -663,7 +663,7 @@ class EnvironmentRunner:
         state_argument: c_void_p,
         agent: Optional[str]=None
     ) -> Dict[str,Any]:
-        assert isinstance(agent, str), "Agent must be a string."
+        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
         if not self.env_config["agents_config"][agent]['observation']['use_one_day_weather_prediction']:
             return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
@@ -702,9 +702,9 @@ class EnvironmentRunner:
         
         variables: Dict[str,Any] = {}
         prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
-        for h in range(self.env_config["agents_config"][agent]['observation']['weather_prediction_hours']):
+        for h in range(1, self.env_config["agents_config"][agent]['observation']['weather_prediction_hours']+1, 1):
             # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
-            prediction_hour: int = hour+1 + h
+            prediction_hour: int = hour + h
             if prediction_hour < 24:
                 for key in prediction_variables.keys():
                     if prediction_variables[key]:
@@ -761,7 +761,7 @@ class EnvironmentRunner:
         Returns:
             Dict[str,Any]: User occupation forecast dict values for the actual timestep.
         """
-        assert isinstance(agent, str), "Agent must be a string."
+        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
                 
         # Get timestep variables that are needed as input for some data_exchange methods.
         if self.env_config["agents_config"][agent]['observation']['user_occupation_function']:
@@ -791,8 +791,8 @@ class EnvironmentRunner:
                 self.env_config["agents_config"][agent]['observation']['lambdaa']
             )
             
-            for h in range(self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']):
-                variables.update({get_user_occupation_forecast_name(agent,h+1): forecast_vector[h]})
+            for h in range(1, self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']+1, 1):
+                variables.update({get_user_occupation_forecast_name(agent,h): forecast_vector[h-1]})
                 
             return variables
             

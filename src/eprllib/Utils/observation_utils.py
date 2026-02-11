@@ -88,7 +88,9 @@ def get_parameter_prediction_name(agent: str, parameter_name:str, hour:int) -> s
     Returns:
         str: The parameter prediction name in the observation space.
     """
-    return f"{agent}: {parameter_name}: {hour}"
+    if hour < 1 or hour > 24:
+        raise ValueError("ObservationUtils: Hour must be between 1 and 24.")
+    return f"{agent}: {parameter_name}: +{hour}h"
 
 def get_other_obs_name(agent: str, other_obs_name:str) -> str:
     """
@@ -115,5 +117,5 @@ def get_user_occupation_forecast_name(agent: str, hour:int) -> str:
         str: The parameter prediction name in the observation space.
     """
     if hour < 1 or hour > 24:
-        raise ValueError("Hour must be between 1 and 24.")
+        raise ValueError("ObservationUtils: Hour must be between 1 and 24.")
     return f"{agent}: User Occupation Forecast: +{hour}h"
