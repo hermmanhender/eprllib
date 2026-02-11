@@ -12,4 +12,5 @@
 
    BaseFilter
    DefaultFilter
+   FilterSpec
    FullySharedParametersFilter

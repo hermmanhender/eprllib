@@ -11,7 +11,4 @@
    :recursive:
 
    BaseTrigger
-   HierarchicalTriggers
-   SetpointTriggers
-   WindowsOpeningTriggers
-   WindowsShadingTriggers
+   TriggerSpec
