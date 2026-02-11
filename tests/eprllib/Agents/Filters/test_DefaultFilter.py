@@ -19,7 +19,7 @@ class TestDefaultfilter:
 
     def test_get_filtered_obs_1(self):
         """
-        Test that get_filtered_obs returns a numpy array of float32 values
+        Test that get_filtered_obs returns a numpy array of float64 values
         containing the values from the agent_states dictionary.
         """
         # Create a DefaultFilter instance
@@ -33,12 +33,12 @@ class TestDefaultfilter:
         # Call the method under test
         result = default_filter.get_filtered_obs(env_config, agent_states)
 
-        # Assert the result is a numpy array of float32 values
+        # Assert the result is a numpy array of float64 values
         assert isinstance(result, np.ndarray)
-        assert result.dtype == np.float32
+        assert result.dtype == np.float64
 
         # Assert the result contains the correct values
-        expected = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+        expected = np.array([1.0, 2.0, 3.0], dtype=np.float64)
         np.testing.assert_array_equal(result, expected)
 
     def test_get_filtered_obs_with_empty_agent_states(self):
