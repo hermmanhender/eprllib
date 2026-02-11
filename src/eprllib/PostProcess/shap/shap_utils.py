@@ -35,7 +35,7 @@ class eprllibSHAP:
         try:
             self.POLICY: Policy = algorithm.get_policy(policy_name)
         except ValueError as e:
-            msg = f"Policy '{policy_name}' not found in the algorithm."
+            msg = f"eprllibSHAP: Policy '{policy_name}' not found in the algorithm."
             logger.error(msg)
             raise ValueError(msg) from e
         

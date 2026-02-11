@@ -60,7 +60,7 @@ class EnvironmentConfig:
         try:
             return self._build()
         except Exception as e:
-            logger.error(f"Error building EnvironmentConfig: {e}")
+            logger.error(f"EnvironmentConfig: Error building EnvironmentConfig: {e}")
             raise ValueError("Failed to build EnvironmentConfig. Please check the configuration settings.") from e
     
     def update_from_dict(
@@ -84,41 +84,41 @@ class EnvironmentConfig:
         Also this method chek that all the variables are well defined and add some constant parameters to use after in 
         the program (like agents unique ID).
         """
-        logger.info("Building the environment configuration...")
+        logger.info("EnvironmentConfig: Building the environment configuration...")
         # === GENERALS === #
         # epjson_path
         if self.epjson_path is None:
-            logger.warning("The epjson_path is not defined. Is spected to be defined in the Episode class used. If don't, an error will be raised in the future.")
+            logger.warning("EnvironmentConfig: The epjson_path is not defined. Is spected to be defined in the Episode class used. If don't, an error will be raised in the future.")
             pass
         elif self.epjson_path.endswith(".epJSON"):
             pass
         elif self.epjson_path.endswith(".idf"):
-            logger.info("The epjson_path is an IDF file. Consider converting to epJSON.")
+            logger.info("EnvironmentConfig: The epjson_path is an IDF file. Consider converting to epJSON.")
             pass
         else:
-            msg = "The epjson_path is not a string. Consider converting to epJSON."
+            msg = "EnvironmentConfig: The epjson_path is not a string. Consider converting to epJSON."
             logger.warning(msg)
             raise ValueError(msg)
         
         # epw_path
         if self.epw_path is None:
-            logger.warning("The epw_path is not defined. Is spected to be defined in the Episode class used. If don't, an error will be raised in the future.")
+            logger.warning("EnvironmentConfig: The epw_path is not defined. Is spected to be defined in the Episode class used. If don't, an error will be raised in the future.")
             pass
         elif self.epw_path.endswith(".epw"):
             pass
         else:
-            msg = "The epw_path is not a string. Consider converting to epw."
+            msg = "EnvironmentConfig: The epw_path is not a string. Consider converting to epw."
             logger.warning(msg)
             raise ValueError(msg)
         
         # output_path
         if self.output_path is None:
             self.output_path = TemporaryDirectory("eprllib_output").name
-            logger.warning(f"The output_path is not defined. {self.output_path} will be used.")
+            logger.warning(f"EnvironmentConfig: The output_path is not defined. {self.output_path} will be used.")
         
         # === AGENTS === #
         if self.agents_config is None:
-            msg = "The agents_config is not defined. At least one agent must be defined."
+            msg = "EnvironmentConfig: The agents_config is not defined. At least one agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
             
@@ -131,7 +131,7 @@ class EnvironmentConfig:
             assert isinstance(config, Dict), f"The agent_config for '{agent}' must be a dictionary."
             config.update({'agent_id': ix})
             ix += 1
-        logger.debug("Agents config built successfully.")
+        logger.debug("EnvironmentConfig: Agents config built successfully.")
         
         # === CONNECTOR === #
         if self.connector_fn is None:
@@ -139,17 +139,17 @@ class EnvironmentConfig:
                 # TODO: If FullySharedConnector is better than IndependentConnector in the future, change this.
                 self.connector_fn = IndependentConnector
                 self.connector_fn_config = {}
-                logger.warning(f"The connector function is not defined. The connector {self.connector_fn.__name__} will be used with the following configuration: {self.connector_fn_config}.")
+                logger.warning(f"EnvironmentConfig: The connector function is not defined. The connector {self.connector_fn.__name__} will be used with the following configuration: {self.connector_fn_config}.")
             elif ix == 1:
                 self.connector_fn = DefaultConnector
                 self.connector_fn_config = {}
-                logger.warning(f"The connector function is not defined. The connector {self.connector_fn.__name__} will be used.")
+                logger.warning(f"EnvironmentConfig: The connector function is not defined. The connector {self.connector_fn.__name__} will be used.")
         
-        logger.debug("Connector config built successfully.")
+        logger.debug("EnvironmentConfig: Connector config built successfully.")
         
         # === EPISODES === #
         if self.episode_fn is None:
-            msg = "The episode function is not defined. The default episode function will be used."
+            msg = "EnvironmentConfig: The episode function is not defined. The default episode function will be used."
             logger.info(msg)
             self.episode_fn = DefaultEpisode
             self.episode_fn_config = {}
@@ -165,7 +165,7 @@ class EnvironmentConfig:
         ep_terminal_output: bool = True,
         timeout: float|int = TIMEOUT,
         evaluation: bool = False,
-    ):
+        ) -> None:
         """
         This method is used to modify the general configuration of the environment.
 
@@ -187,7 +187,7 @@ class EnvironmentConfig:
     def agents(
         self,
         agents_config: Optional[Dict[str,AgentSpec|Dict[str,Any]]] = None,
-        ):
+        ) -> None:
         """
         This method is used to modify the agents configuration of the environment.
 
@@ -203,7 +203,7 @@ class EnvironmentConfig:
         self,
         connector_fn: Optional[Type[BaseConnector]] = None,
         connector_fn_config: Dict[str, Any] = {},
-        ):
+        ) -> None:
         """
         This method is used to modify the agents connector configuration of the environment.
 
@@ -222,7 +222,7 @@ class EnvironmentConfig:
         episode_fn: Optional[Type[BaseEpisode]] = None,
         episode_fn_config: Dict[str,Any] = {},
         cut_episode_len: int = 0,
-        ):
+        ) -> None:
         """
         This method configure episode functions to improve the use of eprllib.
 

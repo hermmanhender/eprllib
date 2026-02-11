@@ -53,7 +53,7 @@ class ActionSpec:
     def __setitem__(self, key: str, value: Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            msg = f"Invalid key: {key}."
+            msg = f"ActionSpec: Invalid key: {key}."
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
@@ -65,7 +65,7 @@ class ActionSpec:
         # Check that the actuators are defined as a list of tuples of 3 elements.
         for actuator in self.actuators:
             if len(actuator) != 3:
-                msg = f"The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
+                msg = f"ActionSpec: The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
                 logger.error(msg)
                 raise ValueError(msg)
         

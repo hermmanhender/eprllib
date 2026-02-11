@@ -9,7 +9,7 @@ from typing import Dict, Tuple, Any, List
 import os
 import numpy as np
 from numpy.typing import NDArray
-from numpy import float32
+from numpy import float64
 import json
 import pandas as pd
 import datetime
@@ -29,12 +29,12 @@ def load_ep_model(model_path: str) -> Dict[str, Any]:
     
     # Check that the file exists and finish with .epJSON
     if not model_path.exists():
-        msg = f'The file {model_path} does not exist'
+        msg = f'EpisodeFunctionUtils: The file {model_path} does not exist'
         logger.error(msg)
         raise FileNotFoundError(msg)
     
     if not model_path.endswith('.epJSON'):
-        msg = f'The file {model_path} is not a .epJSON file'
+        msg = f'EpisodeFunctionUtils: The file {model_path} is not a .epJSON file'
         logger.error(msg)
         raise ValueError(msg)
     
@@ -72,7 +72,7 @@ def get_random_weather(epw_files_folder_path:str) -> str:
     """
     # Check that the folder has at least one file of type .epw
     if not any(file.endswith('.epw') for file in os.listdir(epw_files_folder_path)):
-        msg = "The folder does not contain any .epw files."
+        msg = "EpisodeFunctionUtils: The folder does not contain any .epw files."
         logger.error(msg)
         raise ValueError(msg)
     
@@ -90,11 +90,11 @@ def run_period(julian_day:int, days_period:int=28) -> Tuple[int,int,int,int]:
     This function returns the begin and end date of the 'days_period' of simulation given a 'julian_day' between 1 and 365.
     """
     if julian_day < 1 or julian_day+days_period > 365:
-        msg = 'Julian day must be between 1 and (365-days_period)'
+        msg = 'EpisodeFunctionUtils: Julian day must be between 1 and (365-days_period)'
         logger.error(msg)
         raise ValueError(msg)
     if days_period < 0:
-        msg = 'Days period must be integer and positive'
+        msg = 'EpisodeFunctionUtils: Days period must be integer and positive'
         logger.error(msg)
         raise ValueError(msg)
     
@@ -143,7 +143,7 @@ def max_day_in_month(month:int) -> int:
     elif month in months_28:
         max_day = 28
     else:
-        msg = 'Invalid month'
+        msg = 'EpisodeFunctionUtils: Invalid month'
         logger.error(msg)
         raise ValueError(msg)
     return max_day
@@ -153,7 +153,7 @@ def building_dimension(
     h:float, 
     w:float, 
     l:float, 
-    window_area_relation: NDArray[float32],
+    window_area_relation: NDArray[float64],
     ) -> Dict[str, Any]:
     """
     This function modify the building dimensions and the windows positions in the epJSON file.
@@ -506,7 +506,7 @@ def inertial_mass_calculation(env_config:Dict) -> float:
     """
     # If the path to epjson is not set, arraise a error.
     if not env_config.get('epjson_path', False):
-        msg = 'epjson_path is not defined in env_config'
+        msg = 'EpisodeFunctionUtils: epjson_path is not defined in env_config'
         logger.error(msg)
         raise ValueError(msg)
     
@@ -661,7 +661,7 @@ def u_factor_calculation(env_config:Dict) -> float:
     """
     # If the path to epjson is not set, arraise a error.
     if not env_config.get('epjson_path', False):
-        msg = 'epjson_path is not defined in env_config'
+        msg = 'EpisodeFunctionUtils: epjson_path is not defined in env_config'
         logger.error(msg)
         raise ValueError(msg)
     with open(env_config['epjson_path']) as file:
@@ -726,7 +726,7 @@ def u_factor(epJSON_object:Dict[str,Dict]) -> float:
                 elif epJSON_object[material_list][material]['gas_type'] == 'Krypton':
                     conductividad_capa = 0.00943
                 else:
-                    msg =('El nombre del gas no corresponde con los que pueden utilizarse: Air, Argon, Xenon, Krypton.')
+                    msg =('EpisodeFunctionUtils: El nombre del gas no corresponde con los que pueden utilizarse: Air, Argon, Xenon, Krypton.')
                     logger.error(msg)
                     raise KeyError(msg)
                 r_capa = espesor_capa/conductividad_capa
@@ -908,17 +908,17 @@ def run_period_change(
     
     # Check that (init_julian_day or (init_month and init_day)) and (end_julian_day or (end_month and end_day)) are not both None
     if (init_julian_day is None and (init_month is None or init_day is None)) or (end_julian_day is None and (end_month is None or end_day is None)):
-        msg = "Both init_julian_day or (init_month and init_day) and end_julian_day or (end_month and end_day) must be provided."
+        msg = "EpisodeFunctionUtils: Both init_julian_day or (init_month and init_day) and end_julian_day or (end_month and end_day) must be provided."
         logger.error(msg)
         raise ValueError(msg)
     # check that if end_julian_day is None and (end_month is None or end_day is None) -> simulation_duration must be provided
     if end_julian_day is None and (end_month is None or end_day is None) and simulation_duration is None:
-        msg = "If end_julian_day is None and (end_month is None or end_day is None), simulation_duration must be provided."
+        msg = "EpisodeFunctionUtils: If end_julian_day is None and (end_month is None or end_day is None), simulation_duration must be provided."
         logger.error(msg)
         raise ValueError(msg)
     # check that if simulation_duration is provided, it must be an integer and lower that 364-init_julian_day
     if simulation_duration is not None and (not isinstance(simulation_duration, int) or simulation_duration > 364-init_julian_day):
-        msg = "simulation_duration must be an integer lower than 364-init_julian_day."
+        msg = "EpisodeFunctionUtils: simulation_duration must be an integer lower than 364-init_julian_day."
         logger.error(msg)
         raise ValueError(msg)
     
@@ -934,7 +934,7 @@ def run_period_change(
                 init_day, init_month = from_julian_day(init_julian_day)
                 end_day, end_month = from_julian_day(init_julian_day + simulation_duration)
             else:
-                msg = "If init_julian_day is 'random', simulation_duration must be provided."
+                msg = "EpisodeFunctionUtils: If init_julian_day is 'random', simulation_duration must be provided."
                 logger.error(msg)
                 raise ValueError(msg)
         elif isinstance(init_julian_day, int):
@@ -947,12 +947,12 @@ def run_period_change(
             else:
                 # check that end_day and end_month are different that None
                 if end_day is None or end_month is None:
-                    msg = "If end_julian_day is None, simulation_duration must be provided."
+                    msg = "EpisodeFunctionUtils: If end_julian_day is None, simulation_duration must be provided."
                     logger.error(msg)
                     raise ValueError(msg)
                 
         else:
-            msg = "init_julian_day must be an integer or 'random'."
+            msg = "EpisodeFunctionUtils: init_julian_day must be an integer or 'random'."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -1082,10 +1082,10 @@ def select_epjson_model(war_list: List[float]) -> Tuple[int, List[int]]:
     war_list_bin = [1 if war > 0 else 0 for war in war_list]
     for model, config in model_window_configs.items():
         if config == war_list_bin:
-            logger.info(f"Selected model {model} for window area ratios {war_list}")
+            logger.info(f"EpisodeFunctionUtils: Selected model {model} for window area ratios {war_list}")
             return int(model), config
     
-    logger.warning("No matching model found for the given window area ratios. Defaulting to model 1.")
+    logger.warning("EpisodeFunctionUtils: No matching model found for the given window area ratios. Defaulting to model 1.")
     return 1, [1,1,1,1]  # Default model if no match found
 
 def get_random_parameter(min: float, max: float, step: float) -> float:

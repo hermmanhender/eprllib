@@ -129,12 +129,12 @@ class FullySharedParametersConnector(BaseConnector):
                     
             # chack that actuators is equal or minor to self.number_of_actuators_total
             if actuator_used < 0:
-                logger.error("The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
+                logger.error("FullySharedParametersConnector: The total amount of actuators in the environment is greater than the number of actuators in the environment configuration.")
         
         assert obs_space_len > 0, "The observation space length must be greater than 0."
         assert len(self.obs_indexed[agent]) == obs_space_len, f"The observation space length must be equal to the number of indexed observations. Obs indexed:{len(self.obs_indexed)} != Obs space len:{obs_space_len}. The agent {agent} has the following indexed observations: {self.obs_indexed[agent]}."
         # obs_space_len += 1
-        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+        logger.debug(f"FullySharedParametersConnector: Observation space length for agent {agent}: {obs_space_len}")
         
         return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
@@ -198,7 +198,7 @@ class FullySharedParametersConnector(BaseConnector):
         """
         # Check that the lenght of all the dict_agents_obs key values are the same:
         if len(set([len(value) for value in dict_agents_obs.values()])) != 1:
-            msg = "The lenght of all the dict_agents_obs key values must be the same when you use homogeneous fully shared parameters policy."
+            msg = "FullySharedParametersConnector: The lenght of all the dict_agents_obs key values must be the same when you use homogeneous fully shared parameters policy."
             logger.error(msg)
             raise ValueError(msg)
         
@@ -210,12 +210,12 @@ class FullySharedParametersConnector(BaseConnector):
                 self.agent_ids.update({agent: id})
                 id += 1
                 if len(self.agent_ids) > self.number_of_agents_total:
-                    msg = f"The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}."
+                    msg = f"FullySharedParametersConnector: The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}."
                     logger.error(msg)
                     raise ValueError(msg)
 
             if len(self.agent_ids) > self.number_of_agents_total:
-                msg = f"The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}."
+                msg = f"FullySharedParametersConnector: The agents found were: {env_config['agents_config'].keys()} with a total of {len(env_config['agents_config'].keys())}, that are greather than {self.number_of_agents_total}."
                 logger.error(msg)
                 raise ValueError(msg)
         
@@ -227,7 +227,7 @@ class FullySharedParametersConnector(BaseConnector):
                     self.actuator_ids.update({observation_utils.get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
                     id += 1
                     if len(self.actuator_ids) > self.number_of_actuators_total:
-                        msg = f"The actuators found were: {self.actuator_ids.keys()} with a total of {len(self.actuator_ids.keys())}, that are greather than {self.number_of_actuators_total}."
+                        msg = f"FullySharedParametersConnector: The actuators found were: {self.actuator_ids.keys()} with a total of {len(self.actuator_ids.keys())}, that are greather than {self.number_of_actuators_total}."
                         logger.error(msg)
                         raise ValueError(msg)
         
@@ -242,8 +242,8 @@ class FullySharedParametersConnector(BaseConnector):
                 actuator_name = observation_utils.get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
                 actuator_names[agent].update({actuator_name: agent_states[agent].get(actuator_name, -2)})
                 if actuator_names[agent][actuator_name] == -2:
-                    logger.info(f"Looking for actuator: {actuator_name}")
-                    logger.info(f"Available keys in agent_states[{agent}]: {agent_states[agent].keys()}")
+                    logger.info(f"FullySharedParametersConnector: Looking for actuator: {actuator_name}")
+                    logger.info(f"FullySharedParametersConnector: Available keys in agent_states[{agent}]: {agent_states[agent].keys()}")
                     time.sleep(10)
                     
             
@@ -263,7 +263,7 @@ class FullySharedParametersConnector(BaseConnector):
                         agent_id_vector,
                         dict_agents_obs[agent]
                     ),
-                    dtype='float32'
+                    dtype='float64'
                 )
             
         # if apply, add the actuator state as a vector of all agents.
@@ -286,7 +286,7 @@ class FullySharedParametersConnector(BaseConnector):
                         dict_agents_obs[agent],
                         actuator_id_vector,
                     ),
-                    dtype='float32'
+                    dtype='float64'
                 )
             
         return dict_agents_obs, infos, True

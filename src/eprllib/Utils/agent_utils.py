@@ -28,19 +28,19 @@ def get_agent_name(state: Dict[str, Any]|List[str]) -> str:
     if isinstance(state, List):
         # Check if the list is empty
         if not state:
-            msg = "The state list is empty"
+            msg = "AgentUtils: The state list is empty"
             logger.error(msg)
             raise ValueError(msg)
         return state[0].split(':')[0]
     elif isinstance(state, Dict):
         # Check if the dictionary is empty
         if not state:
-            msg = "The state dictionary is empty"
+            msg = "AgentUtils: The state dictionary is empty"
             logger.error(msg)
             raise ValueError(msg)
         return list(state.keys())[0].split(':')[0]
     else:
-        msg = f"The state must be a dictionary or a list, but got a {type(state).__name__}"
+        msg = f"AgentUtils: The state must be a dictionary or a list, but got a {type(state).__name__}"
         logger.error(msg)
         raise TypeError(msg)
 
@@ -57,13 +57,13 @@ def _validate_type(value: Any, expected_type: Any, path: str = "") -> None:
             value = tuple(value)
         
         elif not isinstance(value, tuple):
-            msg = f"Expected tuple at {path}, got {type(value).__name__}"
+            msg = f"AgentUtils: Expected tuple at {path}, got {type(value).__name__}"
             logger.error(msg)
             raise TypeError(msg)
         
         expected_types = get_args(expected_type)
         if len(value) != len(expected_types):
-            msg = f"Expected tuple with {len(expected_types)} elements at {path}, got {len(value)}"
+            msg = f"AgentUtils: Expected tuple with {len(expected_types)} elements at {path}, got {len(value)}"
             logger.error(msg)
             raise ValueError(msg)
         
@@ -72,7 +72,7 @@ def _validate_type(value: Any, expected_type: Any, path: str = "") -> None:
     
     elif origin is dict:
         if not isinstance(value, dict):
-            msg = f"Expected dict at {path}, got {type(value).__name__}"
+            msg = f"AgentUtils: Expected dict at {path}, got {type(value).__name__}"
             logger.error(msg)
             raise TypeError(msg)
         
@@ -83,7 +83,7 @@ def _validate_type(value: Any, expected_type: Any, path: str = "") -> None:
     
     elif origin is list:
         if not isinstance(value, list):
-            msg = f"Expected list at {path}, got {type(value).__name__}"
+            msg = f"AgentUtils: Expected list at {path}, got {type(value).__name__}"
             logger.error(msg)
             raise TypeError(msg)
         
@@ -95,7 +95,7 @@ def _validate_type(value: Any, expected_type: Any, path: str = "") -> None:
         pass  # Any type is always valid
     
     elif not isinstance(value, expected_type):
-        msg = f"Expected {expected_type.__name__} at {path}, got {type(value).__name__}"
+        msg = f"AgentUtils: Expected {expected_type.__name__} at {path}, got {type(value).__name__}"
         logger.error(msg)
         raise TypeError(msg)
 
@@ -115,7 +115,7 @@ def config_validation(config: Dict[str, Any], required_keys: Dict[str, Any]) -> 
     """
     for key, expected_type in required_keys.items():
         if key not in config:
-            msg = f"Missing required key: '{key}'"
+            msg = f"AgentUtils: Missing required key: '{key}'"
             logger.error(msg)
             raise ValueError(msg)
         

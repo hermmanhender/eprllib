@@ -49,7 +49,7 @@ class BaseConnector:
         :return: Agent observation spaces.
         :rtype: gym.spaces.Space
         """
-        msg = "This method must be implemented in the child class."
+        msg = "BaseConnector: This method must be implemented in the child class."
         logger.error(msg)
         raise NotImplementedError(msg)
     
@@ -68,7 +68,7 @@ class BaseConnector:
         :return: Agent observation spaces.
         :rtype: gym.spaces.Space
         """
-        msg = "This method must be implemented in the child class."
+        msg = "BaseConnector: This method must be implemented in the child class."
         logger.error(msg)
         raise NotImplementedError(msg)
     

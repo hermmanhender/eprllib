@@ -48,27 +48,27 @@ class AgentSpec:
             NotImplementedError: _description_
         """
         if observation is None:
-            logger.info("No observation defined. Using default observation.")
+            logger.info("AgentSpec: No observation defined. Using default observation.")
             self.observation: ObservationSpec|Dict[str, Any] = ObservationSpec()
         else:
             self.observation = observation
         if filter is None:
-            logger.info("No filter defined. Using default filter.")
+            logger.info("AgentSpec: No filter defined. Using default filter.")
             self.filter: FilterSpec|Dict[str, Any] = FilterSpec()
         else:
             self.filter = filter
         if action is None:
-            logger.info("No action defined. Using default action.")
+            logger.info("AgentSpec: No action defined. Using default action.")
             self.action: ActionSpec|Dict[str, Any] = ActionSpec()
         else:
             self.action = action
         if trigger is None:
-            logger.info("No trigger defined. Using default trigger.")
+            logger.info("AgentSpec: No trigger defined. Using default trigger.")
             self.trigger: TriggerSpec|Dict[str, Any] = TriggerSpec()
         else:
             self.trigger = trigger
         if reward is None:
-            logger.info("No reward defined. Using default reward.")
+            logger.info("AgentSpec: No reward defined. Using default reward.")
             self.reward: RewardSpec|Dict[str, Any] = RewardSpec()
         else:
             self.reward = reward
@@ -90,27 +90,32 @@ class AgentSpec:
         if isinstance(self.observation, ObservationSpec):
             self.observation = self.observation.build()
         else:
-            logger.error(f"The observation must be defined as an ObservationSpec object but {type(self.observation)} was given.")
-            raise ValueError(f"The observation must be defined as an ObservationSpec object but {type(self.observation)} was given.")
+            msg = f"AgentSpec: The observation must be defined as an ObservationSpec object but {type(self.observation)} was given."
+            logger.error(msg)
+            raise ValueError(msg)
         if isinstance(self.filter, FilterSpec):
             self.filter = self.filter.build()
         else:
-            logger.error(f"The filter must be defined as a FilterSpec object but {type(self.filter)} was given.")
-            raise ValueError(f"The filter must be defined as a FilterSpec object but {type(self.filter)} was given.")
+            msg = f"AgentSpec: The filter must be defined as a FilterSpec object but {type(self.filter)} was given."
+            logger.error(msg)
+            raise ValueError(msg)
         if isinstance(self.action, ActionSpec):
             self.action = self.action.build()
         else:
-            logger.error(f"The action must be defined as an ActionSpec object but {type(self.action)} was given.")
-            raise ValueError(f"The action must be defined as an ActionSpec object but {type(self.action)} was given.")
+            msg = f"AgentSpec: The action must be defined as an ActionSpec object but {type(self.action)} was given."
+            logger.error(msg)
+            raise ValueError(msg)
         if isinstance(self.trigger, TriggerSpec):
             self.trigger = self.trigger.build()
         else:
-            logger.error(f"The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given.")
-            raise ValueError(f"The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given.")
+            msg = f"AgentSpec: The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given."
+            logger.error(msg)
+            raise ValueError(msg)
         if isinstance(self.reward, RewardSpec):
             self.reward = self.reward.build()
         else:
-            logger.error(f"The reward must be defined as a RewardSpec object but {type(self.reward)} was given.")
-            raise ValueError(f"The reward must be defined as a RewardSpec object but {type(self.reward)} was given.")
+            msg = f"AgentSpec: The reward must be defined as a RewardSpec object but {type(self.reward)} was given."
+            logger.error(msg)
+            raise ValueError(msg)
 
         return vars(self)

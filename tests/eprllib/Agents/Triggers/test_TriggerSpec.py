@@ -74,7 +74,7 @@ class TestTriggerspec:
         trigger_spec = TriggerSpec()
         with pytest.raises(KeyError) as excinfo:
             trigger_spec['invalid_key'] = 'some_value'
-        assert str(excinfo.value) == "'Invalid key: invalid_key.'"
+        assert str(excinfo.value) == "'TriggerSpec: Invalid key: invalid_key.'"
 
     def test___setitem___invalid_key_2(self):
         """
@@ -90,7 +90,7 @@ class TestTriggerspec:
         with pytest.raises(KeyError) as excinfo:
             trigger_spec[invalid_key] = "some_value"
 
-        assert str(excinfo.value) == f"'Invalid key: {invalid_key}.'"
+        assert str(excinfo.value) == f"'TriggerSpec: Invalid key: {invalid_key}.'"
 
     def test___setitem___valid_key(self):
         """
@@ -196,4 +196,4 @@ class TestTriggerspec:
         trigger_spec = TriggerSpec()
         with pytest.raises(ValueError) as context:
             trigger_spec.build()
-        assert str(context.value) == "The trigger function must be defined."
+        assert str(context.value) == "TriggerSpec: The trigger function must be defined."

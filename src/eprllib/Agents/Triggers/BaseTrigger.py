@@ -44,7 +44,7 @@ class BaseTrigger:
         Returns:
             gym.Space: Action space of the environment.
         """
-        msg = "This method should be implemented in the child class."
+        msg = "BaseTrigger: This method should be implemented in the child class."
         logger.error(msg)
         raise NotImplementedError
     
@@ -64,7 +64,7 @@ class BaseTrigger:
         Returns:
             Dict[str, Any]: Transformed actions for the actuators.
         """
-        msg = "This method should be implemented in the child class."
+        msg = "BaseTrigger: This method should be implemented in the child class."
         logger.error(msg)
         raise NotImplementedError(msg)
     

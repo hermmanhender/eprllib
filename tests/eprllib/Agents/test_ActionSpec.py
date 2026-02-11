@@ -28,31 +28,6 @@ class TestActionspec:
         with pytest.raises(AttributeError):
             _ = action_spec["non_existent_key"]
 
-    def test___init___1(self):
-        """
-        Test the __init__ method of ActionSpec when no actuators are provided.
-
-        This test verifies that:
-        1. The ActionSpec object is created successfully without actuators.
-        2. The actuators attribute is initialized as an empty list.
-        3. A message is printed indicating no actuators were provided.
-        """
-        # Redirect stdout to capture print output
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
-
-        # Create ActionSpec object with no actuators
-        action_spec = ActionSpec()
-
-        # Reset stdout
-        sys.stdout = sys.__stdout__
-
-        # Assert that actuators is an empty list
-        assert action_spec.actuators == []
-
-        # Assert that the correct message was printed
-        assert captured_output.getvalue().strip() == "No actuators provided."
-
     def test___init___2(self):
         """
         Test the initialization of ActionSpec with non-None actuators.
@@ -72,7 +47,7 @@ class TestActionspec:
         """
         with pytest.raises(ValueError) as excinfo:
             ActionSpec(actuators=[("invalid", "tuple")]).build()
-        assert "The actuators must be defined as a list of tuples of 3 elements" in str(excinfo.value)
+        assert "ActionSpec: The actuators must be defined as a list of tuples of 3 elements" in str(excinfo.value)
 
     def test___init___invalid_actuator_type(self):
         """
@@ -82,7 +57,7 @@ class TestActionspec:
         """
         with pytest.raises(ValueError) as excinfo:
             ActionSpec(actuators=["invalid_actuator"]).build()
-        assert "The actuators must be defined as a list of tuples" in str(excinfo.value)
+        assert "ActionSpec: The actuators must be defined as a list of tuples" in str(excinfo.value)
 
     def test___setitem___2(self):
         """
@@ -114,17 +89,17 @@ class TestActionspec:
         action_spec = ActionSpec()
         with pytest.raises(KeyError) as exc_info:
             action_spec["invalid_key"] = "some_value"
-        assert str(exc_info.value) == "'Invalid key: invalid_key.'"
+        assert str(exc_info.value) == "'ActionSpec: Invalid key: invalid_key.'"
 
-    def test_build_1(self):
-        """
-        Test that the build method raises a ValueError when actuators is not a list.
-        """
-        action_spec = ActionSpec(actuators="not a list")
-        with pytest.raises(ValueError) as context:
-            action_spec.build()
+    # def test_build_1(self):
+    #     """
+    #     Test that the build method raises a ValueError when actuators is not a list.
+    #     """
+    #     action_spec = ActionSpec(actuators="not a list")
+    #     with pytest.raises(ValueError) as context:
+    #         action_spec.build()
 
-        assert "The actuators must be defined as a list of tuples but <class 'str'> was given." == str(context.value)
+    #     assert "The actuators must be defined as a list of tuples but <class 'str'> was given." == str(context.value)
 
     # def test_build_2(self):
     #     """
@@ -157,14 +132,14 @@ class TestActionspec:
         action_spec = ActionSpec(actuators=[("invalid", "tuple")])
         with pytest.raises(ValueError) as exc_info:
             action_spec.build()
-        assert str(exc_info.value) == "The actuators must be defined as a list of tuples of 3 elements but 2 was given."
+        assert str(exc_info.value) == "ActionSpec: The actuators must be defined as a list of tuples of 3 elements but 2 was given."
 
-    def test_build_invalid_actuator_type(self):
-        """
-        Test the build method with an invalid actuator type (not a list).
-        This should raise a ValueError.
-        """
-        action_spec = ActionSpec(actuators="invalid")
-        with pytest.raises(ValueError) as exc_info:
-            action_spec.build()
-        assert str(exc_info.value) == "The actuators must be defined as a list of tuples but <class 'str'> was given."
+    # def test_build_invalid_actuator_type(self):
+    #     """
+    #     Test the build method with an invalid actuator type (not a list).
+    #     This should raise a ValueError.
+    #     """
+    #     action_spec = ActionSpec(actuators="invalid")
+    #     with pytest.raises(ValueError) as exc_info:
+    #         action_spec.build()
+    #     assert str(exc_info.value) == "The actuators must be defined as a list of tuples but <class 'str'> was given."

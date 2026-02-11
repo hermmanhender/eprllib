@@ -29,7 +29,7 @@ class TestAgentspec:
         """
         with pytest.raises(NotImplementedError) as e:
             RewardSpec().build()
-        assert str(e.value) == "No reward function provided."
+        assert str(e.value) == "RewardSpec: No reward function provided."
 
     def test___setitem___1(self):
         """
@@ -40,7 +40,7 @@ class TestAgentspec:
         with pytest.raises(KeyError)as e:
             reward_spec[key] = 'test_value'
             
-        assert str(e.value) == f"'Invalid key: {key}.'"
+        assert str(e.value) == f"'RewardSpec: Invalid key: {key}.'"
 
     def test_build_1(self):
         """

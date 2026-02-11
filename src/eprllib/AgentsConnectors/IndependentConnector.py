@@ -22,4 +22,4 @@ class IndependentConnector(DefaultConnector):
             connector_fn_config (Dict[str, Any]): Configuration dictionary for the multi-agent function.
         """
         super().__init__(connector_fn_config)
-        logger.debug("IndependentConnector initialized with configuration: %s", connector_fn_config)
+        logger.debug("IndependentConnector: IndependentConnector initialized with configuration: %s", connector_fn_config)

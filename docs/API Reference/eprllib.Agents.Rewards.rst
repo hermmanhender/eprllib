@@ -11,7 +11,4 @@
    :recursive:
 
    BaseReward
-   ComfortRewards
-   EnergyAndAshrae55SimpleModel
-   EnergyAndCEN15251
-   EnergyRewards
+   RewardSpec

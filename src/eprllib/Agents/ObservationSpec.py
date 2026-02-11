@@ -33,7 +33,7 @@ class ObservationSpec:
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
-        history_len: int = 1,
+        # history_len: int = 1,
         user_occupation_function: bool = False,
         user_occupation_forecast: bool = False,
         user_type: str = VALID_USER_TYPES[0],
@@ -102,7 +102,7 @@ class ObservationSpec:
             
             other_obs (Dict[str, float | int]): Custom observation dictionary.
             
-            history_len (int): History length for each agent.
+            history_len (int): History length for each agent. DEPRECATED.
             
             user_occupation_function (bool): Define if the user occupation function will be used. Default is False.
             
@@ -154,7 +154,7 @@ class ObservationSpec:
         self.other_obs = other_obs
         
         # History length for each agent.
-        self.history_len = history_len
+        # self.history_len = history_len
         
         # User occupation forecast profile.
         self.user_occupation_forecast = user_occupation_forecast
@@ -166,11 +166,15 @@ class ObservationSpec:
         self.user_type = user_type
         
         if user_type not in VALID_USER_TYPES:
-            raise ValueError(f"User type '{user_type}' is not valid. Options: {VALID_USER_TYPES}")
+            msg = f"ObservationSpec: User type '{user_type}' is not valid. Options: {VALID_USER_TYPES}"
+            logger.error(msg)
+            raise ValueError(msg)
         
         self.zone_type = zone_type
         if zone_type not in VALID_ZONE_TYPES:
-            raise ValueError(f"Zone type '{zone_type}' is not valid. Options: {VALID_ZONE_TYPES}")
+            msg = f"ObservationSpec: Zone type '{zone_type}' is not valid. Options: {VALID_ZONE_TYPES}"
+            logger.error(msg)
+            raise ValueError(msg)
         
         self.confidence_level = confidence_level
         
@@ -185,8 +189,9 @@ class ObservationSpec:
     def __setitem__(self, key:str, value:Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            logger.error(f"Invalid key: {key}")
-            raise KeyError(f"Invalid key: {key}")
+            msg = f"ObservationSpec: Invalid key: {key}."
+            logger.error(msg)
+            raise KeyError(msg)
         setattr(self, key, value)
         
     
@@ -198,7 +203,7 @@ class ObservationSpec:
         admissible_values = list(SIMULATION_PARAMETERS.keys())
         for key in self.simulation_parameters.keys():
             if key not in admissible_values:
-                msg = f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}"
+                msg = f"ObservationSpec: The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}"
                 logger.error(msg)
                 raise ValueError(msg)
         
@@ -206,7 +211,7 @@ class ObservationSpec:
         admissible_values = list(ZONE_SIMULATION_PARAMETERS.keys())
         for key in self.zone_simulation_parameters.keys():
             if key not in admissible_values:
-                msg = f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}"
+                msg = f"ObservationSpec: The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}"
                 logger.error(msg)
                 raise ValueError(msg)
         
@@ -214,21 +219,23 @@ class ObservationSpec:
             admissible_values = list(PREDICTION_VARIABLES.keys())
             for key in self.prediction_variables.keys():
                 if key not in admissible_values:
-                    msg = f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}"
+                    msg = f"ObservationSpec: The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}"
                     logger.error(msg)
                     raise ValueError(msg)
         
         if self.weather_prediction_hours <= 0 or self.weather_prediction_hours > 24:
             self.weather_prediction_hours = PREDICTION_HOURS
-            logger.warning(f"The variable 'weather_prediction_hours' must be between 1 and 24. It is taken the value of {self.weather_prediction_hours}. The value of 24 is used.")
+            logger.warning(f"ObservationSpec: The variable 'weather_prediction_hours' must be between 1 and 24. It is taken the value of {self.weather_prediction_hours}. The value of 24 is used.")
         
         if self.occupation_prediction_hours <= 0 or self.occupation_prediction_hours > 24:
                 self.occupation_prediction_hours = 24
-                logger.warning(f"The variable 'occupation_prediction_hours' must be between 1 and 24. It is taken the value of {self.occupation_prediction_hours}. The value of 24 is used.")
+                logger.warning(f"ObservationSpec: The variable 'occupation_prediction_hours' must be between 1 and 24. It is taken the value of {self.occupation_prediction_hours}. The value of 24 is used.")
         
         if self.user_occupation_forecast:
             if self.occupation_schedule is None:
-                raise ValueError("occupation_schedule must be provided if user_occupation_forecast is True.")
+                msg = "ObservationSpec: occupation_schedule must be provided if user_occupation_forecast is True."
+                logger.error(msg)
+                raise ValueError(msg)
             else:
                 assert isinstance(self.occupation_schedule, tuple), "occupation_schedule must be a tuple."
         # Check that at least one variable/meter/actuator/parameter is defined.
@@ -247,11 +254,13 @@ class ObservationSpec:
         counter += len(self.other_obs)
         
         if counter == 0:
-            raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
+            msg = "ObservationSpec: At least one variable/meter/actuator/parameter must be defined in the observation."
+            logger.error(msg)
+            raise ValueError(msg)
         
-        if self.history_len <= 0:
-            self.history_len = 1
-            logger.warning(f"The variable 'history_len' must be greater than 0. It is taken the value of 1.")
+        # if self.history_len <= 0:
+        #     self.history_len = 1
+        #     logger.warning(f"The variable 'history_len' must be greater than 0. It is taken the value of 1.")
         
         return vars(self)
             

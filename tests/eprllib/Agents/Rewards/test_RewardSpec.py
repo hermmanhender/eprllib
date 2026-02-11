@@ -68,7 +68,7 @@ class TestRewardspec:
         reward_spec = RewardSpec()
         with pytest.raises(KeyError) as excinfo:
             reward_spec['invalid_key'] = 'some_value'
-        assert str(excinfo.value) == "'Invalid key: invalid_key.'"
+        assert str(excinfo.value) == "'RewardSpec: Invalid key: invalid_key.'"
 
     def test___setitem___invalid_key_2(self):
         """
@@ -82,7 +82,7 @@ class TestRewardspec:
         with pytest.raises(KeyError) as excinfo:
             reward_spec['invalid_key'] = 'some_value'
 
-        assert str(excinfo.value) == "'Invalid key: invalid_key.'"
+        assert str(excinfo.value) == "'RewardSpec: Invalid key: invalid_key.'"
 
     # def test_build_3(self):
     #     """
@@ -171,14 +171,14 @@ class TestRewardspec:
         reward_spec = RewardSpec()
         with pytest.raises(NotImplementedError) as excinfo:
             reward_spec.build()
-        assert str(excinfo.value) == "No reward function provided."
+        assert str(excinfo.value) == "RewardSpec: No reward function provided."
 
     def test_build_raises_notimplementederror(self):
         """
         Test that build() raises NotImplementedError when reward_fn is NotImplemented.
         """
         reward_spec = RewardSpec()
-        with pytest.raises(NotImplementedError, match="No reward function provided."):
+        with pytest.raises(NotImplementedError, match="RewardSpec: No reward function provided."):
             reward_spec.build()
 
     # def test_init_with_non_basereward_subclass(self):

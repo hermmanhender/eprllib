@@ -75,7 +75,7 @@ class CentralizedConnector(BaseConnector):
         assert obs_space_len > 0, "The observation space length must be greater than 0."
         assert len(self.obs_indexed[agent]) == obs_space_len, "The observation space length must be equal to the number of indexed observations."
         # obs_space_len += 1
-        logger.debug(f"Observation space length for agent {agent}: {obs_space_len}")
+        logger.debug(f"CentralizedConnector: Observation space length for agent {agent}: {obs_space_len}")
         
         return Box(float("-inf"), float("inf"), (obs_space_len, ))
     
@@ -112,7 +112,7 @@ class CentralizedConnector(BaseConnector):
         # agents in this timestep
         agent_list = [key for key in dict_agents_obs.keys()]
         # Add agent indicator for the observation for each agent
-        agents_obs = {"central_agent": np.array([], dtype='float32')}
+        agents_obs = {"central_agent": np.array([], dtype='float64')}
         
         for agent in agent_list:
             agents_obs["central_agent"] = np.concatenate(
@@ -120,7 +120,7 @@ class CentralizedConnector(BaseConnector):
                     agents_obs["central_agent"],
                     dict_agents_obs[agent]
                 ),
-                dtype='float32'
+                dtype='float64'
             )
             
         return agents_obs, infos, True
