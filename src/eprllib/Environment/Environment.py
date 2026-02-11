@@ -464,8 +464,8 @@ class Environment(MultiAgentEnv):
                 #     next_obs_to_reward = np.array(obs[agent])
                 # ============================================================================
                 
-                obs_to_reward = np.array(self.last_obs[agent])
-                next_obs_to_reward = np.array(obs[agent])
+                obs_to_reward = self.last_obs[agent]
+                next_obs_to_reward = obs[agent]
                     
                 reward_dict[agent] = reward_fn_instance.get_reward(
                     obs_to_reward,
