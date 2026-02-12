@@ -1,5 +1,5 @@
 """
-Agents connectors
+Connectors
 ==================
 
 This module contains connectors for agents, which are responsible for combining and transforming 

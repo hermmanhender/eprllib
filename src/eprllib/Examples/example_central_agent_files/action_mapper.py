@@ -1,18 +1,18 @@
 """
-Exhaust Fan triggers
-=====================
+Exhaust Fan ActionMappers
+============================
 
-This module contains classes to implement triggers for controlling exhaust fan actuators in the environment.
+This module contains classes to implement ActionMappers for controlling exhaust fan actuators in the environment.
 """
 
 import gymnasium as gym
 from typing import Any, Dict, List, Tuple, Optional
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name
 
-class CentralAgentTrigger(BaseTrigger):
+class CentralAgentActionMapper(BaseActionMapper):
     REQUIRED_KEYS = {
         "exhaust_fan_actuator": Tuple[str, str, str],
         "window_actuator": Tuple[str, str, str],
@@ -21,13 +21,13 @@ class CentralAgentTrigger(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the Exhaust Fan actions.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - modes (List[float]): The flow factor to modify the maximum flow of the exhaust fan. The order 
                 in the list corresponds with mode of the Fan, usually mode 0 is off and mode 1 has the lower 
@@ -35,9 +35,9 @@ class CentralAgentTrigger(BaseTrigger):
                 - exhaust_fan_actuator (Tuple[str, str, str]): The configuration for the exhaust fan actuator.
         """
         # Validate the config.
-        # config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        # config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: str = "None"
         self.modes: List[float] = [0, 0.0600, 0.1313, 0.2093, 0.2973]
@@ -50,7 +50,7 @@ class CentralAgentTrigger(BaseTrigger):
             if mode < 0 or mode > 1:
                 raise ValueError("The modes must be in the range [0, 1].")
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -61,7 +61,7 @@ class CentralAgentTrigger(BaseTrigger):
         
         return gym.spaces.MultiDiscrete([len(self.modes), 5, 2])
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -78,21 +78,21 @@ class CentralAgentTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.exhaust_fan_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['exhaust_fan_actuator'][0],
-                self.trigger_fn_config['exhaust_fan_actuator'][1],
-                self.trigger_fn_config['exhaust_fan_actuator'][2]
+                self.action_mapper_config['exhaust_fan_actuator'][0],
+                self.action_mapper_config['exhaust_fan_actuator'][1],
+                self.action_mapper_config['exhaust_fan_actuator'][2]
             )
             self.window_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['window_actuator'][0],
-                self.trigger_fn_config['window_actuator'][1],
-                self.trigger_fn_config['window_actuator'][2]
+                self.action_mapper_config['window_actuator'][0],
+                self.action_mapper_config['window_actuator'][1],
+                self.action_mapper_config['window_actuator'][2]
             )
             self.hvac_availability_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['hvac_availability_actuator'][0],
-                self.trigger_fn_config['hvac_availability_actuator'][1],
-                self.trigger_fn_config['hvac_availability_actuator'][2]
+                self.action_mapper_config['hvac_availability_actuator'][0],
+                self.action_mapper_config['hvac_availability_actuator'][1],
+                self.action_mapper_config['hvac_availability_actuator'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -111,7 +111,7 @@ class CentralAgentTrigger(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 

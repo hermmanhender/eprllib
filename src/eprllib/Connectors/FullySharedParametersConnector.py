@@ -20,7 +20,7 @@ import time
 import numpy as np
 from gymnasium.spaces import Box
 from typing import Any, Dict, Tuple, Optional
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 import eprllib.Utils.observation_utils as observation_utils
 from eprllib.Utils.connector_utils import (
@@ -194,7 +194,7 @@ class FullySharedParametersConnector(BaseConnector):
             Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]: Returns a Tuple with the agents observations addapted to
             fully shared parameter policy, the infos dict updated, and a flag to tell that is the lowest-level agent (that means
             that the actions obtained after apply this observation into the policy shall be implemened in an actuator after 
-            trigger the policy action in the ActionFunction of the agent.)
+            the policy action in the ActionFunction of the agent.)
         """
         # Check that the lenght of all the dict_agents_obs key values are the same:
         if len(set([len(value) for value in dict_agents_obs.values()])) != 1:

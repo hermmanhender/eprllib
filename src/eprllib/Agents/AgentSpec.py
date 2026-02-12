@@ -3,9 +3,9 @@ Defining agents
 ================
 
 This module implements the classes to define agents. Agents are defined by the ``AgentSpec`` class. This class
-contains the observation, filter, action, trigger, and reward specifications. The observation is defined by the
+contains the observation, filter, action, action_mapper, and reward specifications. The observation is defined by the
 ``ObservationSpec`` class. The filter is defined by the ``FilterSpec`` class. The action is defined by the ``ActionSpec`` class.
-The trigger is defined by the ``TriggerSpec`` class. The reward is defined by the ``RewardSpec`` class.
+The action_mapper is defined by the ``ActionMapperSpec`` class. The reward is defined by the ``RewardSpec`` class.
 
 The ``AgentSpec`` class has a method called ``build`` that is used to build the ``AgentSpec`` object. This method is used to
 validate the properties of the object and to return the object as a dictionary. It is used internally when you build
@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional
 from eprllib.Agents.Rewards.RewardSpec import RewardSpec
 from eprllib.Agents.Filters.FilterSpec import FilterSpec
 from eprllib.Agents.ActionSpec import ActionSpec
-from eprllib.Agents.Triggers.TriggerSpec import TriggerSpec
+from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
 from eprllib.Agents.ObservationSpec import ObservationSpec
 from eprllib import logger
 
@@ -28,7 +28,7 @@ class AgentSpec:
         observation: Optional[ObservationSpec] = None,
         filter: Optional[FilterSpec] = None,
         action: Optional[ActionSpec] = None,
-        trigger: Optional[TriggerSpec] = None,
+        action_mapper: Optional[ActionMapperSpec] = None,
         reward: Optional[RewardSpec] = None,
     **kwargs: Any) -> None:
         """
@@ -39,7 +39,7 @@ class AgentSpec:
             the ObservationSpec class or a Dict. Defaults to NotImplemented.
             filter (FilterSpec, optional): Defines the filter for this agent using FilterSpec or a Dict. Defaults to None.
             action (ActionSpec, optional): Defines the action characteristics of the agent using ActionSpec or a Dict. Defaults to NotImplemented.
-            trigger (TriggerSpec, optional): Defines the trigger for the agent using TriggerSpec or a Dict. Defaults to None.
+            action_mapper (ActionMapperSpec, optional): Defines the action_mapper for the agent using ActionMapperSpec or a Dict. Defaults to None.
             reward (RewardSpec, optional): Defines the reward elements of the agent using RewardSpec or a Dict. Defaults to NotImplemented.
 
         Raises:
@@ -62,11 +62,11 @@ class AgentSpec:
             self.action: ActionSpec|Dict[str, Any] = ActionSpec()
         else:
             self.action = action
-        if trigger is None:
-            logger.info("AgentSpec: No trigger defined. Using default trigger.")
-            self.trigger: TriggerSpec|Dict[str, Any] = TriggerSpec()
+        if action_mapper is None:
+            logger.info("AgentSpec: No action_mapper defined. Using default action_mapper.")
+            self.action_mapper: ActionMapperSpec|Dict[str, Any] = ActionMapperSpec()
         else:
-            self.trigger = trigger
+            self.action_mapper = action_mapper
         if reward is None:
             logger.info("AgentSpec: No reward defined. Using default reward.")
             self.reward: RewardSpec|Dict[str, Any] = RewardSpec()
@@ -105,10 +105,10 @@ class AgentSpec:
             msg = f"AgentSpec: The action must be defined as an ActionSpec object but {type(self.action)} was given."
             logger.error(msg)
             raise ValueError(msg)
-        if isinstance(self.trigger, TriggerSpec):
-            self.trigger = self.trigger.build()
+        if isinstance(self.action_mapper, ActionMapperSpec):
+            self.action_mapper = self.action_mapper.build()
         else:
-            msg = f"AgentSpec: The trigger must be defined as a TriggerSpec object but {type(self.trigger)} was given."
+            msg = f"AgentSpec: The action_mapper must be defined as a ActionMapperSpec object but {type(self.action_mapper)} was given."
             logger.error(msg)
             raise ValueError(msg)
         if isinstance(self.reward, RewardSpec):

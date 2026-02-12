@@ -58,11 +58,11 @@ from eprllib.Agents.AgentSpec import (
     ObservationSpec,
     RewardSpec,
     ActionSpec,
-    TriggerSpec,
+    ActionMapperSpec,
     FilterSpec
 )
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointActionMapperDiscreteAndAvailabilityActionMapper
 
 from eprllib.examples.example_thermostat_files.reward_function import EnergyAndASHRAE55SimpleModel
 from eprllib.examples.example_thermostat_files.episode_fn import task_cofiguration
@@ -133,9 +133,9 @@ eprllib_config.agents(
                 filter_fn = DefaultFilter,
                 filter_fn_config = {},
             ),
-            trigger= TriggerSpec(
-                trigger_fn = DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-                trigger_fn_config = {
+            action_mapper= ActionMapperSpec(
+                action_mapper = DualSetpointActionMapperDiscreteAndAvailabilityActionMapper,
+                action_mapper_config = {
                     "agent_name": "HVAC",
                     'temperature_range': (18, 28),
                     'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),

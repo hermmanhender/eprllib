@@ -57,12 +57,12 @@ from eprllib.Agents.AgentSpec import (
     ObservationSpec,
     RewardSpec,
     ActionSpec,
-    TriggerSpec,
+    ActionMapperSpec,
     FilterSpec
 )
 from eprllib.Agents.Filters.FullySharedParametersFilter import FullySharedParametersFilter
-from eprllib.Agents.Triggers.WindowsOpeningTriggers import WindowsOpeningTrigger
-from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+from eprllib.Agents.ActionMappers.WindowsOpeningActionMappers import WindowsOpeningActionMapper
+from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointActionMapperDiscreteAndAvailabilityActionMapper
 
 from eprllib.examples.example_thermostat_files.reward_function import EnergyAndASHRAE55SimpleModel
 from eprllib.examples.example_thermostat_files.episode_fn import task_cofiguration
@@ -138,9 +138,9 @@ eprllib_config.agents(
                 filter_fn = FullySharedParametersFilter,
                 filter_fn_config = {},
             ),
-            trigger= TriggerSpec(
-                trigger_fn = WindowsOpeningTrigger,
-                trigger_fn_config = {
+            action_mapper= ActionMapperSpec(
+                action_mapper = WindowsOpeningActionMapper,
+                action_mapper_config = {
                     'window_actuator': ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_north")
                 },
             ),
@@ -196,9 +196,9 @@ eprllib_config.agents(
                 filter_fn = FullySharedParametersFilter,
                 filter_fn_config = {},
             ),
-            trigger= TriggerSpec(
-                trigger_fn = WindowsOpeningTrigger,
-                trigger_fn_config = {
+            action_mapper= ActionMapperSpec(
+                action_mapper = WindowsOpeningActionMapper,
+                action_mapper_config = {
                     'window_actuator': ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_south")
                 },
             ),
@@ -256,9 +256,9 @@ eprllib_config.agents(
         #         filter_fn = FullySharedParametersFilter,
         #         filter_fn_config = {},
         #     ),
-        #     trigger= TriggerSpec(
-        #         trigger_fn = DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-        #         trigger_fn_config = {
+        #     action_mapper= ActionMapperSpec(
+        #         action_mapper = DualSetpointActionMapperDiscreteAndAvailabilityActionMapper,
+        #         action_mapper_config = {
         #             'temperature_range': (18, 28),
         #             'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
         #             'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),

@@ -1,6 +1,6 @@
 """
-HVAC Systems actuators triggers
-================================
+HVAC Systems actuators ActionMappers
+======================================
 
 System Node Setpoints
 ----------------------
@@ -32,13 +32,13 @@ cannot control to meet the setpoints on a node, the actuator will do nothing.
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, List, Tuple, Optional
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
-class SystemNodeSetpointsTemperatureSetpoint(BaseTrigger):
+class SystemNodeSetpointsTemperatureSetpoint(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "variable_range": Tuple[int|float, int|float],
         "actuator_config": Tuple[str, str, str]
@@ -46,30 +46,30 @@ class SystemNodeSetpointsTemperatureSetpoint(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the “Air Mass Flow Rate” (supply air) action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - variable_range (Tuple[int, int]): The range for variable.
                 - actuator_config (Tuple[str, str, str]): The configuration for the actuator.
                 
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: Optional[str] = None
-        air_mass_flow_rate_range: Tuple[float|int, float|int] = trigger_fn_config['variable_range']
+        air_mass_flow_rate_range: Tuple[float|int, float|int] = action_mapper_config['variable_range']
         self.air_mass_flow_rate_range_max: float|int = max(air_mass_flow_rate_range)
         self.air_mass_flow_rate_range_min: float|int = min(air_mass_flow_rate_range)
         self.ideal_loads_air_system_actuator = None
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -79,7 +79,7 @@ class SystemNodeSetpointsTemperatureSetpoint(BaseTrigger):
         """
         return gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -96,9 +96,9 @@ class SystemNodeSetpointsTemperatureSetpoint(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.ideal_loads_air_system_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_config'][0],
-                self.trigger_fn_config['actuator_config'][1],
-                self.trigger_fn_config['actuator_config'][2]
+                self.action_mapper_config['actuator_config'][0],
+                self.action_mapper_config['actuator_config'][1],
+                self.action_mapper_config['actuator_config'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -129,7 +129,7 @@ class SystemNodeSetpointsTemperatureSetpoint(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 

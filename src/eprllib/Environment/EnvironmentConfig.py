@@ -8,9 +8,9 @@ from typing import Optional, Dict, Any, Type
 from tempfile import TemporaryDirectory
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
-from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
-from eprllib.AgentsConnectors.IndependentConnector import IndependentConnector
+from eprllib.Connectors.BaseConnector import BaseConnector
+from eprllib.Connectors.DefaultConnector import DefaultConnector
+from eprllib.Connectors.IndependentConnector import IndependentConnector
 from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
 from eprllib import logger

@@ -13,9 +13,9 @@ from queue import Queue
 from ctypes import c_void_p
 from typing import Any, Dict, List, Optional, Tuple, cast
 from types import FunctionType
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.env_config_utils import EP_API_add_path
 from eprllib.Utils.observation_utils import (
     get_actuator_name,
@@ -55,7 +55,7 @@ class EnvironmentRunner:
         infos_queue: Queue[Any],
         agents: List[str],
         filter_fn: Dict[str,BaseFilter],
-        trigger_fn: Dict[str, BaseTrigger],
+        action_mapper: Dict[str, BaseActionMapper],
         connector_fn: BaseConnector
         ) -> None:
         """
@@ -69,7 +69,7 @@ class EnvironmentRunner:
             infos_queue (Queue): Queue for sending additional information.
             agents (List): List of agents in the environment.
             filter_fn (Dict[str, BaseFilter]): Dictionary of filter functions for each agent.
-            trigger_fn (Dict[str, BaseTrigger]): Dictionary of trigger functions for each agent.
+            action_mapper (Dict[str, BaseActionMapper]): Dictionary of action_mapper functions for each agent.
             connector_fn (BaseConnector): Connector function for combining agent observations.
         """
         # Asignation of variables.
@@ -104,7 +104,7 @@ class EnvironmentRunner:
         # self.infos_keys = []
         
         # Define the action and observation functions.
-        self.trigger_fn = trigger_fn
+        self.action_mapper = action_mapper
         self.filter_fn = filter_fn
         self.connector_fn = connector_fn
         
@@ -262,7 +262,7 @@ class EnvironmentRunner:
                 actions: Dict[str, int | float] = self.act_queue.get()
                 goals: Dict[str, Optional[int|float]] = {agent: None for agent in actions.keys()}
                 for agent in actions.keys():
-                    goals.update({agent: self.trigger_fn[agent].action_to_goal(actions[agent])})
+                    goals.update({agent: self.action_mapper[agent].action_to_goal(actions[agent])})
                 
                 low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
                     self.env_config,
@@ -319,7 +319,7 @@ class EnvironmentRunner:
             # considering that one agent could manage more than one actuator.
             actuator_list = [actuator for actuator in self.agent_variables_and_handles[f"{agent}_actuators"][0].keys()]
             
-            actuator_actions = self.trigger_fn[agent].agent_to_actuator_action(dict_action[agent], actuator_list)
+            actuator_actions = self.action_mapper[agent].agent_to_actuator_action(dict_action[agent], actuator_list)
             
             # Check if there is an actuator_dict_actions value equal to None.
             for actuator in actuator_list:
@@ -330,7 +330,7 @@ class EnvironmentRunner:
                 
             # Perform the actions in EnergyPlus simulation.
             for actuator in actuator_list:
-                action = self.trigger_fn[agent].get_actuator_action(actuator_actions[actuator], actuator)
+                action = self.action_mapper[agent].get_actuator_action(actuator_actions[actuator], actuator)
                 api.exchange.set_actuator_value(
                     state=state_argument,
                     actuator_handle=self.agent_variables_and_handles[f"{agent}_actuators"][1][actuator],

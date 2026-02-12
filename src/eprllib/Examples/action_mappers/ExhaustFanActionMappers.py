@@ -1,19 +1,19 @@
 """
-Exhaust Fan triggers
-=====================
+Exhaust Fan ActionMappers
+=============================
 
-This module contains classes to implement triggers for controlling exhaust fan actuators in the environment.
+This module contains classes to implement ActionMappers for controlling exhaust fan actuators in the environment.
 """
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, List, Tuple, Optional
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
-class ExhaustFanTrigger(BaseTrigger):
+class ExhaustFanActionMapper(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "modes": List[float|int],
         "exhaust_fan_actuator": Tuple[str, str, str]
@@ -21,13 +21,13 @@ class ExhaustFanTrigger(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the Exhaust Fan actions.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - modes (List[float]): The flow factor to modify the maximum flow of the exhaust fan. The order 
                 in the list corresponds with mode of the Fan, usually mode 0 is off and mode 1 has the lower 
@@ -38,12 +38,12 @@ class ExhaustFanTrigger(BaseTrigger):
             ValueError: If the configuration is not valid, or if the modes are not in the range [0, 1], or if the length of the modes is larger than 11.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name = None
-        self.modes: List[float] = trigger_fn_config['modes']
+        self.modes: List[float] = action_mapper_config['modes']
         self.exhaust_fan_actuator: Optional[str] = None
         
         #  Check if the lenght of the modes are larger than 11 (that is the action space for this class).
@@ -59,7 +59,7 @@ class ExhaustFanTrigger(BaseTrigger):
                 logger.error(msg)
                 raise ValueError(msg)
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -69,7 +69,7 @@ class ExhaustFanTrigger(BaseTrigger):
         """
         return gym.spaces.Discrete(11)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -89,9 +89,9 @@ class ExhaustFanTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.exhaust_fan_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['exhaust_fan_actuator'][0],
-                self.trigger_fn_config['exhaust_fan_actuator'][1],
-                self.trigger_fn_config['exhaust_fan_actuator'][2]
+                self.action_mapper_config['exhaust_fan_actuator'][0],
+                self.action_mapper_config['exhaust_fan_actuator'][1],
+                self.action_mapper_config['exhaust_fan_actuator'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -120,7 +120,7 @@ class ExhaustFanTrigger(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 

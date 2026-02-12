@@ -14,7 +14,7 @@ from numpy import float64
 from gymnasium.spaces import Box
 from gymnasium import Space
 from typing import Dict, Any, List, Tuple, Optional
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 from eprllib.Utils.connector_utils import (
     set_variables_in_obs,
