@@ -1,18 +1,21 @@
 """
 Specification for the observation space and parameters
 ===========================================================
-This module defines the `ObservationSpec` class, which is used to specify the configuration of observation space and parameters for agents in reinforcement learning environments.
+This module defines the `ObservationSpec` class, which is used to specify the configuration of 
+observation space and parameters for agents in reinforcement learning environments.
+
 It ensures that the observation space is properly defined and adheres to the expected interface.
 """
-import logging
-import sys
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, Any
 from eprllib.Agents import (
-    SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, 
-    PREDICTION_VARIABLES, PREDICTION_HOURS
+    SIMULATION_PARAMETERS,
+    ZONE_SIMULATION_PARAMETERS, 
+    PREDICTION_VARIABLES,
+    PREDICTION_HOURS,
+    VALID_USER_TYPES,
+    VALID_ZONE_TYPES
 )
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class ObservationSpec:
     """
@@ -20,17 +23,26 @@ class ObservationSpec:
     """
     def __init__(
         self,
-        variables: List[Tuple[str, str]] = None,
-        internal_variables: List[str] = None,
-        meters: List[str] = None,
+        variables: Optional[List[Tuple[str, str]]] = None,
+        internal_variables: Optional[List[Tuple[str, str]]] = None,
+        meters: Optional[List[str]] = None,
         simulation_parameters: Dict[str, bool] = {},
         zone_simulation_parameters: Dict[str, bool] = {},
         use_one_day_weather_prediction: bool = False,
-        prediction_hours: int = PREDICTION_HOURS,
+        weather_prediction_hours: int = PREDICTION_HOURS,
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
-        other_obs: Dict[str, float | int] = {}
-    ):
+        other_obs: Dict[str, float | int] = {},
+        # history_len: int = 1,
+        user_occupation_function: bool = False,
+        user_occupation_forecast: bool = False,
+        user_type: str = VALID_USER_TYPES[0],
+        zone_type: str = VALID_ZONE_TYPES[0],
+        occupation_schedule: Optional[Tuple[str, str, str]] = None,
+        occupation_prediction_hours: int = 24,
+        confidence_level: float = 0.95,
+        lambdaa: float = 0.05
+    ) -> None:
         """
         Construction method.
         
@@ -75,10 +87,10 @@ class ObservationSpec:
                 'system_time_step', 'zone_time_step', 'zone_time_step_number'
             
             use_one_day_weather_prediction (bool): We use the internal variables of EnergyPlus to provide with a 
-            prediction of the weather time ahead. You can specify the `prediction_hours` and the prediction variables
+            prediction of the weather time ahead. You can specify the `weather_prediction_hours` and the prediction variables
             listed on `prediction_variables`.
             
-            prediction_hours (int): Default is 24
+            weather_prediction_hours (int): Default is 24
             
             prediction_variables (Dict[str, bool]): See `use_one_day_weather_prediction`. The variables are (by default 
             all False):
@@ -86,9 +98,28 @@ class ObservationSpec:
                 'outdoor_barometric_pressure', 'outdoor_dew_point', 'outdoor_dry_bulb', 'outdoor_relative_humidity',
                 'sky_temperature', 'wind_direction', 'wind_speed'.
             
-            use_actuator_state (bool): define if the actuator state will be used as an observation for the agent.
+            use_actuator_state (bool): Define if the actuator state will be used as an observation for the agent.
             
             other_obs (Dict[str, float | int]): Custom observation dictionary.
+            
+            history_len (int): History length for each agent. DEPRECATED.
+            
+            user_occupation_function (bool): Define if the user occupation function will be used. Default is False.
+            
+            user_occupation_forecast (bool): Define if the user occupation forecast will be used. Default is False.
+            
+            user_type (str): Type of user. Default is 'Residential'
+            
+            zone_type (str): Type of zone. Default is 'Office'
+            
+            occupation_schedule (Tuple[str, str, str]): Occupation schedule for the user occupation forecast. Default is None.
+            
+            occupation_prediction_hours (int): Occupation prediction hours for the user occupation forecast. Default is 24.
+            
+            confidence_level (float): Confidence level for the user occupation forecast. Default is 0.95.
+            
+            lambdaa (float): Decay value of the confidence level. Default is 0.05.
+
         """
         # Variables
         self.variables = variables
@@ -114,7 +145,7 @@ class ObservationSpec:
         if self.use_one_day_weather_prediction:
             # Update the boolean values in the self.prediction_variables Dict.
             self.prediction_variables.update(prediction_variables)
-        self.prediction_hours = prediction_hours
+        self.weather_prediction_hours = weather_prediction_hours
             
         # Actuator value in the observation.
         self.use_actuator_state = use_actuator_state
@@ -122,18 +153,49 @@ class ObservationSpec:
         # Custom observation dict.
         self.other_obs = other_obs
         
-    def __getitem__(self, key):
+        # History length for each agent.
+        # self.history_len = history_len
+        
+        # User occupation forecast profile.
+        self.user_occupation_forecast = user_occupation_forecast
+        self.user_occupation_function = user_occupation_function
+        if self.user_occupation_forecast: # This ensure that if forecast is used, the occupancy function is used as well.
+            self.user_occupation_function = True
+        
+        # User type and zone type.
+        self.user_type = user_type
+        
+        if user_type not in VALID_USER_TYPES:
+            msg = f"ObservationSpec: User type '{user_type}' is not valid. Options: {VALID_USER_TYPES}"
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        self.zone_type = zone_type
+        if zone_type not in VALID_ZONE_TYPES:
+            msg = f"ObservationSpec: Zone type '{zone_type}' is not valid. Options: {VALID_ZONE_TYPES}"
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        self.confidence_level = confidence_level
+        
+        # Occupation forecast.
+        self.occupation_schedule = occupation_schedule
+        self.occupation_prediction_hours = occupation_prediction_hours
+        self.lambdaa = lambdaa
+        
+    def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key:str, value:Any) -> None:
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            logger.error(f"Invalid key: {key}")
-            raise KeyError(f"Invalid key: {key}")
+            msg = f"ObservationSpec: Invalid key: {key}."
+            logger.error(msg)
+            raise KeyError(msg)
         setattr(self, key, value)
         
     
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the ObservationSpec object.
         """
@@ -141,7 +203,7 @@ class ObservationSpec:
         admissible_values = list(SIMULATION_PARAMETERS.keys())
         for key in self.simulation_parameters.keys():
             if key not in admissible_values:
-                msg = f"The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}"
+                msg = f"ObservationSpec: The key '{key}' is not admissible in the simulation_parameters. The admissible values are: {admissible_values}"
                 logger.error(msg)
                 raise ValueError(msg)
         
@@ -149,7 +211,7 @@ class ObservationSpec:
         admissible_values = list(ZONE_SIMULATION_PARAMETERS.keys())
         for key in self.zone_simulation_parameters.keys():
             if key not in admissible_values:
-                msg = f"The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}"
+                msg = f"ObservationSpec: The key '{key}' is not admissible in the zone_simulation_parameters. The admissible values are: {admissible_values}"
                 logger.error(msg)
                 raise ValueError(msg)
         
@@ -157,14 +219,25 @@ class ObservationSpec:
             admissible_values = list(PREDICTION_VARIABLES.keys())
             for key in self.prediction_variables.keys():
                 if key not in admissible_values:
-                    msg = f"The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}"
+                    msg = f"ObservationSpec: The key '{key}' is not admissible in the prediction_variables. The admissible values are: {admissible_values}"
                     logger.error(msg)
                     raise ValueError(msg)
         
-        if self.prediction_hours <= 0 or self.prediction_hours > 24:
-            self.prediction_hours = PREDICTION_HOURS
-            logger.warning(f"The variable 'prediction_hours' must be between 1 and 24. It is taken the value of {self.prediction_hours}. The value of 24 is used.")
+        if self.weather_prediction_hours <= 0 or self.weather_prediction_hours > 24:
+            self.weather_prediction_hours = PREDICTION_HOURS
+            logger.warning(f"ObservationSpec: The variable 'weather_prediction_hours' must be between 1 and 24. It is taken the value of {self.weather_prediction_hours}. The value of 24 is used.")
         
+        if self.occupation_prediction_hours <= 0 or self.occupation_prediction_hours > 24:
+                self.occupation_prediction_hours = 24
+                logger.warning(f"ObservationSpec: The variable 'occupation_prediction_hours' must be between 1 and 24. It is taken the value of {self.occupation_prediction_hours}. The value of 24 is used.")
+        
+        if self.user_occupation_forecast:
+            if self.occupation_schedule is None:
+                msg = "ObservationSpec: occupation_schedule must be provided if user_occupation_forecast is True."
+                logger.error(msg)
+                raise ValueError(msg)
+            else:
+                assert isinstance(self.occupation_schedule, tuple), "occupation_schedule must be a tuple."
         # Check that at least one variable/meter/actuator/parameter is defined.
         counter = 0
         if self.variables is not None:
@@ -181,7 +254,13 @@ class ObservationSpec:
         counter += len(self.other_obs)
         
         if counter == 0:
-            raise ValueError("At least one variable/meter/actuator/parameter must be defined in the observation.")
+            msg = "ObservationSpec: At least one variable/meter/actuator/parameter must be defined in the observation."
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        # if self.history_len <= 0:
+        #     self.history_len = 1
+        #     logger.warning(f"The variable 'history_len' must be greater than 0. It is taken the value of 1.")
         
         return vars(self)
             

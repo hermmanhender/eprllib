@@ -2,7 +2,7 @@
 
 import pytest
 
-from eprllib.Agents import SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, PREDICTION_VARIABLES, PREDICTION_HOURS
+from eprllib.Agents import SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, PREDICTION_VARIABLES #, PREDICTION_HOURS
 from eprllib.Agents.ObservationSpec import ObservationSpec
 
 class TestObservationspec:
@@ -63,7 +63,7 @@ class TestObservationspec:
             simulation_parameters={"invalid_key": True},
             zone_simulation_parameters={"invalid_zone_key": True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={"invalid_pred_key": True},
             use_actuator_state=True
         )
@@ -92,7 +92,7 @@ class TestObservationspec:
             simulation_parameters={"day_of_week": True},
             zone_simulation_parameters={"invalid_key": True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={"invalid_weather_var": True},
             use_actuator_state=True
         )
@@ -124,7 +124,7 @@ class TestObservationspec:
             simulation_parameters={"invalid_key": True},
             zone_simulation_parameters={"zone_time_step": True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={"invalid_weather_var": True},
             use_actuator_state=True,
             other_obs={"custom_obs": 1.0}
@@ -146,7 +146,7 @@ class TestObservationspec:
         result = obs_spec.build()
 
         assert isinstance(result, dict)
-        assert result["prediction_hours"] == PREDICTION_HOURS
+        # assert result["prediction_hours"] == PREDICTION_HOURS
         assert len(result["variables"]) > 0
         assert len(result["internal_variables"]) > 0
         assert len(result["meters"]) > 0
@@ -173,7 +173,7 @@ class TestObservationspec:
             simulation_parameters={"invalid_key": True},
             zone_simulation_parameters={"invalid_zone_key": True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={"outdoor_dry_bulb": True},
             use_actuator_state=True,
             other_obs={"custom_obs": 1.0}
@@ -222,7 +222,7 @@ class TestObservationspec:
             zone_simulation_parameters={"invalid_zone_key": True},
             use_one_day_weather_prediction=True,
             prediction_variables={"invalid_prediction_key": True},
-            prediction_hours=25,
+            # prediction_hours=25,
             internal_variables=[],
             meters=[],
             use_actuator_state=False
@@ -243,7 +243,7 @@ class TestObservationspec:
             simulation_parameters={'invalid_key': True},
             zone_simulation_parameters={'invalid_key': True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={'invalid_key': True},
             use_actuator_state=True
         )
@@ -272,7 +272,7 @@ class TestObservationspec:
             simulation_parameters={"invalid_key": True},
             zone_simulation_parameters={"invalid_key": True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={"invalid_key": True},
             use_actuator_state=True
         )
@@ -295,7 +295,7 @@ class TestObservationspec:
             simulation_parameters={"invalid_key": True},
             zone_simulation_parameters={"invalid_zone_key": True},
             use_one_day_weather_prediction=True,
-            prediction_hours=25,
+            # prediction_hours=25,
             prediction_variables={"invalid_prediction_key": True},
             use_actuator_state=False,
             other_obs={}
@@ -322,7 +322,7 @@ class TestObservationspec:
             zone_simulation_parameters={"invalid_zone_key": True},
             use_one_day_weather_prediction=True,
             prediction_variables={"invalid_prediction_key": True},
-            prediction_hours=25
+            # prediction_hours=25
         )
 
         with pytest.raises(ValueError) as excinfo:
@@ -333,7 +333,7 @@ class TestObservationspec:
         # Reset observation spec for the next test
         obs_spec = ObservationSpec(
             use_one_day_weather_prediction=True,
-            prediction_hours=0
+            # prediction_hours=0
         )
 
         with pytest.raises(ValueError) as excinfo:
@@ -352,7 +352,7 @@ class TestObservationspec:
             zone_simulation_parameters={"invalid_key": True},
             use_one_day_weather_prediction=True,
             prediction_variables={"invalid_key": True},
-            prediction_hours=12,
+            # prediction_hours=12,
             internal_variables=["Zone People Occupant Count"],
             meters=["Electricity:Facility"],
             use_actuator_state=True
@@ -371,21 +371,21 @@ class TestObservationspec:
             ObservationSpec().build()
         assert "At least one variable/meter/actuator/parameter must be defined in the observation" in str(excinfo.value)
 
-    def test_invalid_prediction_hours(self):
-        """
-        Test that an invalid prediction_hours value is corrected and a warning is logged.
-        """
-        obs_spec = ObservationSpec(variables=[("Site Outdoor Air Drybulb Temperature", "Environment")], use_one_day_weather_prediction=True, prediction_hours=25)
-        result = obs_spec.build()
-        assert result['prediction_hours'] == 24
+    # def test_invalid_prediction_hours(self):
+    #     """
+    #     Test that an invalid prediction_hours value is corrected and a warning is logged.
+    #     """
+    #     obs_spec = ObservationSpec(variables=[("Site Outdoor Air Drybulb Temperature", "Environment")], use_one_day_weather_prediction=True, prediction_hours=25)
+    #     result = obs_spec.build()
+    #     assert result['prediction_hours'] == 24
 
-    def test_invalid_prediction_hours_2(self):
-        """
-        Test that the build method sets prediction_hours to the default value when an invalid value is provided.
-        """
-        obs_spec = ObservationSpec(variables=[("Site Outdoor Air Drybulb Temperature", "Environment")], use_one_day_weather_prediction=True, prediction_hours=25)
-        result = obs_spec.build()
-        assert result["prediction_hours"] == 24
+    # def test_invalid_prediction_hours_2(self):
+    #     """
+    #     Test that the build method sets prediction_hours to the default value when an invalid value is provided.
+    #     """
+    #     obs_spec = ObservationSpec(variables=[("Site Outdoor Air Drybulb Temperature", "Environment")], use_one_day_weather_prediction=True, prediction_hours=25)
+    #     result = obs_spec.build()
+    #     assert result["prediction_hours"] == 24
 
     def test_invalid_prediction_variable_key(self):
         """

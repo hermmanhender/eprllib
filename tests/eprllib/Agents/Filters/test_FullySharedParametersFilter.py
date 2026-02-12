@@ -25,7 +25,7 @@ class TestFullysharedparametersfilter:
         This test verifies that:
         1. The method correctly identifies the agent name from the agent_states dictionary.
         2. Actuator states are removed from the observation.
-        3. The returned observation is a numpy array of float32 values.
+        3. The returned observation is a numpy array of float64 values.
         4. The returned observation contains only the non-actuator state values.
         """
         # Setup
@@ -57,8 +57,8 @@ class TestFullysharedparametersfilter:
 
         # Assertions
         assert isinstance(result, np.ndarray)
-        assert result.dtype == np.float32
-        np.testing.assert_array_equal(result, np.array([1.0, 2.0], dtype=np.float32))
+        assert result.dtype == np.float64
+        np.testing.assert_array_equal(result, np.array([1.0, 2.0], dtype=np.float64))
         assert filter_instance.agent_name == "agent1"
 
     def test_get_filtered_obs_2(self):
@@ -94,7 +94,7 @@ class TestFullysharedparametersfilter:
 
         result = filter_instance.get_filtered_obs(env_config, agent_states)
 
-        expected_result = np.array([1.0, 2.0, 5.0], dtype='float32')
+        expected_result = np.array([1.0, 2.0, 5.0], dtype='float64')
         np.testing.assert_array_equal(result, expected_result)
 
     def test_get_filtered_obs_empty_agent_states(self):
@@ -138,7 +138,7 @@ class TestFullysharedparametersfilter:
         agent_states = {"agent1: state1": 1.0, "agent1: state2": 2.0}
 
         result = filter_instance.get_filtered_obs(env_config, agent_states)
-        expected = np.array([1.0, 2.0], dtype=np.float32)
+        expected = np.array([1.0, 2.0], dtype=np.float64)
         np.testing.assert_array_equal(result, expected)
 
     def test_init_with_empty_dict(self):

@@ -40,7 +40,7 @@ class DefaultEpisode(BaseEpisode):
         return super().get_episode_config(env_config)
     
     @override(BaseEpisode)
-    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the episode configuration in the EnergyPlus environment.
 
@@ -54,7 +54,7 @@ class DefaultEpisode(BaseEpisode):
         return super().get_episode_agents(env_config, possible_agents)
     
     @override(BaseEpisode)
-    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> Dict[str, Any]:
+    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the timestep configuration in the EnergyPlus environment.
 

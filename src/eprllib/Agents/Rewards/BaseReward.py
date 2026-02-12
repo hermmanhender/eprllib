@@ -11,8 +11,10 @@ and indexing an array may change.
 The terminated and truncated flags are arguments in the reward function ``get_reward`` method to allow
 implementations with dispersed reward. This flags allow return the final reward when the episode ends.
 """
-
 from typing import Dict, Any
+from numpy.typing import NDArray
+from numpy import float64
+from eprllib import logger
 
 class BaseReward:
     """
@@ -21,7 +23,7 @@ class BaseReward:
     def __init__(
         self,
         reward_fn_config: Dict[str, Any] = {}
-    ):
+    ) -> None:
         """
         Initializes the base reward function with the given configuration.
 
@@ -30,12 +32,27 @@ class BaseReward:
         """
         self.reward_fn_config = reward_fn_config
     
+    def set_initial_parameters(
+        self,
+        agent_name: str,
+        obs_indexed: Dict[str, int]
+    ) -> None:
+        """
+        This method can be overridden in subclasses to set initial parameters based on the provided infos.
+
+        Args:
+            infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
+        """
+        pass
+    
     def get_reward(
         self,
-        infos: Dict[str, Any],
+        prev_obs: NDArray[float64],
+        prev_action: Any,
+        obs: NDArray[float64],
         terminated: bool,
-        truncated: bool,
-    ) -> float:
+        truncated: bool
+        ) -> float:
         """
         This method must be implemented in the subclass to calculate the reward.
 
@@ -47,4 +64,6 @@ class BaseReward:
         Returns:
             float: The calculated reward.
         """
-        raise NotImplementedError("This method must be implemented in the subclass.")
+        msg = "BaseReward: This method must be implemented in the subclass."
+        logger.error(msg)
+        raise NotImplementedError(msg)

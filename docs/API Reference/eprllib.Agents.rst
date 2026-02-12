@@ -10,7 +10,9 @@
    :toctree:
    :recursive:
 
+   ActionSpec
    AgentSpec
    Filters
+   ObservationSpec
    Rewards
    Triggers

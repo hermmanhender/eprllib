@@ -1,14 +1,14 @@
 """
 Specification for agent reward functions
 =========================================
-This module defines the `RewardSpec` class, which is used to specify the configuration of reward functions for agents in reinforcement learning environments.
+This module defines the `RewardSpec` class, which is used to specify the configuration of reward 
+functions for agents in reinforcement learning environments.
+
 It ensures that the reward function is properly defined and adheres to the expected interface.
 """
-import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Type
 from eprllib.Agents.Rewards.BaseReward import BaseReward
-
-logger = logging.getLogger("ray.rllib")
+from eprllib import logger
 
 class RewardSpec:
     """
@@ -16,7 +16,7 @@ class RewardSpec:
     """
     def __init__(
         self,
-        reward_fn: BaseReward = NotImplemented,
+        reward_fn: Optional[Type[BaseReward]] = None,
         reward_fn_config: Dict[str, Any] = {},
         ):
         """
@@ -33,36 +33,25 @@ class RewardSpec:
         self.reward_fn = reward_fn
         self.reward_fn_config = reward_fn_config
     
-    def __getitem__(self, key):
+    def __getitem__(self, key:str):
         return getattr(self, key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key:str, value:Any):
         valid_keys = self.__dict__.keys()
         if key not in valid_keys:
-            msg = f"Invalid key: {key}."
+            msg = f"RewardSpec: Invalid key: {key}."
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
     
-    def build(self) -> Dict:
+    def build(self) -> Dict[str, Any]:
         """
         This method is used to build the RewardSpec object.
         """
-        if self.reward_fn == NotImplemented:
-            msg = "No reward function provided."
+        if self.reward_fn == None:
+            msg = "RewardSpec: No reward function provided."
             logger.error(msg)
             raise NotImplementedError(msg)
-        
-        # Check if the reward_fn is a subclass of BaseReward, and raise an error if not.
-        if not issubclass(self.reward_fn, BaseReward):
-            msg = f"The reward function must be based on BaseReward class but {type(self.reward_fn)} was given."
-            logger.error(msg)
-            raise TypeError(msg)
-        
-        if not isinstance(self.reward_fn_config, dict):
-            msg = f"The configuration for the reward function must be a dictionary but {type(self.reward_fn_config)} was given."
-            logger.error(msg)
-            raise TypeError(msg)
         
         return vars(self)
     

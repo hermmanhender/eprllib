@@ -8,8 +8,10 @@ as-is or extended to create custom filters.
 """
 import numpy as np
 from typing import Any, Dict
+from numpy.typing import NDArray
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.annotations import override
+from eprllib import logger
 
 class DefaultFilter(BaseFilter):
     """
@@ -17,7 +19,7 @@ class DefaultFilter(BaseFilter):
 
     This class extends the `BaseFilter` class and provides a basic implementation that can be used
     as-is or extended to create custom filters. The `get_filtered_obs` method returns the agent
-    states as a numpy array of float32 values.
+    states as a numpy array of float64 values.
     """
     def __init__(
         self,
@@ -37,7 +39,7 @@ class DefaultFilter(BaseFilter):
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
@@ -50,20 +52,23 @@ class DefaultFilter(BaseFilter):
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            NDarray: Filtered observations as a numpy array of float32 values.
+            NDarray: Filtered observations as a numpy array of float64 values.
             
         Raises:
             TypeError: If agent_states is not a dictionary.
             ValueError: If agent_states is empty or contains non-numeric values.
         """
-        # Check the type of the agent_states argument
-        if not isinstance(agent_states, dict):
-            raise TypeError("agent_states must be a dictionary")
         # Check if the agent_states dictionary is empty
         if not agent_states:
-            raise ValueError("agent_states dictionary is empty")
+            msg = "DefaultFilter: The agent_states dictionary is empty"
+            logger.error(msg)
+            raise ValueError(msg)
+        
         # Check if all values in the agent_states dictionary are numeric
         if not all(isinstance(value, (int, float)) for value in agent_states.values()):
-            raise ValueError("All values in agent_states must be numeric")
-        return np.array(list(agent_states.values()), dtype='float32')
+            msg = "DefaultFilter: All values in agent_states must be numeric"
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        return np.array(list(agent_states.values()), dtype='float64')
     

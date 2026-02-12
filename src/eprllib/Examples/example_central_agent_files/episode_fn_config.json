@@ -1,0 +1,7 @@
+{
+    "epjson_model": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_central_agent_files/model.epJSON",
+    
+    "episode_len": 5,
+    
+    "epw_files_folder_path": "C:/Users/grhen/Documents/GitHub2/eprllib/src/eprllib/examples/example_central_agent_files/weathers"
+}

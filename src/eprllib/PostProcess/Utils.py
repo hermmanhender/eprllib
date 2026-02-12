@@ -1,9 +1,21 @@
+"""
+Utility functions for post-processing experience in RLlib environments
+========================================================================
 
+This module provides a function to generate experience from an environment and store it in a pandas DataFrame.
+It supports both single-agent and multi-agent environments, with optional RNN state handling.
+
+Functions
+----------
+generate_experience(env, env_config, agent_list, policies, rnn_use, num_episodes=1)
+"""
 
 from typing import List, Dict, Any
-from eprllib.Environment.Environment import Environment
-from ray.rllib.policy.policy import Policy
 import pandas as pd
+from ray.rllib.policy.policy import Policy
+from eprllib.Environment.Environment import Environment
+from eprllib import logger
+
 
 def generate_experience(
     env: Environment,
@@ -22,8 +34,6 @@ def generate_experience(
         policies (Dict[str,Policy]): Dictionary of policies for each agent.
         rnn_use (Dict[str, bool]): Dictionary indicating if RNN is used for each agent.
         num_episodes (int, optional): Number of episodes to generate. Defaults to 1.
-    Raises:
-        NotImplementedError: If the environment is not supported.
 
     Returns:
         pd.DataFrame: DataFrame containing the experience of all episodes for each agent.

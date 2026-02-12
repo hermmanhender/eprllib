@@ -5,12 +5,14 @@ RUN CONVENTIONAL CONTROLS
 This script execute the conventional controls in the evaluation scenario.
 """
 import os
-from eprllib.Environment.Environment import Environment
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
 import pandas as pd
 import threading
 from queue import Queue, Empty
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+from eprllib.Environment.Environment import Environment
+from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
+
 
 class rb_evaluation:
     
@@ -28,12 +30,12 @@ class rb_evaluation:
         self.agents = self.env.agents
         self.terminated = {}
         self.terminated = False
-        self.data_queue: Optional[Queue] = None
+        self.data_queue: Optional[Queue[Any]] = None
         self.data_processing: Optional[step_processing] = None
         self.timestep = 0
         
         self.policy = {agent: config for agent, config in self.policy_config.items()}
-        self.trigger_fn:BaseTrigger = self.env_config['agents_config']['rule_base_agent']['trigger']['trigger_fn']
+        self.action_mapper:BaseActionMapper = self.env_config['agents_config']['rule_base_agent']['action_mapper']['action_mapper']
         
         if not os.path.exists(env_config['output_path']):
             os.makedirs(env_config['output_path'])
@@ -50,8 +52,9 @@ class rb_evaluation:
         obs_dict, infos = self.env.reset()
         
         # Create an empty DataFrame to store the data
-        obs_keys = self.env.runner.obs_keys
-        infos_keys = self.env.runner.infos_keys
+        assert isinstance(self.env.runner, EnvironmentRunner), "The 'obs_keys' must be a list."
+        obs_keys: List[str] = self.env.runner.obs_keys
+        infos_keys: List[str] = self.env.runner.infos_keys
         
         data = ['agent_id']+['timestep']+obs_keys+['Action']+['Reward']+['Terminated']+['Truncated']+infos_keys
         # coloca los datos en una cola

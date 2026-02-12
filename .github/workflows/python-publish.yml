@@ -31,11 +31,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
         pip install twine
-        pip install ray[all] >=2.20.0",
-        pip install gymnasium >=0.28.1",
-        pip install torch >=2.5.1",
-        pip install shap >=0.46.0",
-        pip install matplotlib >=3.8.0"
+        pip install ray[all] >=2.20.0
+        pip install gymnasium >=0.28.1
+        pip install torch >=2.5.1
+        pip install shap >=0.46.0
+        pip install matplotlib >=3.8.0
     - name: Build package
       run: python -m build
     - name: eprllib

@@ -5,53 +5,15 @@ Utilities for the environment configuration
 Work in progress...
 """
 
-from typing import Set, Dict, Optional, List
+from typing import Set, Dict, Optional, List, Any
 import inspect
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from gymnasium.spaces import Box, Discrete
 import sys
-import os
-import shutil
-import tempfile
-import atexit
 import numpy as np
 from typing import get_origin, get_args, Union, _SpecialGenericAlias
 
-# Importar las clases que deseas validar
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
-from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib.Agents.Rewards.BaseReward import BaseReward
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
-from eprllib.Agents.Filters.BaseFilter import BaseFilter
-
-LIST_OF_VERSIONS = [
-        "9-3-0",
-        "9-4-0",
-        "9-5-0",
-        "9-6-0",
-        "22-1-0",
-        "22-2-0",
-        "23-1-0",
-        "23-2-0",
-        "24-1-0",
-        "24-2-0",
-        "25-1-0"
-    ]
-
-
-_temp_dirs_to_clean: List[str] = []
-_cleanup_registered_for_ep_api = False
-
-def _cleanup_all_temp_ep_dirs():
-    """Cleans up all temporary EnergyPlus directories created by EP_API_add_path."""
-    global _temp_dirs_to_clean
-    if not _temp_dirs_to_clean:
-        return
-    print("Cleaning up temporary EnergyPlus directories created by eprllib...")
-    for d_path in _temp_dirs_to_clean:
-        print(f"Attempting to remove temporary directory: {d_path}")
-        shutil.rmtree(d_path, ignore_errors=True)
-    _temp_dirs_to_clean = [] # Clear the list
+from eprllib import logger
 
 def EP_API_add_path(path: Optional[str] = None) -> str:
     """
@@ -81,99 +43,31 @@ def EP_API_add_path(path: Optional[str] = None) -> str:
         RuntimeError: If auto-detection fails to find any suitable EnergyPlus installation,
                       or if copying the installation to a temporary directory fails.
     """
-    global _cleanup_registered_for_ep_api, _temp_dirs_to_clean
-
+    logger.debug("EnvConfigUtils: Attempting to auto-detect EnergyPlus installation...")
+    os_platform = sys.platform
     original_ep_path: Optional[str] = None
+    if os_platform.startswith("linux"):  # Covers "linux" and "linux2"
+        original_ep_path = f"/usr/local/EnergyPlus-{path}"
+    elif os_platform == "win32":
+        original_ep_path = f"C:/EnergyPlusV{path}"
+    elif os_platform == "darwin":
+        original_ep_path = f"/Applications/EnergyPlus-{path}"
 
-    if path is not None:
-        if not os.path.isdir(path):
-            raise FileNotFoundError(
-                f"Provided EnergyPlus path does not exist or is not a directory: {path}"
-            )
-        print(f"Using user-provided EnergyPlus path: {path}")
-        original_ep_path = path
-    else:
-        print("Attempting to auto-detect EnergyPlus installation...")
-        os_platform = sys.platform
-        detected_installations: Dict[str, str] = {} # version_str -> path
-
-        path_template: Optional[str] = None
-        if os_platform.startswith("linux"):  # Covers "linux" and "linux2"
-            path_template = "/usr/local/EnergyPlus-{}"
-        elif os_platform == "win32":
-            path_template = "C:/EnergyPlusV{}"
-        elif os_platform == "darwin":
-            path_template = "/Applications/EnergyPlus-{}"
-
-        if path_template:
-            for v_str in LIST_OF_VERSIONS:
-                potential_path = path_template.format(v_str)
-                if os.path.isdir(potential_path):
-                    detected_installations[v_str] = potential_path
+    if original_ep_path is not None:
+        if original_ep_path not in sys.path:
+            sys.path.insert(0, original_ep_path)
+            logger.debug(f"EnvConfigUtils: EnergyPlus API path added to sys.path: {original_ep_path}")
         else:
-            print(f"Warning: EnergyPlus auto-detection is not configured for this OS: {os_platform}. "
-                  "Please provide the path manually if detection fails.")
-
-        if not detected_installations:
-            error_msg = (
-                "Auto-detection failed: No EnergyPlus installation found in standard locations "
-                f"for versions: {', '.join(LIST_OF_VERSIONS)}. "
-                "Please provide the path manually or ensure EnergyPlus is installed correctly."
-            )
-            print(error_msg)
-            sys.exit(error_msg)
-
-        latest_version_found: Optional[str] = None
-        for v_str in reversed(LIST_OF_VERSIONS): # Check from newest to oldest
-            if v_str in detected_installations:
-                latest_version_found = v_str
-                break
+            logger.debug(f"EnvConfigUtils: EnergyPlus API path already in sys.path: {original_ep_path}")
         
-        original_ep_path = detected_installations[latest_version_found]
-
-        if len(detected_installations) > 1:
-            print(f"Multiple EnergyPlus versions detected: {list(detected_installations.values())}.")
-            print(f"Using the latest detected version ({latest_version_found}): {original_ep_path}")
-        else:
-            print(f"Detected EnergyPlus version ({latest_version_found}): {original_ep_path}")
-
-    # Create a temporary copy of the EnergyPlus installation
-    # ep_install_dir_name = os.path.basename(original_ep_path)
-    # temp_base_dir = tempfile.mkdtemp(prefix="eprllib_ep_")
-    # temp_ep_path_for_env = os.path.join(temp_base_dir, ep_install_dir_name)
-
-    # print(f"Copying EnergyPlus from '{original_ep_path}' to temporary location '{temp_ep_path_for_env}'...")
-    # try:
-    #     shutil.copytree(original_ep_path, temp_ep_path_for_env)
-    #     print("Copy successful.")
-    # except Exception as e:
-    #     shutil.rmtree(temp_base_dir, ignore_errors=True) # Clean up base temp dir on copy failure
-    #     error_msg = f"Error copying EnergyPlus installation: {e}"
-    #     print(error_msg)
-    #     sys.exit(f"Failed to create temporary EnergyPlus environment: {error_msg}")
-
-    # if not _cleanup_registered_for_ep_api:
-    #     atexit.register(_cleanup_all_temp_ep_dirs)
-    #     _cleanup_registered_for_ep_api = True
-    # _temp_dirs_to_clean.append(temp_base_dir)
-
-    # if temp_ep_path_for_env not in sys.path:
-    #     sys.path.insert(0, temp_ep_path_for_env)
-    #     print(f"EnergyPlus API path from temporary copy added to sys.path: {temp_ep_path_for_env}")
-    # else:
-    #     print(f"EnergyPlus API path from temporary copy already in sys.path: {temp_ep_path_for_env}")
-
-    # return temp_ep_path_for_env
+        return original_ep_path
     
-    if original_ep_path not in sys.path:
-        sys.path.insert(0, original_ep_path)
-        print(f"EnergyPlus API path from temporary copy added to sys.path: {original_ep_path}")
     else:
-        print(f"EnergyPlus API path from temporary copy already in sys.path: {original_ep_path}")
-    
-    return original_ep_path
-
-
+        logger.error(f"EnvConfigUtils: Warning: EnergyPlus auto-detection is not configured for this OS: {os_platform}. "
+                "Please provide the path manually if detection fails.")
+        raise RuntimeError(f"EnergyPlus auto-detection failed for OS: {os_platform}. "
+                           "Please provide the path manually or ensure EnergyPlus is installed correctly.")
+        
 
 def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:
     """
@@ -184,12 +78,14 @@ def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:
     allowed_vars = inspect.get_annotations(EnvironmentConfig).keys()
     for var in vars(MyEnvConfig):
         if var not in allowed_vars:
-            raise ValueError(f"The variable {var} is not allowed in EnvConfig. Allowed variables are {allowed_vars}")
+            msg = f"EnvConfigUtils: The variable '{var}' is not allowed in EnvConfig. Allowed variables are: {allowed_vars}"
+            logger.error(msg)
+            raise ValueError(msg)
     return True
 
 def to_json(
     MyEnvConfig: EnvironmentConfig,
-    output_path: str = None
+    output_path: Optional[str] = None
     ) -> str:
     """Convert an EnvConfig object into a json string before to be used in the env_config parameter of RLlib environment config.
 
@@ -203,7 +99,7 @@ def to_json(
     import json
     import time
     
-    env_config_json = json.dumps(MyEnvConfig.build())
+    env_config_json = json.dumps(MyEnvConfig.to_dict())
 
     # generate a unique number based on time
     time_id = str(int(time.time()))
@@ -215,7 +111,7 @@ def to_json(
     with open(path, 'x') as f:
         f.write(env_config_json)
     
-    print(f"EnvConfig saved to {path}")
+    logger.info(f"EnvConfigUtils: EnvConfig saved to {path}")
     
     return path
 
@@ -244,7 +140,7 @@ def continuous_action_space():
     Returns:
         gym.Box: Continuous action space with limits between [0,1].
     """
-    return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+    return Box(low=0.0, high=1.0, shape=(1,), dtype=np.float64)
 
 def discrete_action_space(n:int=2):
     """
@@ -258,7 +154,7 @@ def discrete_action_space(n:int=2):
 
 def variable_checking(
     epJSON_file:str,
-) -> Set:
+) -> Set[Any]|None:
     """
     This function check if the epJSON file has the required variables.
 
@@ -270,7 +166,7 @@ def variable_checking(
     """
     pass
 
-def validate_properties(obj, expected_types):
+def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> bool:
     """
     Enhanced version that supports Union types and optional properties
     
@@ -281,7 +177,7 @@ def validate_properties(obj, expected_types):
                        - A tuple of types (Union)
                        - (type, bool) tuple where bool indicates if property is optional
     """
-    errors = []
+    errors: List[str] = []
     is_valid = True
     
     for prop_name, type_spec in expected_types.items():
@@ -289,8 +185,10 @@ def validate_properties(obj, expected_types):
         is_optional = False
         expected_type = type_spec
         
-        if isinstance(type_spec, tuple) and len(type_spec) == 2 and isinstance(type_spec[1], bool):
-            expected_type, is_optional = type_spec
+        if isinstance(type_spec, tuple):
+            if len(type_spec) == 2:
+                if isinstance(type_spec[1], bool):
+                    expected_type, is_optional = type_spec
             
         # Check if property exists
         if not hasattr(obj, prop_name):

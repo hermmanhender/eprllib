@@ -9,9 +9,10 @@ class provides the basic structure and methods that can be extended to create cu
 This class can not be used directly in eprllib, but as a base to create new filters. All the filters
 must be based in this class.
 """
-
+from eprllib import logger
 from typing import Any, Dict
-from numpy import ndarray
+from numpy import float64
+from numpy.typing import NDArray
 
 class BaseFilter:
     """
@@ -28,16 +29,13 @@ class BaseFilter:
         Args:
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
         """
-        # Check if the filter_fn_config is a dictionary
-        if not isinstance(filter_fn_config, dict):
-            raise TypeError("filter_fn_config must be a dictionary")
         self.filter_fn_config = filter_fn_config
         
     def get_filtered_obs(
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> ndarray:
+    ) -> NDArray[float64]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
@@ -50,6 +48,8 @@ class BaseFilter:
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-            NDarray: Filtered observations as a numpy array of float32 values.
+            NDarray: Filtered observations as a numpy array of float64 values.
         """
-        raise NotImplementedError("This method should be implemented in a subclass.")
+        msg = "BaseFilter: This method should be implemented in a subclass."
+        logger.error(msg)
+        raise NotImplementedError(msg)
