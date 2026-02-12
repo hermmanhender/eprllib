@@ -17,7 +17,7 @@ from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
 from eprllib import logger

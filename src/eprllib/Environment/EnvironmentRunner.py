@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 from types import FunctionType
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.AgentsConnectors.BaseConnector import BaseConnector
+from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.env_config_utils import EP_API_add_path
 from eprllib.Utils.observation_utils import (
     get_actuator_name,

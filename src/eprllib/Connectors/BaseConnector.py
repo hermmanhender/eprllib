@@ -1,5 +1,5 @@
 """
-Agents Connector Base Method
+Connector Base Method
 =============================
 
 This module defines the base class for connector functions that allow the combination of 
@@ -12,6 +12,12 @@ from gymnasium import spaces
 from eprllib import logger
 
 class BaseConnector:
+    """
+    Base class for connector functions.
+    """
+    connector_fn_config: Dict[str, Any]
+    obs_indexed: Dict[str,Dict[str, int]]
+    
     def __init__(
         self,
         connector_fn_config: Dict[str, Any] = {}
