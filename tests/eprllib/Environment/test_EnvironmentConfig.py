@@ -13,14 +13,14 @@
 # from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 # from eprllib.Agents.AgentSpec import AgentSpec
 # from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-# from eprllib.Agents.Triggers.SetpointTriggers import AvailabilityTrigger
+# from eprllib.Agents.ActionMappers.SetpointActionMappers import AvailabilityActionMapper
 # from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters
 # from eprllib.Agents.ObservationSpec import ObservationSpec
 # from eprllib.Agents.ActionSpec import ActionSpec
 # from eprllib.Agents.Rewards.RewardSpec import RewardSpec
 # from eprllib.Agents.AgentSpec import AgentSpec
 # from eprllib.Agents.Filters.FilterSpec import FilterSpec
-# from eprllib.Agents.Triggers.TriggerSpec import TriggerSpec
+# from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
 
 
 
@@ -106,9 +106,9 @@
 #                     "filter_fn": DefaultFilter,
 #                     "filter_fn_config": {}
 #                 },
-#                 "trigger": {
-#                     "trigger_fn": AvailabilityTrigger,
-#                     "trigger_fn_config": {
+#                 "action_mapper": {
+#                     "action_mapper": AvailabilityActionMapper,
+#                     "action_mapper_config": {
 #                         "availability_actuator": ["Schedule:Constant", "Schedule Value", "HTGSETP_SCH"]
 #                     }
 #                 }
@@ -190,9 +190,9 @@
 #                         filter_fn=DefaultFilter,
 #                         filter_fn_config={}
 #                     ),
-#                     trigger = TriggerSpec(
-#                         trigger_fn=AvailabilityTrigger,
-#                         trigger_fn_config={
+#                     action_mapper = ActionMapperSpec(
+#                         action_mapper=AvailabilityActionMapper,
+#                         action_mapper_config={
 #                             "availability_actuator": ["Schedule:Constant", "Schedule Value", "HTGSETP_SCH"]
 #                         }
 #                     )

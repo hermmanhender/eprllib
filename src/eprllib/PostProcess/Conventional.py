@@ -11,7 +11,7 @@ from queue import Queue, Empty
 from typing import Dict, Any, Optional, List
 from eprllib.Environment.Environment import Environment
 from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 
 
 class rb_evaluation:
@@ -35,7 +35,7 @@ class rb_evaluation:
         self.timestep = 0
         
         self.policy = {agent: config for agent, config in self.policy_config.items()}
-        self.trigger_fn:BaseTrigger = self.env_config['agents_config']['rule_base_agent']['trigger']['trigger_fn']
+        self.action_mapper:BaseActionMapper = self.env_config['agents_config']['rule_base_agent']['action_mapper']['action_mapper']
         
         if not os.path.exists(env_config['output_path']):
             os.makedirs(env_config['output_path'])

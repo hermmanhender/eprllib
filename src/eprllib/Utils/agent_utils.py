@@ -10,7 +10,7 @@ def get_agent_name(state: Dict[str, Any]|List[str]) -> str:
     """
     Get the agent name from the state dictionary. The state dictionay can be the agent_states dictionary or the infos 
     dictionary. Both contain the agent name in all the variables keys as: "agent_name: variable[0]: variable[1]: ...".
-    This method is util for autodetect the agent name in the implementation of filters, triggers, or rewards classes for
+    This method is util for autodetect the agent name in the implementation of filters, ActionMappers, or rewards classes for
     agents.
 
     Args:

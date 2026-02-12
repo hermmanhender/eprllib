@@ -66,7 +66,7 @@
 #         """Create mock functions for testing."""
 #         return {
 #             "filter_fn": {"agent1": MagicMock()},
-#             "trigger_fn": {"agent1": MagicMock()},
+#             "action_mapper": {"agent1": MagicMock()},
 #             "connector_fn": MagicMock()
 #         }
 
@@ -82,7 +82,7 @@
 #             infos_queue=mock_queues["infos_queue"],
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         
@@ -94,7 +94,7 @@
 #         assert runner.infos_queue == mock_queues["infos_queue"]
 #         assert runner.agents == ["agent1"]
 #         assert runner.filter_fn == mock_functions["filter_fn"]
-#         assert runner.trigger_fn == mock_functions["trigger_fn"]
+#         assert runner.action_mapper == mock_functions["action_mapper"]
 #         assert runner.connector_fn == mock_functions["connector_fn"]
 #         assert runner.energyplus_exec_thread is None
 #         assert runner.energyplus_state is None
@@ -121,7 +121,7 @@
 #             infos_queue=mock_queues["infos_queue"],
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         
@@ -156,7 +156,7 @@
 #             infos_queue=mock_queues["infos_queue"],
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         
@@ -189,7 +189,7 @@
 #             infos_queue=mock_queues["infos_queue"],
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         
@@ -213,7 +213,7 @@
 #             infos_queue=mock_queues["infos_queue"],
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         
@@ -243,7 +243,7 @@
 #             infos_queue=mock_queues["infos_queue"],
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         
@@ -277,7 +277,7 @@
 #             infos_queue=infos_queue,
 #             agents=["agent1"],
 #             filter_fn=mock_functions["filter_fn"],
-#             trigger_fn=mock_functions["trigger_fn"],
+#             action_mapper=mock_functions["action_mapper"],
 #             connector_fn=mock_functions["connector_fn"]
 #         )
         

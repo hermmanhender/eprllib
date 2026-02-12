@@ -1,44 +1,44 @@
 """
-Windows Opening Triggers
-========================
+Windows Opening ActionMappers
+================================
 
-This module contains classes to implement window opening triggers for controlling actuators in the environment.
+This module contains classes to implement window opening ActionMappers for controlling actuators in the environment.
 """
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, List, Tuple
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
-class WindowsOpeningDiscreteTrigger(BaseTrigger):
+class WindowsOpeningDiscreteActionMapper(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "window_actuator": Tuple[str, str, str],
     }
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the window opening action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - window_actuator (Tuple[str, str, str]): The configuration for the window actuator.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name = None
         self.window_actuator = None
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -48,7 +48,7 @@ class WindowsOpeningDiscreteTrigger(BaseTrigger):
         """
         return gym.spaces.Discrete(11)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str, Any]:
         """
         Transform the agent action to actuator action.
@@ -64,9 +64,9 @@ class WindowsOpeningDiscreteTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.window_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['window_actuator'][0],
-                self.trigger_fn_config['window_actuator'][1],
-                self.trigger_fn_config['window_actuator'][2]
+                self.action_mapper_config['window_actuator'][0],
+                self.action_mapper_config['window_actuator'][1],
+                self.action_mapper_config['window_actuator'][2]
             )
         
         assert self.window_actuator is not None, "Window actuator name has not been initialized."
@@ -83,7 +83,7 @@ class WindowsOpeningDiscreteTrigger(BaseTrigger):
             
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action: float | int, actuator: str) -> Any:
         """
         Get the actuator action.
@@ -97,7 +97,7 @@ class WindowsOpeningDiscreteTrigger(BaseTrigger):
         """
         return action
 
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def action_to_goal(self, action: int | float) -> int | float:
         """
         This method is used to transform the action to a goal. The goal is used to define the reward.
@@ -111,32 +111,32 @@ class WindowsOpeningDiscreteTrigger(BaseTrigger):
         return action
     
 
-class WindowsOpeningContinousTrigger(BaseTrigger):
+class WindowsOpeningContinousActionMapper(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "window_actuator": Tuple[str, str, str],
     }
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the window opening action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - window_actuator (Tuple[str, str, str]): The configuration for the window actuator.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name = None
         self.window_actuator = None
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -146,7 +146,7 @@ class WindowsOpeningContinousTrigger(BaseTrigger):
         """
         return gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str, Any]:
         """
         Transform the agent action to actuator action.
@@ -162,9 +162,9 @@ class WindowsOpeningContinousTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.window_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['window_actuator'][0],
-                self.trigger_fn_config['window_actuator'][1],
-                self.trigger_fn_config['window_actuator'][2]
+                self.action_mapper_config['window_actuator'][0],
+                self.action_mapper_config['window_actuator'][1],
+                self.action_mapper_config['window_actuator'][2]
             )
         
         assert self.window_actuator is not None, "Window actuator name has not been initialized."
@@ -181,7 +181,7 @@ class WindowsOpeningContinousTrigger(BaseTrigger):
             
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action: float | int, actuator: str) -> Any:
         """
         Get the actuator action.
@@ -195,7 +195,7 @@ class WindowsOpeningContinousTrigger(BaseTrigger):
         """
         return action
 
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def action_to_goal(self, action: int | float) -> int | float:
         """
         This method is used to transform the action to a goal. The goal is used to define the reward.

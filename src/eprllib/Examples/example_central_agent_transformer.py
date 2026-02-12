@@ -24,13 +24,13 @@ from eprllib.Agents.AgentSpec import (
     ObservationSpec,
     RewardSpec,
     ActionSpec,
-    TriggerSpec,
+    ActionMapperSpec,
     FilterSpec
 )
 
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 
-from eprllib.examples.example_central_agent_files.trigger import CentralAgentTrigger
+from eprllib.examples.example_central_agent_files.action_mapper import CentralAgentActionMapper
 from eprllib.examples.example_central_agent_files.reward_function import IAQThermalComfortEnergyReward
 from eprllib.examples.example_central_agent_files.episode_fn import task_cofiguration
 from eprllib.examples.example_central_agent_files.policy_mapping import policy_map_fn
@@ -100,9 +100,9 @@ eprllib_config.agents(
                 filter_fn = DefaultFilter,
                 filter_fn_config = {},
             ),
-            trigger= TriggerSpec(
-                trigger_fn = CentralAgentTrigger,
-                trigger_fn_config = {
+            action_mapper= ActionMapperSpec(
+                action_mapper = CentralAgentActionMapper,
+                action_mapper_config = {
                     'window_actuator': ("AirFlow Network Window/Door Opening", "Venting Opening Factor", "window_east"),
                     'exhaust_fan_actuator': ("Schedule:Constant", "Schedule Value", "ventilation_factor"),
                     'hvac_availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),

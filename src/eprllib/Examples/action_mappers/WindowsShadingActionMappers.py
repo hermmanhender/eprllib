@@ -1,43 +1,43 @@
 """
-Windows Shading Triggers
-========================
+Windows Shading ActionMappers
+===============================
 
-This module contains classes to implement window shading triggers for controlling actuators in the environment.
+This module contains classes to implement window shading ActionMappers for controlling actuators in the environment.
 """
 import gymnasium as gym
 from typing import Any, Dict, List, Tuple, Optional
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
-class WindowsShadingTrigger(BaseTrigger):
+class WindowsShadingActionMapper(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "shading_actuator": Tuple[str, str, str],
     }
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the window shading action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - shading_actuator (Tuple[str, str, str]): The configuration for the shading actuator.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: Optional[str] = None
         self.shading_actuator: Optional[str] = None
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -47,7 +47,7 @@ class WindowsShadingTrigger(BaseTrigger):
         """
         return gym.spaces.Discrete(11)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str, Any]:
         """
         Transform the agent action to actuator action. Consider that one agent may manage more than one actuator.
@@ -63,9 +63,9 @@ class WindowsShadingTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.shading_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['shading_actuator'][0],
-                self.trigger_fn_config['shading_actuator'][1],
-                self.trigger_fn_config['shading_actuator'][2]
+                self.action_mapper_config['shading_actuator'][0],
+                self.action_mapper_config['shading_actuator'][1],
+                self.action_mapper_config['shading_actuator'][2]
             )
         
         assert self.shading_actuator is not None, "Shading actuator name has not been initialized."
@@ -85,7 +85,7 @@ class WindowsShadingTrigger(BaseTrigger):
             
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action: float | int, actuator: str) -> Any:
         """
         Get the actions of the actuators after transforming the agent action to actuator action.
@@ -99,7 +99,7 @@ class WindowsShadingTrigger(BaseTrigger):
         """
         return action
 
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def action_to_goal(self, action: int | float) -> int | float:
         """
         This method is used to transform the action to a goal. The goal is used to define the reward.

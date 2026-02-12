@@ -16,7 +16,7 @@ from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.AgentsConnectors.BaseConnector import BaseConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
@@ -108,9 +108,9 @@ class Environment(MultiAgentEnv):
         # asigning the configuration of the environment.
         self.reward_fn: Dict[str, Optional[BaseReward]] = {agent: None for agent in self.agents}
         
-        self.trigger_fn: Dict[str, BaseTrigger] = {
-            agent: self.env_config["agents_config"][agent]["trigger"]['trigger_fn'](
-                self.env_config["agents_config"][agent]["trigger"]["trigger_fn_config"]
+        self.action_mapper: Dict[str, BaseActionMapper] = {
+            agent: self.env_config["agents_config"][agent]["action_mapper"]['action_mapper'](
+                self.env_config["agents_config"][agent]["action_mapper"]["action_mapper_config"]
             )
             for agent in self.agents
         }
@@ -125,9 +125,9 @@ class Environment(MultiAgentEnv):
         action_space: Dict[str, Any] = {agent: None for agent in self.agents}
         for agent in self.agents:
             
-            assert self.trigger_fn[agent] is not None, f"Trigger function for agent {agent} is not defined."
+            assert self.action_mapper[agent] is not None, f"ActionMapper function for agent {agent} is not defined."
             
-            action_space[agent] = self.trigger_fn[agent].get_action_space_dim()
+            action_space[agent] = self.action_mapper[agent].get_action_space_dim()
             
         self.action_space = spaces.Dict(action_space)
         logger.debug(f"Environment: Action space: {self.action_space}")
@@ -278,7 +278,7 @@ class Environment(MultiAgentEnv):
                 infos_queue = self.infos_queue,
                 agents = self.agents,
                 filter_fn = self.filter_fn,
-                trigger_fn = self.trigger_fn,
+                action_mapper = self.action_mapper,
                 connector_fn = self.connector_fn
             )
             # Divide the thread in two in this point.

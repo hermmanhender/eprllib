@@ -1,19 +1,19 @@
 """
-Setpoint triggers
-==================
+Setpoint ActionMappers
+========================
 
-This module contains classes to implement setpoint triggers for controlling actuators in the environment.
+This module contains classes to implement setpoint ActionMappers for controlling actuators in the environment.
 """
 import gymnasium as gym
 import numpy as np
 from typing import Any, Dict, List, Tuple, Optional
-from eprllib.Agents.Triggers.BaseTrigger import BaseTrigger
+from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
-class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
+class DualSetpointDiscreteAndAvailabilityActionMapper(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "temperature_range": Tuple[int|float, int|float],
         "actuator_for_cooling": Tuple[str, str, str],
@@ -24,13 +24,13 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the Dual Set Point Thermostat action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - temperature_range (Tuple[int, int]): The temperature range for the setpoints.
                 - actuator_for_cooling (Tuple[str, str, str]): The configuration for the cooling actuator.
@@ -39,24 +39,24 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
                 - action_space_dim (int): The dimension of the action space. Must be greater than or equal to 3.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: Optional[str] = None
-        temperature_range: Tuple[float|int, float|int] = trigger_fn_config['temperature_range']
+        temperature_range: Tuple[float|int, float|int] = action_mapper_config['temperature_range']
         self.temperature_range_max: float|int = max(temperature_range)
         self.temperature_range_min: float|int = min(temperature_range)
         self.temperature_range_avg: float = (self.temperature_range_max + self.temperature_range_min) / 2
         self.actuator_for_cooling = None
         self.actuator_for_heating = None
         self.availability_actuator = None
-        # self.band_gap_range_len: int = trigger_fn_config['band_gap_range_len'] + 1
-        self.action_space_dim: int = trigger_fn_config['action_space_dim']
+        # self.band_gap_range_len: int = action_mapper_config['band_gap_range_len'] + 1
+        self.action_space_dim: int = action_mapper_config['action_space_dim']
         if self.action_space_dim < 3:
             raise ValueError("The action_space_dim must be greater than or equal to 3.")
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -66,7 +66,7 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         """
         return gym.spaces.Discrete(self.action_space_dim)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -83,21 +83,21 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.actuator_for_cooling = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_cooling'][0],
-                self.trigger_fn_config['actuator_for_cooling'][1],
-                self.trigger_fn_config['actuator_for_cooling'][2]
+                self.action_mapper_config['actuator_for_cooling'][0],
+                self.action_mapper_config['actuator_for_cooling'][1],
+                self.action_mapper_config['actuator_for_cooling'][2]
             )
             self.actuator_for_heating = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_heating'][0],
-                self.trigger_fn_config['actuator_for_heating'][1],
-                self.trigger_fn_config['actuator_for_heating'][2]
+                self.action_mapper_config['actuator_for_heating'][0],
+                self.action_mapper_config['actuator_for_heating'][1],
+                self.action_mapper_config['actuator_for_heating'][2]
             )
             self.availability_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['availability_actuator'][0],
-                self.trigger_fn_config['availability_actuator'][1],
-                self.trigger_fn_config['availability_actuator'][2]
+                self.action_mapper_config['availability_actuator'][0],
+                self.action_mapper_config['availability_actuator'][1],
+                self.action_mapper_config['availability_actuator'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -129,7 +129,7 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 
@@ -144,7 +144,7 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger(BaseTrigger):
         """
         return action
 
-class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
+class DualSetpointDiscreteAndAvailabilityActionMapper_v2(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "temperature_range": Tuple[int|float, int|float],
         "actuator_for_cooling": Tuple[str, str, str],
@@ -155,13 +155,13 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the Dual Set Point Thermostat action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - temperature_range (Tuple[int, int]): The temperature range for the setpoints.
                 - actuator_for_cooling (Tuple[str, str, str]): The configuration for the cooling actuator.
@@ -170,23 +170,23 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
                 - action_space_dim (int): The dimension of the action space. Must be greater than or equal to 3.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: Optional[str] = None
-        temperature_range: Tuple[float|int, float|int] = trigger_fn_config['temperature_range']
+        temperature_range: Tuple[float|int, float|int] = action_mapper_config['temperature_range']
         self.temperature_range_max: float|int = max(temperature_range)
         self.temperature_range_min: float|int = min(temperature_range)
         self.actuator_for_cooling = None
         self.actuator_for_heating = None
         self.availability_actuator = None
-        self.deadband: int = trigger_fn_config.get('deadband', 2)
-        self.action_space_dim: int = trigger_fn_config['action_space_dim']
+        self.deadband: int = action_mapper_config.get('deadband', 2)
+        self.action_space_dim: int = action_mapper_config['action_space_dim']
         if self.action_space_dim < 3:
             raise ValueError("The action_space_dim must be greater than or equal to 3.")
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -196,7 +196,7 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
         """
         return gym.spaces.Discrete(self.action_space_dim)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -213,21 +213,21 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.actuator_for_cooling = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_cooling'][0],
-                self.trigger_fn_config['actuator_for_cooling'][1],
-                self.trigger_fn_config['actuator_for_cooling'][2]
+                self.action_mapper_config['actuator_for_cooling'][0],
+                self.action_mapper_config['actuator_for_cooling'][1],
+                self.action_mapper_config['actuator_for_cooling'][2]
             )
             self.actuator_for_heating = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_heating'][0],
-                self.trigger_fn_config['actuator_for_heating'][1],
-                self.trigger_fn_config['actuator_for_heating'][2]
+                self.action_mapper_config['actuator_for_heating'][0],
+                self.action_mapper_config['actuator_for_heating'][1],
+                self.action_mapper_config['actuator_for_heating'][2]
             )
             self.availability_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['availability_actuator'][0],
-                self.trigger_fn_config['availability_actuator'][1],
-                self.trigger_fn_config['availability_actuator'][2]
+                self.action_mapper_config['availability_actuator'][0],
+                self.action_mapper_config['availability_actuator'][1],
+                self.action_mapper_config['availability_actuator'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -259,7 +259,7 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 
@@ -275,7 +275,7 @@ class DualSetpointTriggerDiscreteAndAvailabilityTrigger_v2(BaseTrigger):
         return action
 
 
-class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
+class DualSetpointContinuosAndAvailabilityActionMapper_v2(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "actuator_for_cooling": Tuple[str, str, str],
         "actuator_for_heating": Tuple[str, str, str],
@@ -284,13 +284,13 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the Dual Set Point Thermostat action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - temperature_range (Tuple[int, int]): The temperature range for the setpoints.
                 - actuator_for_cooling (Tuple[str, str, str]): The configuration for the cooling actuator.
@@ -299,16 +299,16 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
                 - action_space_dim (int): The dimension of the action space. Must be greater than or equal to 3.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         
-        temperature_range: Tuple[float|int, float|int] = trigger_fn_config.get('temperature_range', (16, 32))
+        temperature_range: Tuple[float|int, float|int] = action_mapper_config.get('temperature_range', (16, 32))
         self.temperature_range_max: float = float(max(temperature_range))
         self.temperature_range_min: float = float(min(temperature_range))
         
-        self.deadband: int = trigger_fn_config.get('deadband', 2)
+        self.deadband: int = action_mapper_config.get('deadband', 2)
         if (self.temperature_range_max - self.temperature_range_min) < self.deadband:
             raise ValueError(f"The temperature range must be at least {self.deadband} degrees wide to accommodate the deadband.")
         
@@ -317,7 +317,7 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
         self.actuator_for_heating = None
         self.availability_actuator = None
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -331,7 +331,7 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
         })
     
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -348,21 +348,21 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.actuator_for_cooling = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_cooling'][0],
-                self.trigger_fn_config['actuator_for_cooling'][1],
-                self.trigger_fn_config['actuator_for_cooling'][2]
+                self.action_mapper_config['actuator_for_cooling'][0],
+                self.action_mapper_config['actuator_for_cooling'][1],
+                self.action_mapper_config['actuator_for_cooling'][2]
             )
             self.actuator_for_heating = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_heating'][0],
-                self.trigger_fn_config['actuator_for_heating'][1],
-                self.trigger_fn_config['actuator_for_heating'][2]
+                self.action_mapper_config['actuator_for_heating'][0],
+                self.action_mapper_config['actuator_for_heating'][1],
+                self.action_mapper_config['actuator_for_heating'][2]
             )
             self.availability_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['availability_actuator'][0],
-                self.trigger_fn_config['availability_actuator'][1],
-                self.trigger_fn_config['availability_actuator'][2]
+                self.action_mapper_config['availability_actuator'][0],
+                self.action_mapper_config['availability_actuator'][1],
+                self.action_mapper_config['availability_actuator'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -396,7 +396,7 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:int|float, actuator: str) -> float|int:
         """
         This method is used to get the actions of the actuators after transform the 
@@ -411,7 +411,7 @@ class DualSetpointTriggerContinuosAndAvailabilityTrigger_v2(BaseTrigger):
         """
         return action
     
-class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
+class DualSetpointContinuosAndConstantFlowActionMapper(BaseActionMapper):
     REQUIRED_KEYS: Dict[str, Any] = {
         "actuator_for_cooling": Tuple[str, str, str],
         "actuator_for_heating": Tuple[str, str, str],
@@ -424,13 +424,13 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
     
     def __init__(
         self,
-        trigger_fn_config: Dict[str, Any]
+        action_mapper_config: Dict[str, Any]
     ):
         """
         This class implements the Dual Set Point Thermostat action function.
 
         Args:
-            trigger_fn_config (Dict[str, Any]): The configuration of the action function.
+            action_mapper_config (Dict[str, Any]): The configuration of the action function.
             It should contain the following keys:
                 - temperature_range (Tuple[int, int]): The temperature range for the setpoints.
                 - actuator_for_cooling (Tuple[str, str, str]): The configuration for the cooling actuator.
@@ -439,18 +439,18 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
                 - action_space_dim (int): The dimension of the action space. Must be greater than or equal to 3.
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: Optional[str] = None
         
-        temperature_range: Tuple[float|int, float|int] = trigger_fn_config.get('temperature_range', (16, 32))
+        temperature_range: Tuple[float|int, float|int] = action_mapper_config.get('temperature_range', (16, 32))
         
         self.temperature_range_max: float|int = max(temperature_range)
         self.temperature_range_min: float|int = min(temperature_range)
         
-        self.deadband: int = trigger_fn_config.get('deadband', 2)
+        self.deadband: int = action_mapper_config.get('deadband', 2)
         if (self.temperature_range_max - self.temperature_range_min) < self.deadband:
             raise ValueError(f"The temperature range must be at least {self.deadband} degrees wide to accommodate the deadband.")
         
@@ -458,12 +458,12 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
         self.actuator_for_heating = None
         
         # Create a .csv file to save the actions values during execution
-        # self.actions_file_path: Optional[str] = trigger_fn_config.get('actions_file_path', None)
+        # self.actions_file_path: Optional[str] = action_mapper_config.get('actions_file_path', None)
         # if self.actions_file_path is not None:
         #     self.actions_file = open(self.actions_file_path, 'w')
 
         
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -474,7 +474,7 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
         return gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
     
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -491,15 +491,15 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.actuator_for_cooling = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_cooling'][0],
-                self.trigger_fn_config['actuator_for_cooling'][1],
-                self.trigger_fn_config['actuator_for_cooling'][2]
+                self.action_mapper_config['actuator_for_cooling'][0],
+                self.action_mapper_config['actuator_for_cooling'][1],
+                self.action_mapper_config['actuator_for_cooling'][2]
             )
             self.actuator_for_heating = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['actuator_for_heating'][0],
-                self.trigger_fn_config['actuator_for_heating'][1],
-                self.trigger_fn_config['actuator_for_heating'][2]
+                self.action_mapper_config['actuator_for_heating'][0],
+                self.action_mapper_config['actuator_for_heating'][1],
+                self.action_mapper_config['actuator_for_heating'][2]
             )
             
         actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
@@ -540,7 +540,7 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:int|float, actuator: str) -> float|int:
         """
         This method is used to get the actions of the actuators after transform the 
@@ -556,32 +556,32 @@ class DualSetpointContinuosAndConstantFlowTrigger(BaseTrigger):
         return action
     
 
-class AvailabilityTrigger(BaseTrigger):
+class AvailabilityActionMapper(BaseActionMapper):
     REQUIRED_KEYS = {
         "availability_actuator": Tuple[str, str, str]
     }
     
     def __init__(
         self, 
-        trigger_fn_config:Dict[str,Any]
+        action_mapper_config:Dict[str,Any]
         ):
         """
         This class implements the Dual Set Point Thermostat action function.
 
         Args:
-            trigger_fn_config (Dict[str,Any]): The configuration of the action function.
+            action_mapper_config (Dict[str,Any]): The configuration of the action function.
             It should contain the following keys: agents_type (Dict[str, int]): A dictionary 
             mapping agent names to their types (1 for cooling, 2 for heating, 3 for Availability).
         """
         # Validate the config.
-        config_validation(trigger_fn_config, self.REQUIRED_KEYS)
+        config_validation(action_mapper_config, self.REQUIRED_KEYS)
         
-        super().__init__(trigger_fn_config)
+        super().__init__(action_mapper_config)
         
         self.agent_name: Optional[str] = None
         self.availability_actuator: Optional[str] = None
     
-    @override(BaseTrigger)    
+    @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
         Get the action space of the environment.
@@ -591,7 +591,7 @@ class AvailabilityTrigger(BaseTrigger):
         """
         return gym.spaces.Discrete(2)
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
@@ -608,9 +608,9 @@ class AvailabilityTrigger(BaseTrigger):
             self.agent_name = get_agent_name(actuators)
             self.availability_actuator = get_actuator_name(
                 self.agent_name,
-                self.trigger_fn_config['availability_actuator'][0],
-                self.trigger_fn_config['availability_actuator'][1],
-                self.trigger_fn_config['availability_actuator'][2]
+                self.action_mapper_config['availability_actuator'][0],
+                self.action_mapper_config['availability_actuator'][1],
+                self.action_mapper_config['availability_actuator'][2]
             )
 
         
@@ -637,7 +637,7 @@ class AvailabilityTrigger(BaseTrigger):
         
         return actuator_dict_actions
     
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def get_actuator_action(self, action:float|int, actuator: str) -> Any:
         """
         This method is used to get the actions of the actuators after transform the 
@@ -652,7 +652,7 @@ class AvailabilityTrigger(BaseTrigger):
         """
         return action
 
-    @override(BaseTrigger)
+    @override(BaseActionMapper)
     def action_to_goal(self, action: int | float) -> int | float:
         """
         This method is used to transform the action to a goal. The goal is used to define the reward.

@@ -16,7 +16,7 @@
 # from eprllib.Episodes.DefaultEpisode import DefaultEpisode
 # from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
 # from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-# from eprllib.Agents.Triggers.SetpointTriggers import AvailabilityTrigger
+# from eprllib.Agents.ActionMappers.SetpointActionMappers import AvailabilityActionMapper
 # from eprllib.Agents.Rewards.EnergyRewards import EnergyWithMeters
 
 
@@ -115,9 +115,9 @@
 #                         "filter_fn": DefaultFilter,
 #                         "filter_fn_config": {}
 #                     },
-#                     "trigger": {
-#                         "trigger_fn": AvailabilityTrigger,
-#                         "trigger_fn_config": {
+#                     "action_mapper": {
+#                         "action_mapper": AvailabilityActionMapper,
+#                         "action_mapper_config": {
 #                             "availability_actuator": ("Schedule:Constant", "Schedule Value", "HTGSETP_SCH"),
 #                         }
 #                     }
@@ -145,7 +145,7 @@
 #         assert env.possible_agents == ["agent1"]
 #         assert env.agents == ["agent1"]
 #         assert "agent1" in env.reward_fn
-#         assert "agent1" in env.trigger_fn
+#         assert "agent1" in env.action_mapper
 #         assert "agent1" in env.filter_fn
 #         # assert "agent1" in env.action_space
 #         assert isinstance(env.action_space, spaces.Dict)

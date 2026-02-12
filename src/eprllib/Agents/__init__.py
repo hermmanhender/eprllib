@@ -10,16 +10,16 @@ environment.
 In this module, you will find:
 
 - ``AgentSpec``: The main class for defining agents, including their observation, 
-  filter, action, trigger, and reward specifications.
+  filter, action, action_mapper, and reward specifications.
 - ``ObservationSpec``: Defines the observation space for the agent.
 - ``FilterSpec``: Defines filters to preprocess observations before they are fed to 
   the agent. NOTE: This object must to be coordinated with ``AgentsConnectors``.
 - ``ActionSpec``: Defines the action space and actuators for the agent.
-- ``TriggerSpec``: Defines triggers that determine when the agent should take an action.
+- ``ActionMapperSpec``: Defines ActionMappers that determine when the agent should take an action.
 - ``RewardSpec``: Defines the reward function for the agent.
 
 Additionally, you will find base classes and some applications for Filters, Rewards, 
-and Triggers, which are essential parts of an agent in ``eprllib``.
+and ActionMappers, which are essential parts of an agent in ``eprllib``.
 """
 
 from typing import Dict, Any
