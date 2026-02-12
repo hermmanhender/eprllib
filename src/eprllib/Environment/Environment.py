@@ -8,10 +8,10 @@ need to define the EnergyPlus Runner.
 import tempfile
 # import collections
 import numpy as np
-from gymnasium import spaces
+from gymnasium import spaces, Space
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Rewards.BaseReward import BaseReward
@@ -77,6 +77,28 @@ class Environment(MultiAgentEnv):
         render() -> None:
             Placeholder method for rendering functionality.
     """
+    env_config: Dict[str, Any]
+    episode_fn: BaseEpisode
+    connector_fn: BaseConnector
+    possible_agents: List[str]
+    agents: List[str]
+    reward_fn: Dict[str, Optional[BaseReward]]
+    action_mapper: Dict[str, BaseActionMapper]
+    filter_fn: Dict[str, BaseFilter]
+    action_space: spaces.Dict
+    observation_space: spaces.Dict
+    runner: Optional[EnvironmentRunner] = None
+    obs_queue: Optional[Queue[Dict[str, Any]]] = None
+    act_queue: Optional[Queue[Any]] = None
+    infos_queue: Optional[Queue[Dict[str, Any]]] = None
+    episode = -1
+    timestep = 0
+    terminateds = False
+    truncateds = False
+    last_obs: Dict[str, Any]
+    last_infos: Dict[str, Any]
+    output_path: Optional[str]
+
     def __init__(
         self,
         env_config: Dict[str, Any]

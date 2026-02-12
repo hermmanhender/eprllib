@@ -30,6 +30,19 @@ from eprllib.Utils.connector_utils import (
 from eprllib import logger
 
 class HierarchicalTwoLevelsConnector(BaseConnector):
+    """
+    Hierarchical connector with two levels of hierarchy.
+    """
+    sub_connector_fn: BaseConnector
+    top_level_agent: str
+    top_level_temporal_scale: int
+    timestep_runner: int = -1
+    top_level_goal: Optional[Dict[str, Any]] = None
+    top_level_obs: Optional[Dict[str, Any]] = None
+    top_level_trayectory: Dict[str, Any] = {}
+    obs_indexed_top_level: Dict[str, Dict[str, int]] = {}
+    obs_indexed_low_level: Dict[str, Dict[str, int]] = {}
+    
     def __init__(
         self, 
         connector_fn_config: Dict[str, Any] = {}
@@ -261,6 +274,21 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
     
 
 class HierarchicalThreeLevelsConnector(BaseConnector):
+    """
+    Hierarchical connector with three levels of hierarchy.
+    """
+    middle_level_connector_fn: BaseConnector
+    lower_level_connector_fn: BaseConnector
+    top_level_agent: str
+    top_level_temporal_scale: int
+    timestep_runner: int = -1
+    top_level_goal: Optional[Dict[str, Any]] = None
+    top_level_obs: Optional[Dict[str, Any]] = None
+    top_level_trayectory: Dict[str, Any] = {}
+    obs_indexed_top_level: Dict[str, Dict[str, int]] = {}
+    obs_indexed_low_level: Dict[str, Dict[str, int]] = {}
+    obs_indexed_middle_level: Dict[str, Dict[str, int]] = {}
+    
     def __init__(
         self, 
         connector_fn_config: Dict[str, Any] = {}

@@ -23,13 +23,19 @@ class AgentSpec:
     """
     AgentSpec is the base class for an agent specification to safe configuration of the object.
     """
+    observation: Optional[ObservationSpec|Dict[str, Any]] = None
+    filter: Optional[FilterSpec|Dict[str, Any]] = None
+    action: Optional[ActionSpec|Dict[str, Any]] = None
+    action_mapper: Optional[ActionMapperSpec|Dict[str, Any]] = None
+    reward: Optional[RewardSpec|Dict[str, Any]] = None
+    
     def __init__(
         self,
-        observation: Optional[ObservationSpec] = None,
-        filter: Optional[FilterSpec] = None,
-        action: Optional[ActionSpec] = None,
-        action_mapper: Optional[ActionMapperSpec] = None,
-        reward: Optional[RewardSpec] = None,
+        observation: Optional[ObservationSpec|Dict[str, Any]] = None,
+        filter: Optional[FilterSpec|Dict[str, Any]] = None,
+        action: Optional[ActionSpec|Dict[str, Any]] = None,
+        action_mapper: Optional[ActionMapperSpec|Dict[str, Any]] = None,
+        reward: Optional[RewardSpec|Dict[str, Any]] = None,
     **kwargs: Any) -> None:
         """
         Contruction method for the AgentSpec class.
@@ -47,31 +53,35 @@ class AgentSpec:
             NotImplementedError: _description_
             NotImplementedError: _description_
         """
-        if observation is None:
-            logger.info("AgentSpec: No observation defined. Using default observation.")
-            self.observation: ObservationSpec|Dict[str, Any] = ObservationSpec()
-        else:
+        if observation is not None:
             self.observation = observation
-        if filter is None:
-            logger.info("AgentSpec: No filter defined. Using default filter.")
-            self.filter: FilterSpec|Dict[str, Any] = FilterSpec()
         else:
+            logger.info("AgentSpec: No observation defined. Using default observation.")
+            self.observation = ObservationSpec()
+        
+        if filter is not None:
             self.filter = filter
-        if action is None:
-            logger.info("AgentSpec: No action defined. Using default action.")
-            self.action: ActionSpec|Dict[str, Any] = ActionSpec()
         else:
+            logger.info("AgentSpec: No filter defined. Using default filter.")
+            self.filter = FilterSpec()
+            
+        if action is not None:
             self.action = action
-        if action_mapper is None:
-            logger.info("AgentSpec: No action_mapper defined. Using default action_mapper.")
-            self.action_mapper: ActionMapperSpec|Dict[str, Any] = ActionMapperSpec()
         else:
+            logger.info("AgentSpec: No action defined. Using default action.")
+            self.action = ActionSpec()
+            
+        if action_mapper is not None:
             self.action_mapper = action_mapper
-        if reward is None:
-            logger.info("AgentSpec: No reward defined. Using default reward.")
-            self.reward: RewardSpec|Dict[str, Any] = RewardSpec()
         else:
+            logger.info("AgentSpec: No action_mapper defined. Using default action_mapper.")
+            self.action_mapper = ActionMapperSpec()
+            
+        if reward is not None:
             self.reward = reward
+        else:
+            logger.info("AgentSpec: No reward defined. Using default reward.")
+            self.reward = RewardSpec()
         
         for key, value in kwargs.items():
             setattr(self, key, value)

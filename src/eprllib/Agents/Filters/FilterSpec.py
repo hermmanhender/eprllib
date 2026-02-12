@@ -13,6 +13,9 @@ class FilterSpec:
     """
     FilterSpec is the base class for a filter specification to safe configuration of the object.
     """
+    filter_fn: Optional[Type[BaseFilter]] = None
+    filter_fn_config: Dict[str, Any] = {}
+    
     def __init__(
         self,
         filter_fn: Optional[Type[BaseFilter]] = None,
