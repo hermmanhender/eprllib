@@ -17,7 +17,7 @@ from ray.rllib.policy.policy import PolicySpec
 
 from eprllib.Environment.Environment import Environment
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+from eprllib.Connectors.DefaultConnector import DefaultConnector
 from eprllib.Agents.AgentSpec import (
     AgentSpec,
     ObservationSpec,
@@ -29,10 +29,10 @@ from eprllib.Agents.AgentSpec import (
 
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 
-from eprllib.examples.example_central_agent_files.action_mapper import CentralAgentActionMapper
-from eprllib.examples.example_central_agent_files.reward_function import IAQThermalComfortEnergyReward
-from eprllib.examples.example_central_agent_files.episode_fn import task_cofiguration
-from eprllib.examples.example_central_agent_files.policy_mapping import policy_map_fn
+from eprllib.Examples.example_central_agent_files.action_mapper import CentralAgentActionMapper
+from eprllib.Examples.example_central_agent_files.reward_function import IAQThermalComfortEnergyReward
+from eprllib.Examples.example_central_agent_files.episode_fn import task_cofiguration
+from eprllib.Examples.example_central_agent_files.policy_mapping import policy_map_fn
 
 # read the json config file as a dict.
 with open("src/eprllib/examples/example_central_agent_files/episode_fn_config.json", "r") as f:
@@ -81,7 +81,7 @@ eprllib_config.agents(
                 ],
                 use_actuator_state = True,
                 use_one_day_weather_prediction = True,
-                prediction_hours = 3,
+                weather_prediction_hours = 3,
                 prediction_variables = {
                     'outdoor_dry_bulb': True,
                 },

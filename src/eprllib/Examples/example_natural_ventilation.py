@@ -51,7 +51,7 @@ from ray.rllib.policy.policy import PolicySpec
 
 from eprllib.Environment.Environment import Environment
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-from eprllib.AgentsConnectors.FullySharedParametersConnector import FullySharedParametersConnector
+from eprllib.Connectors.FullySharedParametersConnector import FullySharedParametersConnector
 from eprllib.Agents.AgentSpec import (
     AgentSpec,
     ObservationSpec,
@@ -64,9 +64,9 @@ from eprllib.Agents.Filters.FullySharedParametersFilter import FullySharedParame
 from eprllib.Agents.ActionMappers.WindowsOpeningActionMappers import WindowsOpeningActionMapper
 from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointActionMapperDiscreteAndAvailabilityActionMapper
 
-from eprllib.examples.example_thermostat_files.reward_function import EnergyAndASHRAE55SimpleModel
-from eprllib.examples.example_thermostat_files.episode_fn import task_cofiguration
-from eprllib.examples.example_thermostat_files.policy_mapping import policy_map_fn
+from eprllib.Examples.example_thermostat_files.reward_function import EnergyAndASHRAE55SimpleModel
+from eprllib.Examples.example_thermostat_files.episode_fn import task_cofiguration
+from eprllib.Examples.example_thermostat_files.policy_mapping import policy_map_fn
 
 from configurations.task1g_episode_fn import task1g_cofiguration
 from configurations.observation_function import task1_policy_map_fn
@@ -121,7 +121,7 @@ eprllib_config.agents(
                 ],
                 use_actuator_state = True,
                 use_one_day_weather_prediction = True,
-                prediction_hours = 3,
+                weather_prediction_hours = 3,
                 prediction_variables = {
                     'outdoor_dry_bulb': True,
                 },
