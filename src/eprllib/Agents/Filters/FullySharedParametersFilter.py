@@ -22,6 +22,8 @@ class FullySharedParametersFilter(BaseFilter):
     """
     Filter class for the fully-shared-parameters policy.
     """
+    agent_name: Optional[str] = None
+    
     def __init__(
         self,
         filter_fn_config: Dict[str, Any]

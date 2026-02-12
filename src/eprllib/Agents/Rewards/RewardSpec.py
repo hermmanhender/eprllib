@@ -14,6 +14,9 @@ class RewardSpec:
     """
     RewardSpec is the base class for an reward specification to safe configuration of the object.
     """
+    reward_fn: Optional[Type[BaseReward]] = None
+    reward_fn_config: Dict[str, Any] = {}
+        
     def __init__(
         self,
         reward_fn: Optional[Type[BaseReward]] = None,

@@ -12,6 +12,8 @@ class ActionSpec:
     """
     ActionSpec is the base class for an action specification to safe configuration of the object.
     """
+    actuators: Optional[List[Tuple[str, str, str]]] = None
+    
     def __init__(
         self,
         actuators: Optional[List[Tuple[str, str, str]]] = None,

@@ -12,6 +12,8 @@ class BaseEpisode:
     """
     This class contains the methods to configure the episode in EnergyPlus with RLlib.
     """
+    episode_fn_config: Dict[str, Any] = {}
+    
     def __init__(
         self,
         episode_fn_config: Dict[str, Any] = {}

@@ -20,6 +20,8 @@ class BaseReward:
     """
     This class is the base class for defining reward functions.
     """
+    reward_fn_config: Dict[str, Any] = {}
+    
     def __init__(
         self,
         reward_fn_config: Dict[str, Any] = {}

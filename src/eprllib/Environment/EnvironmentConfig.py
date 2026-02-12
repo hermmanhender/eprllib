@@ -16,17 +16,21 @@ from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
 from eprllib import logger
 
 class EnvironmentConfig:
-    
-    def from_dict(cls, config_dict: Dict[str, Any]) -> "EnvironmentConfig":
-        """Creates an EnvironmentConfig from a legacy python config dict.
-
-        Args:
-            config_dict: The legacy formatted python config dict for some algorithm.
-
-        Returns:
-            A new EnvironmentConfig object that matches the given python config dict.
-        """
-        pass
+    """
+    This class is used to configure the environment.
+    """
+    epjson_path: Optional[str] = None
+    epw_path: Optional[str] = None
+    output_path: Optional[str] = None
+    ep_terminal_output: bool = True
+    timeout: float | int = TIMEOUT
+    evaluation: bool = False
+    agents_config: Optional[Dict[str, AgentSpec|Dict[str, Any]]] = None
+    connector_fn: Optional[Type[BaseConnector]] = None
+    connector_fn_config: Dict[str, Any] = {}
+    episode_fn: Optional[Type[BaseEpisode]] = None
+    episode_fn_config: Dict[str, Any] = {}
+    cut_episode_len: int = CUT_EPISODE_LEN
     
     def __init__(self):
         """
@@ -62,6 +66,17 @@ class EnvironmentConfig:
         except Exception as e:
             logger.error(f"EnvironmentConfig: Error building EnvironmentConfig: {e}")
             raise ValueError("Failed to build EnvironmentConfig. Please check the configuration settings.") from e
+    
+    def from_dict(cls, config_dict: Dict[str, Any]) -> "EnvironmentConfig":
+        """Creates an EnvironmentConfig from a legacy python config dict.
+
+        Args:
+            config_dict: The legacy formatted python config dict for some algorithm.
+
+        Returns:
+            A new EnvironmentConfig object that matches the given python config dict.
+        """
+        pass
     
     def update_from_dict(
         self,
