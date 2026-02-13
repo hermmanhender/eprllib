@@ -307,7 +307,7 @@ def generate_experience_V2(
                     
                 else:
                     # Compute the next action from a batch (B=1) of observations.
-                    obs_batch[agent] = torch.from_numpy(obs[agent]).unsqueeze(0)
+                    obs_batch[agent] = torch.from_numpy(obs[agent]).float().unsqueeze(0)
                     # Compute action without RNN state
                     model_outputs  = rl_module_dict[agent].forward_inference({"obs": obs_batch[agent]})
                     # Extract the action distribution parameters from the output and dissolve batch dim.
