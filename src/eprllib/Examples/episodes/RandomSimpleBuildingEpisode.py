@@ -34,7 +34,7 @@ import os
 import tempfile
 import numpy as np
 from numpy.typing import NDArray
-from numpy import float32
+from numpy import float64
 from typing import Dict, Any, List
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.episode_fn_utils import (
@@ -141,7 +141,7 @@ class RandomSimpleBuildingEpisode(BaseEpisode):
         env_config['building_properties']['window_area_relation_south'] = window_area_relation_list[2]
         env_config['building_properties']['window_area_relation_west'] = window_area_relation_list[3]
         
-        window_area_relation: NDArray[float32] = np.array(window_area_relation_list)
+        window_area_relation: NDArray[float64] = np.array(window_area_relation_list)
         epJSON_object = building_dimension(epJSON_object, h, w, l,window_area_relation)
         
         # Define the type of construction (construction properties for each three layers)

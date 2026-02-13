@@ -1,7 +1,7 @@
 """
 Specification for the action space and actuators
 ===========================================================
-This module defines the `ActionSpec` class, which is used to specify the 
+This module defines the ``ActionSpec`` class, which is used to specify the 
 configuration of action space and actuators for agents in reinforcement 
 learning environments.
 """
@@ -43,11 +43,7 @@ class ActionSpec:
             KeyError: If an invalid key is provided when setting an item.
             
         """
-        if actuators is None:
-            print("No actuators provided.")
-            self.actuators = []
-        else: 
-            self.actuators = actuators
+        self.actuators = actuators
     
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
@@ -64,6 +60,9 @@ class ActionSpec:
         """
         This method is used to build the ActionSpec object.
         """
+        if self.actuators is None:
+            logger.info("ActionSpec: No actuators provided.")
+            self.actuators = []
         # Check that the actuators are defined as a list of tuples of 3 elements.
         for actuator in self.actuators:
             if len(actuator) != 3:

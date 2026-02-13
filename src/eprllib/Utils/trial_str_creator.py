@@ -7,6 +7,7 @@ This utility method create a name for the RLlib trial experiment.
 
 from ray.tune.experiment.trial import Trial
 from eprllib import logger
+from eprllib.Utils.annotations import trial_str_creator_for_tune
 
 def trial_str_creator(trial: Trial, name:str='eprllib'):
     """
@@ -20,10 +21,7 @@ def trial_str_creator(trial: Trial, name:str='eprllib'):
     Returns:
         str: Return a unique string for the folder of the trial.
     """
-    # Validar que trial tenga los atributos esperados
-    if not (hasattr(trial, 'trainable_name') and hasattr(trial, 'trial_id')):
-        msg = "TrialStrCreator: The 'trial' argument must have 'trainable_name' and 'trial_id' attributes."
-        logger.error(msg)
-        raise ValueError(msg)
+    logger.warning("TrialStrCreator: This method is deprecated. Use trial_str_creator_for_tune instead.")
+        
+    trial_str_creator_for_tune(trial, name)
     
-    return "{}_{}_{}".format(name, trial.trainable_name, trial.trial_id)

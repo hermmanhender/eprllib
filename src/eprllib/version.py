@@ -1,4 +1,7 @@
-"""Version information."""
+"""
+Version Management
+=====================
+"""
 
 
 __version__ = "1.6.6"

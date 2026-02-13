@@ -1,7 +1,7 @@
 """
 Specification for the observation space and parameters
 ===========================================================
-This module defines the `ObservationSpec` class, which is used to specify the configuration of 
+This module defines the ``ObservationSpec`` class, which is used to specify the configuration of 
 observation space and parameters for agents in reinforcement learning environments.
 
 It ensures that the observation space is properly defined and adheres to the expected interface.

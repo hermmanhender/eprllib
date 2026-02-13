@@ -3,7 +3,7 @@ Base Filter
 ============
 
 This module contains the base class for defining filter functions used in agent specifications.
-Filters are used to preprocess observations before they are fed to the agent. The `BaseFilter`
+Filters are used to preprocess observations before they are fed to the agent. The ``BaseFilter``
 class provides the basic structure and methods that can be extended to create custom filters.
 
 This class can not be used directly in eprllib, but as a base to create new filters. All the filters
@@ -20,6 +20,7 @@ class BaseFilter:
     Filters are used to preprocess observations before they are fed to the agent.
     """
     filter_fn_config: Dict[str, Any]
+    
     def __init__(
         self,
         filter_fn_config: Dict[str, Any]

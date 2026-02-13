@@ -1,7 +1,8 @@
 """
 Specification for the filter functions
 ===========================================
-This module defines the `FilterSpec` class, which is used to specify the configuration of filter functions for agents in reinforcement learning environments.
+This module defines the ``FilterSpec`` class, which is used to specify the 
+configuration of filter functions for agents in reinforcement learning environments.
 It ensures that the filter function is properly defined and adheres to the expected interface.
 """
 from typing import Dict, Any, Optional, Type

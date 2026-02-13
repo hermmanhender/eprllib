@@ -6,9 +6,11 @@ Annotations
 """
 from eprllib import logger
 from typing import Type, Callable, Any
+from ray.tune.experiment.trial import Trial
 
 def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Decorator for documenting method overrides.
+    """
+    Decorator for documenting method overrides.
 
     Args:
         parent_cls: The superclass that provides the overridden method. If
@@ -73,3 +75,24 @@ def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[.
         return method
 
     return decorator
+
+
+def trial_str_creator_for_tune(trial: Trial, name:str='eprllib'):
+    """
+    This method create a description for the folder where the outputs and checkpoints 
+    will be save.
+
+    Args:
+        trial: A trial type of RLlib.
+        name (str): Optional name for the trial. Default: eprllib
+
+    Returns:
+        str: Return a unique string for the folder of the trial.
+    """
+    # Validar que trial tenga los atributos esperados
+    if not (hasattr(trial, 'trainable_name') and hasattr(trial, 'trial_id')):
+        msg = "TrialStrCreator: The 'trial' argument must have 'trainable_name' and 'trial_id' attributes."
+        logger.error(msg)
+        raise ValueError(msg)
+    
+    return "{}_{}_{}".format(name, trial.trainable_name, trial.trial_id)

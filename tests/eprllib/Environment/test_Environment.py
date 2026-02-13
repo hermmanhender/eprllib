@@ -116,7 +116,7 @@
 #                         "filter_fn_config": {}
 #                     },
 #                     "action_mapper": {
-#                         "action_mapper": AvailabilityActionMapper,
+#                         "action_mapper_fn": AvailabilityActionMapper,
 #                         "action_mapper_config": {
 #                             "availability_actuator": ("Schedule:Constant", "Schedule Value", "HTGSETP_SCH"),
 #                         }
