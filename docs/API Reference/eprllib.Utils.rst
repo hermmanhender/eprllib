@@ -10,12 +10,12 @@
    :toctree:
    :recursive:
 
-   Utils
+   agent_utils
    annotations
+   connector_utils
    env_config_utils
+   env_utils
    episode_fn_utils
-   from_julian_day
+   filter_utils
    observation_utils
-   random_weather
-   run_period_change
    trial_str_creator

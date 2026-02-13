@@ -154,7 +154,7 @@ Here's a complete example of how to define and use a reward function:
 
     from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the reward
     def my_reward_function(agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs):
@@ -168,7 +168,6 @@ Here's a complete example of how to define and use a reward function:
     reward_spec = RewardSpec(
         reward_fn=my_reward_function,
         reward_fn_config={
-            "agent_name": "HVAC",
             "thermal_zone": "Thermal Zone",
             "beta": 0.001,
             'people_name': "People",
@@ -201,10 +200,9 @@ Here's a complete example of how to define and use a reward function:
             filter_fn=DefaultFilter,
             filter_fn_config={},
         ),
-        trigger=TriggerSpec(
-            trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-            trigger_fn_config={
-                "agent_name": "HVAC",
+        action_mapper=ActionMapperSpec(
+            action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+            action_mapper_config={
                 'temperature_range': (18, 28),
                 'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                 'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),

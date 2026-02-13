@@ -14,5 +14,6 @@ eprllib.Utils.observation\_utils
       get_other_obs_name
       get_parameter_name
       get_parameter_prediction_name
+      get_user_occupation_forecast_name
       get_variable_name
    

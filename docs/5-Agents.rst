@@ -141,10 +141,10 @@ The ``DefaultFilter`` is provided as a standard option.
         filter_fn_config={},
     )
 
-TriggerSpec: Triggering Actions
--------------------------------
+ActionMapperSpec: Triggering Actions
+------------------------------------
 
-The ``TriggerSpec`` class defines when the agent's actions are triggered. It specifies the trigger function and its configuration. It allows you to define:
+The ``ActionMapperSpec`` class defines when the agent's actions are triggered. It specifies the trigger function and its configuration. It allows you to define:
 
 *   ``trigger_fn``: A function that determines when to trigger an action.
 *   ``trigger_fn_config``: A dictionary of parameters that will be passed to the trigger function.
@@ -219,7 +219,6 @@ The ``agents()`` method takes the following parameters:
         reward=RewardSpec(
             reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
             reward_fn_config={
-                "agent_name": "HVAC",
                 "thermal_zone": "Thermal Zone",
                 "beta": 0.001,
                 'people_name': "People",

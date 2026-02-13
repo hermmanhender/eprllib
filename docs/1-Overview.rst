@@ -29,7 +29,7 @@ eprllib offers several key features:
     of scenarios where multiple agents interact with each other and the building environment.
     It also supports single-agent setups for simpler applications.
 *   **Flexible and Configurable:** The library provides configurable modules
-    for **Filters**, **Triggers**, and **Rewards**, allowing users to customize the learning
+    for **Filters**, **ActionMappers**, and **Rewards**, allowing users to customize the learning
     environment and explore diverse control strategies.
 *   **Inter-Agent Communication and Coordination:** eprllib includes a dedicated module for
     communication and coordination between agents. This is crucial for implementing collaborative

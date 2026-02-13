@@ -47,7 +47,7 @@ The ``EnvironmentConfig`` class is the central configuration object for defining
     .. code-block:: python
 
         from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-        from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+        from eprllib.Connectors.DefaultConnector import DefaultConnector
         from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
         from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
         from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper

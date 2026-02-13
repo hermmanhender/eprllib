@@ -12,5 +12,3 @@
 
    BaseEpisode
    DefaultEpisode
-   RandomSimpleBuildingEpisode
-   random_weather

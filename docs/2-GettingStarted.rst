@@ -105,14 +105,10 @@ like EnergyPlus, we can define the agents configurations.
     # Rewards.
     from eprllib.Agents.Rewards.EnergyAndAshrae55SimpleModel import EnergyAndASHRAE55SimpleModel
     # Specs to facilitate the building of agents.
-    from eprllib.Agents.AgentSpec import (
-        AgentSpec,
-        ObservationSpec,
-        RewardSpec,
-        ActionSpec,
-        TriggerSpec,
-        FilterSpec
-    )
+    from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec
+    from eprllib.Agents.Rewards.RewardSpec import RewardSpec
+    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
+    from eprllib.Agents.Filters.FilterSpec import FilterSpec
 
     eprllib_config.agents(
         agents_config={

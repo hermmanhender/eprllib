@@ -113,7 +113,6 @@ Agents are the decision-making entities in the RL process. In eprllib, agents in
             reward=RewardSpec(
                 reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
                 reward_fn_config={
-                    "agent_name": "HVAC",
                     "thermal_zone": "Thermal Zone",
                     "beta": 0.001,
                     'people_name': "People",

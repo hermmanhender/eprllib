@@ -1,10 +1,10 @@
-AgentConnectors API
-===================
+Connectors API
+==============
 
 Introduction
 ------------
 
-In eprllib, **AgentConnectors** define how agents interact with the environment and with each other. They provide a flexible mechanism to implement various interaction patterns, such as cooperation, competition, or hierarchical control. This document provides a detailed explanation of the AgentConnectors API in eprllib.
+In eprllib, **Connectors** define how agents interact with the environment and with each other. They provide a flexible mechanism to implement various interaction patterns, such as cooperation, competition, or hierarchical control. This document provides a detailed explanation of the AgentConnectors API in eprllib.
 
 .. image:: Images/connectors.png
     :width: 600
@@ -13,10 +13,10 @@ In eprllib, **AgentConnectors** define how agents interact with the environment 
     :figclass: align-center
     :caption: Connectors diagram.
 
-AgentsConnector: Defining Agent Interactions
--------------------------------------------
+Connector: Defining Agent Interactions
+--------------------------------------
 
-The ``AgentsConnector`` API is used to define how agents interact with the environment and with each other. It is specified in the ``EnvironmentConfig`` class using the ``agents()`` method.
+The ``Connector`` API is used to define how agents interact with the environment and with each other. It is specified in the ``EnvironmentConfig`` class using the ``agents()`` method.
 
 *   ``connector_fn``: A function that defines how agents interact with the environment.
 *   ``connector_fn_config``: A dictionary of parameters that will be passed to the connector function.
@@ -63,10 +63,10 @@ Once you have defined your connector function, you need to integrate it into the
 .. code-block:: python
 
     from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-    from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+    from eprllib.Connectors.DefaultConnector import DefaultConnector
     from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Create the EnvironmentConfig object
     env_config = EnvironmentConfig()
@@ -97,10 +97,9 @@ Once you have defined your connector function, you need to integrate it into the
                     filter_fn=DefaultFilter,
                     filter_fn_config={},
                 ),
-                trigger=TriggerSpec(
-                    trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-                    trigger_fn_config={
-                        "agent_name": "HVAC",
+                action_mapper=ActionMapperSpec(
+                    action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+                    action_mapper_config={
                         'temperature_range': (18, 28),
                         'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                         'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -110,7 +109,6 @@ Once you have defined your connector function, you need to integrate it into the
                 reward=RewardSpec(
                     reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
                     reward_fn_config={
-                        "agent_name": "HVAC",
                         "thermal_zone": "Thermal Zone",
                         "beta": 0.001,
                         'people_name': "People",
@@ -173,10 +171,10 @@ Here's a complete example of how to define and use the ``DefaultConnector``:
 .. code-block:: python
 
     from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-    from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+    from eprllib.Connectors.DefaultConnector import DefaultConnector
     from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Create the EnvironmentConfig object
     env_config = EnvironmentConfig()
@@ -207,10 +205,9 @@ Here's a complete example of how to define and use the ``DefaultConnector``:
                     filter_fn=DefaultFilter,
                     filter_fn_config={},
                 ),
-                trigger=TriggerSpec(
-                    trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-                    trigger_fn_config={
-                        "agent_name": "HVAC",
+                action_mapper=ActionMapperSpec(
+                    action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+                    action_mapper_config={
                         'temperature_range': (18, 28),
                         'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                         'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -220,7 +217,6 @@ Here's a complete example of how to define and use the ``DefaultConnector``:
                 reward=RewardSpec(
                     reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
                     reward_fn_config={
-                        "agent_name": "HVAC",
                         "thermal_zone": "Thermal Zone",
                         "beta": 0.001,
                         'people_name': "People",

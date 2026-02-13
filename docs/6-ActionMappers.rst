@@ -57,10 +57,10 @@ ActionMapper functions are responsible for determining when an agent's actions s
     *   Take the current state of the environment and the agent's observations as input.
     *   Return a boolean value indicating whether the action should be triggered.
 
-Trigger Function Configuration (trigger_fn_config)
---------------------------------------------------
+ActionMapper Function Configuration (action_mapper_config)
+----------------------------------------------------------
 
-Trigger functions can be configured using the ``trigger_fn_config`` parameter in ``TriggerSpec``. This allows you to customize the behavior of the trigger function without modifying its code.
+ActionMapper functions can be configured using the ``action_mapper_config`` parameter in ``ActionMapperSpec``. This allows you to customize the behavior of the ActionMapper function without modifying its code.
 
 *   **Configuring DualSetpointDiscreteAndAvailabilityActionMapper:**
 
@@ -83,7 +83,7 @@ Once you have defined your trigger using ``ActionMapperSpec``, you need to integ
 .. code-block:: python
 
     from eprllib.Agents.AgentSpec import AgentSpec, ActionMapperSpec
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the action mapper
     action_mapper_spec = ActionMapperSpec(
@@ -111,7 +111,7 @@ Here's a complete example of how to define and use triggers:
 
     from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the trigger
     action_mapper = ActionMapperSpec(

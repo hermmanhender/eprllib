@@ -13,4 +13,5 @@
    Conventional
    Evaluation
    Plots
+   Utils
    shap
