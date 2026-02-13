@@ -6,7 +6,7 @@ This module contains the filter class for the fully-shared-parameters case. This
 the agent state dictionary and return the observation as a plain vector (a numpy array) without the actuator information.
 
 The actuator state could be added after as a augmented observation vector in the ``FullySharedParametersConnector``
-class for ``AgentsConnectors``. The use of both methods together avoid the duplication of information in the observation
+class for ``Connectors``. The use of both methods together avoid the duplication of information in the observation
 space.
 """
 import numpy as np

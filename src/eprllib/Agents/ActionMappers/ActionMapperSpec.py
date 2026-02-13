@@ -1,8 +1,9 @@
 """
 Specification for the ActionMapper functions
 ===========================================================
-This module defines the `ActionMapperSpec` class, which is used to specify the configuration of ActionMapper 
-functions for agents in reinforcement learning environments.
+This module defines the ``ActionMapperSpec`` class, which is used to specify
+the configuration of ActionMapper functions for agents in reinforcement 
+learning environments.
 """
 from typing import Dict, Any, Type, Optional
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper

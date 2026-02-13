@@ -5,7 +5,7 @@ Episode Functions Utils
 Work in progress...
 """
 
-from typing import Dict, Tuple, Any, List
+from typing import Dict, Tuple, Any, List, Optional
 import os
 import numpy as np
 from numpy.typing import NDArray
@@ -28,11 +28,6 @@ def load_ep_model(model_path: str) -> Dict[str, Any]:
     
     
     # Check that the file exists and finish with .epJSON
-    if not model_path.exists():
-        msg = f'EpisodeFunctionUtils: The file {model_path} does not exist'
-        logger.error(msg)
-        raise FileNotFoundError(msg)
-    
     if not model_path.endswith('.epJSON'):
         msg = f'EpisodeFunctionUtils: The file {model_path} is not a .epJSON file'
         logger.error(msg)
@@ -201,7 +196,7 @@ def building_dimension(
         relative_vertices = [np.array(vertex) - centroid for vertex in vertices]
         relative_coordenates[surface_name] = relative_vertices
     
-    window_area_relation: Dict[str, float] = {
+    window_area_relation_dict: Dict[str, float] = {
         'wall_north': float(window_area_relation[0]),
         'wall_east': float(window_area_relation[1]),
         'wall_south': float(window_area_relation[2]),
@@ -219,7 +214,7 @@ def building_dimension(
     }
 
 
-    for surface_name, relation in window_area_relation.items():
+    for surface_name, relation in window_area_relation_dict.items():
         if relation > 0 and surface_name in wall_dimensions:  # Only consider walls with windows
             centroid = np.array(centroid_coordenates[surface_name])
             wall_width = wall_dimensions[surface_name]['width']
@@ -368,7 +363,7 @@ def generate_variated_schedule(
     assert os.path.exists(input_path), f"Input file {input_path} does not exist."
     assert input_path.endswith('.csv'), "Input file must be a CSV."
     
-    data: pd.DataFrame = pd.read_csv(input_path)
+    data = pd.read_csv(input_path)
     
     # Calculate variation range
     variation_factor = variation_percentage
@@ -385,7 +380,12 @@ def generate_variated_schedule(
     # Save the new dataset to the specified output path
     variated_data.to_csv(output_path, index=False)
 
-def generate_variated_schedule_with_shift(input_path, output_path, variation_percentage=10, shift_hours=0):
+def generate_variated_schedule_with_shift(
+    input_path: str, 
+    output_path: str, 
+    variation_percentage: float = 10, 
+    shift_hours: int = 0
+    ) -> None:
     """
     Generates a new CSV with variations and optional time shift in schedule data.
     
@@ -402,7 +402,7 @@ def generate_variated_schedule_with_shift(input_path, output_path, variation_per
     variation_factor = variation_percentage / 100.0
     
     # Apply random variations within the specified range
-    def apply_variation(value):
+    def apply_variation(value: float):
         variation = np.random.uniform(-variation_factor, variation_factor)
         new_value = value * (1 + variation)
         return np.clip(new_value, 0, 1)  # Ensure values stay within [0, 1]
@@ -418,7 +418,12 @@ def generate_variated_schedule_with_shift(input_path, output_path, variation_per
     # Save the new dataset to the specified output path
     variated_data.to_csv(output_path, index=False)
 
-def generate_occupancy_schedule(input_path, output_path, random_variation=False, seed=None):
+def generate_occupancy_schedule(
+    input_path: str, 
+    output_path: str, 
+    random_variation: bool = False, 
+    seed: Optional[int] = None
+    ) -> None:
     """
     Generates an updated occupancy schedule based on typical residential patterns.
     
@@ -443,7 +448,7 @@ def generate_occupancy_schedule(input_path, output_path, random_variation=False,
     data["timestamp"] = timestamps
 
     # Define occupancy rules based on weekdays and hours
-    def occupancy_pattern(timestamp):
+    def occupancy_pattern(timestamp: datetime.datetime) -> int:
         hour = timestamp.hour
         day = timestamp.weekday()  # 0=Monday, 6=Sunday
         
@@ -477,7 +482,7 @@ def generate_occupancy_schedule(input_path, output_path, random_variation=False,
     data.to_csv(output_path, index=False)
     
 
-def inertial_mass_calculation(env_config:Dict) -> float:
+def inertial_mass_calculation(env_config:Dict[str, Any]) -> float:
     """
     The function reads the epjson file path from the env_config dictionary. If the epjson
     key is not present, it raises a ValueError. Otherwise, it opens the specified epjson
@@ -515,7 +520,7 @@ def inertial_mass_calculation(env_config:Dict) -> float:
 
     return effective_thermal_capacity(epJSON_object)
 
-def effective_thermal_capacity(epJSON_object:Dict[str,Dict]) -> float:
+def effective_thermal_capacity(epJSON_object:Dict[str,Any]) -> float:
     """
     The `effective_thermal_capacity` function calculates the total effective thermal capacity of a building based 
     on the construction materials and surface areas specified in an EnergyPlus JSON 
@@ -634,7 +639,7 @@ def effective_thermal_capacity(epJSON_object:Dict[str,Dict]) -> float:
     
     return Cdyn_total
 
-def u_factor_calculation(env_config:Dict) -> float:
+def u_factor_calculation(env_config:Dict[str,Any]) -> float:
     """
     The u_factor_calculation function calculates the U-factor (a measure of heat 
     transfer through a building element) based on the provided environment configuration 
@@ -669,7 +674,7 @@ def u_factor_calculation(env_config:Dict) -> float:
     #  Calculate the u_factor
     return u_factor(epJSON_object)
 
-def u_factor(epJSON_object:Dict[str,Dict]) -> float:
+def u_factor(epJSON_object:Dict[str,Any]) -> float:
     """
     This function select all the building surfaces and fenestration surfaces and calculate the
     global U-factor of the building, like EnergyPlus does.
@@ -796,7 +801,7 @@ def u_factor(epJSON_object:Dict[str,Dict]) -> float:
     
     return u_factor + u_factor_windows
 
-def material_area(epJSON_object, nombre_superficie):
+def material_area(epJSON_object: Dict[str, Any],nombre_superficie: str):
     """
     _summary_
 
@@ -865,7 +870,7 @@ def fenestration_area(epJSON_object: Dict[str, Any], fenestration: str) -> float
     area = 0.5 * (abs(producto_vectorial[0]) + abs(producto_vectorial[1]) + abs(producto_vectorial[2]))
     return area
 
-def find_dict_key_by_nested_key(key, lists_dict):
+def find_dict_key_by_nested_key(key: str, lists_dict: Dict[str, List[str]]):
     """
     _summary_
 
@@ -883,15 +888,15 @@ def find_dict_key_by_nested_key(key, lists_dict):
 
 
 def run_period_change(
-    env_config:Dict,
-    init_julian_day:int|str = None,
-    end_julian_day:int = None,
-    init_month: int = None,
-    init_day: int = None,
-    end_month:int = None,
-    end_day:int = None,
-    simulation_duration:int = None
-    ) -> Dict:
+    env_config:Dict[str,Any],
+    init_julian_day: Optional[int|str] = None,
+    end_julian_day: Optional[int] = None,
+    init_month: Optional[int] = None,
+    init_day: Optional[int] = None,
+    end_month: Optional[int] = None,
+    end_day: Optional[int] = None,
+    simulation_duration: Optional[int] = None
+    ) -> Dict[str, Any]:
     """
     This function is used to modify the RunPeriod longitude of a epJSON file.
     
@@ -917,32 +922,22 @@ def run_period_change(
         logger.error(msg)
         raise ValueError(msg)
     # check that if simulation_duration is provided, it must be an integer and lower that 364-init_julian_day
-    if simulation_duration is not None and (not isinstance(simulation_duration, int) or simulation_duration > 364-init_julian_day):
-        msg = "EpisodeFunctionUtils: simulation_duration must be an integer lower than 364-init_julian_day."
-        logger.error(msg)
-        raise ValueError(msg)
+    assert isinstance(simulation_duration, int), "EpisodeFunctionUtils: simulation_duration must be an integer."
     
     # Open the epjson file
     with open(env_configuration['epjson_path']) as epf:
         epjson_object = pd.read_json(epf)
         
     # Transform the julian day into day,month tuple
-    if init_julian_day != None:
+    if init_julian_day is not None:
         if init_julian_day == 'random':
-            if simulation_duration != None:
-                init_julian_day = np.random.randint(1, 366-simulation_duration)
-                init_day, init_month = from_julian_day(init_julian_day)
-                end_day, end_month = from_julian_day(init_julian_day + simulation_duration)
-            else:
-                msg = "EpisodeFunctionUtils: If init_julian_day is 'random', simulation_duration must be provided."
-                logger.error(msg)
-                raise ValueError(msg)
+            init_julian_day = np.random.randint(1, 366-simulation_duration)
+            init_day, init_month = from_julian_day(init_julian_day)
+            end_day, end_month = from_julian_day(init_julian_day + simulation_duration)
+            
         elif isinstance(init_julian_day, int):
             init_day, init_month = from_julian_day(init_julian_day)
             if end_julian_day != None:
-                end_day, end_month = from_julian_day(end_julian_day)
-            elif simulation_duration != None:
-                end_julian_day = init_julian_day + simulation_duration
                 end_day, end_month = from_julian_day(end_julian_day)
             else:
                 # check that end_day and end_month are different that None
@@ -955,7 +950,10 @@ def run_period_change(
             msg = "EpisodeFunctionUtils: init_julian_day must be an integer or 'random'."
             logger.error(msg)
             raise ValueError(msg)
-        
+    
+    assert isinstance(init_julian_day, int), "EpisodeFunctionUtils: init_julian_day must be an integer."
+    assert simulation_duration < 364-init_julian_day, "EpisodeFunctionUtils: the duration of the episode cannot exceds the year."
+      
     # Change the values in the epjson file
     epjson_object['RunPeriod']['RunPeriod 1']['beging_month'] = init_month
     epjson_object['RunPeriod']['RunPeriod 1']['begin_day_of_month'] = init_day
@@ -968,7 +966,7 @@ def run_period_change(
 
     return env_configuration
 
-def from_julian_day(julian_day:int):
+def from_julian_day(julian_day:int) -> Tuple[int,int]:
     """
     This funtion take a julian day and return the corresponding
     day and month for a tipical year of 365 days.
@@ -987,7 +985,8 @@ def from_julian_day(julian_day:int):
         if day <= days_in_month:
             return (day, month + 1)
         day -= days_in_month
-        
+    
+    return (day, 12)
         
 
 def extract_epw_location_data(epw_file_path: str) -> Tuple[float, float, float, float]:

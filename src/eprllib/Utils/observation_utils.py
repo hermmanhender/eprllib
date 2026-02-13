@@ -1,5 +1,5 @@
 """
-Observation utilities
+Observation Utilities
 ======================
 
 This module contain some utilities used within the observation space, function, and other parts

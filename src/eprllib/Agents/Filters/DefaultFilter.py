@@ -3,7 +3,7 @@ Default Filter
 ===============
 
 This module contains the default filter class for preprocessing observations before they are fed to the agent.
-The `DefaultFilter` class extends the `BaseFilter` class and provides a basic implementation that can be used
+The ``DefaultFilter`` class extends the `BaseFilter` class and provides a basic implementation that can be used
 as-is or extended to create custom filters.
 """
 import numpy as np

@@ -15,7 +15,8 @@ In this module, you will find:
 - ``FilterSpec``: Defines filters to preprocess observations before they are fed to 
   the agent. NOTE: This object must to be coordinated with ``AgentsConnectors``.
 - ``ActionSpec``: Defines the action space and actuators for the agent.
-- ``ActionMapperSpec``: Defines ActionMappers that determine when the agent should take an action.
+- ``ActionMapperSpec``: Defines ActionMappers that determine how the agent should 
+transform policy actions into actutators an actions.
 - ``RewardSpec``: Defines the reward function for the agent.
 
 Additionally, you will find base classes and some applications for Filters, Rewards, 
