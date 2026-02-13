@@ -11,9 +11,9 @@ class TestActionMapperSpec:
         class DummyActionMapper(BaseActionMapper):
             pass
 
-        action_mapper_spec = ActionMapperSpec(action_mapper=DummyActionMapper, action_mapper_config={'key': 'value'})
+        action_mapper_spec = ActionMapperSpec(action_mapper_fn=DummyActionMapper, action_mapper_config={'key': 'value'})
 
-        assert action_mapper_spec['action_mapper'] == DummyActionMapper
+        assert action_mapper_spec['action_mapper_fn'] == DummyActionMapper
         assert action_mapper_spec['action_mapper_config'] == {'key': 'value'}
 
     def test___getitem___non_existent_attribute(self):
@@ -33,17 +33,17 @@ class TestActionMapperSpec:
     #     and that the attributes are set correctly.
     #     """
     #     action_mapper_spec = ActionMapperSpec()
-    #     assert action_mapper_spec.action_mapper == NotImplemented
+    #     assert action_mapper_spec.action_mapper_fn == NotImplemented
     #     assert action_mapper_spec.action_mapper_config == {}
 
-    # def test___init___invalid_action_mapper(self):
+    # def test___init___invalid_action_mapper_fn(self):
     #     """
-    #     Test that initializing ActionMapperSpec with a action_mapper that is not a subclass of BaseActionMapper
+    #     Test that initializing ActionMapperSpec with a action_mapper_fn that is not a subclass of BaseActionMapper
     #     raises a ValueError.
     #     """
     #     with pytest.raises(ValueError) as exc_info:
-    #         ActionMapperSpec(action_mapper=str).build()
-    #     assert "The action_mapper function must be based on BaseActionMapper class" in str(exc_info.value)
+    #         ActionMapperSpec(action_mapper_fn=str).build()
+    #     assert "The action_mapper_fn function must be based on BaseActionMapper class" in str(exc_info.value)
 
     # def test___init___invalid_action_mapper_config(self):
     #     """
@@ -54,18 +54,18 @@ class TestActionMapperSpec:
     #         pass
 
     #     with pytest.raises(ValueError) as exc_info:
-    #         ActionMapperSpec(action_mapper=DummyActionMapper, action_mapper_config=[]).build()
-    #     assert "The configuration for the action_mapper function must be a dictionary" in str(exc_info.value)
+    #         ActionMapperSpec(action_mapper_fn=DummyActionMapper, action_mapper_config=[]).build()
+    #     assert "The configuration for the action_mapper_fn function must be a dictionary" in str(exc_info.value)
 
-    # def test___init___not_implemented_action_mapper(self):
+    # def test___init___not_implemented_action_mapper_fn(self):
     #     """
-    #     Test that initializing ActionMapperSpec with NotImplemented as action_mapper
+    #     Test that initializing ActionMapperSpec with NotImplemented as action_mapper_fn
     #     raises a NotImplementedError when build() is called.
     #     """
-    #     action_mapper_spec = ActionMapperSpec(action_mapper=NotImplemented)
+    #     action_mapper_spec = ActionMapperSpec(action_mapper_fn=NotImplemented)
     #     with pytest.raises(ValueError) as exc_info:
     #         action_mapper_spec.build()
-    #     assert "The action_mapper function must be defined" in str(exc_info.value)
+    #     assert "The action_mapper_fn function must be defined" in str(exc_info.value)
 
     def test___setitem___invalid_key(self):
         """
@@ -97,12 +97,12 @@ class TestActionMapperSpec:
         Test that __setitem__ successfully sets a value for a valid key.
         This test covers the path where the key is in valid_keys.
         """
-        action_mapper_spec = ActionMapperSpec(action_mapper=BaseActionMapper, action_mapper_config={})
+        action_mapper_spec = ActionMapperSpec(action_mapper_fn=BaseActionMapper, action_mapper_config={})
 
         # Set a value for an existing attribute
-        action_mapper_spec['action_mapper'] = None
+        action_mapper_spec['action_mapper_fn'] = None
 
-        assert action_mapper_spec.action_mapper is None
+        assert action_mapper_spec.action_mapper_fn is None
 
     # def test_build_2(self):
     #     """

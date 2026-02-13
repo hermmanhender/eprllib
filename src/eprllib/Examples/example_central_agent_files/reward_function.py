@@ -4,7 +4,6 @@ CO2 Concentration for IAQ reward function
 
 
 """
-import logging
 import numpy as np
 from typing import Any, Dict
 from numpy.typing import NDArray
@@ -13,8 +12,6 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Utils.observation_utils import get_variable_name, get_meter_name
 from eprllib.Utils.annotations import override
 from eprllib.Utils.agent_utils import config_validation
-
-logger = logging.getLogger("ray.rllib")
 
 class IAQThermalComfortEnergyReward(BaseReward):
     REQUIRED_KEYS: Dict[str, Any] = {
