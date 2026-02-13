@@ -5,13 +5,13 @@ Action Mapper Base Class
 This module contains the base class to create action transformer functions and define
 the action space dimension in the environment.
 
-Action Mapper functions are used to adapt the action given by the neural network, 
+```ActionMapper`` functions are used to adapt the action given by the neural network, 
 normally an integer for discrete spaces and a float for continuous spaces like Box. The actions
 must be adapted to values required for the actuators in EnergyPlus. Each agent has the
 capacity to control one actuator.
 
-ActionMapper must be defined in the EnvConfig definition to create the environment and is
-called in the EnergyPlusEnvironment.EnergyPlusEnv_v0 class and used in the EnergyPlusRunner class
+``ActionMapper`` must be defined in the ``EnvironmentConfig`` definition to create the environment and is
+called in the ``Environment.Environment`` class and used in the ``EnvironmentRunner`` class
 to transform the dict of agent actions to actuator values.
 """
 from typing import Dict, Any, List

@@ -1,6 +1,6 @@
 """
-Utilities for the environment configuration
-============================================
+EnvironmentConfig Utilities
+==============================
 
 Work in progress...
 """
@@ -11,7 +11,7 @@ from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from gymnasium.spaces import Box, Discrete
 import sys
 import numpy as np
-from typing import get_origin, get_args, Union, _SpecialGenericAlias
+from typing import get_origin, get_args, Union, Tuple
 
 from eprllib import logger
 
@@ -166,7 +166,7 @@ def variable_checking(
     """
     pass
 
-def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> bool:
+def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> Tuple[bool, List[str]]:
     """
     Enhanced version that supports Union types and optional properties
     

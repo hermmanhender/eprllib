@@ -4,7 +4,7 @@ Reward Function
 
 This module contains the base class for defining reward functions.
 
-It is preferred to use the `infos` dictionary and not the observation, since the latter is 
+It is preferred to use the ``infos`` dictionary and not the observation, since the latter is 
 a numpy array and cannot be called by key values, which is prone to errors when developing the program 
 and indexing an array may change.
 
@@ -20,6 +20,8 @@ class BaseReward:
     """
     This class is the base class for defining reward functions.
     """
+    reward_fn_config: Dict[str, Any] = {}
+    
     def __init__(
         self,
         reward_fn_config: Dict[str, Any] = {}

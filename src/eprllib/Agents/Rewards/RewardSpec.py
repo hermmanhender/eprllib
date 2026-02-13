@@ -1,7 +1,7 @@
 """
 Specification for agent reward functions
 =========================================
-This module defines the `RewardSpec` class, which is used to specify the configuration of reward 
+This module defines the ``RewardSpec`` class, which is used to specify the configuration of reward 
 functions for agents in reinforcement learning environments.
 
 It ensures that the reward function is properly defined and adheres to the expected interface.
@@ -14,6 +14,9 @@ class RewardSpec:
     """
     RewardSpec is the base class for an reward specification to safe configuration of the object.
     """
+    reward_fn: Optional[Type[BaseReward]] = None
+    reward_fn_config: Dict[str, Any] = {}
+        
     def __init__(
         self,
         reward_fn: Optional[Type[BaseReward]] = None,

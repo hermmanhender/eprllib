@@ -1,6 +1,9 @@
-"""Version information."""
+"""
+Version Management
+=====================
+"""
 
 
-__version__ = "1.6.5"
+__version__ = "1.6.6"
 
 EP_VERSION = "24-2-0"

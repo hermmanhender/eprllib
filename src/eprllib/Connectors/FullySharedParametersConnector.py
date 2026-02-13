@@ -36,6 +36,11 @@ from eprllib.Utils.connector_utils import (
 from eprllib import logger
 
 class FullySharedParametersConnector(BaseConnector):
+    number_of_agents_total: int
+    number_of_actuators_total: int
+    agent_ids: Optional[Dict[str, Optional[int]]] = None
+    actuator_ids: Optional[Dict[str, Optional[int]]] = None
+    
     def __init__(
         self,
         connector_fn_config: Dict[str, Any]

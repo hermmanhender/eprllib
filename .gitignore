@@ -211,3 +211,6 @@ marimo/_lsp/
 __marimo__/
 
 eprllib-dev
+
+# files into development are they that start with _dev_
+_dev_*

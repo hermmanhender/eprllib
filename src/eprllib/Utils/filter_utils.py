@@ -1,3 +1,10 @@
+"""
+Filter Utilities
+===================
+
+Work in progress...
+"""
+
 import numpy as np
 
 def to_sin_transformation(

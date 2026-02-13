@@ -1,7 +1,7 @@
 """
 Specification for the observation space and parameters
 ===========================================================
-This module defines the `ObservationSpec` class, which is used to specify the configuration of 
+This module defines the ``ObservationSpec`` class, which is used to specify the configuration of 
 observation space and parameters for agents in reinforcement learning environments.
 
 It ensures that the observation space is properly defined and adheres to the expected interface.
@@ -21,6 +21,25 @@ class ObservationSpec:
     """
     ObservationSpec is the base class for an observation specification to safe configuration of the object.
     """
+    variables: Optional[List[Tuple[str, str]]] = None
+    internal_variables: Optional[List[Tuple[str, str]]] = None
+    meters: Optional[List[str]] = None
+    simulation_parameters: Dict[str, bool] = {}
+    zone_simulation_parameters: Dict[str, bool] = {}
+    use_one_day_weather_prediction: bool = False
+    weather_prediction_hours: int = PREDICTION_HOURS
+    prediction_variables: Dict[str, bool] = {}
+    use_actuator_state: bool = False
+    other_obs: Dict[str, float | int] = {}
+    user_occupation_function: bool = False
+    user_occupation_forecast: bool = False
+    user_type: str = VALID_USER_TYPES[0]
+    zone_type: str = VALID_ZONE_TYPES[0]
+    occupation_schedule: Optional[Tuple[str, str, str]] = None
+    occupation_prediction_hours: int = 24
+    confidence_level: float = 0.95
+    lambdaa: float = 0.05
+    
     def __init__(
         self,
         variables: Optional[List[Tuple[str, str]]] = None,

@@ -46,6 +46,34 @@ class EnvironmentRunner:
     This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
     """
+    env_config: Dict[str, Any]
+    episode: int
+    obs_queue: Queue[Any]
+    act_queue: Queue[Any]
+    infos_queue: Queue[Any]
+    agents: List[str]
+    obs_event: threading.Event= threading.Event()
+    act_event: threading.Event= threading.Event()
+    infos_event: threading.Event= threading.Event()
+    energyplus_exec_thread: Optional[threading.Thread] = None
+    energyplus_state: Optional[c_void_p] = None
+    sim_results: int = 0
+    initialized: bool = False
+    init_handles: bool = False
+    simulation_complete: bool = False
+    first_observation: bool = True
+    obs: Dict[str, Any] = {}
+    infos: Dict[str, Dict[str, Any]]
+    unique_id: float = time.time()
+    is_last_timestep: bool = False
+    occupancy_next_timestep: float = 0.
+    action_mapper: Dict[str, BaseActionMapper]
+    filter_fn: Dict[str, BaseFilter]
+    connector_fn: BaseConnector
+    agent_variables_and_handles: Dict[str, Any] = {}
+    internal_actuators: List[Tuple[str,str,str]] = []
+    internal_variables_and_handles: Dict[str, Any] = {}
+    
     def __init__(
         self,
         env_config: Dict[str, Any],

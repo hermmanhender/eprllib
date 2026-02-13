@@ -11,6 +11,9 @@ from eprllib.Connectors.DefaultConnector import DefaultConnector
 from eprllib import logger
 
 class IndependentConnector(DefaultConnector):
+    """
+    Connector for Independent Agents.
+    """
     def __init__(
         self,
         connector_fn_config: Dict[str, Any] = {}

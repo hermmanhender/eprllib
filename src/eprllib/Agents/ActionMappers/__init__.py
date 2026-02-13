@@ -9,9 +9,8 @@ actuator commands within the environment.
 The module includes the following classes:
 
 - BaseActionMapper: The base class for creating action transformer functions.
-- DualSetpointActionMapperDiscreteAndAvailabilityActionMapper: Implements the Dual Set Point Thermostat action function.
-- WindowsOpeningActionMapper: Implements the window opening action function.
-- WindowsShadingActionMapper: Implements the window shading action function.
+- ActionMapperSpec: which is used to specify the configuration of ActionMapper functions.
 
-These classes are used in the `EnvConfig` class to specify the actions that can be performed on the environment.
+These classes are used in the ``EnvironmentConfig`` class to specify the actions that can 
+be performed on the environment.
 """
