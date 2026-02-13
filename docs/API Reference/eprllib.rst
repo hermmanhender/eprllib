@@ -13,9 +13,9 @@ for the simulation and evaluation of multi-agent environments in EnergyPlus.
    :toctree:
    :recursive:
 
-   Env
+   Environment
    Agents
-   AgentsConnectors
+   Connectors
    Episodes
    Utils
    PostProcess

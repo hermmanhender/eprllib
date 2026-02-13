@@ -27,7 +27,7 @@ Key Features
    3-KeyConcepts
    4-Environment
    5-Agents
-   6-Triggers
+   6-ActionMappers
    7-Filters
    8-Rewards
    9-Connectors

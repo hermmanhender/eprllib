@@ -10,7 +10,5 @@
    :toctree:
    :recursive:
 
-   Conventional
    Evaluation
-   Plots
    shap

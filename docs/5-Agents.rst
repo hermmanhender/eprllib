@@ -15,14 +15,12 @@ The ``AgentSpec`` class is the central class for defining an agent. It encapsula
 *   **ActionSpec:** Defines what actions the agent can take.
 *   **RewardSpec:** Defines how the agent is rewarded for its actions.
 *   **FilterSpec:** Defines how the agent's observations are filtered.
-*   **TriggerSpec:** Defines when the agent's actions are triggered.
+*   **ActionMapperSpec:** Defines when the agent's actions are triggered.
 
 .. image:: Images/agents.png
     :width: 600
     :alt: Agent components
     :align: center
-    :figclass: align-center
-    :caption: The main components of an agent.
 
 To create an agent, you need to import the ``AgentSpec`` class:
 
@@ -111,7 +109,6 @@ The ``RewardSpec`` class defines how the agent is rewarded for its actions. It s
     reward_spec = RewardSpec(
         reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
         reward_fn_config={
-            "agent_name": "HVAC",
             "thermal_zone": "Thermal Zone",
             "beta": 0.001,
             'people_name': "People",
@@ -142,25 +139,24 @@ The ``DefaultFilter`` is provided as a standard option.
         filter_fn_config={},
     )
 
-TriggerSpec: Triggering Actions
--------------------------------
+ActionMapperSpec: Triggering Actions
+------------------------------------
 
-The ``TriggerSpec`` class defines when the agent's actions are triggered. It specifies the trigger function and its configuration. It allows you to define:
+The ``ActionMapperSpec`` class defines when the agent's actions are triggered. It specifies the trigger function and its configuration. It allows you to define:
 
 *   ``trigger_fn``: A function that determines when to trigger an action.
 *   ``trigger_fn_config``: A dictionary of parameters that will be passed to the trigger function.
 
-The ``DualSetpointTriggerDiscreteAndAvailabilityTrigger`` is provided as a standard option.
+The ``DualSetpointDiscreteAndAvailabilityActionMapper`` is provided as a standard option.
 
 .. code-block:: python
 
     from eprllib.Agents.AgentSpec import TriggerSpec
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
-    trigger_spec = TriggerSpec(
-        trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-        trigger_fn_config={
-            "agent_name": "HVAC",
+    action_mapper = ActionMapperSpec(
+        action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+        action_mapper_config={
             'temperature_range': (18, 28),
             'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
             'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -182,10 +178,10 @@ The ``agents()`` method takes the following parameters:
 .. code-block:: python
 
     from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-    from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+    from eprllib.Connectors.DefaultConnector import DefaultConnector
     from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the agent
     agent_spec = AgentSpec(
@@ -209,10 +205,9 @@ The ``agents()`` method takes the following parameters:
             filter_fn=DefaultFilter,
             filter_fn_config={},
         ),
-        trigger=TriggerSpec(
-            trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-            trigger_fn_config={
-                "agent_name": "HVAC",
+        action_mapper = ActionMapperSpec(
+            action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+            action_mapper_config={
                 'temperature_range': (18, 28),
                 'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                 'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -222,7 +217,6 @@ The ``agents()`` method takes the following parameters:
         reward=RewardSpec(
             reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
             reward_fn_config={
-                "agent_name": "HVAC",
                 "thermal_zone": "Thermal Zone",
                 "beta": 0.001,
                 'people_name': "People",
@@ -246,10 +240,10 @@ The ``agents()`` method takes the following parameters:
         }
     )
 
-AgentsConnector API: Agent Interaction
---------------------------------------
+Connector API: Agent Interaction
+--------------------------------
 
-The ``AgentsConnector`` API defines how agents interact with the environment and with each other. It provides a flexible way to implement different interaction patterns, such as:
+The ``Connector`` API defines how agents interact with the environment and with each other. It provides a flexible way to implement different interaction patterns, such as:
 
 *   **Cooperative Agents:** Agents work together to achieve a common goal.
 *   **Hierarchical Agents:** Agents are organized in a hierarchy, with some agents controlling others.
