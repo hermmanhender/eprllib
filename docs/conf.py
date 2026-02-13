@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from eprllib.version import __version__
 
 project = 'eprllib'
-copyright = '2024, Germán Rodolfo Henderson'
+copyright = '2026, Germán Rodolfo Henderson'
 author = 'Germán Rodolfo Henderson'
 
 release = __version__
@@ -29,6 +29,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',  # To support Google and NumPy style docstrings
     'sphinx.ext.viewcode',  # Adds links to highlighted source code
+    'sphinx.ext.githubpages',
 ]
 
 templates_path = ['_templates']

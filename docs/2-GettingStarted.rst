@@ -16,8 +16,6 @@ The general scheme of RL can be visualized in the following diagram:
     :width: 600
     :alt: Markov Decision Process
     :align: center
-    :figclass: align-center
-    :caption: The general scheme of Reinforcement Learning (RL) as a Markov Decision Process.
 
 Deep Reinforcement Learning (DRL)
 ---------------------------------
@@ -49,7 +47,8 @@ agent within that world.
 Running a Simple Experiment with eprllib and RLlib
 ---------------------------------------------------
 
-Now that you have a basic understanding of the concepts, let's walk through a simple experiment using eprllib and RLlib. This example will demonstrate the core steps involved in setting up and training an agent.
+Now that you have a basic understanding of the concepts, let's walk through a simple experiment using 
+eprllib and RLlib. This example will demonstrate the core steps involved in setting up and training an agent.
 
 **Steps:**
 
@@ -62,68 +61,58 @@ Now that you have a basic understanding of the concepts, let's walk through a si
 
 **Example:**
 
-The following code provides a basic outline of how to set up and train an agent using eprllib and RLlib. This example uses a simplified environment and agent configuration for clarity.
+The following code provides a basic outline of how to set up and train an agent using eprllib. This example 
+uses a simplified environment and agent configuration for clarity.
+
+We start defining an `eprllib.Environment.EnvironmentConfig` object:
 
 .. code-block:: python
     :linenos:
 
-    """
-    Simple eprllib and RLlib Example
-    =================================
-
-    This script demonstrates a basic setup for training an agent using eprllib and RLlib.
-    It uses a simplified environment and a basic PPO configuration.
-    """
-
-    import os
-    from tempfile import TemporaryDirectory
-
-    import ray
-    from ray.rllib.algorithms import ppo
-    from ray.tune.logger import pretty_print
-
-    from eprllib.Environment.Environment import Environment
     from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-    from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
-    from eprllib.Agents.AgentSpec import (
-        AgentSpec,
-        ObservationSpec,
-        RewardSpec,
-        ActionSpec,
-        TriggerSpec,
-        FilterSpec
-    )
-    from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
 
-    # --- Configuration ---
-    # Define the name of the environment
-    name = "EPEnv"
-    # Define the name of the agent
-    agent_name = "HVAC"
-    # Define the path of the output
-    output_path = TemporaryDirectory("output", "", 'C:/Users/grhen/Documents/Resultados_RLforEP').name
-    # --- End Configuration ---
-
-    # --- Environment Configuration ---
-    # Create an EnvironmentConfig object to define the environment
     eprllib_config = EnvironmentConfig()
+
+
+After that, we need to configurate it. A first step could be configurate the general aspects
+of the environment.
+
+.. code-block:: python
+    :linenos:
+
     eprllib_config.generals(
-        epjson_path="C:/Users/grhen/OneDrive - docentes.frm.utn.edu.ar/01-Desarrollo del Doctorado/03-Congresos y reuniones/03 - eprllib/Study Cases/Task 1/model-00000000-25772.epJSON",  # Replace with your EPJSON file
-        epw_path="C:/Users/grhen/OneDrive - docentes.frm.utn.edu.ar/01-Desarrollo del Doctorado/03-Congresos y reuniones/03 - eprllib/Weather analysis/Chacras_de_Coria_Mendoza_ARG-hour.epw",  # Replace with your EPW file
-        output_path=output_path,
+        epjson_path="path/to/your/model.epJSON",  # Replace with your EPJSON file.
+        epw_path="path/to/your/weather.epw",  # Replace with your EPW file.
+        output_path="path/to/your/output/folder", # Replace with your folder path.
         ep_terminal_output=False,
         timeout=10,
         evaluation=False,
     )
 
-    # --- Agent Configuration ---
-    # Define the agent's observation, action, reward, filter and trigger
+
+Once we have defined the paths necessary to work with `eprllib` and all the dependencies
+like EnergyPlus, we can define the agents configurations.
+
+.. code-block:: python
+    :linenos:
+
+    # ActionMapper.
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
+    # Filters.
+    from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
+    # Rewards.
+    from eprllib.Agents.Rewards.EnergyAndAshrae55SimpleModel import EnergyAndASHRAE55SimpleModel
+    # Specs to facilitate the building of agents.
+    from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec
+    from eprllib.Agents.Rewards.RewardSpec import RewardSpec
+    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
+    from eprllib.Agents.Filters.FilterSpec import FilterSpec
+
     eprllib_config.agents(
-        connector_fn=DefaultConnector,
-        connector_fn_config={},
         agents_config={
-            agent_name: AgentSpec(
+            # Here we will configurate only one agent, but you can include more.
+            "agent_1": AgentSpec(
+                # Observation variables definition.
                 observation=ObservationSpec(
                     variables=[
                         ("Site Outdoor Air Drybulb Temperature", "Environment"),
@@ -133,6 +122,7 @@ The following code provides a basic outline of how to set up and train an agent 
                         "Electricity:Building",
                     ],
                 ),
+                # Actuators that the agent can control.
                 action=ActionSpec(
                     actuators=[
                         ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -140,24 +130,25 @@ The following code provides a basic outline of how to set up and train an agent 
                         ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
                     ],
                 ),
+                # Filter configuration.
                 filter=FilterSpec(
                     filter_fn=DefaultFilter,
                     filter_fn_config={},
                 ),
-                trigger=TriggerSpec(
-                    trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-                    trigger_fn_config={
-                        "agent_name": agent_name,
+                # Trigger configuration.
+                action_mapper=ActionMapperSpec(
+                    action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+                    action_mapper_config={
                         'temperature_range': (18, 28),
                         'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                         'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
                         'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
                     },
                 ),
+                # Reward configuration.
                 reward=RewardSpec(
-                    reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
+                    reward_fn=EnergyAndASHRAE55SimpleModel,
                     reward_fn_config={
-                        "agent_name": agent_name,
                         "thermal_zone": "Thermal Zone",
                         "beta": 0.001,
                         'people_name': "People",
@@ -171,46 +162,98 @@ The following code provides a basic outline of how to set up and train an agent 
         }
     )
 
-    # --- Episode Configuration ---
-    # Define the episode configuration
-    eprllib_config.episodes(
-        episode_fn=lambda **kwargs: None,
-        episode_fn_config={}
+
+Now we have an agent configured. We need to define the `AgentsConnectors` class that we will use. In this 
+case that we have only one agent, a `DefaultConnector` is enough.
+
+.. code-block:: python
+    :linenos:
+
+    from eprllib.Connectors.DefaultConnector import DefaultConnector
+
+    eprllib_config.connect(
+        connector_fn=DefaultConnector,
+        connector_fn_config={},
     )
 
-    # --- RLlib Configuration ---
-    # Initialize Ray
-    ray.init(_temp_dir='C:/Users/grhen/ray_results/tmp')
 
-    # Register the environment
-    from ray.tune import register_env
-    register_env(name=name, env_creator=lambda args: Environment(args))
+The model can be take as is configured from EnergyPlus or you can apply an `Episodes` class to 
+change the behavior of the environment between episodes.
 
-    # Build the environment configuration
+.. code-block:: python
+    :linenos:
+
+    from eprllib.Episodes.DefaultEpisode import DefaultEpisode
+
+    eprllib_config.episodes(
+        episode_fn = DefaultEpisode,
+        episode_fn_config = {}
+    )
+
+
+Now we build the configuration of the environment.
+
+.. code-block:: python
+    :linenos:
+
     env_config = eprllib_config.build()
 
-    # Configure the PPO algorithm
+
+Finally, you can register the environment and introduce it in the configuration of RLlib. To register 
+the environment we use the `ray.tune.register_env` function. Consider that before register the 
+environment the ray serve must to be inicialized.
+
+.. code-block:: python
+    :linenos:
+
+    from eprllib.Environment.Environment import Environment
+    import ray
+    from ray.tune import register_env
+
+    ray.init()
+
+    register_env("eprllib_env", env_creator=lambda args: Environment(args))
+
+
+In the configuration of `rllib` you need to configurate the environment and all the others parameters 
+that your algorithm need. Here we show how to configurate the environment in a PPO algorithm.
+
+.. code-block:: python
+    :linenos:
+
+    from ray.rllib.algorithms.ppo.ppo import PPOConfig
+
     config = ppo.PPOConfig()
-    config = config.environment(env=name, env_config=env_config)  # Use the registered environment name
-    config = config.framework("torch")
-    config = config.rollouts(num_rollout_workers=0)  # Use 0 workers for simplicity
-    config = config.training(model={"fcnet_hiddens": [64, 64]})
+    # Configure the PPO algorithm
+    config = config.environment(
+        env="eprllib_env", # Use the registered environment name
+        env_config=env_config # Here is the builded configuration of the environment with eprllib.
+        )  
+    
+    # eprllib is a multiagent environment, for that reason you need to configurate the multi_agent policy.
     config = config.multi_agent(
         policies={
             'single_policy': None
         },
         policy_mapping_fn=lambda agent_id, episode, worker, **kwargs: 'single_policy',
     )
+    # Build the algorithm.
     algorithm = config.build()
 
-    # --- Training ---
+
+With the algorithm builded, you can now train it:
+
+.. code-block:: python
+    :linenos:
+
+    from ray.tune.logger import pretty_print
+
     # Train the agent for a few iterations
     for i in range(5):
         result = algorithm.train()
         print(f"Training iteration {i + 1}:")
         print(pretty_print(result))
 
-    # --- Save and Restore ---
     # Save the trained agent
     checkpoint_path = algorithm.save()
     print(f"Checkpoint saved to {checkpoint_path}")
@@ -222,14 +265,17 @@ The following code provides a basic outline of how to set up and train an agent 
     # --- End ---
     ray.shutdown()
 
+
 **Explanation:**
 
 1.  **Environment Configuration:**
+
     *   We start by creating an `EnvironmentConfig` object. This object holds all the information about the EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.
     *   We use the `eprllib_config.generals()` method to set these general parameters.
     *   You'll need to replace the placeholder paths with your actual file paths.
 
 2.  **Agent Configuration:**
+
     *   We define the agent's behavior using `eprllib_config.agents()`.
     *   We specify the agent's **observations** (what it can see), **actions** (what it can do), **rewards** (what it's trying to maximize), **filters** and **triggers**.
     *   In this simplified example, the agent observes the outdoor air temperature and the zone mean air temperature.
@@ -238,10 +284,12 @@ The following code provides a basic outline of how to set up and train an agent 
     * The filter and trigger are defined.
 
 3.  **Episode Configuration:**
+
     *   We define the episode configuration using `eprllib_config.episodes()`.
     *   In this example, the episode function is a placeholder.
 
 4.  **RLlib Configuration:**
+   
     *   We initialize Ray, which is the framework that RLlib uses for distributed computing.
     *   We register our environment with Ray using `register_env`.
     *   We build the environment configuration using `eprllib_config.build()`.
@@ -252,14 +300,17 @@ The following code provides a basic outline of how to set up and train an agent 
     *   We build the algorithm using `config.build()`.
 
 5.  **Training:**
+   
     *   We train the agent for a few iterations using a `for` loop and `algorithm.train()`.
     *   The `pretty_print()` function is used to display the training results.
 
 6.  **Save and Restore:**
+   
     *   We save the trained agent to a checkpoint using `algorithm.save()`.
     *   We restore the agent from the checkpoint using `algorithm.restore()`.
 
 7.  **End:**
+   
     *   We shutdown the ray.
 
 This example provides a basic framework for training an agent with eprllib and RLlib. You can expand upon this example by adding more complex environment configurations, agent behaviors, and reward functions.
