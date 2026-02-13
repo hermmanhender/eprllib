@@ -57,7 +57,7 @@ environments, rewards, and policies is recommended.
 Software and Hardware Requirements
 ----------------------------------
 
-eprllib requires **Python 3.10 or higher** and **EnergyPlus 9.3 or higher**, with **EnergyPlus 24.2** recommended.
+eprllib requires **Python >3.10 and <3.13 higher** and **EnergyPlus 9.3 or higher**, with **EnergyPlus 24.2** recommended.
 **RLlib's** dependencies will be automatically installed during the eprllib installation. Hardware requirements
 depend on the complexity of the EnergyPlus building models and the RL algorithms employed. A computer
 with ample RAM and processing capacity is recommended for running complex simulations.

@@ -98,8 +98,8 @@ like EnergyPlus, we can define the agents configurations.
 .. code-block:: python
     :linenos:
 
-    # Triggers.
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    # ActionMapper.
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
     # Filters.
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
     # Rewards.
@@ -142,9 +142,9 @@ like EnergyPlus, we can define the agents configurations.
                     filter_fn_config={},
                 ),
                 # Trigger configuration.
-                trigger=TriggerSpec(
-                    trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-                    trigger_fn_config={
+                action_mapper=ActionMapperSpec(
+                    action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+                    action_mapper_config={
                         'temperature_range': (18, 28),
                         'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                         'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -175,7 +175,7 @@ case that we have only one agent, a `DefaultConnector` is enough.
 .. code-block:: python
     :linenos:
 
-    from eprllib.AgentsConnectors.DefaultConnector import DefaultConnector
+    from eprllib.Connectors.DefaultConnector import DefaultConnector
 
     eprllib_config.connect(
         connector_fn=DefaultConnector,

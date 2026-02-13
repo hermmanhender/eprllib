@@ -71,13 +71,13 @@ Agents are the decision-making entities in the RL process. In eprllib, agents in
     *   **ActionSpec:** Defines what actions the agent can take.
     *   **RewardSpec:** Defines how the agent is rewarded for its actions.
     *   **FilterSpec:** Defines how the agent's observations are filtered.
-    *   **TriggerSpec:** Defines when the agent's actions are triggered.
+    *   **ActionMapperSpec:** Defines how the agent's actions are transforms into actuators actions on EnergyPlus.
 
     .. code-block:: python
 
         from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
         from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-        from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+        from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
         agent_spec = AgentSpec(
             observation=ObservationSpec(
@@ -100,9 +100,9 @@ Agents are the decision-making entities in the RL process. In eprllib, agents in
                 filter_fn=DefaultFilter,
                 filter_fn_config={},
             ),
-            trigger=TriggerSpec(
-                trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-                trigger_fn_config={
+            action_mapper=ActionMapperSpec(
+                action_mapper=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
+                action_mapper_config={
                     "agent_name": "HVAC",
                     'temperature_range': (18, 28),
                     'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
@@ -158,20 +158,20 @@ Agents are the decision-making entities in the RL process. In eprllib, agents in
     *   **Filter Function:** A function that filters the observations.
     *   **Filter Function Configuration:** The configuration of the filter function.
 
-*   **TriggerSpec:**
+*   **ActionMapperSpec:**
 
-    Defines when the agent's actions are triggered. It specifies:
+    Defines how the agent's actions are transforms into actuators actions on EnergyPlus. It specifies:
 
-    *   **Trigger Function:** A function that determines when to trigger an action.
-    *   **Trigger Function Configuration:** The configuration of the trigger function.
+    *   **ActionMapper Function:** A function that determines when to trigger an action.
+    *   **ActionMapper Function Configuration:** The configuration of the trigger function.
 
 *   **Filters:**
 
     Filters are modules that can be used to process the agent's observations before they are used by the agent. eprllib provides a ``DefaultFilter``, but you can create custom filters.
 
-*   **Triggers:**
+*   **ActionMapper:**
 
-    Triggers are modules that determine when an agent's actions should be executed. eprllib provides a ``DualSetpointTriggerDiscreteAndAvailabilityTrigger``, but you can create custom triggers.
+    TriActionMapperggers are modules that determine when an agent's actions should be executed. eprllib provides a ``DualSetpointDiscreteAndAvailabilityActionMapper``, but you can create custom triggers.
 
 Connectors
 ----------
