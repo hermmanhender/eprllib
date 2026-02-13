@@ -10,8 +10,6 @@ In eprllib, **Filters** are used to process an agent's observations before they 
     :width: 600
     :alt: Filters diagram
     :align: center
-    :figclass: align-center
-    :caption: Filters diagram.
 
 FilterSpec: Defining Observation Filters
 ----------------------------------------
@@ -100,7 +98,7 @@ Here's a complete example of how to define and use filters:
 
     from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the filter
     filter_spec = FilterSpec(
@@ -127,10 +125,9 @@ Here's a complete example of how to define and use filters:
             ],
         ),
         filter=filter_spec,
-        trigger=TriggerSpec(
-            trigger_fn=DualSetpointTriggerDiscreteAndAvailabilityTrigger,
-            trigger_fn_config={
-                "agent_name": "HVAC",
+        action_mapper=ActionMapperSpec(
+            action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+            action_mapper_config={
                 'temperature_range': (18, 28),
                 'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
                 'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
@@ -140,7 +137,6 @@ Here's a complete example of how to define and use filters:
         reward=RewardSpec(
             reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
             reward_fn_config={
-                "agent_name": "HVAC",
                 "thermal_zone": "Thermal Zone",
                 "beta": 0.001,
                 'people_name': "People",

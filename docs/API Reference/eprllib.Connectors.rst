@@ -1,7 +1,7 @@
-﻿eprllib.AgentsConnectors
-========================
+﻿eprllib.Connectors
+==================
 
-.. automodule:: eprllib.AgentsConnectors
+.. automodule:: eprllib.Connectors
 
    
 .. rubric:: Modules

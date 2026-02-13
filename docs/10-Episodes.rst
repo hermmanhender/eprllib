@@ -6,12 +6,10 @@ Introduction
 
 In eprllib, **Episodes** define the configuration and setup of each simulation run. They provide a mechanism to customize the environment for each episode, allowing you to simulate different scenarios, load different building models or weather files, or use different schedules. This document provides a detailed explanation of the Episodes API in eprllib.
 
-.. image:: Images/episodes.png
-    :width: 600
-    :alt: Episodes diagram
-    :align: center
-    :figclass: align-center
-    :caption: Episodes diagram.
+.. .. image:: Images/episodes.png
+..     :width: 600
+..     :alt: Episodes diagram
+..     :align: center
 
 Defining Episodes with EnvironmentConfig
 ----------------------------------------

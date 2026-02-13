@@ -29,7 +29,7 @@ eprllib offers several key features:
     of scenarios where multiple agents interact with each other and the building environment.
     It also supports single-agent setups for simpler applications.
 *   **Flexible and Configurable:** The library provides configurable modules
-    for **Filters**, **Triggers**, and **Rewards**, allowing users to customize the learning
+    for **Filters**, **ActionMappers**, and **Rewards**, allowing users to customize the learning
     environment and explore diverse control strategies.
 *   **Inter-Agent Communication and Coordination:** eprllib includes a dedicated module for
     communication and coordination between agents. This is crucial for implementing collaborative
@@ -57,7 +57,7 @@ environments, rewards, and policies is recommended.
 Software and Hardware Requirements
 ----------------------------------
 
-eprllib requires **Python 3.10 or higher** and **EnergyPlus 9.3 or higher**, with **EnergyPlus 24.2** recommended.
+eprllib requires **Python >3.10 and <3.13 higher** and **EnergyPlus 9.3 or higher**, with **EnergyPlus 24.2** recommended.
 **RLlib's** dependencies will be automatically installed during the eprllib installation. Hardware requirements
 depend on the complexity of the EnergyPlus building models and the RL algorithms employed. A computer
 with ample RAM and processing capacity is recommended for running complex simulations.

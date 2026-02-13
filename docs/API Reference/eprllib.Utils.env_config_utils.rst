@@ -14,4 +14,6 @@ eprllib.Utils.env\_config\_utils
       env_config_validation
       from_json
       to_json
+      validate_properties
+      variable_checking
    

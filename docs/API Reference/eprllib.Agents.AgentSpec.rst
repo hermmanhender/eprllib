@@ -8,10 +8,5 @@
 
    .. autosummary::
    
-      ActionSpec
       AgentSpec
-      FilterSpec
-      ObservationSpec
-      RewardSpec
-      TriggerSpec
    

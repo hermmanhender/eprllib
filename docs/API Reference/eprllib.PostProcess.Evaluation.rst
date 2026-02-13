@@ -4,10 +4,10 @@ eprllib.PostProcess.Evaluation
 .. automodule:: eprllib.PostProcess.Evaluation
 
    
-   .. rubric:: Classes
+   .. rubric:: Functions
 
    .. autosummary::
    
-      drl_evaluation
-      step_processing
+      generate_experience
+      generate_experience_V2
    
