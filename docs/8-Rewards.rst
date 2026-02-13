@@ -10,8 +10,6 @@ In eprllib, **Rewards** are used to guide the learning process of Reinforcement 
     :width: 600
     :alt: Rewards diagram
     :align: center
-    :figclass: align-center
-    :caption: Rewards diagram.
 
 RewardSpec: Defining Reward Functions
 -------------------------------------

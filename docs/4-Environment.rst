@@ -140,8 +140,6 @@ The ``EnvironmentConfig`` class is the central configuration object for defining
         :width: 600
         :alt: EnvironmentConfig diagram
         :align: center
-        :figclass: align-center
-        :caption: EnvironmentConfig diagram.
 
 Environment: The Environment Class
 ----------------------------------
@@ -212,8 +210,6 @@ How work the standard environment in DRL
     :width: 600
     :alt: Markov Decision Process
     :align: center
-    :figclass: align-center
-    :caption: The general scheme of Reinforcement Learning (RL) as a Markov Decision Process.
 
 RLlib Integration
 -----------------

@@ -16,8 +16,6 @@ The general scheme of RL can be visualized in the following diagram:
     :width: 600
     :alt: Markov Decision Process
     :align: center
-    :figclass: align-center
-    :caption: The general scheme of Reinforcement Learning (RL) as a Markov Decision Process.
 
 Deep Reinforcement Learning (DRL)
 ---------------------------------
@@ -271,11 +269,13 @@ With the algorithm builded, you can now train it:
 **Explanation:**
 
 1.  **Environment Configuration:**
+
     *   We start by creating an `EnvironmentConfig` object. This object holds all the information about the EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.
     *   We use the `eprllib_config.generals()` method to set these general parameters.
     *   You'll need to replace the placeholder paths with your actual file paths.
 
 2.  **Agent Configuration:**
+
     *   We define the agent's behavior using `eprllib_config.agents()`.
     *   We specify the agent's **observations** (what it can see), **actions** (what it can do), **rewards** (what it's trying to maximize), **filters** and **triggers**.
     *   In this simplified example, the agent observes the outdoor air temperature and the zone mean air temperature.
@@ -284,10 +284,12 @@ With the algorithm builded, you can now train it:
     * The filter and trigger are defined.
 
 3.  **Episode Configuration:**
+
     *   We define the episode configuration using `eprllib_config.episodes()`.
     *   In this example, the episode function is a placeholder.
 
 4.  **RLlib Configuration:**
+   
     *   We initialize Ray, which is the framework that RLlib uses for distributed computing.
     *   We register our environment with Ray using `register_env`.
     *   We build the environment configuration using `eprllib_config.build()`.
@@ -298,14 +300,17 @@ With the algorithm builded, you can now train it:
     *   We build the algorithm using `config.build()`.
 
 5.  **Training:**
+   
     *   We train the agent for a few iterations using a `for` loop and `algorithm.train()`.
     *   The `pretty_print()` function is used to display the training results.
 
 6.  **Save and Restore:**
+   
     *   We save the trained agent to a checkpoint using `algorithm.save()`.
     *   We restore the agent from the checkpoint using `algorithm.restore()`.
 
 7.  **End:**
+   
     *   We shutdown the ray.
 
 This example provides a basic framework for training an agent with eprllib and RLlib. You can expand upon this example by adding more complex environment configurations, agent behaviors, and reward functions.

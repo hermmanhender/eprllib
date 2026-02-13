@@ -6,12 +6,10 @@ Introduction
 
 In eprllib, **Connectors** define how agents interact with the environment and with each other. They provide a flexible mechanism to implement various interaction patterns, such as cooperation, competition, or hierarchical control. This document provides a detailed explanation of the AgentConnectors API in eprllib.
 
-.. image:: Images/connectors.png
-    :width: 600
-    :alt: Connectors diagram
-    :align: center
-    :figclass: align-center
-    :caption: Connectors diagram.
+.. .. image:: Images/connectors.png
+..     :width: 600
+..     :alt: Connectors diagram
+..     :align: center
 
 Connector: Defining Agent Interactions
 --------------------------------------

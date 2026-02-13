@@ -55,8 +55,6 @@ The environment in eprllib represents the building simulation, powered by Energy
         :width: 600
         :alt: Overview of eprllib and EnergyPlus interaction
         :align: center
-        :figclass: align-center
-        :caption: Overview of eprllib and EnergyPlus interaction.
 
 Agents
 ------
@@ -227,11 +225,9 @@ eprllib is designed to work seamlessly with RLlib, a powerful library for reinfo
 
     RLlib policies are used to control eprllib agents. The policy determines the actions that the agent takes based on its observations.
 
-    .. image:: Images/rllib_integration.png
-        :width: 600
-        :alt: RLlib and eprllib integration
-        :align: center
-        :figclass: align-center
-        :caption: RLlib and eprllib integration.
+    .. .. image:: Images/rllib_integration.png
+    ..     :width: 600
+    ..     :alt: RLlib and eprllib integration
+    ..     :align: center
 
 By understanding these key concepts, you'll be well-equipped to start developing your own RL agents for building energy optimization and control using eprllib.

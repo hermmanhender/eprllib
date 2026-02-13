@@ -10,8 +10,6 @@ In eprllib, **Filters** are used to process an agent's observations before they 
     :width: 600
     :alt: Filters diagram
     :align: center
-    :figclass: align-center
-    :caption: Filters diagram.
 
 FilterSpec: Defining Observation Filters
 ----------------------------------------

@@ -21,8 +21,6 @@ The ``AgentSpec`` class is the central class for defining an agent. It encapsula
     :width: 600
     :alt: Agent components
     :align: center
-    :figclass: align-center
-    :caption: The main components of an agent.
 
 To create an agent, you need to import the ``AgentSpec`` class:
 

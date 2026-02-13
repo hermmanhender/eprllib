@@ -4,30 +4,31 @@ ActionMapper API
 Introduction
 ------------
 
-In eprllib, **Triggers** determine when an agent's actions are executed. They provide a mechanism to control the timing of actions, allowing for more complex and nuanced agent behavior. This document provides a detailed explanation of the Triggers API in eprllib.
+In eprllib, ``ActionMappers`` determine how the policy actions are executed into EnergyPlus actuators. They 
+provide a mechanism to control the timing of actions, allowing for more complex and nuanced agent behavior. This 
+document provides a detailed explanation of the Triggers API in eprllib.
 
 .. image:: Images/triggers.png
     :width: 600
     :alt: Triggers diagram
     :align: center
-    :figclass: align-center
-    :caption: Triggers diagram.
 
-TriggerSpec: Defining Action Triggers
--------------------------------------
+ActionMapperSpec: Defining ActionMappers
+----------------------------------------
 
-The ``ActionMapperSpec`` class is used to define when an agent's actions are triggered. It specifies the trigger function and its configuration. It allows you to define:
+The ``ActionMapperSpec`` class is used to define how an agent's actions are transform and adapted to actuators. 
+It specifies the ActionMapper function and its configuration. It allows you to define:
 
-*   ``action_mapper``: A function that determines when to trigger an action.
-*   ``action_mapper_config``: A dictionary of parameters that will be passed to the trigger function.
+*   ``action_mapper_fn``: An ActionMapper function.
+*   ``action_mapper_config``: A dictionary of parameters that will be passed to the ActionMapper function.
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import TriggerSpec
-    from eprllib.Agents.Triggers.SetpointTriggers import DualSetpointTriggerDiscreteAndAvailabilityTrigger
+    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
+    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     action_mapper = ActionMapperSpec(
-        action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+        action_mapper_fn=DualSetpointDiscreteAndAvailabilityActionMapper,
         action_mapper_config={
             'temperature_range': (18, 28),
             'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
@@ -60,7 +61,8 @@ ActionMapper functions are responsible for determining when an agent's actions s
 ActionMapper Function Configuration (action_mapper_config)
 ----------------------------------------------------------
 
-ActionMapper functions can be configured using the ``action_mapper_config`` parameter in ``ActionMapperSpec``. This allows you to customize the behavior of the ActionMapper function without modifying its code.
+ActionMapper functions can be configured using the ``action_mapper_config`` parameter in ``ActionMapperSpec``. 
+This allows you to customize the behavior of the ActionMapper function without modifying its code.
 
 *   **Configuring DualSetpointDiscreteAndAvailabilityActionMapper:**
 
@@ -78,16 +80,18 @@ ActionMapper functions can be configured using the ``action_mapper_config`` para
 Integrating ActionMapper with AgentSpec
 ---------------------------------------
 
-Once you have defined your trigger using ``ActionMapperSpec``, you need to integrate it into the agent definition using the ``AgentSpec`` class. The ``trigger`` parameter of ``AgentSpec`` is used to specify the trigger for the agent.
+Once you have defined your trigger using ``ActionMapperSpec``, you need to integrate it into the agent definition using 
+the ``AgentSpec`` class. The ``action_mapper`` parameter of ``AgentSpec`` is used to specify the ``ActionMapper`` for the agent.
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import AgentSpec, ActionMapperSpec
+    from eprllib.Agents.AgentSpec import AgentSpec
+    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
     from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the action mapper
     action_mapper_spec = ActionMapperSpec(
-        action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
+        action_mapper_fn=DualSetpointDiscreteAndAvailabilityActionMapper,
         action_mapper_config={
             'temperature_range': (18, 28),
             'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
@@ -102,59 +106,5 @@ Once you have defined your trigger using ``ActionMapperSpec``, you need to integ
         action_mapper=action_mapper_spec,
     )
 
-Examples
---------
-
-Here's a complete example of how to define and use triggers:
-
-.. code-block:: python
-
-    from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
-    from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
-
-    # Define the trigger
-    action_mapper = ActionMapperSpec(
-        action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
-        action_mapper_config={
-            'temperature_range': (18, 28),
-            'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-            'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-            'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-        },
-    )
-
-    # Define the agent
-    agent_spec = AgentSpec(
-        observation=ObservationSpec(
-            variables=[
-                ("Site Outdoor Air Drybulb Temperature", "Environment"),
-                ("Zone Mean Air Temperature", "Thermal Zone"),
-            ],
-            meters=[
-                "Electricity:Building",
-            ],
-        ),
-        action=ActionSpec(
-            actuators=[
-                ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-                ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-                ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-            ],
-        ),
-        filter=FilterSpec(
-            filter_fn=DefaultFilter,
-            filter_fn_config={},
-        ),
-        action_mapper = ActionMapperSpec(
-            action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
-            action_mapper_config={
-                'temperature_range': (18, 28),
-                'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-                'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-                'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-            },
-        )
-    )
 
 By understanding these concepts, you'll be able to effectively define and use triggers in eprllib for your building energy optimization and control projects.
