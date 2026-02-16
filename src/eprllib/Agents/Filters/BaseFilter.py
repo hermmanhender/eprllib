@@ -9,21 +9,24 @@ class provides the basic structure and methods that can be extended to create cu
 This class can not be used directly in eprllib, but as a base to create new filters. All the filters
 must be based in this class.
 """
-from eprllib import logger
 from typing import Any, Dict
-from numpy import float64
+from numpy import floating
 from numpy.typing import NDArray
+
+from eprllib import logger
+from eprllib.Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseFilter:
     """
     Base class for defining filter functions used in agent specifications.
     Filters are used to preprocess observations before they are fed to the agent.
     """
-    filter_fn_config: Dict[str, Any]
+    filter_fn_config: Dict[str, Any] = {}
+    agent_name: str
     
     def __init__(
         self,
-        filter_fn_config: Dict[str, Any]
+        filter_fn_config: Dict[str, Any] = {}
     ):
         """
         Initializes the BaseFilter class.
@@ -33,11 +36,65 @@ class BaseFilter:
         """
         self.filter_fn_config = filter_fn_config
         
+        logger.info(f"BaseFilter: The BaseFilter was correctly inicializated with {self.filter_fn_config} config.")
+        
+        # Make sure, `setup()` is only called once, no matter what.
+        if hasattr(self, "_is_setup") and self._is_setup:
+            raise RuntimeError(
+                "``BaseActionMapper.setup()`` called twice within your ActionMapper implementation "
+                f"{self}! Make sure you are using the proper inheritance order "
+                " and that you are NOT overriding the constructor, but "
+                "only the ``setup()`` method of your subclass."
+            )
+        try:
+            self.setup()
+        except AttributeError as e:
+            raise e
+
+        self._is_setup:bool = True
+    
     def get_filtered_obs(
         self,
         env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
-    ) -> NDArray[float64]:
+    ) -> NDArray[floating[Any]]:
+        # Check if the agent_states dictionary is empty
+        if not agent_states:
+            msg = "agent_states dictionary is empty"
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        # Check if all values in the agent_states dictionary are numeric
+        if not all(isinstance(value, (int, float)) for value in agent_states.values()):
+            msg = "All values in agent_states must be numeric"
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        # Generate a copy of the agent_states to avoid conflicts with global variables.
+        agent_states_copy = agent_states.copy()
+        
+        return self._get_filtered_obs(env_config, agent_states_copy)
+    
+    
+    # ===========================
+    # === OVERRIDABLE METHODS ===
+    # ===========================
+    
+    @OverrideToImplementCustomLogic
+    def setup(self):
+        """
+        Sets up the components of the module.
+
+        This is called automatically during the __init__ method of this class.
+        """
+        pass
+    
+    @OverrideToImplementCustomLogic
+    def _get_filtered_obs(
+        self,
+        env_config: Dict[str, Any],
+        agent_states: Dict[str, Any],
+    ) -> NDArray[floating[Any]]:
         """
         Returns the filtered observations for the agent based on the environment configuration
         and agent states. This method processes the raw observations according to the filter
