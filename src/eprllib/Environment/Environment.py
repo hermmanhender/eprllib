@@ -80,8 +80,8 @@ class Environment(MultiAgentEnv):
     connector_fn: BaseConnector
     possible_agents: List[str]
     agents: List[str]
-    reward_fn: Dict[str, Optional[BaseReward]]
-    action_mapper: Dict[str, BaseActionMapper]
+    reward_fn: Dict[str, BaseReward]
+    action_mapper_fn: Dict[str, BaseActionMapper]
     filter_fn: Dict[str, BaseFilter]
     action_space: spaces.Dict
     observation_space: spaces.Dict
@@ -109,11 +109,14 @@ class Environment(MultiAgentEnv):
         """
         self.env_config = env_config
         
-        # Episode and multiagent functions
+        # Episode function.
         self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
         logger.debug(f"Environment: Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
+        
+        # Connector funtion.
         self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
         logger.debug(f"Environment: Connector configuration: {self.connector_fn.connector_fn_config}")
+        self.connector_fn.get_agent_obs_indexed(self.env_config, self.possible_agents)
         
         # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
@@ -126,29 +129,28 @@ class Environment(MultiAgentEnv):
         # currently "alive" agents are.
         
         # asigning the configuration of the environment.
-        self.reward_fn: Dict[str, Optional[BaseReward]] = {agent: None for agent in self.agents}
-        
-        self.action_mapper: Dict[str, BaseActionMapper] = {
-            agent: self.env_config["agents_config"][agent]["action_mapper"]['action_mapper'](
-                self.env_config["agents_config"][agent]["action_mapper"]["action_mapper_config"]
-            )
-            for agent in self.agents
-        }
-        self.filter_fn: Dict[str, BaseFilter] = {
-            agent: self.env_config["agents_config"][agent]["filter"]['filter_fn'](
-                self.env_config["agents_config"][agent]["filter"]["filter_fn_config"]
-            )
-            for agent in self.agents
-        }
-        
-        # asignation of environment action space.
-        action_space: Dict[str, Any] = {agent: None for agent in self.agents}
         for agent in self.agents:
+            # Action space dictionary.
+            action_space: Dict[str, Any] = {}
+            # Reward funtion dictionary.
+            self.reward_fn: Dict[str, BaseReward] = {}
             
-            assert self.action_mapper[agent] is not None, f"ActionMapper function for agent {agent} is not defined."
+            # Action Mapper init.
+            self.action_mapper_fn: Dict[str, BaseActionMapper] = {
+                agent: self.env_config["agents_config"][agent]["action_mapper"]['action_mapper_fn'](
+                    self.env_config["agents_config"][agent]["action_mapper"]["action_mapper_config"]
+                )}
+            self.action_mapper_fn[agent].agent_name = agent # Asignation agent name to each action mapper function.
+            action_space.update({agent: self.action_mapper_fn[agent].get_action_space_dim()}) # Asignation of environment action space.
             
-            action_space[agent] = self.action_mapper[agent].get_action_space_dim()
-            
+            # Filter init.
+            self.filter_fn: Dict[str, BaseFilter] = {
+                agent: self.env_config["agents_config"][agent]["filter"]['filter_fn'](
+                    self.env_config["agents_config"][agent]["filter"]["filter_fn_config"]
+                )}
+            self.filter_fn[agent].agent_name = agent # Asignation agent name to each filter function.
+        
+        # Build the action_space dictionary.
         self.action_space = spaces.Dict(action_space)
         logger.debug(f"Environment: Action space: {self.action_space}")
         
@@ -202,9 +204,7 @@ class Environment(MultiAgentEnv):
         """
         # Call super's `reset()` method to (maybe) set the given `seed`.
         super().reset(seed=seed, options=options)
-        # Set a list for the agents that are currently in the environment.
-        # This list will be used to initialize the reward parameters.
-        self.agents_to_inizialize_reward_parameters = self.possible_agents.copy()
+        
         # Increment the counting of episodes in 1.
         self.episode += 1
         # saving the episode in the env_config to use across functions.
@@ -234,7 +234,11 @@ class Environment(MultiAgentEnv):
             
             # Update the rewards functions. The parameters of the reward function could be modify by the episode function, due that it's update here.
             for agent in self.agents:
-                self.reward_fn[agent] = self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])
+                self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
+                self.reward_fn[agent].agent_name = agent # Asignation agent name to each reward function.
+                self.reward_fn[agent].reset() # Reset the reward function.
+                self.reward_fn[agent].set_initial_parameters(self.connector_fn.obs_indexed[agent])
+                logger.debug(f"Environment: Reward function for agent {agent} initialized.")
             
             # Start EnergyPlusRunner whith the following configuration.
             self.runner = EnvironmentRunner(
@@ -245,7 +249,7 @@ class Environment(MultiAgentEnv):
                 infos_queue = self.infos_queue,
                 agents = self.agents,
                 filter_fn = self.filter_fn,
-                action_mapper = self.action_mapper,
+                action_mapper = self.action_mapper_fn,
                 connector_fn = self.connector_fn
             )
             # Divide the thread in two in this point.
@@ -259,25 +263,6 @@ class Environment(MultiAgentEnv):
         
         obs = self.last_obs
         infos = self.last_infos
-        
-        # set initial parameters for the reward function.
-        for agent in obs.keys():
-            reward_fn_instance = self.reward_fn.get(agent)
-            if reward_fn_instance is not None:
-                # set the initial parameters for the reward function.
-                assert isinstance(reward_fn_instance, BaseReward), f"Reward function for agent {agent} must be a BaseReward instance."
-                
-                reward_fn_instance.set_initial_parameters(
-                    agent,
-                    self.connector_fn.obs_indexed[agent]
-                    )
-                logger.debug(f"Environment: Reward function for agent {agent} initialized with infos: {infos[agent]}")
-                self.agents_to_inizialize_reward_parameters.remove(agent)
-                logger.debug(f"Environment: Reward function initial parameters for agent {agent} initialized.")
-                logger.debug(f"Environment: The agents to inizialize reward parameters: {self.agents_to_inizialize_reward_parameters}")
-            else:
-                logger.warning(f"Environment: No reward function defined for agent {agent}.")
-                pass
         
         self.terminateds = False
         self.truncateds = False
@@ -353,25 +338,9 @@ class Environment(MultiAgentEnv):
                 self.runner.infos_event.wait(timeout=timeout)
                 infos = self.infos_queue.get(timeout=timeout)
                 
-                # If the history length is greater than 1, we need to create a buffer for each agent
-                # to store the last observations.
                 obs: Dict[str, Any] = {}
                 for agent in self.agents:
                     obs[agent] = current_obs[agent]
-                # logger.info(f"Observation for normal timestep {self.timestep}")
-                # logger.info(f"Infos for timestep {self.timestep}: {infos}")
-                # Check if the agents to initialize reward parameters is not empty.
-                # If it is not empty, we initialize the reward parameters for each agent.
-                if self.agents_to_inizialize_reward_parameters is not Empty:
-                    for agent in obs.keys():
-                        if agent in self.agents_to_inizialize_reward_parameters:
-                            reward_fn_instance = self.reward_fn.get(agent)
-                            if reward_fn_instance is not None:
-                                reward_fn_instance.set_initial_parameters(
-                                    agent,
-                                    self.connector_fn.obs_indexed[agent]
-                                    )
-                                self.agents_to_inizialize_reward_parameters.remove(agent)
                 
             except (Full, Empty):
                 # logger.info("Queue timeout, ending episode early.")
