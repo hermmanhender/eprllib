@@ -33,35 +33,12 @@ class HierarchicalTwoLevelsConnector(BaseConnector):
     """
     Hierarchical connector with two levels of hierarchy.
     """
-    sub_connector_fn: BaseConnector
-    top_level_agent: str
-    top_level_temporal_scale: int
-    timestep_runner: int = -1
-    top_level_goal: Optional[Dict[str, Any]] = None
-    top_level_obs: Optional[Dict[str, Any]] = None
-    top_level_trayectory: Dict[str, Any] = {}
-    obs_indexed_top_level: Dict[str, Dict[str, int]] = {}
-    obs_indexed_low_level: Dict[str, Dict[str, int]] = {}
     
-    def __init__(
-        self, 
-        connector_fn_config: Dict[str, Any] = {}
-        ):
-        """
-        Initializes the hierarchical connector.
-
-        Args:
-            connector_fn_config (Dict[str, Any]): Configuration dictionary for the connector function.
-                - sub_connector_fn (Callable): The function to create the sub-connector.
-                - sub_connector_fn_config (Dict[str, Any]): Configuration for the sub-connector function.
-                - top_level_agent (str): The identifier for the top-level agent.
-                - top_level_temporal_scale (int): The temporal scale for the top-level agent.
-        """
-        super().__init__(connector_fn_config)
-        
-        self.sub_connector_fn: BaseConnector = connector_fn_config["sub_connector_fn"](connector_fn_config["sub_connector_fn_config"])
-        self.top_level_agent: str = connector_fn_config["top_level_agent"]
-        self.top_level_temporal_scale: int = connector_fn_config["top_level_temporal_scale"]
+    @override(BaseConnector)
+    def setup(self) -> None:
+        self.sub_connector_fn: BaseConnector = self.connector_fn_config["sub_connector_fn"](self.connector_fn_config["sub_connector_fn_config"])
+        self.top_level_agent: str = self.connector_fn_config["top_level_agent"]
+        self.top_level_temporal_scale: int = self.connector_fn_config["top_level_temporal_scale"]
         
         self.timestep_runner: int = -1
         self.top_level_goal: Optional[Dict[str, Any]] = None
@@ -277,50 +254,21 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
     """
     Hierarchical connector with three levels of hierarchy.
     """
-    middle_level_connector_fn: BaseConnector
-    lower_level_connector_fn: BaseConnector
-    top_level_agent: str
-    top_level_temporal_scale: int
-    timestep_runner: int = -1
-    top_level_goal: Optional[Dict[str, Any]] = None
-    top_level_obs: Optional[Dict[str, Any]] = None
-    top_level_trayectory: Dict[str, Any] = {}
-    obs_indexed_top_level: Dict[str, Dict[str, int]] = {}
-    obs_indexed_low_level: Dict[str, Dict[str, int]] = {}
-    obs_indexed_middle_level: Dict[str, Dict[str, int]] = {}
     
-    def __init__(
-        self, 
-        connector_fn_config: Dict[str, Any] = {}
-        ):
-        """
-        Initializes the hierarchical connector.
-
-        Args:
-            connector_fn_config (Dict[str, Any]): Configuration dictionary for the connector function.
-                - middle_level_connector_fn (Callable): The function to create the sub-connector.
-                - middle_level_connector_fn_config (Dict[str, Any]): Configuration for the sub-connector function.
-                - lower_level_connector_fn (Callable): The function to create the sub-connector.
-                - lower_level_connector_fn_config (Dict[str, Any]): Configuration for the sub-connector function.
-                - top_level_agent (str): The identifier for the top-level agent.
-                - top_level_temporal_scale (int): The temporal scale for the top-level agent.
-                - middle_level_agents (List[str]): The list of middle-level agents.
-                - middle_level_temporal_scale (int): The temporal scale for the middle-level agents.
-                - lower_level_agents (List[str]): The list of lower-level agents.
-        """
-        super().__init__(connector_fn_config)
+    @override(BaseConnector)
+    def setup(self) -> None:
         
-        self.middle_level_connector_fn: BaseConnector = connector_fn_config["middle_level_connector_fn"](connector_fn_config["middle_level_connector_fn_config"])
-        self.lower_level_connector_fn: BaseConnector = connector_fn_config["lower_level_connector_fn"](connector_fn_config["lower_level_connector_fn_config"])
+        self.middle_level_connector_fn: BaseConnector = self.connector_fn_config["middle_level_connector_fn"](self.connector_fn_config["middle_level_connector_fn_config"])
+        self.lower_level_connector_fn: BaseConnector = self.connector_fn_config["lower_level_connector_fn"](self.connector_fn_config["lower_level_connector_fn_config"])
         
         
-        self.top_level_agent: str = connector_fn_config["top_level_agent"]
-        self.top_level_temporal_scale: int = connector_fn_config["top_level_temporal_scale"]
+        self.top_level_agent: str = self.connector_fn_config["top_level_agent"]
+        self.top_level_temporal_scale: int = self.connector_fn_config["top_level_temporal_scale"]
         
-        self.middle_level_agents: List[str] = connector_fn_config["middle_level_agents"]
-        self.middle_level_temporal_scale: int = connector_fn_config["middle_level_temporal_scale"]
+        self.middle_level_agents: List[str] = self.connector_fn_config["middle_level_agents"]
+        self.middle_level_temporal_scale: int = self.connector_fn_config["middle_level_temporal_scale"]
         
-        self.lower_level_agents: List[str] = connector_fn_config["lower_level_agents"]
+        self.lower_level_agents: List[str] = self.connector_fn_config["lower_level_agents"]
         
         self.timestep_runner: int = -1
         self.top_level_goal: Optional[Dict[str, Any]] = None

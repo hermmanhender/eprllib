@@ -36,26 +36,14 @@ from eprllib.Utils.connector_utils import (
 from eprllib import logger
 
 class FullySharedParametersConnector(BaseConnector):
-    number_of_agents_total: int
-    number_of_actuators_total: int
-    agent_ids: Optional[Dict[str, Optional[int]]] = None
-    actuator_ids: Optional[Dict[str, Optional[int]]] = None
     
-    def __init__(
-        self,
-        connector_fn_config: Dict[str, Any]
-    ):
+    @override(BaseConnector)
+    def setup(self) -> None:
         """
-        This class implements a fully shared parameters policy for the observation function.
-
-        Args:
-            connector_fn_config (Dict[str, Any]): The configuration dictionary for the observation function.
-            This must contain the key 'number_of_agents_total', which represents the maximum
-            quantity for which the policy is prepared. It is related to the unitary vector.
+        This method can be overridden in subclasses to perform setup tasks.
         """
-        super().__init__(connector_fn_config)
-        self.number_of_agents_total: int = connector_fn_config['number_of_agents_total']
-        self.number_of_actuators_total: int = connector_fn_config['number_of_actuators_total']
+        self.number_of_agents_total: int = self.connector_fn_config['number_of_agents_total']
+        self.number_of_actuators_total: int = self.connector_fn_config['number_of_actuators_total']
         self.agent_ids: Optional[Dict[str, Optional[int]]] = None
         self.actuator_ids: Optional[Dict[str, Optional[int]]] = None
     
