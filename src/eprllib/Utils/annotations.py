@@ -77,6 +77,16 @@ def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[.
     return decorator
 
 
+def OverrideToImplementCustomLogic(obj: Any) -> Any:
+    """Users should override this in their sub-classes to implement custom logic.
+
+    Used in ActionMappers, Filters, Rewards,and Connectors to tag methods that need overriding, e.g.
+    ``ActionMappers.setup()``.
+    """
+    obj.__is_overridden__ = False
+    return obj
+
+
 def trial_str_creator_for_tune(trial: Trial, name:str='eprllib'):
     """
     This method create a description for the folder where the outputs and checkpoints 
