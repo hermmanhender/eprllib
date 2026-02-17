@@ -25,7 +25,7 @@ class BaseReward:
     reward_fn_config: Dict[str, Any] = {}
     cumulated_reward: List[float] = []
     reward_timestep: int = 0
-    agent_name: str
+    agent_name: str = ""
     
     def __init__(
         self,
@@ -38,6 +38,7 @@ class BaseReward:
             reward_fn_config (Dict[str, Any]): Configuration dictionary for the reward function.
         """
         self.reward_fn_config = reward_fn_config
+        self.agent_name = ""
         
         logger.info(f"BaseReward: The BaseReward was correctly inicializated with {self.reward_fn_config} config.")
         
