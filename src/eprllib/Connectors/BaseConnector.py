@@ -9,14 +9,16 @@ are provided.
 """
 from typing import Dict, Any, Tuple
 from gymnasium import spaces
+
 from eprllib import logger
+from eprllib.Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseConnector:
     """
     Base class for connector functions.
     """
     connector_fn_config: Dict[str, Any]
-    obs_indexed: Dict[str,Dict[str, int]]
+    obs_indexed: Dict[str,Dict[str, int]] = {}
     
     def __init__(
         self,
@@ -29,7 +31,24 @@ class BaseConnector:
         :type connector_fn_config: Dict[str, Any], optional
         """
         self.connector_fn_config = connector_fn_config
-        self.obs_indexed: Dict[str,Dict[str, int]] = {}
+        
+        logger.info(f"BaseConnector: The BaseConnector was correctly inicializated with {self.connector_fn_config} config.")
+        
+        # Make sure, `setup()` is only called once, no matter what.
+        if hasattr(self, "_is_setup") and self._is_setup:
+            raise RuntimeError(
+                "``BaseActionMapper.setup()`` called twice within your ActionMapper implementation "
+                f"{self}! Make sure you are using the proper inheritance order "
+                " and that you are NOT overriding the constructor, but "
+                "only the ``setup()`` method of your subclass."
+            )
+        try:
+            self.setup()
+        except AttributeError as e:
+            raise e
+
+        self._is_setup:bool = True
+        
     
     def __name__(self):
         """
@@ -40,6 +59,37 @@ class BaseConnector:
         """
         return self.__class__.__name__
     
+    def get_all_agents_obs_spaces_dict(
+        self,
+        env_config: Dict[str, Any],
+    ) -> spaces.Dict:
+        """
+        Get all the agents observations spaces putting togheter in a Dict space dimension.
+
+        :param env_config: Environment configuration.
+        :type env_config: Dict[str, Any]
+        :return: Agents observation spaces.
+        :rtype: gym.spaces.Dict
+        """
+        possible_agents = [key for key in env_config["agents_config"].keys()]
+        observation_space_dict: Dict[str, Any] = {}
+        for agent in possible_agents:
+            observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
+        return spaces.Dict(observation_space_dict)
+    
+    
+    # ===========================
+    # === OVERRIDABLE METHODS ===
+    # ===========================
+    
+    @OverrideToImplementCustomLogic
+    def setup(self):
+        """
+        This method can be overridden in subclasses to perform setup tasks.
+        """
+        pass
+    
+    @OverrideToImplementCustomLogic
     def get_agent_obs_dim(
         self,
         env_config: Dict[str, Any],
@@ -59,6 +109,7 @@ class BaseConnector:
         logger.error(msg)
         raise NotImplementedError(msg)
     
+    @OverrideToImplementCustomLogic
     def get_agent_obs_indexed(
         self,
         env_config: Dict[str, Any],
@@ -78,24 +129,7 @@ class BaseConnector:
         logger.error(msg)
         raise NotImplementedError(msg)
     
-    def get_all_agents_obs_spaces_dict(
-        self,
-        env_config: Dict[str, Any],
-    ) -> spaces.Dict:
-        """
-        Get all the agents observations spaces putting togheter in a Dict space dimension.
-
-        :param env_config: Environment configuration.
-        :type env_config: Dict[str, Any]
-        :return: Agents observation spaces.
-        :rtype: gym.spaces.Dict
-        """
-        possible_agents = [key for key in env_config["agents_config"].keys()]
-        observation_space_dict: Dict[str, Any] = {}
-        for agent in possible_agents:
-            observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
-        return spaces.Dict(observation_space_dict)
-        
+    @OverrideToImplementCustomLogic 
     def set_top_level_obs(
         self,
         env_config: Dict[str, Any],
@@ -123,6 +157,7 @@ class BaseConnector:
         is_lowest_level = True
         return dict_agents_obs, infos, is_lowest_level
     
+    @OverrideToImplementCustomLogic
     def set_low_level_obs(
         self,
         env_config: Dict[str, Any],

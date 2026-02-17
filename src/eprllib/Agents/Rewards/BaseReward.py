@@ -11,16 +11,21 @@ and indexing an array may change.
 The terminated and truncated flags are arguments in the reward function ``get_reward`` method to allow
 implementations with dispersed reward. This flags allow return the final reward when the episode ends.
 """
-from typing import Dict, Any
+from typing import Dict, Any, List
 from numpy.typing import NDArray
 from numpy import float64
+
 from eprllib import logger
+from eprllib.Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseReward:
     """
     This class is the base class for defining reward functions.
     """
     reward_fn_config: Dict[str, Any] = {}
+    cumulated_reward: List[float] = []
+    reward_timestep: int = 0
+    agent_name: str
     
     def __init__(
         self,
@@ -33,20 +38,79 @@ class BaseReward:
             reward_fn_config (Dict[str, Any]): Configuration dictionary for the reward function.
         """
         self.reward_fn_config = reward_fn_config
+        
+        logger.info(f"BaseReward: The BaseReward was correctly inicializated with {self.reward_fn_config} config.")
+        
+        # Make sure, `setup()` is only called once, no matter what.
+        if hasattr(self, "_is_setup") and self._is_setup:
+            raise RuntimeError(
+                "``BaseActionMapper.setup()`` called twice within your ActionMapper implementation "
+                f"{self}! Make sure you are using the proper inheritance order "
+                " and that you are NOT overriding the constructor, but "
+                "only the ``setup()`` method of your subclass."
+            )
+        try:
+            self.setup()
+        except AttributeError as e:
+            raise e
+
+        self._is_setup:bool = True
+        self._set_initial_parameters_once: bool = False
+    
+    
+    def reset(self) -> None:
+        """
+        Resets the reward function to its initial state.
+        """
+        self.cumulated_reward = []
+        self.reward_timestep = 0
     
     def set_initial_parameters(
         self,
-        agent_name: str,
+        obs_indexed: Dict[str, int]
+    ) -> None:
+        if not self._set_initial_parameters_once:
+            self._set_initial_parameters(obs_indexed)
+            self._set_initial_parameters_once = True
+            logger.info(f"BaseReward: The initial parameters were correctly set.")
+        else:
+            logger.info(f"BaseReward: The initial parameters were already set.")
+    
+    
+    # ===========================
+    # === OVERRIDABLE METHODS ===
+    # ===========================
+    
+    @OverrideToImplementCustomLogic
+    def setup(self) -> None:
+        """
+        This method can be overridden in subclasses to perform setup tasks.
+        """
+        pass
+    
+    @OverrideToImplementCustomLogic
+    def _set_initial_parameters(
+        self,
         obs_indexed: Dict[str, int]
     ) -> None:
         """
         This method can be overridden in subclasses to set initial parameters based on the provided infos.
+        
+        Example:
+            ```
+            self.zone_people_occupant_count_index = obs_indexed[get_variable_name(
+                self.agent_name, 
+                "Zone People Occupant Count", 
+                self.reward_fn_config['thermal_zone']
+            )]
+            ```
 
         Args:
             infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
         """
         pass
     
+    @OverrideToImplementCustomLogic
     def get_reward(
         self,
         prev_obs: NDArray[float64],

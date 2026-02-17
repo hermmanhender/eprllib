@@ -445,7 +445,7 @@ class EnvironmentRunner:
         actuators: Dict[str,Tuple[str,str,str]] = {}
         actuator_handles: Dict[str, int] = {}
         
-        for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"]:
+        for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"].values():
             actuators.update({
                 get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): actuator_config
             })
@@ -476,13 +476,13 @@ class EnvironmentRunner:
         state_argument: c_void_p,
         agent: Optional[str] = None
         ) -> Dict[str,Any]:
-        """This funtion takes the state_argument and return a dictionary with the agent actuator values.
+        """This funtion takes the state_argument and return a dictionary with the agent variables values.
 
         Args:
             state_argument (): State argument from EnergyPlus callback.
 
         Returns:
-            Dict[str,Any]: Agent actuator values for the actual timestep.
+            Dict[str,Any]: Agent variables values for the actual timestep.
         """
         if agent is None:
             msg = "EnvironmentRunner: The agent must be defined."

@@ -5,24 +5,24 @@ This module defines the ``ActionSpec`` class, which is used to specify the
 configuration of action space and actuators for agents in reinforcement 
 learning environments.
 """
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, Tuple, Any, Optional
 from eprllib import logger
 
 class ActionSpec:
     """
     ActionSpec is the base class for an action specification to safe configuration of the object.
     """
-    actuators: Optional[List[Tuple[str, str, str]]] = None
+    actuators: Optional[Dict[str, Tuple[str, str, str]]] = None
     
     def __init__(
         self,
-        actuators: Optional[List[Tuple[str, str, str]]] = None,
+        actuators: Optional[Dict[str, Tuple[str, str, str]]] = None,
     ):
         """
         Construction method.
         
         Args:
-            actuators (List[Tuple[str, str, str]]): Actuators are the way that users modify the program at 
+            actuators (Dict[str, Tuple[str, str, str]]): Actuators are the way that users modify the program at 
             runtime using custom logic and calculations. Not every variable inside EnergyPlus can be 
             actuated. This is intentional, because opening that door could allow the program to run at 
             unrealistic conditions, with flow imbalances or energy imbalances, and many other possible problems.
@@ -62,11 +62,17 @@ class ActionSpec:
         """
         if self.actuators is None:
             logger.info("ActionSpec: No actuators provided.")
-            self.actuators = []
+            self.actuators = {}
+        
+        if not isinstance(self.actuators, dict):
+            msg = f"ActionSpec: The actuators must be defined as a dict with actuator names as keys and tuples of 3 elements but {type(self.actuators)} was given."
+            logger.error(msg)
+            raise ValueError(msg)
+        
         # Check that the actuators are defined as a list of tuples of 3 elements.
-        for actuator in self.actuators:
+        for actuator in self.actuators.values():
             if len(actuator) != 3:
-                msg = f"ActionSpec: The actuators must be defined as a list of tuples of 3 elements but {len(actuator)} was given."
+                msg = f"ActionSpec: The actuators must be defined as a dict with actuator names as keys and tuples of 3 elements but {len(actuator)} was given."
                 logger.error(msg)
                 raise ValueError(msg)
         

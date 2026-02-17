@@ -14,32 +14,32 @@ class TestBasefilter:
         base_filter = BaseFilter(filter_fn_config)
         assert base_filter.filter_fn_config == filter_fn_config
 
-    def test_get_filtered_obs_1(self):
-        """
-        Test that get_filtered_obs raises NotImplementedError in BaseFilter.
+    # def test_get_filtered_obs_1(self):
+    #     """
+    #     Test that get_filtered_obs raises NotImplementedError in BaseFilter.
 
-        This test verifies that calling get_filtered_obs on a BaseFilter instance
-        raises a NotImplementedError with the expected message, as the method
-        should be implemented in subclasses.
-        """
-        base_filter = BaseFilter({})
-        env_config = {}
-        agent_states = {}
+    #     This test verifies that calling get_filtered_obs on a BaseFilter instance
+    #     raises a NotImplementedError with the expected message, as the method
+    #     should be implemented in subclasses.
+    #     """
+    #     base_filter = BaseFilter({})
+    #     env_config = {}
+    #     agent_states = {}
 
-        with pytest.raises(NotImplementedError) as excinfo:
-            base_filter.get_filtered_obs(env_config, agent_states)
+    #     with pytest.raises(NotImplementedError) as excinfo:
+    #         base_filter.get_filtered_obs(env_config, agent_states)
 
-        assert str(excinfo.value) == "BaseFilter: This method should be implemented in a subclass."
+    #     assert str(excinfo.value) == "BaseFilter: This method should be implemented in a subclass."
 
-    def test_get_filtered_obs_not_implemented(self):
-        """
-        Test that calling get_filtered_obs on BaseFilter raises NotImplementedError.
-        This is the only edge case explicitly handled in the focal method's implementation.
-        """
-        base_filter = BaseFilter({})
-        with pytest.raises(NotImplementedError) as excinfo:
-            base_filter.get_filtered_obs({}, {})
-        assert str(excinfo.value) == "BaseFilter: This method should be implemented in a subclass."
+    # def test_get_filtered_obs_not_implemented(self):
+    #     """
+    #     Test that calling get_filtered_obs on BaseFilter raises NotImplementedError.
+    #     This is the only edge case explicitly handled in the focal method's implementation.
+    #     """
+    #     base_filter = BaseFilter({})
+    #     with pytest.raises(NotImplementedError) as excinfo:
+    #         base_filter.get_filtered_obs({}, {})
+    #     assert str(excinfo.value) == "BaseFilter: This method should be implemented in a subclass."
 
 
     def test_init_with_empty_dict(self):

@@ -29,19 +29,13 @@ from eprllib.Utils.connector_utils import (
 from eprllib import logger
 
 class CentralizedConnector(BaseConnector):
-    def __init__(
-        self,
-        connector_fn_config: Dict[str,Any]
-        ):
+    
+    @override(BaseConnector)
+    def setup(self) -> None:
         """
-        This class implements a centralized policy for the observation function.
-
-        Args:
-            connector_fn_config (Dict[str, Any]): The configuration dictionary for the observation function.
-            This must contain the key 'number_of_agents_total', which represents the maximum
-            quantity to which the policy is prepared. It is related to the unitary vector.
+        This method can be overridden in subclasses to perform setup tasks.
         """
-        super().__init__(connector_fn_config)
+        pass
     
     @override(BaseConnector)
     def get_agent_obs_dim(
@@ -60,7 +54,6 @@ class CentralizedConnector(BaseConnector):
             gym.Space: The observation space of the environment.
         """
         obs_space_len: int = 0
-        self.obs_indexed[agent] = {}
         
         self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
         self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)

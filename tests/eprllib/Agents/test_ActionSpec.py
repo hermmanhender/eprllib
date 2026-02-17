@@ -13,10 +13,10 @@ class TestActionspec:
         the value of an existing attribute using the key.
         """
         # Create an instance of ActionSpec with some actuators
-        action_spec = ActionSpec(actuators=[('type1', 'component1', 'control1')])
+        action_spec = ActionSpec(actuators={'my_actuator': ('type1', 'component1', 'control1')})
 
         # Test retrieving the 'actuators' attribute
-        assert action_spec['actuators'] == [('type1', 'component1', 'control1')]
+        assert action_spec['actuators'] == {'my_actuator': ('type1', 'component1', 'control1')}
 
     def test___getitem___invalid_key(self):
         """
@@ -35,7 +35,7 @@ class TestActionspec:
         This test verifies that when actuators are provided during initialization,
         they are correctly assigned to the ActionSpec instance.
         """
-        actuators = [("type1", "component1", "control1"), ("type2", "component2", "control2")]
+        actuators = {'actuator_1': ("type1", "component1", "control1"),'actuator_2': ("type2", "component2", "control2")}
         action_spec = ActionSpec(actuators=actuators)
         assert action_spec.actuators == actuators
 
@@ -46,8 +46,8 @@ class TestActionspec:
         does not contain exactly 3 elements.
         """
         with pytest.raises(ValueError) as excinfo:
-            ActionSpec(actuators=[("invalid", "tuple")]).build()
-        assert "ActionSpec: The actuators must be defined as a list of tuples of 3 elements" in str(excinfo.value)
+            ActionSpec(actuators={"invalid_actuator": ("invalid", "tuple")}).build()
+        assert "ActionSpec: The actuators must be defined as a dict with actuator names as keys and tuples of 3 elements" in str(excinfo.value)
 
     def test___init___invalid_actuator_type(self):
         """
@@ -57,7 +57,7 @@ class TestActionspec:
         """
         with pytest.raises(ValueError) as excinfo:
             ActionSpec(actuators=["invalid_actuator"]).build()
-        assert "ActionSpec: The actuators must be defined as a list of tuples" in str(excinfo.value)
+        assert "ActionSpec: The actuators must be defined as a dict with actuator names as keys and tuples of 3 elements" in str(excinfo.value)
 
     def test___setitem___2(self):
         """
@@ -68,8 +68,8 @@ class TestActionspec:
         any exceptions.
         """
         action_spec = ActionSpec()
-        action_spec['actuators'] = [('type1', 'component1', 'control1')]
-        assert action_spec.actuators == [('type1', 'component1', 'control1')]
+        action_spec['actuators'] = {'my_actuator':('type1', 'component1', 'control1')}
+        assert action_spec.actuators == {'my_actuator':('type1', 'component1', 'control1')}
 
     def test___setitem___invalid_key(self):
         """
@@ -130,9 +130,9 @@ class TestActionspec:
         This should raise a ValueError.
         """
         action_spec = ActionSpec(actuators=[("invalid", "tuple")])
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError) as excinfo:
             action_spec.build()
-        assert str(exc_info.value) == "ActionSpec: The actuators must be defined as a list of tuples of 3 elements but 2 was given."
+        assert "ActionSpec: The actuators must be defined as a dict with actuator names as keys and tuples of 3 elements"  in str(excinfo.value)
 
     # def test_build_invalid_actuator_type(self):
     #     """
