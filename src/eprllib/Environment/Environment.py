@@ -121,6 +121,9 @@ class Environment(MultiAgentEnv):
         # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
+        
+        assert len(self.possible_agents) > 0, f"Environment: At least one agent must be defined in the environment."
+        
         logger.info(f"Environment: Possible agents: {self.possible_agents}")
         # If your agents never change throughout the episode, set
         # `self.agents` to the same list as `self.possible_agents`.
@@ -128,19 +131,20 @@ class Environment(MultiAgentEnv):
         # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
         # currently "alive" agents are.
         
+        # Action space dictionary.
+        action_space: Dict[str, Any] = {}
+        # Reward funtion dictionary.
+        self.reward_fn: Dict[str, BaseReward] = {}
+        
         # asigning the configuration of the environment.
         for agent in self.agents:
-            # Action space dictionary.
-            action_space: Dict[str, Any] = {}
-            # Reward funtion dictionary.
-            self.reward_fn: Dict[str, BaseReward] = {}
-            
             # Action Mapper init.
             self.action_mapper_fn: Dict[str, BaseActionMapper] = {
                 agent: self.env_config["agents_config"][agent]["action_mapper"]['action_mapper_fn'](
                     self.env_config["agents_config"][agent]["action_mapper"]["action_mapper_config"]
                 )}
             self.action_mapper_fn[agent].agent_name = agent # Asignation agent name to each action mapper function.
+            self.action_mapper_fn[agent].actuator_names(env_config["agents_config"][agent]["action"]["actuators"]) # Asignation of actuator names to action mapper.
             action_space.update({agent: self.action_mapper_fn[agent].get_action_space_dim()}) # Asignation of environment action space.
             
             # Filter init.
