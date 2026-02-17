@@ -2,12 +2,19 @@
 Base Filter
 ============
 
-This module contains the base class for defining filter functions used in agent specifications.
-Filters are used to preprocess observations before they are fed to the agent. The ``BaseFilter``
-class provides the basic structure and methods that can be extended to create custom filters.
+This module contains the base class for defining ``Filter`` functions used in agent specifications.
+``Filter``s are used to preprocess observations before they are fed to the agent. The ``BaseFilter``
+class provides the basic structure and methods that can be extended to create custom ``Filter``s.
 
-This class can not be used directly in eprllib, but as a base to create new filters. All the filters
+This class can not be used directly in ``eprllib``, but as a base to create new ```Filter``s. All the ``Filter``s
 must be based in this class.
+
+The methods provided here are used during inizialization and execution of the environment.
+You have to overwrite the following methods:
+
+    - ``setup(self)``
+    - ``_get_filtered_obs``
+    
 """
 from typing import Any, Dict
 from numpy import floating
@@ -88,6 +95,7 @@ class BaseFilter:
         This is called automatically during the __init__ method of this class.
         """
         pass
+    
     
     @OverrideToImplementCustomLogic
     def _get_filtered_obs(
