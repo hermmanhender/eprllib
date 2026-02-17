@@ -24,17 +24,13 @@ from eprllib.Utils.connector_utils import (
 from eprllib import logger
 
 class DefaultConnector(BaseConnector):
-    def __init__(
-        self,
-        connector_fn_config: Dict[str,Any] = {}
-    ):
+    
+    @override(BaseConnector)
+    def setup(self) -> None:
         """
-        Base class for multiagent functions.
-        
-        :param connector_fn_config: configuration of the multiagent function
-        :type connector_fn_config: Dict[str,Any], optional
+        This method can be overridden in subclasses to perform setup tasks.
         """
-        super().__init__(connector_fn_config)
+        pass
     
     @override(BaseConnector)
     def get_agent_obs_dim(
