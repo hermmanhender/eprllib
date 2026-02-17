@@ -29,7 +29,7 @@ class BaseActionMapper:
     Base class to create action transformer functions.
     """
     action_mapper_config: Dict[str, Any] = {}
-    agent_name: str
+    agent_name: str = ""
     
     def __init__(
         self,
@@ -43,6 +43,7 @@ class BaseActionMapper:
             action_mapper_config (Dict[str, Any]): Configuration for the action transformer function.
         """
         self.action_mapper_config = action_mapper_config
+        self.agent_name = ""
         
         logger.info(f"BaseActionMapper: The BaseActionMapper was correctly inicializated with {self.action_mapper_config} config.")
     

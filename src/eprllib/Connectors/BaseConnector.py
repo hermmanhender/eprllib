@@ -31,6 +31,7 @@ class BaseConnector:
         :type connector_fn_config: Dict[str, Any], optional
         """
         self.connector_fn_config = connector_fn_config
+        self.obs_indexed = {}
         
         logger.info(f"BaseConnector: The BaseConnector was correctly inicializated with {self.connector_fn_config} config.")
         
