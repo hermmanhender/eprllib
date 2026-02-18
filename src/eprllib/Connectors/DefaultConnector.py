@@ -8,6 +8,7 @@ to provide a flexible configuration of the communication between agents. Built-i
 """
 from typing import Dict, Any, Tuple
 from gymnasium.spaces import Box
+
 from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 from eprllib.Utils.connector_utils import (
