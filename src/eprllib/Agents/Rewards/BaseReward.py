@@ -13,7 +13,7 @@ implementations with dispersed reward. This flags allow return the final reward 
 """
 from typing import Dict, Any, List
 from numpy.typing import NDArray
-from numpy import float64
+from numpy import floating
 
 from eprllib import logger
 from eprllib.Utils.annotations import OverrideToImplementCustomLogic
@@ -22,13 +22,14 @@ class BaseReward:
     """
     This class is the base class for defining reward functions.
     """
-    reward_fn_config: Dict[str, Any] = {}
+    reward_fn_config: Dict[str, Any]
+    agent_name: str
     cumulated_reward: List[float] = []
     reward_timestep: int = 0
-    agent_name: str = ""
     
     def __init__(
         self,
+        agent_name: str,
         reward_fn_config: Dict[str, Any] = {}
     ) -> None:
         """
@@ -114,9 +115,9 @@ class BaseReward:
     @OverrideToImplementCustomLogic
     def get_reward(
         self,
-        prev_obs: NDArray[float64],
+        prev_obs: NDArray[floating[Any]],
         prev_action: Any,
-        obs: NDArray[float64],
+        obs: NDArray[floating[Any]],
         terminated: bool,
         truncated: bool
         ) -> float:
