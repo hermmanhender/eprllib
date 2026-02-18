@@ -13,6 +13,7 @@ from queue import Queue
 from ctypes import c_void_p
 from typing import Any, Dict, List, Optional, Tuple, cast
 from types import FunctionType
+
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Connectors.BaseConnector import BaseConnector
