@@ -20,9 +20,10 @@ import time
 import numpy as np
 from gymnasium.spaces import Box
 from typing import Any, Dict, Tuple, Optional
+
 from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
-import eprllib.Utils.observation_utils as observation_utils
+from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.connector_utils import (
     set_variables_in_obs,
     set_internal_variables_in_obs,
@@ -106,7 +107,7 @@ class FullySharedParametersConnector(BaseConnector):
                     actuator_component_type = env_config["agents_config"][agent_name]["action"]['actuators'][actuator][0]
                     actuator_control_type = env_config["agents_config"][agent_name]["action"]['actuators'][actuator][1]
                     actuator_key = env_config["agents_config"][agent_name]["action"]['actuators'][actuator][2]
-                    self.obs_indexed[agent][observation_utils.get_actuator_name(
+                    self.obs_indexed[agent][get_actuator_name(
                         agent,
                         actuator_component_type,
                         actuator_control_type,
@@ -217,7 +218,7 @@ class FullySharedParametersConnector(BaseConnector):
             self.actuator_ids = {}
             for agent in env_config['agents_config'].keys():
                 for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                    self.actuator_ids.update({observation_utils.get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
+                    self.actuator_ids.update({get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): id})
                     id += 1
                     if len(self.actuator_ids) > self.number_of_actuators_total:
                         msg = f"FullySharedParametersConnector: The actuators found were: {self.actuator_ids.keys()} with a total of {len(self.actuator_ids.keys())}, that are greather than {self.number_of_actuators_total}."
@@ -232,7 +233,7 @@ class FullySharedParametersConnector(BaseConnector):
         for agent in agent_list:
             # Remove from agent_states and save the actuator items.
             for actuator_config in env_config["agents_config"][agent]["action"]["actuators"]:
-                actuator_name = observation_utils.get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
+                actuator_name = get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2])
                 actuator_names[agent].update({actuator_name: agent_states[agent].get(actuator_name, -2)})
                 if actuator_names[agent][actuator_name] == -2:
                     logger.info(f"FullySharedParametersConnector: Looking for actuator: {actuator_name}")

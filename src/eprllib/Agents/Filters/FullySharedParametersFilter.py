@@ -11,11 +11,11 @@ space.
 """
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Dict, Optional
+from typing import Any, Dict
+
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name
 from eprllib import logger
 
 class FullySharedParametersFilter(BaseFilter):

@@ -12,6 +12,7 @@ validate the properties of the object and to return the object as a dictionary. 
 the environment to provide it to RLlib.
 """
 from typing import Dict, Any, Optional
+
 from eprllib.Agents.Rewards.RewardSpec import RewardSpec
 from eprllib.Agents.Filters.FilterSpec import FilterSpec
 from eprllib.Agents.ActionSpec import ActionSpec

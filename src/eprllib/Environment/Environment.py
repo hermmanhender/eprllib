@@ -10,6 +10,7 @@ from gymnasium import spaces
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional, Tuple, List
+
 from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
 from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
 from eprllib.Agents.Rewards.BaseReward import BaseReward
@@ -141,18 +142,18 @@ class Environment(MultiAgentEnv):
             # Action Mapper init.
             self.action_mapper_fn: Dict[str, BaseActionMapper] = {
                 agent: self.env_config["agents_config"][agent]["action_mapper"]['action_mapper_fn'](
+                    agent,
                     self.env_config["agents_config"][agent]["action_mapper"]["action_mapper_config"]
                 )}
-            self.action_mapper_fn[agent].agent_name = agent # Asignation agent name to each action mapper function.
             self.action_mapper_fn[agent].actuator_names(env_config["agents_config"][agent]["action"]["actuators"]) # Asignation of actuator names to action mapper.
             action_space.update({agent: self.action_mapper_fn[agent].get_action_space_dim()}) # Asignation of environment action space.
             
             # Filter init.
             self.filter_fn: Dict[str, BaseFilter] = {
                 agent: self.env_config["agents_config"][agent]["filter"]['filter_fn'](
+                    agent,
                     self.env_config["agents_config"][agent]["filter"]["filter_fn_config"]
                 )}
-            self.filter_fn[agent].agent_name = agent # Asignation agent name to each filter function.
         
         # Build the action_space dictionary.
         self.action_space = spaces.Dict(action_space)
@@ -238,8 +239,10 @@ class Environment(MultiAgentEnv):
             
             # Update the rewards functions. The parameters of the reward function could be modify by the episode function, due that it's update here.
             for agent in self.agents:
-                self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](self.env_config["agents_config"][agent]["reward"]["reward_fn_config"])})
-                self.reward_fn[agent].agent_name = agent # Asignation agent name to each reward function.
+                self.reward_fn.update({agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](
+                    agent,
+                    self.env_config["agents_config"][agent]["reward"]["reward_fn_config"]
+                    )})
                 self.reward_fn[agent].reset() # Reset the reward function.
                 self.reward_fn[agent].set_initial_parameters(self.connector_fn.obs_indexed[agent])
                 logger.debug(f"Environment: Reward function for agent {agent} initialized.")
