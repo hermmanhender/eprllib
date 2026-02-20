@@ -130,7 +130,7 @@ class BaseConnector:
         logger.error(msg)
         raise NotImplementedError(msg)
     
-    @OverrideToImplementCustomLogic 
+    
     def set_top_level_obs(
         self,
         env_config: Dict[str, Any],
@@ -158,7 +158,7 @@ class BaseConnector:
         is_lowest_level = True
         return dict_agents_obs, infos, is_lowest_level
     
-    @OverrideToImplementCustomLogic
+    
     def set_low_level_obs(
         self,
         env_config: Dict[str, Any],
