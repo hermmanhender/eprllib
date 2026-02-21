@@ -4,107 +4,85 @@ ActionMapper API
 Introduction
 ------------
 
-In eprllib, ``ActionMappers`` determine how the policy actions are executed into EnergyPlus actuators. They 
+In ``eprllib``, ``ActionMappers`` determine how the policy actions are executed into EnergyPlus actuators. They 
 provide a mechanism to control the timing of actions, allowing for more complex and nuanced agent behavior. This 
-document provides a detailed explanation of the Triggers API in eprllib.
+document provides a detailed explanation of the ``ActionMapper`` API in ``eprllib``.
 
 .. image:: Images/triggers.png
     :width: 600
     :alt: Triggers diagram
     :align: center
 
-ActionMapperSpec: Defining ActionMappers
-----------------------------------------
 
-The ``ActionMapperSpec`` class is used to define how an agent's actions are transform and adapted to actuators. 
-It specifies the ActionMapper function and its configuration. It allows you to define:
+Creating custom ``ActionMapper`` functions
+------------------------------------------
 
-*   ``action_mapper_fn``: An ActionMapper function.
-*   ``action_mapper_config``: A dictionary of parameters that will be passed to the ActionMapper function.
+``ActionMapper`` functions are responsible for determining how the policy actions are executed into EnergyPlus actuators.
+To define a custom ``ActionMapper`` function, you need to follow these steps:
 
-.. code-block:: python
+1. Override the ``setup(self)`` method.
+2. Override the ``get_action_space_dim(self)`` method.
+3. Override the ``actuator_names(self, actuators_config: Dict[str, Tuple[str,str,str]])`` method.
+4. Override the ``_agent_to_actuator_action(self, action: Any, actuators: List[str])`` method.
+5. Optionally, you can override the methods ``get_actuator_action(self, action: float | int, actuator: str)`` and ``action_to_goal(self, action: int | float)``.
 
-    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
-    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
-    action_mapper = ActionMapperSpec(
-        action_mapper_fn=DualSetpointDiscreteAndAvailabilityActionMapper,
-        action_mapper_config={
-            'temperature_range': (18, 28),
-            'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-            'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-            'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-        },
-    )
+    NOTE: It is recommended use the decorator ``override`` in each method. See: ``eprllib.Utils.annotations.override``
 
-ActionMapper Functions (action_mapper)
---------------------------------------
-
-ActionMapper functions are responsible for determining when an agent's actions should be executed. They take into account the current state of the environment and the agent's observations to make this decision.
-
-*   **DualSetpointDiscreteAndAvailabilityActionMapper:**
-
-    The ``DualSetpointDiscreteAndAvailabilityActionMapper`` is a built-in trigger function that is commonly used for HVAC control. It triggers actions based on:
-
-    *   **Temperature Range:** The desired temperature range for the zone.
-    *   **Cooling Actuator:** The actuator used to control cooling.
-    *   **Heating Actuator:** The actuator used to control heating.
-    *   **Availability Actuator:** The actuator used to control the availability of the HVAC system.
-
-*   **Creating Custom ActionMapper Functions:**
-
-    You can create custom trigger functions to implement more complex triggering logic. A trigger function should:
-
-    *   Take the current state of the environment and the agent's observations as input.
-    *   Return a boolean value indicating whether the action should be triggered.
-
-ActionMapper Function Configuration (action_mapper_config)
-----------------------------------------------------------
-
-ActionMapper functions can be configured using the ``action_mapper_config`` parameter in ``ActionMapperSpec``. 
-This allows you to customize the behavior of the ActionMapper function without modifying its code.
-
-*   **Configuring DualSetpointDiscreteAndAvailabilityActionMapper:**
-
-    The ``DualSetpointDiscreteAndAvailabilityActionMapper`` can be configured with the following parameters:
-
-    *   ``temperature_range``: A tuple defining the desired temperature range (min, max).
-    *   ``actuator_for_cooling``: The actuator used to control cooling.
-    *   ``actuator_for_heating``: The actuator used to control heating.
-    *   ``availability_actuator``: The actuator used to control the availability of the HVAC system.
-
-*   **Defining Custom Configuration Parameters:**
-
-    When creating custom trigger functions, you can define your own configuration parameters to control their behavior.
-
-Integrating ActionMapper with AgentSpec
----------------------------------------
-
-Once you have defined your trigger using ``ActionMapperSpec``, you need to integrate it into the agent definition using 
-the ``AgentSpec`` class. The ``action_mapper`` parameter of ``AgentSpec`` is used to specify the ``ActionMapper`` for the agent.
+To see a practical example, we will configurate an ``ActionMapper`` function that convert Discrete actions to opening windows signal actuator actions.
+Here is the full example:
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import AgentSpec
-    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
-    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
+    import gymnasium as gym
+    from typing import Any, Dict, List, Tuple, Optional
+    from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
+    from eprllib.Utils.observation_utils import get_actuator_name
+    from eprllib.Utils.annotations import override
 
-    # Define the action mapper
-    action_mapper_spec = ActionMapperSpec(
-        action_mapper_fn=DualSetpointDiscreteAndAvailabilityActionMapper,
-        action_mapper_config={
-            'temperature_range': (18, 28),
-            'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-            'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-            'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-        },
-    )
+    class WindowsOpeningDiscreteActionMapper(BaseActionMapper):
+    
+        @override(BaseActionMapper)
+        def setup(self):
+            # Here you have access to the self.action_mapper_config and self.agent_name
+            self.window_actuator: Optional[str] = None
+            self.action_space_dim: int = self.action_mapper_config.get("action_space_dim", 11)
+        
+        @override(BaseActionMapper)    
+        def get_action_space_dim(self) -> gym.Space[Any]:
+            """
+            Get the action space of the environment.
 
-    # Define the agent and integrate the trigger
-    agent_spec = AgentSpec(
-        # ... other agent parameters ...
-        action_mapper=action_mapper_spec,
-    )
+            Returns:
+                gym.Space: Action space of the environment.
+            """
+            return gym.spaces.Discrete(self.action_space_dim)
+        
+        @override(BaseActionMapper)
+        def actuator_names(self, actuators_config: Dict[str, Tuple[str,str,str]]) -> None:
+            self.window_actuator = get_actuator_name(
+                self.agent_name,
+                actuators_config["window_actuator"][0],
+                actuators_config["window_actuator"][1],
+                actuators_config["window_actuator"][2]
+            )
+            
+        @override(BaseActionMapper)
+        def _agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str, Any]:
+            """
+            Transform the agent action to actuator action.
 
+            Args:
+                action (Any): The action to be transformed.
+                actuators (List[str]): List of actuators controlled by the agent.
 
-By understanding these concepts, you'll be able to effectively define and use triggers in eprllib for your building energy optimization and control projects.
+            Returns:
+                Dict[str, Any]: Transformed actions for the actuators.
+            """
+            actuator_dict_actions = {actuator: None for actuator in actuators}
+            
+            if self.window_actuator in actuator_dict_actions.keys() and self.window_actuator is not None:
+                actuator_dict_actions.update({self.window_actuator: action / 10})
+                
+            return actuator_dict_actions
+            
