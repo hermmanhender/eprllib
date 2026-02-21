@@ -28,8 +28,8 @@ class BaseActionMapper:
     """
     Base class to create action transformer functions.
     """
-    action_mapper_config: Dict[str, Any]
-    agent_name: str
+    action_mapper_config: Dict[str, Any] = {}
+    agent_name: str = ""
     
     def __init__(
         self,

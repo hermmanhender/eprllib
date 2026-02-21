@@ -217,7 +217,7 @@ class EnvironmentConfig:
 
     def connector(
         self,
-        connector_fn: Optional[Type[BaseConnector]] = None,
+        connector_fn: Type[BaseConnector] = BaseConnector,
         connector_fn_config: Dict[str, Any] = {},
         ) -> None:
         """

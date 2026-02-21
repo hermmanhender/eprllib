@@ -110,15 +110,6 @@ class Environment(MultiAgentEnv):
         """
         self.env_config = env_config
         
-        # Episode function.
-        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
-        logger.debug(f"Environment: Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
-        
-        # Connector funtion.
-        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
-        logger.debug(f"Environment: Connector configuration: {self.connector_fn.connector_fn_config}")
-        self.connector_fn.get_agent_obs_indexed(self.env_config, self.possible_agents)
-        
         # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
         self.possible_agents = [key for key in self.env_config["agents_config"].keys()]
@@ -132,35 +123,63 @@ class Environment(MultiAgentEnv):
         # Otherwise, you will have to adjust `self.agents` in `reset()` and `step()` to whatever the
         # currently "alive" agents are.
         
+        
+        # Episode function.
+        self.episode_fn: BaseEpisode = self.env_config['episode_fn'](self.env_config["episode_fn_config"])
+        logger.debug(f"Environment: Episode configuration: {self.episode_fn.get_episode_config(self.env_config)}")
+        
+        # Connector funtion.
+        self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
+        logger.debug(f"Environment: Connector configuration: {self.connector_fn.connector_fn_config}")
+        for agent in self.possible_agents:
+            self.connector_fn.get_agent_obs_indexed(self.env_config, agent)
+        
         # Action space dictionary.
         action_space: Dict[str, Any] = {}
-        # Reward funtion dictionary.
+        self.action_mapper_fn: Dict[str, BaseActionMapper] = {}
+        self.filter_fn: Dict[str, BaseFilter] = {}
         self.reward_fn: Dict[str, BaseReward] = {}
         
         # asigning the configuration of the environment.
-        for agent in self.agents:
+        for agent in self.possible_agents:
             # Action Mapper init.
-            self.action_mapper_fn: Dict[str, BaseActionMapper] = {
+            self.action_mapper_fn.update({
                 agent: self.env_config["agents_config"][agent]["action_mapper"]['action_mapper_fn'](
                     agent,
                     self.env_config["agents_config"][agent]["action_mapper"]["action_mapper_config"]
-                )}
+                )})
+            logger.info(f"Environment:The ActionMapper function for agent {agent} was initialized.")
             self.action_mapper_fn[agent].actuator_names(env_config["agents_config"][agent]["action"]["actuators"]) # Asignation of actuator names to action mapper.
+            logger.info(f"Envitonment: The actuator names in ActionMapper function of agent {agent} were updated.")
             action_space.update({agent: self.action_mapper_fn[agent].get_action_space_dim()}) # Asignation of environment action space.
+            logger.info(f"Environment: The action space of agent {agent} was assignated to the action space.")
             
             # Filter init.
-            self.filter_fn: Dict[str, BaseFilter] = {
+            self.filter_fn.update({
                 agent: self.env_config["agents_config"][agent]["filter"]['filter_fn'](
                     agent,
                     self.env_config["agents_config"][agent]["filter"]["filter_fn_config"]
-                )}
-        
+                )})
+            logger.info(f"Environment: The filter of agent {agent} was initialized.")
+
+            # Reward init.
+            self.reward_fn.update({
+                agent: self.env_config["agents_config"][agent]["reward"]['reward_fn'](
+                    agent,
+                    self.env_config["agents_config"][agent]["reward"]["reward_fn_config"]
+                    )})
+            self.reward_fn[agent].reset() # Reset the reward function.
+            self.reward_fn[agent].set_initial_parameters(self.connector_fn.obs_indexed[agent])
+            logger.debug(f"Environment: Reward function for agent {agent} initialized.")
+            
+            
         # Build the action_space dictionary.
         self.action_space = spaces.Dict(action_space)
         logger.debug(f"Environment: Action space: {self.action_space}")
         
         # asignation of environment observation space.
-        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.env_config)
+        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.agents, self.env_config)
+        logger.debug(f"Environment: Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
         super().__init__()
@@ -337,7 +356,7 @@ class Environment(MultiAgentEnv):
                 self.act_queue.put(actions)
                 self.runner.act_event.set()
                 # Modify the quantity of agents in the environment for this timestep, if apply.
-                self.runner.agents = self.episode_fn.get_timestep_agents(self.env_config, self.possible_agents)
+                self.agents = self.runner.agents = self.episode_fn.get_timestep_agents(self.env_config, self.possible_agents)
                 
                 # Get the return observation and infos after the action is applied.
                 self.runner.obs_event.wait(timeout=timeout)
@@ -420,3 +439,4 @@ class Environment(MultiAgentEnv):
     
     def get_default_config(cls) -> EnvironmentConfig:
         return EnvironmentConfig()
+    

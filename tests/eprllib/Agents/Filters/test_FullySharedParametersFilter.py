@@ -50,7 +50,7 @@ class TestFullysharedparametersfilter:
         }
 
         # Create filter instance
-        filter_instance = FullySharedParametersFilter(filter_fn_config)
+        filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
         filter_instance.agent_name = "agent1"
 
 
@@ -70,7 +70,7 @@ class TestFullysharedparametersfilter:
         and returns a numpy array of the remaining agent states.
         """
         filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter(filter_fn_config)
+        filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
         filter_instance.agent_name = "agent1"
 
         env_config = {
@@ -105,7 +105,7 @@ class TestFullysharedparametersfilter:
         This tests the edge case where no agent states are provided, which should result in an empty numpy array.
         """
         filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter(filter_fn_config)
+        filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
 
         env_config = {"agents_config": {"agent1": {"action": {"actuators": []}}}}
         agent_states = {}
@@ -120,7 +120,7 @@ class TestFullysharedparametersfilter:
         This tests the edge case where the expected agent configuration is not present in the environment config.
         """
         filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter(filter_fn_config)
+        filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
         filter_instance.agent_name = "agent1"
 
 
@@ -136,7 +136,7 @@ class TestFullysharedparametersfilter:
         This tests the edge case where the agent has no actuators, so no filtering should occur.
         """
         filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter(filter_fn_config)
+        filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
         filter_instance.agent_name = "agent1"
 
         env_config = {"agents_config": {"agent1": {"action": {"actuators": []}}}}
@@ -152,6 +152,6 @@ class TestFullysharedparametersfilter:
         This is to verify that the method handles the edge case of an empty input correctly.
         """
         filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter(filter_fn_config)
+        filter_instance = FullySharedParametersFilter("agent_name",filter_fn_config)
         
         assert isinstance(filter_instance, FullySharedParametersFilter)

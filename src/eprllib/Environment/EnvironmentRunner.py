@@ -52,7 +52,7 @@ class EnvironmentRunner:
     obs_queue: Queue[Any]
     act_queue: Queue[Any]
     infos_queue: Queue[Any]
-    agents: List[str]
+    agents: List[str] = []
     obs_event: threading.Event= threading.Event()
     act_event: threading.Event= threading.Event()
     infos_event: threading.Event= threading.Event()
@@ -253,7 +253,7 @@ class EnvironmentRunner:
             agent_states[agent].update(self.get_other_obs(agent))
             agent_states[agent].update(self.get_user_occupation_forecast(state_argument, agent))
         
-        dict_agents_obs = {agent: None for agent in self.agents}
+        # Filter the observation.
         for agent in self.agents:
             dict_agents_obs.update({
                 agent: self.filter_fn[agent].get_filtered_obs(

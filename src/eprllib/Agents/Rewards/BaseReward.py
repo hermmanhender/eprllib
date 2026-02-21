@@ -22,8 +22,8 @@ class BaseReward:
     """
     This class is the base class for defining reward functions.
     """
-    reward_fn_config: Dict[str, Any]
-    agent_name: str
+    reward_fn_config: Dict[str, Any] = {}
+    agent_name: str = ""
     cumulated_reward: List[float] = []
     reward_timestep: int = 0
     
@@ -39,7 +39,10 @@ class BaseReward:
             reward_fn_config (Dict[str, Any]): Configuration dictionary for the reward function.
         """
         self.reward_fn_config = reward_fn_config
-        self.agent_name = ""
+        self.agent_name = agent_name
+        
+        self.cumulated_reward = []
+        self.reward_timestep = 0
         
         logger.info(f"BaseReward: The BaseReward was correctly inicializated with {self.reward_fn_config} config.")
         

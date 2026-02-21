@@ -7,7 +7,7 @@ agents' observations to provide a flexible configuration of the communication be
 Built-in hierarchical (only two levels), fully-shared, centralized, and independent configurations 
 are provided.
 """
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 from gymnasium import spaces
 
 from eprllib import logger
@@ -17,7 +17,7 @@ class BaseConnector:
     """
     Base class for connector functions.
     """
-    connector_fn_config: Dict[str, Any]
+    connector_fn_config: Dict[str, Any] = {}
     obs_indexed: Dict[str,Dict[str, int]] = {}
     
     def __init__(
@@ -63,16 +63,18 @@ class BaseConnector:
     def get_all_agents_obs_spaces_dict(
         self,
         env_config: Dict[str, Any],
+        possible_agents: List[str]
     ) -> spaces.Dict:
         """
         Get all the agents observations spaces putting togheter in a Dict space dimension.
 
         :param env_config: Environment configuration.
         :type env_config: Dict[str, Any]
+        :param possible_agents: List of possible agents.
+        :type possible_agents: List[str]
         :return: Agents observation spaces.
         :rtype: gym.spaces.Dict
         """
-        possible_agents = [key for key in env_config["agents_config"].keys()]
         observation_space_dict: Dict[str, Any] = {}
         for agent in possible_agents:
             observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
@@ -130,7 +132,7 @@ class BaseConnector:
         logger.error(msg)
         raise NotImplementedError(msg)
     
-    @OverrideToImplementCustomLogic 
+    
     def set_top_level_obs(
         self,
         env_config: Dict[str, Any],
@@ -158,7 +160,7 @@ class BaseConnector:
         is_lowest_level = True
         return dict_agents_obs, infos, is_lowest_level
     
-    @OverrideToImplementCustomLogic
+    
     def set_low_level_obs(
         self,
         env_config: Dict[str, Any],
