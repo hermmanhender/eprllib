@@ -4,22 +4,25 @@ Key Concepts
 Introduction
 ------------
 
-eprllib is designed to facilitate the development of Reinforcement Learning (RL) agents for building energy optimization and control. It provides a structured framework for defining environments, agents, and their interactions, while seamlessly integrating with the powerful RLlib library. This document outlines the key concepts and components that make up eprllib.
+``eprllib`` is designed to facilitate the development of Reinforcement Learning (RL) agents for building energy 
+optimization and control. It provides a structured framework for defining environments, agents, and their 
+interactions, while seamlessly integrating with the powerful RLlib library. This document outlines the key 
+concepts and components that make up ``eprllib``.
 
 The Environment
 ---------------
 
-The environment in eprllib represents the building simulation, powered by EnergyPlus. It's where the RL agents interact and learn.
+The environment in ``eprllib`` represents the building simulation, powered by EnergyPlus. It's where the RL agents interact and learn.
 
 *   **EnvironmentConfig:**
 
     The ``EnvironmentConfig`` class is the central configuration object for defining the EnergyPlus environment. It allows you to specify:
 
     *   **General Parameters:**
-        *   Path to the EnergyPlus model file (`epjson_path`).
-        *   Path to the weather file (`epw_path`).
-        *   Output directory (`output_path`).
-        *   Other general settings (e.g., `ep_terminal_output`, `timeout`, `evaluation`).
+        *   Path to the EnergyPlus model file (``epjson_path``).
+        *   Path to the weather file (``epw_path``).
+        *   Output directory (``output_path``).
+        *   Other general settings (e.g., ``ep_terminal_output``, ``timeout``, ``evaluation``).
     *   **Agent Specifications:**
         *   Details about the agents that will interact with the environment (see the "Agents" section below).
     *   **Episode Specifications:**
@@ -41,11 +44,12 @@ The environment in eprllib represents the building simulation, powered by Energy
 
 *   **Environment:**
 
-    The ``Environment`` class is the base class for creating RL environments in eprllib. It handles the interaction with EnergyPlus and provides the necessary methods for RLlib to interact with the environment.
+    The ``Environment`` class is the base class for creating RL environments in ``eprllib``. It handles the interaction 
+    with EnergyPlus and provides the necessary methods for RLlib to interact with the environment.
 
 *   **EnergyPlus Integration:**
 
-    eprllib communicates with EnergyPlus through its Python API. This allows eprllib to:
+    ``eprllib`` communicates with EnergyPlus through its Python API. This allows ``eprllib`` to:
 
     *   Read sensor data from the EnergyPlus simulation.
     *   Set actuator values in the EnergyPlus simulation.
@@ -59,7 +63,8 @@ The environment in eprllib represents the building simulation, powered by Energy
 Agents
 ------
 
-Agents are the decision-making entities in the RL process. In eprllib, agents interact with the EnergyPlus environment to learn optimal control strategies.
+Agents are the decision-making entities in the RL process. In ``eprllib``, agents interact with the EnergyPlus 
+environment to learn optimal control strategies.
 
 *   **AgentSpec:**
 
@@ -159,16 +164,18 @@ Agents are the decision-making entities in the RL process. In eprllib, agents in
 
     Defines how the agent's actions are transforms into actuators actions on EnergyPlus. It specifies:
 
-    *   **ActionMapper Function:** A function that determines when to trigger an action.
-    *   **ActionMapper Function Configuration:** The configuration of the trigger function.
+    *   **ActionMapper Function:** A function that determines how to transform a **policy action** into a **actuator action** on EnergyPlus.
+    *   **ActionMapper Function Configuration:** The configuration of the ``ActionMapper`` function.
 
 *   **Filters:**
 
-    Filters are modules that can be used to process the agent's observations before they are used by the agent. eprllib provides a ``DefaultFilter``, but you can create custom filters.
+    Filters are modules that can be used to process the agent's observations before they are used by the agent.
+    ``eprllib`` provides a ``DefaultFilter``, but you can create custom filters.
 
 *   **ActionMapper:**
 
-    TriActionMapperggers are modules that determine when an agent's actions should be executed. eprllib provides a ``DualSetpointDiscreteAndAvailabilityActionMapper``, but you can create custom triggers.
+    ``ActionMappers`` are modules that determine when an agent's actions should be executed. ``eprllib`` 
+    provides Examples of ``ActionMappers``, but you need to create custom ones.
 
 Connectors
 ----------
@@ -185,7 +192,8 @@ Connectors define how agents interact with the environment.
 
 *   **Custom Connectors:**
 
-    You can create custom connectors to implement different interaction patterns between agents and the environment. This allows for flexibility in how agents are integrated into the simulation.
+    You can create custom connectors to implement different interaction patterns between agents and the environment. This 
+    allows for flexibility in how agents are integrated into the simulation.
 
 Episodes
 --------
@@ -202,11 +210,12 @@ Episodes define the configuration of the simulation.
 Integration with RLlib
 ----------------------
 
-eprllib is designed to work seamlessly with RLlib, a powerful library for reinforcement learning.
+``eprllib`` is designed to work seamlessly with RLlib, a powerful library for reinforcement learning.
 
 *   **Using eprllib Environments with RLlib:**
 
-    eprllib environments (created using ``Environment``) can be directly used with RLlib algorithms. You simply need to register the environment with RLlib and then use it in your RLlib configuration.
+    ``eprllib`` environments (created using ``Environment``) can be directly used with RLlib algorithms. You 
+    simply need to register the environment with RLlib and then use it in your RLlib configuration.
 
     .. code-block:: python
 
@@ -223,11 +232,11 @@ eprllib is designed to work seamlessly with RLlib, a powerful library for reinfo
 
 *   **RLlib Policies and eprllib Agents:**
 
-    RLlib policies are used to control eprllib agents. The policy determines the actions that the agent takes based on its observations.
+    RLlib policies are used to control ``eprllib`` agents. The policy determines the actions that the agent takes based on its observations.
 
     .. .. image:: Images/rllib_integration.png
     ..     :width: 600
     ..     :alt: RLlib and eprllib integration
     ..     :align: center
 
-By understanding these key concepts, you'll be well-equipped to start developing your own RL agents for building energy optimization and control using eprllib.
+By understanding these key concepts, you'll be well-equipped to start developing your own RL agents for building energy optimization and control using ``eprllib``.

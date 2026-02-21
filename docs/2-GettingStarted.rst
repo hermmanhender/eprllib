@@ -1,10 +1,10 @@
-Getting Started with eprllib
-=============================
+Getting Started with ``eprllib``
+================================
 
-Welcome to eprllib! This guide will help you get started with using eprllib for building
+Welcome to ``eprllib``! This guide will help you get started with using ``eprllib`` for building
 control and energy optimization through Reinforcement Learning (RL).
 
-eprllib leverages RL, a powerful machine learning technique, to develop intelligent
+``eprllib`` leverages RL, a powerful machine learning technique, to develop intelligent
 agents that can interact with building simulations. In RL, agents learn to make decisions
 by interacting with an environment, taking actions, receiving observations, and obtaining
 rewards. This interaction is used to learn an optimal policy, which is a strategy that
@@ -30,30 +30,30 @@ to approximate these values. When DNNs are used, the methodology is referred to 
 
 In essence, the policy is a complex function that, given an observation, outputs the best action to take.
 
-eprllib, EnergyPlus, and RLlib
--------------------------------
+``eprllib``, EnergyPlus, and RLlib
+----------------------------------
 
-eprllib leverages two powerful tools: **EnergyPlus** and **RLlib**.
+``eprllib`` leverages two powerful tools: **EnergyPlus** and **RLlib**.
 
 *   **EnergyPlus** is used to model the building environment. It simulates the building's
     energy performance and provides the environment with which the RL agent interacts.
     `EnergyPlus <https://energyplus.net/>`_
-*   **RLlib** is a framework for Deep Reinforcement Learning (DRL). eprllib uses RLlib to train,
+*   **RLlib** is a framework for Deep Reinforcement Learning (DRL). ``eprllib`` uses RLlib to train,
     evaluate, save, and restore policies. `RLlib <https://docs.ray.io/en/latest/rllib/index.html>`_
 
 In essence, EnergyPlus provides the simulated world, and RLlib provides the tools to train the
 agent within that world.
 
-Running a Simple Experiment with eprllib and RLlib
----------------------------------------------------
+Running a Simple Experiment with ``eprllib`` and RLlib
+------------------------------------------------------
 
 Now that you have a basic understanding of the concepts, let's walk through a simple experiment using 
-eprllib and RLlib. This example will demonstrate the core steps involved in setting up and training an agent.
+``eprllib`` and RLlib. This example will demonstrate the core steps involved in setting up and training an agent.
 
 **Steps:**
 
 1.  **Define the Environment:** Use EnergyPlus to create or load a building model that will serve as the environment for the RL agent.
-2.  **Define the Agent:** Specify the agent's actions, observations, and reward structure. This is done using eprllib's configuration tools.
+2.  **Define the Agent:** Specify the agent's actions, observations, and reward structure. This is done using ``eprllib``'s configuration tools.
 3.  **Configure the RL Algorithm:** Choose an appropriate RL algorithm from RLlib and configure its hyperparameters.
 4.  **Train the Agent:** Run the training process, allowing the agent to interact with the EnergyPlus environment and learn an optimal policy.
 5.  **Evaluate the Agent:** Assess the performance of the trained agent in the EnergyPlus environment.
@@ -61,10 +61,10 @@ eprllib and RLlib. This example will demonstrate the core steps involved in sett
 
 **Example:**
 
-The following code provides a basic outline of how to set up and train an agent using eprllib. This example 
+The following code provides a basic outline of how to set up and train an agent using ``eprllib``. This example 
 uses a simplified environment and agent configuration for clarity.
 
-We start defining an `eprllib.Environment.EnvironmentConfig` object:
+We start defining an ``eprllib.Environment.EnvironmentConfig`` object:
 
 .. code-block:: python
     :linenos:
@@ -90,7 +90,7 @@ of the environment.
     )
 
 
-Once we have defined the paths necessary to work with `eprllib` and all the dependencies
+Once we have defined the paths necessary to work with ``eprllib`` and all the dependencies
 like EnergyPlus, we can define the agents configurations.
 
 .. code-block:: python
@@ -163,8 +163,8 @@ like EnergyPlus, we can define the agents configurations.
     )
 
 
-Now we have an agent configured. We need to define the `AgentsConnectors` class that we will use. In this 
-case that we have only one agent, a `DefaultConnector` is enough.
+Now we have an agent configured. We need to define the ``Connectors`` class that we will use. In this 
+case that we have only one agent, a ``DefaultConnector`` is enough.
 
 .. code-block:: python
     :linenos:
@@ -177,7 +177,7 @@ case that we have only one agent, a `DefaultConnector` is enough.
     )
 
 
-The model can be take as is configured from EnergyPlus or you can apply an `Episodes` class to 
+The model can be take as is configured from EnergyPlus or you can apply an ``Episodes`` class to 
 change the behavior of the environment between episodes.
 
 .. code-block:: python
@@ -200,7 +200,7 @@ Now we build the configuration of the environment.
 
 
 Finally, you can register the environment and introduce it in the configuration of RLlib. To register 
-the environment we use the `ray.tune.register_env` function. Consider that before register the 
+the environment we use the ``ray.tune.register_env`` function. Consider that before register the 
 environment the ray serve must to be inicialized.
 
 .. code-block:: python
@@ -215,7 +215,7 @@ environment the ray serve must to be inicialized.
     register_env("eprllib_env", env_creator=lambda args: Environment(args))
 
 
-In the configuration of `rllib` you need to configurate the environment and all the others parameters 
+In the configuration of ``rllib`` you need to configurate the environment and all the others parameters 
 that your algorithm need. Here we show how to configurate the environment in a PPO algorithm.
 
 .. code-block:: python
@@ -270,44 +270,44 @@ With the algorithm builded, you can now train it:
 
 1.  **Environment Configuration:**
 
-    *   We start by creating an `EnvironmentConfig` object. This object holds all the information about the EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.
-    *   We use the `eprllib_config.generals()` method to set these general parameters.
+    *   We start by creating an ``EnvironmentConfig`` object. This object holds all the information about the EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.
+    *   We use the ``eprllib_config.generals()`` method to set these general parameters.
     *   You'll need to replace the placeholder paths with your actual file paths.
 
 2.  **Agent Configuration:**
 
-    *   We define the agent's behavior using `eprllib_config.agents()`.
-    *   We specify the agent's **observations** (what it can see), **actions** (what it can do), **rewards** (what it's trying to maximize), **filters** and **triggers**.
+    *   We define the agent's behavior using ``eprllib_config.agents()``.
+    *   We specify the agent's **observations** (what it can see), **actions** (what it can do), **rewards** (what it's trying to maximize), **filters** and **action mappers**.
     *   In this simplified example, the agent observes the outdoor air temperature and the zone mean air temperature.
     *   The agent can control the heating and cooling setpoints and the HVAC on/off.
     *   The reward function is a placeholder in this example.
-    * The filter and trigger are defined.
+    *   The filter and trigger are defined.
 
 3.  **Episode Configuration:**
 
-    *   We define the episode configuration using `eprllib_config.episodes()`.
+    *   We define the episode configuration using ``eprllib_config.episodes()``.
     *   In this example, the episode function is a placeholder.
 
 4.  **RLlib Configuration:**
    
     *   We initialize Ray, which is the framework that RLlib uses for distributed computing.
-    *   We register our environment with Ray using `register_env`.
-    *   We build the environment configuration using `eprllib_config.build()`.
-    *   We configure the PPO algorithm using `ppo.PPOConfig()`.
+    *   We register our environment with Ray using ``register_env``.
+    *   We build the environment configuration using ``eprllib_config.build()``.
+    *   We configure the PPO algorithm using ``ppo.PPOConfig()``.
     *   We specify the environment, the framework (PyTorch), and the number of rollout workers (0 for simplicity).
     *   We define a simple neural network model with two hidden layers of 64 units each.
     *   We define a single policy.
-    *   We build the algorithm using `config.build()`.
+    *   We build the algorithm using ``config.build()``.
 
 5.  **Training:**
    
-    *   We train the agent for a few iterations using a `for` loop and `algorithm.train()`.
-    *   The `pretty_print()` function is used to display the training results.
+    *   We train the agent for a few iterations using a ``for`` loop and ``algorithm.train()``.
+    *   The ``pretty_print()`` function is used to display the training results.
 
 6.  **Save and Restore:**
    
-    *   We save the trained agent to a checkpoint using `algorithm.save()`.
-    *   We restore the agent from the checkpoint using `algorithm.restore()`.
+    *   We save the trained agent to a checkpoint using ``algorithm.save()``.
+    *   We restore the agent from the checkpoint using ``algorithm.restore()``.
 
 7.  **End:**
    
