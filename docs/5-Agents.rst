@@ -4,12 +4,16 @@ Agents API
 Introduction
 ------------
 
-In eprllib, **Agents** are the decision-making entities that interact with the EnergyPlus environment. They observe the environment, take actions, and receive rewards based on their performance. The Agents API provides a structured way to define the behavior and capabilities of these agents. This document provides a detailed explanation of the Agents API in eprllib.
+In ``eprllib``, **Agents** are the decision-making entities that interact with the EnergyPlus environment. 
+They observe the environment, take actions, and receive rewards based on their performance. The ``Agents`` API 
+provides a structured way to define the behavior and capabilities of these agents. This document provides 
+a detailed explanation of the ``Agents`` API in ``eprllib``.
 
-AgentSpec: Defining an Agent
-----------------------------
+``AgentSpec``: Defining an Agent
+--------------------------------
 
-The ``AgentSpec`` class is the central class for defining an agent. It encapsulates all the information about an agent's capabilities and behavior. An ``AgentSpec`` object is composed of:
+The ``AgentSpec`` class is the central class for defining an agent. It encapsulates all the information about 
+an agent's capabilities and behavior. An ``AgentSpec`` object is composed of:
 
 *   **ObservationSpec:** Defines what the agent can observe in the environment.
 *   **ActionSpec:** Defines what actions the agent can take.
@@ -28,8 +32,8 @@ To create an agent, you need to import the ``AgentSpec`` class:
 
     from eprllib.Agents.AgentSpec import AgentSpec
 
-ObservationSpec: What the Agent Sees
-------------------------------------
+``ObservationSpec``: What the Agent Sees
+----------------------------------------
 
 The ``ObservationSpec`` class defines the agent's observation space. It specifies what the agent can "see" in the environment. It allows you to define:
 
@@ -44,7 +48,7 @@ The ``ObservationSpec`` class defines the agent's observation space. It specifie
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import ObservationSpec
+    from eprllib.Agents.ObservationSpec import ObservationSpec
 
     observation_spec = ObservationSpec(
         variables=[
@@ -68,10 +72,11 @@ The ``ObservationSpec`` class defines the agent's observation space. It specifie
         ],
     )
 
-ActionSpec: What the Agent Does
--------------------------------
+``ActionSpec``: What the Agent Does
+-----------------------------------
 
-The ``ActionSpec`` class defines the agent's action space. It specifies what actions the agent can take in the environment. It allows you to define:
+The ``ActionSpec`` class defines the agent's action space. It specifies what actions the agent can 
+take in the environment. It allows you to define:
 
 *   ``actuators``: A list of EnergyPlus actuators that the agent can control. Each actuator is defined by a tuple of (actuator type, actuator name, actuator control type).
 *   ``action_fn``: A function that defines how the agent's actions are translated into actuator values.
@@ -79,32 +84,28 @@ The ``ActionSpec`` class defines the agent's action space. It specifies what act
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import ActionSpec
+    from eprllib.Agents.ActionSpec import ActionSpec
 
     action_spec = ActionSpec(
-        actuators=[
-            ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-            ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-            ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-        ],
-        # action_fn = SetpointAgentActions,
-        # action_fn_config = {
-        #     'agent_name': 'HVAC_agent',
-        #     'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_availability")
-        # }
+        actuators={
+            "heating_setpoint": ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
+            "cooling_setpoint": ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
+            "HVAC_OnOff": ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
+        },
     )
 
-RewardSpec: What Motivates the Agent
-------------------------------------
+``RewardSpec``: What Motivates the Agent
+----------------------------------------
 
-The ``RewardSpec`` class defines how the agent is rewarded for its actions. It specifies the reward function and its configuration. It allows you to define:
+The ``RewardSpec`` class defines how the agent is rewarded for its actions. It specifies the reward function and 
+its configuration. It allows you to define:
 
 *   ``reward_fn``: A function that calculates the reward based on the agent's actions and the environment's state.
 *   ``reward_fn_config``: A dictionary of parameters that will be passed to the reward function.
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import RewardSpec
+    from eprllib.Agents.Rewards.RewardSpec import RewardSpec
 
     reward_spec = RewardSpec(
         reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
@@ -119,10 +120,11 @@ The ``RewardSpec`` class defines how the agent is rewarded for its actions. It s
         },
     )
 
-FilterSpec: Filtering Observations
-----------------------------------
+``FilterSpec``: Filtering Observations
+--------------------------------------
 
-The ``FilterSpec`` class defines how the agent's observations are filtered. It specifies the filter function and its configuration. It allows you to define:
+The ``FilterSpec`` class defines how the agent's observations are filtered. It specifies the filter function and 
+its configuration. It allows you to define:
 
 *   ``filter_fn``: A function that filters the observations.
 *   ``filter_fn_config``: A dictionary of parameters that will be passed to the filter function.
@@ -131,7 +133,7 @@ The ``DefaultFilter`` is provided as a standard option.
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import FilterSpec
+    from eprllib.Agents.Filters.FilterSpec import FilterSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 
     filter_spec = FilterSpec(
@@ -139,35 +141,31 @@ The ``DefaultFilter`` is provided as a standard option.
         filter_fn_config={},
     )
 
-ActionMapperSpec: Triggering Actions
-------------------------------------
+``ActionMapperSpec``: Triggering Actions
+----------------------------------------
 
-The ``ActionMapperSpec`` class defines when the agent's actions are triggered. It specifies the trigger function and its configuration. It allows you to define:
+The ``ActionMapperSpec`` class defines how the agent's policy actions are transformed into actuator actions on EnergyPlus. 
+It specifies the ActionMapper function and its configuration. It allows you to define:
 
-*   ``trigger_fn``: A function that determines when to trigger an action.
-*   ``trigger_fn_config``: A dictionary of parameters that will be passed to the trigger function.
-
-The ``DualSetpointDiscreteAndAvailabilityActionMapper`` is provided as a standard option.
+*   ``actio_mapper_fn``: An ``BaseActionMapper`` function class.
+*   ``actio_mapper_config``: A dictionary of parameters that will be passed to the ActionMapper function.
 
 .. code-block:: python
 
-    from eprllib.Agents.AgentSpec import TriggerSpec
-    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
+    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
+    from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 
     action_mapper = ActionMapperSpec(
-        action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
-        action_mapper_config={
-            'temperature_range': (18, 28),
-            'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-            'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-            'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-        },
+        action_mapper=MyCustomActionMapperFunction(BaseActionMapper),
+        action_mapper_config={},
     )
 
-Integrating Agents with EnvironmentConfig
------------------------------------------
+Integrating Agents with ``EnvironmentConfig``
+---------------------------------------------
 
-Once you have defined your agents using ``AgentSpec``, you need to integrate them into the environment configuration using the ``EnvironmentConfig`` class. The ``agents()`` method of ``EnvironmentConfig`` allows you to specify the agents that will interact with the environment.
+Once you have defined your agents using ``AgentSpec``, you need to integrate them into the environment configuration 
+using the ``EnvironmentConfig`` class. The ``agents()`` method of ``EnvironmentConfig`` allows you to specify the 
+agents that will interact with the environment.
 
 The ``agents()`` method takes the following parameters:
 
@@ -179,9 +177,13 @@ The ``agents()`` method takes the following parameters:
 
     from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
     from eprllib.Connectors.DefaultConnector import DefaultConnector
-    from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec, RewardSpec, FilterSpec, TriggerSpec
+    from eprllib.Agents.AgentSpec import AgentSpec
+    from eprllib.Agents.ObservationSpec import ObservationSpec
+    from eprllib.Agents.ActionSpec import ActionSpec
+    from eprllib.Agents.Rewards.RewardSpec import RewardSpec
+    from eprllib.Agents.Filters.FilterSpec import FilterSpec
+    from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
     from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
 
     # Define the agent
     agent_spec = AgentSpec(
@@ -195,24 +197,19 @@ The ``agents()`` method takes the following parameters:
             ],
         ),
         action=ActionSpec(
-            actuators=[
-                ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-                ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-                ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-            ],
+            actuators={
+                "heating_setpoint": ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
+                "cooling_setpoint": ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
+                "HVAC_OnOff": ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
+            },
         ),
         filter=FilterSpec(
             filter_fn=DefaultFilter,
             filter_fn_config={},
         ),
         action_mapper = ActionMapperSpec(
-            action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
-            action_mapper_config={
-                'temperature_range': (18, 28),
-                'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-                'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-                'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-            },
+            action_mapper=MyCustomActionMapperFunction(BaseActionMapper),
+            action_mapper_config={},
         ),
         reward=RewardSpec(
             reward_fn=lambda agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs: 0,
@@ -240,10 +237,12 @@ The ``agents()`` method takes the following parameters:
         }
     )
 
-Connector API: Agent Interaction
---------------------------------
 
-The ``Connector`` API defines how agents interact with the environment and with each other. It provides a flexible way to implement different interaction patterns, such as:
+``Connector`` API: Agent Interaction
+------------------------------------
+
+The ``Connector`` API defines how agents interact with the environment and with each other. It provides a flexible way 
+to implement different interaction patterns, such as:
 
 *   **Cooperative Agents:** Agents work together to achieve a common goal.
 *   **Hierarchical Agents:** Agents are organized in a hierarchy, with some agents controlling others.
@@ -259,8 +258,8 @@ The ``Connector`` API defines how agents interact with the environment and with 
 
 *   **Custom Connectors:**
 
-    You can create custom connectors to implement different interaction patterns between agents and the environment. This allows for flexibility in how agents are integrated into the simulation.
+    You can create custom connectors to implement different interaction patterns between agents and the 
+    environment. This allows for flexibility in how agents are integrated into the simulation.
 
-Work in progress...
-
-By understanding these concepts, you'll be able to effectively define and use agents in eprllib for your building energy optimization and control projects.
+By understanding these concepts, you'll be able to effectively define and use agents in eprllib for your building energy 
+optimization and control projects.

@@ -4,12 +4,18 @@ Environment API
 Introduction
 ------------
 
-In eprllib, the **Environment** represents the interface between the Reinforcement Learning (RL) agents and the EnergyPlus building simulation. It's responsible for managing the simulation, providing observations to the agents, receiving actions from the agents, and calculating rewards. This document provides a detailed explanation of the Environment API in eprllib, focusing on the `EnvironmentConfig` and `Environment` classes.
+In ``eprllib``, the **Environment** represents the interface between the Reinforcement Learning (RL) 
+agents and the EnergyPlus building simulation. It's responsible for managing the simulation, providing 
+observations to the agents, receiving actions from the agents, and calculating rewards. This document 
+provides a detailed explanation of the Environment API in ``eprllib``, focusing on the ``EnvironmentConfig`` 
+and ``Environment`` classes.
 
-EnvironmentConfig: Configuring the Environment
-----------------------------------------------
+``EnvironmentConfig``: Configuring the ``Environment``
+------------------------------------------------------
 
-The ``EnvironmentConfig`` class is the central configuration object for defining the environment. It allows you to specify all the parameters needed to set up the EnergyPlus simulation and define the agents and episodes that will interact with it.
+The ``EnvironmentConfig`` class is the central configuration object for defining the environment. It allows 
+you to specify all the parameters needed to set up the EnergyPlus simulation and define the agents and episodes 
+that will interact with it.
 
 *   **General Parameters:**
 
@@ -18,9 +24,9 @@ The ``EnvironmentConfig`` class is the central configuration object for defining
     *   ``epjson_path``: Path to the EnergyPlus model file (EPJSON). This is a required parameter.
     *   ``epw_path``: Path to the weather file (EPW). This is a required parameter.
     *   ``output_path``: Path to the output directory where simulation results will be stored. If not provided, a temporary directory will be used.
-    *   ``ep_terminal_output``: Boolean indicating whether to display EnergyPlus terminal output. Defaults to `False`.
+    *   ``ep_terminal_output``: Boolean indicating whether to display EnergyPlus terminal output. Defaults to ``False``.
     *   ``timeout``: Timeout (in seconds) for the EnergyPlus simulation. Defaults to 10 seconds.
-    *   ``evaluation``: Boolean indicating whether the simulation is for evaluation. Defaults to `False`.
+    *   ``evaluation``: Boolean indicating whether the simulation is for evaluation. Defaults to ``False``.
 
     .. code-block:: python
 
@@ -40,9 +46,9 @@ The ``EnvironmentConfig`` class is the central configuration object for defining
 
     The ``agents()`` method of ``EnvironmentConfig`` is used to define the agents that will interact with the environment. It allows you to specify:
 
-    *   ``connector_fn``: The connector function to use for the agents. This function defines how agents interact with the environment. The `DefaultConnector` is provided as a standard option.
+    *   ``connector_fn``: The connector function to use for the agents. This function defines how agents interact with the environment. The ``DefaultConnector`` is provided as a standard option.
     *   ``connector_fn_config``: The configuration for the connector function. This is a dictionary of parameters that will be passed to the connector function.
-    *   ``agents_config``: A dictionary containing the specifications for each agent. The keys are the agent names, and the values are `AgentSpec` objects (see the "Agents" section in the `Key Concepts <3-KeyConcepts.html>`_ documentation).
+    *   ``agents_config``: A dictionary containing the specifications for each agent. The keys are the agent names, and the values are ``AgentSpec`` objects (see the "Agents" section in the `Key Concepts <3-KeyConcepts.html>`_ documentation).
 
     .. code-block:: python
 
@@ -122,11 +128,13 @@ The ``EnvironmentConfig`` class is the central configuration object for defining
 
 *   **RLlib Configuration:**
 
-    The ``EnvironmentConfig`` object is used to provide the environment configuration to RLlib. This configuration is passed to the `Environment` class when it is created.
+    The ``EnvironmentConfig`` object is used to provide the environment configuration to RLlib. This configuration 
+    is passed to the ``Environment`` class when it is created.
 
 *   **Building the Configuration:**
 
-    The ``build()`` method of ``EnvironmentConfig`` is used to build the configuration. This method validates the configuration and returns a dictionary that can be used to create an `Environment` object.
+    The ``build()`` method of ``EnvironmentConfig`` is used to build the configuration. This method validates 
+    the configuration and returns a dictionary that can be used to create an ``Environment`` object.
 
     .. code-block:: python
 
@@ -144,7 +152,8 @@ The ``EnvironmentConfig`` class is the central configuration object for defining
 Environment: The Environment Class
 ----------------------------------
 
-The ``Environment`` class (located in `eprllib.Environment.Environment`) is the core of the Environment API in eprllib. It serves as the base class for creating custom environments that interact with EnergyPlus.
+The ``Environment`` class (located in ``eprllib.Environment.Environment``) is the core of the Environment API 
+in ``eprllib``. It serves as the base class for creating custom environments that interact with EnergyPlus.
 
 *   **Role and Responsibilities:**
 
@@ -159,7 +168,8 @@ The ``Environment`` class (located in `eprllib.Environment.Environment`) is the 
 
 *   **Interaction with EnergyPlus:**
 
-    ``Environment`` interacts with EnergyPlus through its Python API. It uses callback points to read sensor data, set actuator values, and control the simulation flow.
+    ``Environment`` interacts with EnergyPlus through its Python API. It uses callback points to read sensor 
+    data, set actuator values, and control the simulation flow.
 
 *   **Interaction with RLlib:**
 
@@ -173,7 +183,7 @@ The ``Environment`` class (located in `eprllib.Environment.Environment`) is the 
 EnergyPlus Integration
 ----------------------
 
-eprllib leverages the EnergyPlus Python API to interact with the building simulation.
+``eprllib`` leverages the EnergyPlus Python API to interact with the building simulation.
 
 *   **The EnergyPlus Python API:**
 
@@ -185,7 +195,7 @@ eprllib leverages the EnergyPlus Python API to interact with the building simula
 
 *   **Callback Points:**
 
-    Callback points are specific points in the EnergyPlus simulation where eprllib can interact with the simulation. eprllib uses callback points to:
+    Callback points are specific points in the EnergyPlus simulation where ``eprllib`` can interact with the simulation. ``eprllib`` uses callback points to:
 
     *   Read sensor data at the beginning of each time step.
     *   Set actuator values at the beginning of each time step.
@@ -193,15 +203,15 @@ eprllib leverages the EnergyPlus Python API to interact with the building simula
 
 *   **Reading Sensor Data:**
 
-    eprllib reads sensor data from EnergyPlus using the ``eplus_api.exchange.get_variable_handle()`` and ``eplus_api.exchange.get_variable_value()`` functions.
+    ``eprllib`` reads sensor data from EnergyPlus using the ``eplus_api.exchange.get_variable_handle()`` and ``eplus_api.exchange.get_variable_value()`` functions.
 
 *   **Setting Actuator Values:**
 
-    eprllib sets actuator values in EnergyPlus using the ``eplus_api.exchange.get_actuator_handle()`` and ``eplus_api.exchange.set_actuator_value()`` functions.
+    ``eprllib`` sets actuator values in EnergyPlus using the ``eplus_api.exchange.get_actuator_handle()`` and ``eplus_api.exchange.set_actuator_value()`` functions.
 
 *   **Controlling Simulation Flow:**
 
-    eprllib controls the simulation flow by advancing the simulation time step by step.
+    ``eprllib`` controls the simulation flow by advancing the simulation time step by step.
 
 How work the standard environment in DRL
 -----------------------------------------
@@ -214,7 +224,7 @@ How work the standard environment in DRL
 RLlib Integration
 -----------------
 
-eprllib environments are designed to be used seamlessly with RLlib.
+``eprllib`` environments are designed to be used seamlessly with RLlib.
 
 *   **Using ``Environment`` with RLlib:**
 
@@ -268,7 +278,7 @@ Episodes define the configuration of the simulation.
 Custom Environments
 -------------------
 
-While eprllib provides a robust ``Environment``, you might need to create custom environments for specific use cases.
+While ``eprllib`` provides a robust ``Environment``, you might need to create custom environments for specific use cases.
 
 *   **Inheriting from ``Environment``:**
 
@@ -278,5 +288,5 @@ While eprllib provides a robust ``Environment``, you might need to create custom
 
     You can override methods like ``step()``, ``reset()``, or any other method to customize the behavior of your environment.
 
-By understanding these concepts, you'll be able to effectively use and customize the Environment API in eprllib for your building energy optimization and control projects.
-
+By understanding these concepts, you'll be able to effectively use and customize the Environment API in ``eprllib`` for your 
+building energy optimization and control projects.
