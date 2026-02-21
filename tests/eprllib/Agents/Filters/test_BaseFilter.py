@@ -11,7 +11,7 @@ class TestBasefilter:
         the filter_fn_config attribute with the provided configuration dictionary.
         """
         filter_fn_config = {"key": "value"}
-        base_filter = BaseFilter(filter_fn_config)
+        base_filter = BaseFilter("agent_name",filter_fn_config)
         assert base_filter.filter_fn_config == filter_fn_config
 
     # def test_get_filtered_obs_1(self):
@@ -48,7 +48,7 @@ class TestBasefilter:
         This tests the edge case where the filter_fn_config is an empty dictionary,
         which is a valid input but may lead to unexpected behavior in subclasses.
         """
-        filter_instance = BaseFilter({})
+        filter_instance = BaseFilter("agent_name",{})
         assert filter_instance.filter_fn_config == {}
 
     # def test_init_with_none_input(self):

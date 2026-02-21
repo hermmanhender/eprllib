@@ -13,7 +13,7 @@ class TestDefaultfilter:
         configuration dictionary and that it correctly initializes its superclass.
         """
         filter_fn_config: Dict[str, Any] = {"test_key": "test_value"}
-        default_filter = DefaultFilter(filter_fn_config)
+        default_filter = DefaultFilter("agent_name",filter_fn_config)
         assert isinstance(default_filter, DefaultFilter)
         assert default_filter.filter_fn_config == filter_fn_config
 
@@ -24,7 +24,7 @@ class TestDefaultfilter:
         """
         # Create a DefaultFilter instance
         filter_fn_config = {}
-        default_filter = DefaultFilter(filter_fn_config)
+        default_filter = DefaultFilter("agent_name",filter_fn_config)
 
         # Prepare test inputs
         env_config = {}
@@ -79,6 +79,6 @@ class TestDefaultfilter:
         This is a valid edge case as the method accepts any dictionary without validation.
         """
         empty_config: Dict[str, Any] = {}
-        filter_instance = DefaultFilter(empty_config)
+        filter_instance = DefaultFilter("agent_name",empty_config)
         assert isinstance(filter_instance, DefaultFilter)
         assert filter_instance.filter_fn_config == empty_config
