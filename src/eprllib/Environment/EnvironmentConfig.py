@@ -6,6 +6,7 @@ This module contains the class and methods used to configure the environment.
 """
 from typing import Optional, Dict, Any, Type
 from tempfile import TemporaryDirectory
+
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode
 from eprllib.Connectors.BaseConnector import BaseConnector
@@ -216,7 +217,7 @@ class EnvironmentConfig:
 
     def connector(
         self,
-        connector_fn: Optional[Type[BaseConnector]] = None,
+        connector_fn: Type[BaseConnector] = BaseConnector,
         connector_fn_config: Dict[str, Any] = {},
         ) -> None:
         """

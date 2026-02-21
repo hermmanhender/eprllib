@@ -10,10 +10,11 @@ The low-level agents use a fully-shared-parameter policy.
 
 import numpy as np
 from numpy.typing import NDArray
-from numpy import float64
+from numpy import floating
 from gymnasium.spaces import Box
 from gymnasium import Space
 from typing import Dict, Any, List, Tuple, Optional
+
 from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Utils.annotations import override
 from eprllib.Utils.connector_utils import (
@@ -529,7 +530,7 @@ class HierarchicalThreeLevelsConnector(BaseConnector):
         dict_agents_obs: Dict[str,Any],
         infos: Dict[str, Dict[str, Any]],
         objectives: Dict[str, List[int | float]]
-        ) -> Tuple[Dict[str,NDArray[float64]], Dict[str, Dict[str, Any]]]:
+        ) -> Tuple[Dict[str,NDArray[floating[Any]]], Dict[str, Dict[str, Any]]]:
         """
         Processes a dictionary of agent objectives to generate a combined vector.
         

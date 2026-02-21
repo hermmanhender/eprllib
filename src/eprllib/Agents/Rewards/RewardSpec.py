@@ -7,6 +7,7 @@ functions for agents in reinforcement learning environments.
 It ensures that the reward function is properly defined and adheres to the expected interface.
 """
 from typing import Dict, Any, Optional, Type
+
 from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib import logger
 

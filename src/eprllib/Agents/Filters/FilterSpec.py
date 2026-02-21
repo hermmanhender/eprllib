@@ -6,6 +6,7 @@ configuration of filter functions for agents in reinforcement learning environme
 It ensures that the filter function is properly defined and adheres to the expected interface.
 """
 from typing import Dict, Any, Optional, Type
+
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib import logger
