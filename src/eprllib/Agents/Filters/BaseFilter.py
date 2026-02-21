@@ -28,8 +28,8 @@ class BaseFilter:
     Base class for defining filter functions used in agent specifications.
     Filters are used to preprocess observations before they are fed to the agent.
     """
-    filter_fn_config: Dict[str, Any]
-    agent_name: str
+    filter_fn_config: Dict[str, Any] = {}
+    agent_name: str = ""
     
     def __init__(
         self,
