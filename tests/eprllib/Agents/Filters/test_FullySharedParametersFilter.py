@@ -29,19 +29,13 @@ class TestFullysharedparametersfilter:
         4. The returned observation contains only the non-actuator state values.
         """
         # Setup
-        filter_fn_config = {}
-        env_config = {
-            "agents_config": {
-                "agent1": {
-                    "action": {
-                        "actuators": [
-                            ["actuator1", "type1", "subtype1"],
-                            ["actuator2", "type2", "subtype2"]
-                        ]
-                    }
-                }
-            }
+        filter_fn_config = {
+            "actuators": [
+                ["actuator1", "type1", "subtype1"],
+                ["actuator2", "type2", "subtype2"]
+            ]
         }
+        
         agent_states = {
             "agent1: state1": 1.0,
             "agent1: state2": 2.0,
@@ -55,7 +49,7 @@ class TestFullysharedparametersfilter:
 
 
         # Call the method under test
-        result = filter_instance.get_filtered_obs(env_config, agent_states)
+        result = filter_instance.get_filtered_obs(agent_states)
 
         # Assertions
         assert isinstance(result, np.ndarray)
@@ -69,22 +63,14 @@ class TestFullysharedparametersfilter:
         This test verifies that the method correctly filters out actuator states
         and returns a numpy array of the remaining agent states.
         """
-        filter_fn_config = {}
+        filter_fn_config = {
+            "actuators": [
+                ["actuator1", "type1", "subtype1"],
+                ["actuator2", "type2", "subtype2"]
+            ]
+        }
         filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
         filter_instance.agent_name = "agent1"
-
-        env_config = {
-            "agents_config": {
-                "agent1": {
-                    "action": {
-                        "actuators": [
-                            ["actuator1", "type1", "subtype1"],
-                            ["actuator2", "type2", "subtype2"]
-                        ]
-                    }
-                }
-            }
-        }
 
         agent_states = {
             "agent1: state1": 1.0,
@@ -94,7 +80,7 @@ class TestFullysharedparametersfilter:
             "agent1: state3": 5.0
         }
 
-        result = filter_instance.get_filtered_obs(env_config, agent_states)
+        result = filter_instance.get_filtered_obs(agent_states)
 
         expected_result = np.array([1.0, 2.0, 5.0], dtype='float64')
         np.testing.assert_array_equal(result, expected_result)
@@ -104,45 +90,41 @@ class TestFullysharedparametersfilter:
         Test the get_filtered_obs method with empty agent_states.
         This tests the edge case where no agent states are provided, which should result in an empty numpy array.
         """
-        filter_fn_config = {}
+        filter_fn_config: Dict[str, Any] = {"actuators": []}
         filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
 
-        env_config = {"agents_config": {"agent1": {"action": {"actuators": []}}}}
         agent_states = {}
 
         with pytest.raises(ValueError):
-            filter_instance.get_filtered_obs(env_config, agent_states)
+            filter_instance.get_filtered_obs(agent_states)
         
 
-    def test_get_filtered_obs_missing_agent_config(self):
-        """
-        Test the get_filtered_obs method when the agent configuration is missing from the env_config.
-        This tests the edge case where the expected agent configuration is not present in the environment config.
-        """
-        filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
-        filter_instance.agent_name = "agent1"
+    # def test_get_filtered_obs_missing_agent_config(self):
+    #     """
+    #     Test the get_filtered_obs method when the agent configuration is missing from the env_config.
+    #     This tests the edge case where the expected agent configuration is not present in the environment config.
+    #     """
+    #     filter_fn_config: Dict[str, Any] = {"actuators": []}
+    #     filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
+    #     filter_instance.agent_name = "agent1"
 
+    #     agent_states = {"agent1: state1": 1.0, "agent1: state2": 2.0}
 
-        env_config = {"agents_config": {}}
-        agent_states = {"agent1: state1": 1.0, "agent1: state2": 2.0}
-
-        with pytest.raises(KeyError):
-            filter_instance.get_filtered_obs(env_config, agent_states)
+    #     with pytest.raises(KeyError):
+    #         filter_instance.get_filtered_obs(agent_states)
 
     def test_get_filtered_obs_no_actuators(self):
         """
         Test the get_filtered_obs method when there are no actuators configured for the agent.
         This tests the edge case where the agent has no actuators, so no filtering should occur.
         """
-        filter_fn_config = {}
+        filter_fn_config: Dict[str, Any] = {"actuators": []}
         filter_instance = FullySharedParametersFilter("agent1",filter_fn_config)
         filter_instance.agent_name = "agent1"
 
-        env_config = {"agents_config": {"agent1": {"action": {"actuators": []}}}}
         agent_states = {"agent1: state1": 1.0, "agent1: state2": 2.0}
 
-        result = filter_instance.get_filtered_obs(env_config, agent_states)
+        result = filter_instance.get_filtered_obs(agent_states)
         expected = np.array([1.0, 2.0], dtype=np.float64)
         np.testing.assert_array_equal(result, expected)
 
@@ -151,7 +133,9 @@ class TestFullysharedparametersfilter:
         Test initialization of FullySharedParametersFilter with an empty dictionary.
         This is to verify that the method handles the edge case of an empty input correctly.
         """
-        filter_fn_config = {}
-        filter_instance = FullySharedParametersFilter("agent_name",filter_fn_config)
+        filter_fn_config: Dict[str, Any] = {}
         
-        assert isinstance(filter_instance, FullySharedParametersFilter)
+        
+        with pytest.raises(ValueError) as excinfo:
+            filter_instance = FullySharedParametersFilter("agent_name",filter_fn_config)
+            assert str(excinfo.value) == "FullySharedParametersFilter: The 'actuators' key must be defined into the filter_fn_config dictionary."
