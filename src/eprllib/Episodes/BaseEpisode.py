@@ -82,7 +82,7 @@ class BaseEpisode:
         return env_config
     
     
-    def get_episode_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
+    def get_episode_agents(self, possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the episode configuration in the EnergyPlus environment.
 
@@ -96,7 +96,7 @@ class BaseEpisode:
         return possible_agents
     
     
-    def get_timestep_agents(self, env_config: Dict[str, Any], possible_agents: List[str]) -> List[str]:
+    def get_timestep_agents(self, possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the timestep configuration in the EnergyPlus environment.
 
