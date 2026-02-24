@@ -53,7 +53,6 @@ class ObservationSpec:
         prediction_variables: Dict[str, bool] = {},
         use_actuator_state: bool = False,
         other_obs: Dict[str, float | int] = {},
-        # history_len: int = 1,
         user_occupation_function: bool = False,
         user_occupation_forecast: bool = False,
         user_type: str = VALID_USER_TYPES[0],
@@ -62,7 +61,7 @@ class ObservationSpec:
         occupation_prediction_hours: int = 24,
         confidence_level: float = 0.95,
         lambdaa: float = 0.05
-    ) -> None:
+        ) -> None:
         """
         Construction method.
         
@@ -122,8 +121,6 @@ class ObservationSpec:
             
             other_obs (Dict[str, float | int]): Custom observation dictionary.
             
-            history_len (int): History length for each agent. DEPRECATED.
-            
             user_occupation_function (bool): Define if the user occupation function will be used. Default is False.
             
             user_occupation_forecast (bool): Define if the user occupation forecast will be used. Default is False.
@@ -172,9 +169,6 @@ class ObservationSpec:
         
         # Custom observation dict.
         self.other_obs = other_obs
-        
-        # History length for each agent.
-        # self.history_len = history_len
         
         # User occupation forecast profile.
         self.user_occupation_forecast = user_occupation_forecast
@@ -277,10 +271,6 @@ class ObservationSpec:
             msg = "ObservationSpec: At least one variable/meter/actuator/parameter must be defined in the observation."
             logger.error(msg)
             raise ValueError(msg)
-        
-        # if self.history_len <= 0:
-        #     self.history_len = 1
-        #     logger.warning(f"The variable 'history_len' must be greater than 0. It is taken the value of 1.")
         
         return vars(self)
             
