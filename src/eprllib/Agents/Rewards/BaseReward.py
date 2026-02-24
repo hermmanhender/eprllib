@@ -70,6 +70,7 @@ class BaseReward:
         self.cumulated_reward = []
         self.reward_timestep = 0
     
+    
     def set_initial_parameters(
         self,
         obs_indexed: Dict[str, int]
