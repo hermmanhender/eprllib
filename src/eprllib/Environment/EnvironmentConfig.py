@@ -10,11 +10,13 @@ from tempfile import TemporaryDirectory
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode
 from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Connectors.DefaultConnector import DefaultConnector
-from eprllib.Connectors.IndependentConnector import IndependentConnector
+from eprllib.Connectors._dev_DefaultConnector import DefaultConnector
+from eprllib.Connectors._dev_IndependentConnector import IndependentConnector
 from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
-from eprllib import logger
+from eprllib.Utils.parallel_setup import parallel_energyplus_setup
+from eprllib.Utils.env_config_utils import EP_API_add_path
+from eprllib import logger, EP_VERSION
 
 class EnvironmentConfig:
     """
@@ -54,6 +56,8 @@ class EnvironmentConfig:
         self.episode_fn: Optional[Type[BaseEpisode]] = None
         self.episode_fn_config: Dict[str, Any] = {}
         self.cut_episode_len: int = CUT_EPISODE_LEN
+        
+        self.ep_workers_paths: Dict[int, str] = {}
     
     def to_dict(self) -> Dict[str, Any]:
         """Converts all settings into a legacy config dict for backward compatibility.
@@ -169,7 +173,17 @@ class EnvironmentConfig:
             logger.info(msg)
             self.episode_fn = DefaultEpisode
             self.episode_fn_config = {}
+        
+        # === PARALLEL EXECUTION ===
+        # EnergyPlus Python API path adding
+        try:
+            original_ep_path = EP_API_add_path(EP_VERSION)
+        except RuntimeError as e:
+            logger.error(f"EnvironmentConfig: Failed to add EnergyPlus API path: {e}")
+            exit(1)
             
+        self.ep_workers_paths = parallel_energyplus_setup(original_ep_path)
+        
         return vars(self)
     
     
