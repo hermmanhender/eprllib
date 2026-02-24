@@ -19,11 +19,12 @@ In this module, you will find:
 transform policy actions into actutators an actions.
 - ``RewardSpec``: Defines the reward function for the agent.
 
-Additionally, you will find base classes and some applications for Filters, Rewards, 
-and ActionMappers, which are essential parts of an agent in ``eprllib``.
+Additionally, you will find base classes and some applications for ``Filters``, ``Rewards``, 
+and ``ActionMappers``, which are essential parts of an agent in ``eprllib``.
 """
 
 from typing import Dict, Any
+
 
 SIMULATION_PARAMETERS: Dict[str, bool] = {
     'actual_date_time': False,
