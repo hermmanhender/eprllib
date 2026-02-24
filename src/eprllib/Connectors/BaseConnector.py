@@ -17,8 +17,9 @@ class BaseConnector:
     """
     Base class for connector functions.
     """
-    connector_fn_config: Dict[str, Any] = {}
-    obs_indexed: Dict[str,Dict[str, int]] = {}
+    connector_fn_config: Dict[str, Any]
+    obs_indexed: Dict[str,Dict[str, int]]
+    _is_setup: bool
     
     def __init__(
         self,
@@ -62,14 +63,11 @@ class BaseConnector:
     
     def get_all_agents_obs_spaces_dict(
         self,
-        env_config: Dict[str, Any],
         possible_agents: List[str]
     ) -> spaces.Dict:
         """
         Get all the agents observations spaces putting togheter in a Dict space dimension.
 
-        :param env_config: Environment configuration.
-        :type env_config: Dict[str, Any]
         :param possible_agents: List of possible agents.
         :type possible_agents: List[str]
         :return: Agents observation spaces.
@@ -77,7 +75,7 @@ class BaseConnector:
         """
         observation_space_dict: Dict[str, Any] = {}
         for agent in possible_agents:
-            observation_space_dict[agent] = self.get_agent_obs_dim(env_config, agent)
+            observation_space_dict[agent] = self.get_agent_obs_dim(agent)
         return spaces.Dict(observation_space_dict)
     
     
@@ -95,14 +93,11 @@ class BaseConnector:
     @OverrideToImplementCustomLogic
     def get_agent_obs_dim(
         self,
-        env_config: Dict[str, Any],
         agent: str
     ) -> spaces.Space[Any]:
         """
         Get the agent observation dimension.
 
-        :param env_config: Environment configuration.
-        :type env_config: Dict[str, Any]
         :param agent: Agent identifier, optional.
         :type agent: str, optional
         :return: Agent observation spaces.
@@ -115,14 +110,11 @@ class BaseConnector:
     @OverrideToImplementCustomLogic
     def get_agent_obs_indexed(
         self,
-        env_config: Dict[str, Any],
         agent: str
     ) -> Dict[str, int]:
         """
         Get a dictionary of the agent observation parameters and their respective index in the observation array.
 
-        :param env_config: Environment configuration.
-        :type env_config: Dict[str, Any]
         :param agent: Agent identifier, optional.
         :type agent: str, optional
         :return: Agent observation spaces.
@@ -135,7 +127,6 @@ class BaseConnector:
     
     def set_top_level_obs(
         self,
-        env_config: Dict[str, Any],
         agent_states: Dict[str, Dict[str, Any]],
         dict_agents_obs: Dict[str, Any],
         infos: Dict[str, Dict[str, Any]],
@@ -144,8 +135,6 @@ class BaseConnector:
         """
         Set the multi-agent observation.
 
-        :param env_config: Environment configuration.
-        :type env_config: Dict[str, Any]
         :param agent_states: Agent states.
         :type agent_states: Dict[str, Dict[str, Any]]
         :param dict_agents_obs: Dictionary of agents' observations.
@@ -163,7 +152,6 @@ class BaseConnector:
     
     def set_low_level_obs(
         self,
-        env_config: Dict[str, Any],
         agent_states: Dict[str,Dict[str,Any]],
         dict_agents_obs: Dict[str,Any],
         infos: Dict[str, Dict[str, Any]],
@@ -172,8 +160,6 @@ class BaseConnector:
         """
         Set the multiagent observation.
 
-        :param env_config: environment configuration
-        :type env_config: Dict[str,Any]
         :param agent_states: agent states
         :type agent_states: Dict[str,Any]
         :param dict_agents_obs: dictionary of agents observations
