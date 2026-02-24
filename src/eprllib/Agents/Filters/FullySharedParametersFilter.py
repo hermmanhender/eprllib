@@ -11,7 +11,7 @@ space.
 """
 import numpy as np
 from numpy.typing import NDArray
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Utils.observation_utils import get_actuator_name
@@ -24,18 +24,17 @@ class FullySharedParametersFilter(BaseFilter):
     """
     @override(BaseFilter)
     def setup(self) -> None:
-        """
-        Initializes the FullySharedParametersFilter class.
-
-        Args:
-            filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
-        """
-        pass
+        
+        if self.filter_fn_config.get("actuators", None) is None:
+            msg = "FullySharedParametersFilter: The 'actuators' key must be defined into the filter_fn_config dictionary."
+            logger.error(msg)
+            raise ValueError(msg)
+        
+        self.actuator_config_list: Dict[str, Tuple[str,str,str]] = self.filter_fn_config["actuators"]
     
     @override(BaseFilter)
     def _get_filtered_obs(
         self,
-        env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
     ) -> NDArray[np.float64]:
         """
@@ -49,7 +48,7 @@ class FullySharedParametersFilter(BaseFilter):
             NDarray: Filtered observations as a numpy array of float64 values.
         """
         # Remove from agent_states_copy the actuators state that the agent manage, if any.
-        for actuator_config in env_config["agents_config"][self.agent_name]["action"]["actuators"]:
+        for actuator_config in self.actuator_config_list:
             _ = agent_states.pop(get_actuator_name(self.agent_name, actuator_config[0], actuator_config[1], actuator_config[2]), None)
         
         logger.debug(f"FullySharedParametersFilter: Filtered observation for agent {self.agent_name}: {agent_states}")
