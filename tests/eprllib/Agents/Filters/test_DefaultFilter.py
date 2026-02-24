@@ -27,11 +27,10 @@ class TestDefaultfilter:
         default_filter = DefaultFilter("agent_name",filter_fn_config)
 
         # Prepare test inputs
-        env_config = {}
         agent_states = {"state1": 1.0, "state2": 2.0, "state3": 3.0}
 
         # Call the method under test
-        result = default_filter.get_filtered_obs(env_config, agent_states)
+        result = default_filter.get_filtered_obs(agent_states)
 
         # Assert the result is a numpy array of float64 values
         assert isinstance(result, np.ndarray)
