@@ -33,7 +33,6 @@ class DefaultFilter(BaseFilter):
     @override(BaseFilter)
     def _get_filtered_obs(
         self,
-        env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
     ) -> NDArray[np.float64]:
         """
