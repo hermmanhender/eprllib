@@ -1,4 +1,4 @@
-﻿eprllib.Agents.Filters.BaseFilter
+eprllib.Agents.Filters.BaseFilter
 =================================
 
 .. automodule:: eprllib.Agents.Filters.BaseFilter
