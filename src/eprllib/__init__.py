@@ -9,7 +9,7 @@ offering an intuitive and flexible interface for developing intelligent agents t
 interact with building simulations.
 """
 # Version management.
-from .version import __version__, EP_VERSION
+from .version import __version__, EP_VERSION # type: ignore
 
 # Log configuration.
 import logging
