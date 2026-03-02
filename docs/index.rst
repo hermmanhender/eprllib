@@ -25,14 +25,7 @@ Key Features
    1-Overview
    2-GettingStarted
    3-KeyConcepts
-   4-Environment
-   5-Agents
-   6-ActionMappers
-   7-Filters
-   8-Rewards
-   9-Connectors
-   10-Episodes
-   UserGuides/IntroductionGuides
+   UserGuides/UserGuide
    Examples/IntroductionExamples
    API Reference/eprllib
    
