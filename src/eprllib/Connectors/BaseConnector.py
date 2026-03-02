@@ -28,8 +28,12 @@ class BaseConnector:
         """
         Base class for connector functions.
         
-        :param connector_fn_config: Configuration of the connector function.
-        :type connector_fn_config: Dict[str, Any], optional
+        Args:
+            connector_fn_config (Dict[str, Any]): Configuration of the connector function.
+        
+        Raises:
+            RuntimeError: If the ``setup()`` method is called more than once.
+            AttributeError: If the ``setup()`` method is not implemented in the child class.
         """
         self.connector_fn_config = connector_fn_config
         self.obs_indexed = {}
@@ -55,9 +59,9 @@ class BaseConnector:
     def __name__(self):
         """
         Returns the name of the connector function.
-
-        :return: Name of the connector function.
-        :rtype: str
+        
+        Returns:
+            str: Name of the connector function.
         """
         return self.__class__.__name__
     
@@ -67,11 +71,12 @@ class BaseConnector:
     ) -> spaces.Dict:
         """
         Get all the agents observations spaces putting togheter in a Dict space dimension.
-
-        :param possible_agents: List of possible agents.
-        :type possible_agents: List[str]
-        :return: Agents observation spaces.
-        :rtype: gym.spaces.Dict
+        
+        Args:
+            possible_agents (List[str]): List of possible agents.
+        
+        Returns:
+            gym.spaces.Dict: Agents observation spaces.
         """
         observation_space_dict: Dict[str, Any] = {}
         for agent in possible_agents:
@@ -97,11 +102,15 @@ class BaseConnector:
     ) -> spaces.Space[Any]:
         """
         Get the agent observation dimension.
-
-        :param agent: Agent identifier, optional.
-        :type agent: str, optional
-        :return: Agent observation spaces.
-        :rtype: gym.spaces.Space
+        
+        Args:
+            agent (str): Agent identifier.
+        
+        Returns:
+            gym.spaces.Space: Agent observation dimension.
+            
+        Raises:
+            NotImplementedError: If the method is not implemented in the child class.
         """
         msg = "BaseConnector: This method must be implemented in the child class."
         logger.error(msg)
@@ -114,11 +123,16 @@ class BaseConnector:
     ) -> Dict[str, int]:
         """
         Get a dictionary of the agent observation parameters and their respective index in the observation array.
+        
+        Args:
+            agent (str): Agent identifier.
+            
+        Returns:
+            Dict[str, int]: Dictionary of the agent observation parameters and their respective index in the observation array.
+        
+        Raises:
+            NotImplementedError: If the method is not implemented in the child class.
 
-        :param agent: Agent identifier, optional.
-        :type agent: str, optional
-        :return: Agent observation spaces.
-        :rtype: gym.spaces.Space
         """
         msg = "BaseConnector: This method must be implemented in the child class."
         logger.error(msg)
@@ -134,17 +148,16 @@ class BaseConnector:
     ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         """
         Set the multi-agent observation.
-
-        :param agent_states: Agent states.
-        :type agent_states: Dict[str, Dict[str, Any]]
-        :param dict_agents_obs: Dictionary of agents' observations.
-        :type dict_agents_obs: Dict[str, Any]
-        :param infos: Additional information.
-        :type infos: Dict[str, Dict[str, Any]]
-        :param is_last_timestep: Flag indicating if it is the last timestep, defaults to False.
-        :type is_last_timestep: bool, optional
-        :return: Multi-agent observation, updated infos, and a flag indicating if it is the lowest level.
-        :rtype: Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]
+        
+        Args:
+            agent_states (Dict[str, Dict[str, Any]]): Agent states.
+            dict_agents_obs (Dict[str, Any]): Dictionary of agents' observations.
+            infos (Dict[str, Dict[str, Any]]): Additional information.
+            is_last_timestep (bool, optional): Flag indicating if it is the last timestep. Defaults to False.
+        
+        Returns:
+            Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]: Multi-agent observation, updated infos, and a flag indicating if it is the lowest level.
+        
         """
         is_lowest_level = True
         return dict_agents_obs, infos, is_lowest_level
@@ -159,13 +172,16 @@ class BaseConnector:
     ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
         """
         Set the multiagent observation.
-
-        :param agent_states: agent states
-        :type agent_states: Dict[str,Any]
-        :param dict_agents_obs: dictionary of agents observations
-        :type dict_agents_obs: Dict[str,Any]
-        :return: multiagent observation
-        :rtype: Dict[str,Any]
+        
+        Args:
+            agent_states (Dict[str, Dict[str, Any]]): Agent states.
+            dict_agents_obs (Dict[str, Any]): Dictionary of agents' observations.
+            infos (Dict[str, Dict[str, Any]]): Additional information.
+            goals (Dict[str, Any]): Goals.
+        
+        Returns:
+            Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]: Multi-agent observation, updated infos, and a flag indicating if it is the lowest level.
+            
         """
         is_lowest_level = True
         return dict_agents_obs, infos, is_lowest_level
