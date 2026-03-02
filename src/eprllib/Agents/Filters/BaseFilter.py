@@ -16,7 +16,7 @@ You have to overwrite the following methods:
     - ``_get_filtered_obs``
     
 """
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from numpy import floating
 from numpy.typing import NDArray
 
@@ -41,7 +41,9 @@ class BaseFilter:
         Initializes the BaseFilter class.
 
         Args:
+        
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
+            
         """
         self.filter_fn_config = filter_fn_config
         self.agent_name = agent_name
@@ -113,13 +115,19 @@ class BaseFilter:
         configuration specified in filter_fn_config.
 
         Args:
+        
             env_config (Dict[str, Any]): Configuration dictionary for the environment. Can include settings 
-            that affect how the observations are filtered.
-            
+                that affect how the observations are filtered.
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
+        
             NDarray: Filtered observations as a numpy array of float64 values.
+            
+        Raises:
+        
+            NotImplementedError: If this method is not implemented in a subclass.
+            
         """
         msg = "BaseFilter: This method should be implemented in a subclass."
         logger.error(msg)
