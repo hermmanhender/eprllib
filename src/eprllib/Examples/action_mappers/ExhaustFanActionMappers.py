@@ -5,46 +5,26 @@ Exhaust Fan ActionMappers
 This module contains classes to implement ActionMappers for controlling exhaust fan actuators in the environment.
 """
 import gymnasium as gym
-import numpy as np
 from typing import Any, Dict, List, Tuple, Optional
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.observation_utils import get_actuator_name
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import get_agent_name, config_validation
 from eprllib import logger
 
 class ExhaustFanActionMapper(BaseActionMapper):
-    REQUIRED_KEYS: Dict[str, Any] = {
-        "modes": List[float|int],
-        "exhaust_fan_actuator": Tuple[str, str, str]
-    }
     
-    def __init__(
-        self,
-        action_mapper_config: Dict[str, Any]
-    ):
-        """
-        This class implements the Exhaust Fan actions.
-
-        Args:
-            action_mapper_config (Dict[str, Any]): The configuration of the action function.
-            It should contain the following keys:
-                - modes (List[float]): The flow factor to modify the maximum flow of the exhaust fan. The order 
-                in the list corresponds with mode of the Fan, usually mode 0 is off and mode 1 has the lower 
-                flow factor. No more than 11 modes are allowed.
-                - exhaust_fan_actuator (Tuple[str, str, str]): The configuration for the exhaust fan actuator.
-                The first element is the agent name, the second is the actuator name, and the third is the actuator type.
-        Raises:
-            ValueError: If the configuration is not valid, or if the modes are not in the range [0, 1], or if the length of the modes is larger than 11.
-        """
-        # Validate the config.
-        config_validation(action_mapper_config, self.REQUIRED_KEYS)
+    @override(BaseActionMapper)
+    def setup(self):
         
-        super().__init__(action_mapper_config)
-        
-        self.agent_name = None
-        self.modes: List[float] = action_mapper_config['modes']
+        # The name of the actuator that will be controlled by the agent. 
+        # This will be obtained from the actuators_config in the environment configuration file.
         self.exhaust_fan_actuator: Optional[str] = None
+        
+        # Here we use the config dict to provide the action space dimension.
+        self.action_space_dim: int = self.action_mapper_config.get("action_space_dim", 11)
+        
+        # Here we use the config dict to provide the modes of the exhaust fan.
+        self.modes: List[float] = self.action_mapper_config['modes']
         
         #  Check if the lenght of the modes are larger than 11 (that is the action space for this class).
         if len(self.modes) > 11:
@@ -59,6 +39,7 @@ class ExhaustFanActionMapper(BaseActionMapper):
                 logger.error(msg)
                 raise ValueError(msg)
     
+    
     @override(BaseActionMapper)    
     def get_action_space_dim(self) -> gym.Space[Any]:
         """
@@ -67,10 +48,39 @@ class ExhaustFanActionMapper(BaseActionMapper):
         Returns:
             gym.Space: Action space of the environment.
         """
-        return gym.spaces.Discrete(11)
+        return gym.spaces.Discrete(self.action_space_dim)
+    
     
     @override(BaseActionMapper)
-    def agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
+    def actuator_names(
+        self, 
+        actuators_config: Dict[str, Tuple[str,str,str]]
+        ) -> None:
+        """
+        This method is used to transform the agent dict action to actuator dict action. Consider that
+        one agent could manage more than one actuator. For that reason, it is important to transform the
+        action dict to actuator dict actions.
+
+        Args:
+            action (Any): The action to be transformed.
+            actuators (List[str]): List of actuators controlled by the agent.
+
+        Returns:
+            Dict[str, Any]: Transformed actions for the actuators.
+        """
+        
+        # Here the name of the actuator is obtained from the actuators_config 
+        # in the environment configuration file.
+        self.exhaust_fan_actuator = get_actuator_name(
+            self.agent_name,
+            actuators_config["Exhaust Fan Actuator"][0],
+            actuators_config["Exhaust Fan Actuator"][1],
+            actuators_config["Exhaust Fan Actuator"][2]
+        )
+        
+        
+    @override(BaseActionMapper)
+    def _agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str,Any]:
         """
         This method is used to transform the agent action to actuator dict action. Consider that
         one agent may manage more than one actuator.
@@ -85,52 +95,7 @@ class ExhaustFanActionMapper(BaseActionMapper):
         Raises:
             ValueError: If the actuator is not in the list of actuators.
         """
-        if self.agent_name is None:
-            self.agent_name = get_agent_name(actuators)
-            self.exhaust_fan_actuator = get_actuator_name(
-                self.agent_name,
-                self.action_mapper_config['exhaust_fan_actuator'][0],
-                self.action_mapper_config['exhaust_fan_actuator'][1],
-                self.action_mapper_config['exhaust_fan_actuator'][2]
-            )
-            
-        actuator_dict_actions: Dict[str, Any] = {actuator: None for actuator in actuators}
-        
-        # TODO: This can be not beneficial for the selection of an action, because introduce noise
-        # in the effect of the actions. The best way of avoid this (I think) it to introduce a mask
-        # for the actions that reduce the probability of choose the actions that are not in the modes.
-        if action >= len(self.modes):
-            action_list = [_ for _ in range(len(self.modes))]
-            action = np.random.choice(action_list)
-        
-        # The actuator name is optional in the __init__ but it is initialized in the first call to this method.
-        # We need to assert that it is not None to avoid a type error.
-        assert self.exhaust_fan_actuator is not None, "Exhaust fan actuator name has not been initialized."
-
-        actuator_dict_actions.update({
-            self.exhaust_fan_actuator: self.modes[action],
-        })
-
-        # Check if there is an actuator_dict_actions value equal to None.
-        for actuator in actuator_dict_actions:
-            if actuator_dict_actions[actuator] is None:
-                msg = f"The actuator {actuator} is not in the list of actuators: \n{actuators}.\nThe actuator dict is: \n{actuator_dict_actions}"
-                logger.error(msg)
-                raise ValueError(msg)
-        
-        return actuator_dict_actions
-    
-    @override(BaseActionMapper)
-    def get_actuator_action(self, action:float|int, actuator: str) -> Any:
-        """
-        This method is used to get the actions of the actuators after transform the 
-        agent action to actuator action.
-
-        Args:
-            action (float|int): The action of the agent.
-            actuator (str): The name of the actuator.
-
-        Returns:
-            Any: The action of the actuator.
-        """
-        return action
+        if self.exhaust_fan_actuator in actuators:
+            return {self.exhaust_fan_actuator: self.modes[action]}
+        else:
+            return {}
