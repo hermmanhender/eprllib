@@ -17,9 +17,10 @@ from eprllib.Agents.Rewards.BaseReward import BaseReward
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Connectors.BaseConnector import BaseConnector
+from eprllib.Connectors.DefaultConnector import DefaultConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Utils.annotations import override
-from eprllib import logger
+from eprllib import logger, EP_VERSION
 
 
 class Environment(MultiAgentEnv):
@@ -30,6 +31,7 @@ class Environment(MultiAgentEnv):
     suggests that it supports multiple agents interacting with the environment.
 
     Attributes:
+    
         env_config (Dict[str, Any]): Configuration settings for the environment, 
             such as the list of agent IDs, action spaces, observable variables, 
             actuators, meters, and other EnergyPlus-related settings.
@@ -40,22 +42,21 @@ class Environment(MultiAgentEnv):
             the EnergyPlus simulation.
 
     Methods:
+        
         reset() -> Dict[str, Any]:
             Sets up a new episode of the environment. Increments the episode counter, 
             initializes queues for communication, and starts an instance of the 
             EnergyPlusRunner class.
-        
         step(actions: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]:
             The core method where agents take actions, and the environment updates 
             its state accordingly. Processes the provided actions, communicates with 
             the EnergyPlus simulation, retrieves observations and information, 
             calculates rewards, and determines if the episode should terminate or truncate.
-        
         close() -> None:
             Stops the EnergyPlus simulation when the environment is no longer needed.
-        
         render() -> None:
             Placeholder method for rendering functionality.
+            
     """
     env_config: Dict[str, Any]
     episode_fn: BaseEpisode
@@ -78,6 +79,7 @@ class Environment(MultiAgentEnv):
     last_obs: Dict[str, Any]
     last_infos: Dict[str, Any]
     output_path: Optional[str]
+    ep_version: str = EP_VERSION
 
     def __init__(
         self,
@@ -90,6 +92,8 @@ class Environment(MultiAgentEnv):
             env_config (Dict[str, Any]): Configuration settings for the environment.
         """
         self.env_config = env_config
+        
+        self.ep_version = self.env_config.get("ep_version", EP_VERSION)
         
         # === AGENTS === #
         # Define all agent IDs that might even show up in your episodes.
@@ -112,6 +116,12 @@ class Environment(MultiAgentEnv):
         # Connector funtion.
         self.connector_fn: BaseConnector = self.env_config['connector_fn'](self.env_config["connector_fn_config"])
         logger.debug(f"Environment: Connector configuration: {self.connector_fn.connector_fn_config}")
+        
+        # This allow to construct the default connector based on the env_config.
+        if type(self.connector_fn) == DefaultConnector:
+            self.connector_fn.env_config = self.env_config
+        
+        # Here the index for the observation space is applied.
         for agent in self.possible_agents:
             self.connector_fn.get_agent_obs_indexed(agent)
         
@@ -155,11 +165,11 @@ class Environment(MultiAgentEnv):
             
             
         # Build the action_space dictionary.
-        self.action_space = spaces.Dict(action_space)
+        self.action_space = spaces.Dict(action_space) # type: ignore
         logger.debug(f"Environment: Action space: {self.action_space}")
         
         # asignation of environment observation space.
-        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.agents)
+        self.observation_space = self.connector_fn.get_all_agents_obs_spaces_dict(self.agents) # type: ignore
         logger.debug(f"Environment: Observation space: {self.observation_space}")
         
         # super init of the base class (after the previos definition to avoid errors with agents argument).
@@ -208,7 +218,7 @@ class Environment(MultiAgentEnv):
             Dict[str, Any]: Initial observations for each agent.
         """
         # Call super's `reset()` method to (maybe) set the given `seed`.
-        super().reset(seed=seed, options=options)
+        super().reset(seed=seed, options=options) # type: ignore
         
         # Increment the counting of episodes in 1.
         self.episode += 1
@@ -277,7 +287,8 @@ class Environment(MultiAgentEnv):
                 observation_config = observation_config,
                 generals_config = generals_config,
                 actuator_config = actuator_config,
-                ep_worker_path = self.env_config.get("ep_workers_paths", {}).get(self.worker_index, None)
+                ep_worker_path = self.env_config.get("ep_workers_paths", {}).get(self.worker_index, None),
+                ep_version = self.ep_version
             )
             # Divide the thread in two in this point.
             self.runner.start()
@@ -431,13 +442,13 @@ class Environment(MultiAgentEnv):
     
     @staticmethod
     def from_checkpoint(
-        cls,
+        cls, # type: ignore
         path: str
     ) -> "Environment":
         msg = "Environment: This method is not implemented yet. Please implement it in the child class."
         logger.error(msg)
         raise NotImplementedError(msg)
     
-    def get_default_config(cls) -> EnvironmentConfig:
+    def get_default_config(cls) -> EnvironmentConfig: # type: ignore
         return EnvironmentConfig()
     
