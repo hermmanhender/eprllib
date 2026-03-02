@@ -29,7 +29,7 @@ from eprllib.Utils.observation_utils import (
     get_user_occupation_forecast_name
 )
 from eprllib.Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
-from eprllib.Utils.env_config_utils import EP_API_add_path
+from eprllib.Utils.add_ep_to_path import EP_API_add_path
 from eprllib import logger, EP_VERSION
 
 
@@ -69,6 +69,7 @@ class EnvironmentRunner:
     internal_variables_and_handles: Dict[str, Any] = {}
     energyplus_exec_thread_timeout: int = 1
     ep_worker_path: Optional[str]
+    ep_version: str = EP_VERSION
     
     def __init__(
         self,
@@ -83,7 +84,8 @@ class EnvironmentRunner:
         observation_config: Dict[str, Any],
         generals_config: Dict[str, Any],
         actuator_config: Dict[str, Any],
-        ep_worker_path: Optional[str]
+        ep_worker_path: Optional[str],
+        ep_version: str = "24-2-0"
         ) -> None:
         """
         Initializes the BaseRunner object.
@@ -118,7 +120,7 @@ class EnvironmentRunner:
             logger.warning(msg)
             # EnergyPlus Python API path adding
             try:
-                self.ep_worker_path = EP_API_add_path(EP_VERSION)
+                self.ep_worker_path = EP_API_add_path(self.ep_version)
                 logger.warning(f"EnvironmentRunner: The self.ep_worker_path was created as {self.ep_worker_path}.")
             except RuntimeError as e:
                 logger.error(f"EnvironmentRunner: Failed to add EnergyPlus API path: {e}")
@@ -184,14 +186,15 @@ class EnvironmentRunner:
             if self.observation_config[agent]["occupation_schedule"]:
                 occupation_schedule = self.observation_config[agent].get("occupation_schedule", None)
                 if occupation_schedule is not None:
-                    internal_actuators.append(occupation_schedule)
+                    internal_actuators.append(tuple(occupation_schedule))
                 else:
                     msg = f"EnvironmentRunner: The schedule must be defined in the observation config for agent {agent}."
                     logger.error(msg)
                     raise ValueError(msg)
             
-            # delete duplicate actuators in actuators_list
-            internal_actuators = list(set(internal_actuators))
+        # delete duplicate actuators in actuators_list
+        internal_actuators = list(set(internal_actuators))
+        
         self.internal_variables_and_handles: Dict[str, Any] = {}
         int_actuators, int_actuators_handles = self.set_internal_actuators(internal_actuators)
         self.internal_variables_and_handles.update({
@@ -229,7 +232,7 @@ class EnvironmentRunner:
         self.api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, cast(FunctionType, self._send_actions))
         self.api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, cast(FunctionType, self._collect_obs))
         self.api.runtime.callback_progress(self.energyplus_state, cast(FunctionType, self.progress_handler))
-        self.api.runtime.set_console_output_status(self.energyplus_state, self.generals_config['ep_terminal_output'])
+        self.api.runtime.set_console_output_status(self.energyplus_state, self.generals_config['ep_terminal_output']) # type: ignore
         
         def _run_energyplus():
             """
