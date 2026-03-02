@@ -1,8 +1,9 @@
-Getting Started with ``eprllib``
-================================
+Getting Started
+===============
 
-Welcome to ``eprllib``! This guide will help you get started with using ``eprllib`` for building
-control and energy optimization through Reinforcement Learning (RL).
+Understand how ``eprllib`` is organized is the key to using it effectively! This guide will 
+help you get started with using ``eprllib`` for building control and energy optimization 
+through Reinforcement Learning (RL).
 
 ``eprllib`` leverages RL, a powerful machine learning technique, to develop intelligent
 agents that can interact with building simulations. In RL, agents learn to make decisions
@@ -10,30 +11,51 @@ by interacting with an environment, taking actions, receiving observations, and 
 rewards. This interaction is used to learn an optimal policy, which is a strategy that
 maps observations to actions.
 
-The general scheme of RL can be visualized in the following diagram:
+A scheme of multiple agents interacting with an environment (real or simulated) can be 
+visualized in the following diagram, representing a Markov Decision Process (MDP), the 
+mathematical framework underlying RL:
 
-.. image:: Images/markov_decision_process.png
+.. figure:: Images/markov_decision_process.png
     :width: 600
     :alt: Markov Decision Process
     :align: center
+
+    *Figure 1: Schematic representation of a Markov Decision Process (MDP) in Reinforcement Learning.*
+
+``eprllib`` is designed to facilitate the application of RL in building control and energy 
+optimization. It provides tools for defining the environment, configuring agents, and integrating 
+with powerful RL libraries, like RLlib is.
+
 
 Deep Reinforcement Learning (DRL)
 ---------------------------------
 
 During the learning process, the RL algorithm attempts to predict the cumulative reward that the
-agent will receive if it follows a certain policy. This prediction can be represented by a Value
-function, denoted as ``V(obs)``, or an Action-Value function, denoted as ``Q(obs, act)``.
+agent will receive if it follows a certain policy. This prediction can be represented by a **Value
+function**, denoted as ``V(obs)``, or an **Action-Value function**, denoted as ``Q(obs, act)``.
 
 A modern approach to predicting these ``V`` or ``Q`` functions involves using **deep neural networks (DNNs)**
 to approximate these values. When DNNs are used, the methodology is referred to as
 **Deep Reinforcement Learning (DRL)**. In this context, the DNN model is often referred to as the **policy**.
 
-In essence, the policy is a complex function that, given an observation, outputs the best action to take.
+In essence, the policy is a complex function that, given an observation, outputs the best action to take. At 
+the same time, depending on the algorithm, the policy can also output the predicted value of taking that action 
+in that observation. A deeper understanding of the specific DRL algorithm you choose to use will help you 
+configure the policy and the training process effectively. Coonsult the `algorithm's documentation of RLlib 
+<https://docs.ray.io/en/latest/rllib/rllib-algorithms.html>`_ for more details on how the policy is structured 
+and how it learns from the interactions with the environment. Each algorithm has a reference paper that can be 
+consulted for a deeper understanding of the learning process and the structure of the policy.
 
-``eprllib``, EnergyPlus, and RLlib
-----------------------------------
 
-``eprllib`` leverages two powerful tools: **EnergyPlus** and **RLlib**.
+A bridge between EnergyPlus and RLlib
+-------------------------------------
+
+The intention of ``eprllib`` is to connect two powerful tools: **EnergyPlus** and **RLlib**. The aim is to create 
+a seamless integration that allows users to leverage the strengths of both tools for building control and energy 
+optimization. Also, we hope to use this library as a repository of resources, examples, and best practices for 
+applying DRL in the context of building simulations. The modular design of ``eprllib`` allows for flexibility and 
+extensibility, enabling users to customize their environments, agents, and training processes according to their 
+specific needs but also to share their configurations and results with the community.
 
 *   **EnergyPlus** is used to model the building environment. It simulates the building's
     energy performance and provides the environment with which the RL agent interacts.
@@ -44,8 +66,25 @@ In essence, the policy is a complex function that, given an observation, outputs
 In essence, EnergyPlus provides the simulated world, and RLlib provides the tools to train the
 agent within that world.
 
-Running a Simple Experiment with ``eprllib`` and RLlib
-------------------------------------------------------
+.. figure:: Images/overview.png
+    :width: 800
+    :alt: Overview of eprllib and EnergyPlus interaction
+    :align: center
+
+    *Figure 2: Overview of eprllib and EnergyPlus interaction.*
+
+``eprllib`` communicates with EnergyPlus through its Python API. This allows ``eprllib`` to:
+
+    *   Read sensor data from the EnergyPlus simulation.
+    *   Set actuator values in the EnergyPlus simulation.
+    *   Control the simulation flow (e.g., advance time steps).
+
+
+DELETE ALL AFTER THIS LINE
+
+
+Running a Simple Experiment with ``eprllib`` and ``ray.rllib``
+---------------------------------------------------------------
 
 Now that you have a basic understanding of the concepts, let's walk through a simple experiment using 
 ``eprllib`` and RLlib. This example will demonstrate the core steps involved in setting up and training an agent.
@@ -96,17 +135,18 @@ like EnergyPlus, we can define the agents configurations.
 .. code-block:: python
     :linenos:
 
-    # ActionMapper.
-    from eprllib.Agents.ActionMappers.SetpointActionMappers import DualSetpointDiscreteAndAvailabilityActionMapper
-    # Filters.
-    from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
-    # Rewards.
-    from eprllib.Agents.Rewards.EnergyAndAshrae55SimpleModel import EnergyAndASHRAE55SimpleModel
-    # Specs to facilitate the building of agents.
-    from eprllib.Agents.AgentSpec import AgentSpec, ObservationSpec, ActionSpec
+    # Import Specs to facilitate the configuration of the agent.
+    from eprllib.Agents.AgentSpec import AgentSpec
+    from eprllib.Agents.ObservationSpec import ObservationSpec
+    from eprllib.Agents.ActionSpec import ActionSpec
     from eprllib.Agents.Rewards.RewardSpec import RewardSpec
     from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
     from eprllib.Agents.Filters.FilterSpec import FilterSpec
+
+    # Here you must to provide with custom implementations, but for the sake of simplicity we will use the base classes.
+    from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
+    from eprllib.Agents.Filters.BaseFilter import BaseFilter
+    from eprllib.Agents.Rewards.BaseReward import BaseReward
 
     eprllib_config.agents(
         agents_config={
@@ -124,61 +164,60 @@ like EnergyPlus, we can define the agents configurations.
                 ),
                 # Actuators that the agent can control.
                 action=ActionSpec(
-                    actuators=[
-                        ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-                        ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-                        ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-                    ],
+                    actuators={
+                        "Heating Actuator": ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
+                        "Cooling Actuator": ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
+                        "Availability Actuator": ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
+                    },
                 ),
                 # Filter configuration.
                 filter=FilterSpec(
-                    filter_fn=DefaultFilter,
+                    filter_fn=BaseFilter,
                     filter_fn_config={},
                 ),
                 # Trigger configuration.
                 action_mapper=ActionMapperSpec(
-                    action_mapper=DualSetpointDiscreteAndAvailabilityActionMapper,
-                    action_mapper_config={
-                        'temperature_range': (18, 28),
-                        'actuator_for_cooling': ("Schedule:Compact", "Schedule Value", "cooling_setpoint"),
-                        'actuator_for_heating': ("Schedule:Compact", "Schedule Value", "heating_setpoint"),
-                        'availability_actuator': ("Schedule:Constant", "Schedule Value", "HVAC_OnOff"),
-                    },
+                    action_mapper=BaseActionMapper,
+                    action_mapper_config={},
                 ),
                 # Reward configuration.
                 reward=RewardSpec(
-                    reward_fn=EnergyAndASHRAE55SimpleModel,
-                    reward_fn_config={
-                        "thermal_zone": "Thermal Zone",
-                        "beta": 0.001,
-                        'people_name': "People",
-                        'cooling_name': "Cooling:DistrictCooling",
-                        'heating_name': "Heating:DistrictHeatingWater",
-                        'cooling_energy_ref': None,
-                        'heating_energy_ref': None,
-                    },
+                    reward_fn=BaseReward,
+                    reward_fn_config={},
                 ),
             ),
         }
     )
 
 
-Now we have an agent configured. We need to define the ``Connectors`` class that we will use. In this 
-case that we have only one agent, a ``DefaultConnector`` is enough.
+
+Now we have an agent configured. We need to define the ``Connectors`` class that we will use.
+
+> .. note:: The ``Connectors`` class is a fundamental component of the agent's behavior, 
+>           ands it defines how agents interact with each other. It is shared by all agents in the 
+>           environment, which is why it is explained in a separate section. In the current version 
+>           of ``eprllib``, the ``Connectors`` class also provides a method to index the names of 
+>           the agents' observation parameters. This means that it must be defined in concordance 
+>           with all the ``Filter`` functions of all agents.
+
+For the sake of simplicity, we will use the base class of the ``Connectors``. You need to provide 
+your own implementation of the ``Connectors`` class to define how the agents interact with each 
+other in your specific use case and how is related with the ``Filter`` configured.
 
 .. code-block:: python
     :linenos:
 
-    from eprllib.Connectors.DefaultConnector import DefaultConnector
+    from eprllib.Connectors.BaseConnector import BaseConnector
 
     eprllib_config.connect(
-        connector_fn=DefaultConnector,
+        connector_fn=BaseConnector,
         connector_fn_config={},
     )
 
 
 The model can be take as is configured from EnergyPlus or you can apply an ``Episodes`` class to 
-change the behavior of the environment between episodes.
+change the behavior of the environment between episodes. If you want to use the model as is, you 
+can use the ``DefaultEpisode`` class that comes with ``eprllib``.
 
 .. code-block:: python
     :linenos:
@@ -266,22 +305,25 @@ With the algorithm builded, you can now train it:
     ray.shutdown()
 
 
-**Explanation:**
+Explanation
+...........
 
 1.  **Environment Configuration:**
 
-    *   We start by creating an ``EnvironmentConfig`` object. This object holds all the information about the EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.
+    *   We start by creating an ``EnvironmentConfig`` object. This object holds all the information about the 
+        EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.
     *   We use the ``eprllib_config.generals()`` method to set these general parameters.
     *   You'll need to replace the placeholder paths with your actual file paths.
 
 2.  **Agent Configuration:**
 
     *   We define the agent's behavior using ``eprllib_config.agents()``.
-    *   We specify the agent's **observations** (what it can see), **actions** (what it can do), **rewards** (what it's trying to maximize), **filters** and **action mappers**.
+    *   We specify the agent's **observations** (what it can see), **actions** (what it can do), **rewards** 
+        (what it's trying to maximize), **filters** and **action mappers**.
     *   In this simplified example, the agent observes the outdoor air temperature and the zone mean air temperature.
     *   The agent can control the heating and cooling setpoints and the HVAC on/off.
     *   The reward function is a placeholder in this example.
-    *   The filter and trigger are defined.
+    *   The filter and action mapper are defined.
 
 3.  **Episode Configuration:**
 
