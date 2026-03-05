@@ -3,7 +3,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-View%20Here-brightgreen)](https://hermmanhender.github.io/eprllib/)
 [![pages-build-deployment](https://github.com/hermmanhender/eprllib/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/hermmanhender/eprllib/actions/workflows/pages/pages-build-deployment)
 [![Test Python package](https://github.com/hermmanhender/eprllib/actions/workflows/test-python-package.yml/badge.svg?branch=main)](https://github.com/hermmanhender/eprllib/actions/workflows/test-python-package.yml)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1234567.svg)](https://doi.org/10.5281/zenodo.18879106)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1234567.svg)](https://doi.org/10.5281/zenodo.18879105)
 
 # eprllib: use EnergyPlus as an environment for RLlib 
 
