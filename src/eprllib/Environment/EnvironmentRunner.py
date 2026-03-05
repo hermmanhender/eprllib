@@ -183,7 +183,7 @@ class EnvironmentRunner:
         internal_actuators: List[Tuple[str,str,str]] = []
         for agent in self.agents:
             # Occupation funtion.
-            if self.observation_config[agent]["occupation_schedule"]:
+            if self.observation_config[agent]["user_occupation_function"]:
                 occupation_schedule = self.observation_config[agent].get("occupation_schedule", None)
                 if occupation_schedule is not None:
                     internal_actuators.append(tuple(occupation_schedule))
