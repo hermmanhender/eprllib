@@ -1,5 +1,4 @@
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib.Agents.Filters.FilterSpec import FilterSpec
 
 import logging
@@ -13,8 +12,8 @@ class TestFilterspec:
         """
         Test that the __getitem__ method correctly returns the value of the specified attribute.
         """
-        filter_spec = FilterSpec(filter_fn=DefaultFilter, filter_fn_config={'test_config': 'value'})
-        assert filter_spec['filter_fn'] == DefaultFilter
+        filter_spec = FilterSpec(filter_fn=BaseFilter, filter_fn_config={'test_config': 'value'})
+        assert filter_spec['filter_fn'] == BaseFilter
         assert filter_spec['filter_fn_config'] == {'test_config': 'value'}
 
     def test___getitem___nonexistent_attribute(self):
@@ -44,9 +43,9 @@ class TestFilterspec:
         sets a value for an existing key without raising any exceptions.
         """
         filter_spec = FilterSpec()
-        filter_spec['filter_fn'] = DefaultFilter
+        filter_spec['filter_fn'] = BaseFilter
 
-        assert filter_spec['filter_fn'] == DefaultFilter
+        assert filter_spec['filter_fn'] == BaseFilter
 
     def test___setitem___invalid_key(self):
         """
@@ -68,18 +67,3 @@ class TestFilterspec:
             filter_spec['invalid_key'] = 'some_value'
         assert str(exc_info.value) == "'FilterSpec: Invalid key: invalid_key.'"
 
-    def test_build_default_filter(self):
-        """
-        Test the build method when filter_fn is None.
-        Verifies that:
-        1. DefaultFilter is used when no filter function is provided
-        2. A warning is logged
-        3. filter_fn_config is set to an empty dictionary
-        4. The method returns the correct dictionary of instance variables
-        """
-        filter_spec = FilterSpec()
-        result = filter_spec.build()
-
-        assert filter_spec.filter_fn == DefaultFilter
-        assert filter_spec.filter_fn_config == {}
-        assert result == vars(filter_spec)
