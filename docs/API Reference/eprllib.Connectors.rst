@@ -11,8 +11,4 @@
    :recursive:
 
    BaseConnector
-   CentralizedConnector
    DefaultConnector
-   FullySharedParametersConnector
-   HierarchicalConnector
-   IndependentConnector

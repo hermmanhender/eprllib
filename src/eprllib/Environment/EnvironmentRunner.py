@@ -6,6 +6,7 @@ This script contain the EnergyPlus Runner that execute EnergyPlus from its
 Python API in the version 24.2.0.
 """
 import os
+import sys
 import threading
 import time
 import numpy as np
@@ -17,7 +18,6 @@ from types import FunctionType
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
 from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Utils.env_config_utils import EP_API_add_path
 from eprllib.Utils.observation_utils import (
     get_actuator_name,
     get_internal_variable_name,
@@ -29,25 +29,18 @@ from eprllib.Utils.observation_utils import (
     get_user_occupation_forecast_name
 )
 from eprllib.Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
+from eprllib.Utils.add_ep_to_path import EP_API_add_path
 from eprllib import logger, EP_VERSION
 
-# EnergyPlus Python API path adding
-try:
-    EP_API_add_path(EP_VERSION)
-except RuntimeError as e:
-    logger.error(f"EnvironmentRunner: Failed to add EnergyPlus API path: {e}")
-    exit(1)
-    
-from pyenergyplus.api import EnergyPlusAPI
-
-api = EnergyPlusAPI()
 
 class EnvironmentRunner:
     """
     This object have the particularity of `start` EnergyPlus, `_collect_obs` and `_send_actions` to
     send it trhougt queue to the EnergyPlus Environment thread.
     """
-    env_config: Dict[str, Any]
+    observation_config: Dict[str, Any]
+    generals_config: Dict[str, Any]
+    actuator_config: Dict[str, Any]
     episode: int
     obs_queue: Queue[Any]
     act_queue: Queue[Any]
@@ -74,10 +67,12 @@ class EnvironmentRunner:
     agent_variables_and_handles: Dict[str, Any] = {}
     internal_actuators: List[Tuple[str,str,str]] = []
     internal_variables_and_handles: Dict[str, Any] = {}
+    energyplus_exec_thread_timeout: int = 1
+    ep_worker_path: Optional[str]
+    ep_version: str = EP_VERSION
     
     def __init__(
         self,
-        env_config: Dict[str, Any],
         episode: int,
         obs_queue: Queue[Any],
         act_queue: Queue[Any],
@@ -85,7 +80,12 @@ class EnvironmentRunner:
         agents: List[str],
         filter_fn: Dict[str,BaseFilter],
         action_mapper: Dict[str, BaseActionMapper],
-        connector_fn: BaseConnector
+        connector_fn: BaseConnector,
+        observation_config: Dict[str, Any],
+        generals_config: Dict[str, Any],
+        actuator_config: Dict[str, Any],
+        ep_worker_path: Optional[str],
+        ep_version: str = "24-2-0"
         ) -> None:
         """
         Initializes the BaseRunner object.
@@ -100,14 +100,39 @@ class EnvironmentRunner:
             filter_fn (Dict[str, BaseFilter]): Dictionary of filter functions for each agent.
             action_mapper (Dict[str, BaseActionMapper]): Dictionary of action_mapper functions for each agent.
             connector_fn (BaseConnector): Connector function for combining agent observations.
+            observation_config (Dict[str, Any]): Configuration for observations.
+            generals_config (Dict[str, Any]): Configuration for general settings.
+            actuator_config (Dict[str, Any]): Configuration for actuators.
         """
         # Asignation of variables.
-        self.env_config = env_config
         self.episode = episode
         self.obs_queue = obs_queue
         self.act_queue = act_queue
         self.infos_queue = infos_queue
         self.agents = agents
+        self.observation_config = observation_config
+        self.generals_config = generals_config
+        self.actuator_config = actuator_config
+        self.ep_worker_path = ep_worker_path
+
+        if self.ep_worker_path is None:
+            msg = f"EnvironmentRunner: WARNING: self.ep_worker_path is None. Try to have the path..."
+            logger.warning(msg)
+            # EnergyPlus Python API path adding
+            try:
+                self.ep_worker_path = EP_API_add_path(self.ep_version)
+                logger.warning(f"EnvironmentRunner: The self.ep_worker_path was created as {self.ep_worker_path}.")
+            except RuntimeError as e:
+                logger.error(f"EnvironmentRunner: Failed to add EnergyPlus API path: {e}")
+                exit(1)
+        
+        if self.ep_worker_path and self.ep_worker_path not in sys.path:
+            sys.path.insert(0, self.ep_worker_path)
+        
+        from pyenergyplus.api import EnergyPlusAPI
+        self.api = EnergyPlusAPI()
+        
+        logger.debug(f"EnvironmentRunner: The EnergyPlus application was imported successfully from {self.ep_worker_path}.")
         
         # The queue events are generated (To sure the coordination with EnergyPlusEnvironment).
         self.obs_event = threading.Event()
@@ -127,6 +152,8 @@ class EnvironmentRunner:
         self.unique_id = time.time()
         self.is_last_timestep: bool = False
         self.occupancy_next_timestep: float = 0.
+        self.num_time_steps_in_hour: int = 0
+        self.energyplus_exec_thread_timeout: int = 1
         
         # create a variable to save the obs dict key to use in posprocess
         # self.obs_keys = []
@@ -156,10 +183,18 @@ class EnvironmentRunner:
         internal_actuators: List[Tuple[str,str,str]] = []
         for agent in self.agents:
             # Occupation funtion.
-            if self.env_config["agents_config"][agent]['observation']["user_occupation_function"]:
-                internal_actuators.append(self.env_config["agents_config"][agent]['observation']["occupation_schedule"])
-            # delete duplicate actuators in actuators_list
-            internal_actuators = list(set(internal_actuators))
+            if self.observation_config[agent]["user_occupation_function"]:
+                occupation_schedule = self.observation_config[agent].get("occupation_schedule", None)
+                if occupation_schedule is not None:
+                    internal_actuators.append(tuple(occupation_schedule))
+                else:
+                    msg = f"EnvironmentRunner: The schedule must be defined in the observation config for agent {agent}."
+                    logger.error(msg)
+                    raise ValueError(msg)
+            
+        # delete duplicate actuators in actuators_list
+        internal_actuators = list(set(internal_actuators))
+        
         self.internal_variables_and_handles: Dict[str, Any] = {}
         int_actuators, int_actuators_handles = self.set_internal_actuators(internal_actuators)
         self.internal_variables_and_handles.update({
@@ -177,7 +212,7 @@ class EnvironmentRunner:
         """
         # Start a new EnergyPlus state (condition for execute EnergyPlus Python API).
         try:
-            self.energyplus_state = api.state_manager.new_state()
+            self.energyplus_state = self.api.state_manager.new_state()
             assert self.energyplus_state is not None, "EnvironmentRunner: Failed to create EnergyPlus state"
         except Exception as e:
             msg = f"EnvironmentRunner: Error creating EnergyPlus state: {e}"
@@ -186,18 +221,18 @@ class EnvironmentRunner:
         
         # Request variables.
         for agent in self.agents:
-            if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
-                for variable in self.env_config["agents_config"][agent]['observation']["variables"]:
-                    api.exchange.request_variable(
+            if self.observation_config[agent]["variables"] is not None:
+                for variable in self.observation_config[agent]["variables"]:
+                    self.api.exchange.request_variable(
                         self.energyplus_state,
                         variable_name = variable[0],
                         variable_key = variable[1]
                     )
                     # print(f"Variable {get_variable_name(agent,variable[0],variable[1])} requested.")
-        api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, cast(FunctionType, self._send_actions))
-        api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, cast(FunctionType, self._collect_obs))
-        api.runtime.callback_progress(self.energyplus_state, cast(FunctionType, self.progress_handler))
-        api.runtime.set_console_output_status(self.energyplus_state, self.env_config['ep_terminal_output'])
+        self.api.runtime.callback_begin_zone_timestep_after_init_heat_balance(self.energyplus_state, cast(FunctionType, self._send_actions))
+        self.api.runtime.callback_end_zone_timestep_after_zone_reporting(self.energyplus_state, cast(FunctionType, self._collect_obs))
+        self.api.runtime.callback_progress(self.energyplus_state, cast(FunctionType, self.progress_handler))
+        self.api.runtime.set_console_output_status(self.energyplus_state, self.generals_config['ep_terminal_output']) # type: ignore
         
         def _run_energyplus():
             """
@@ -207,7 +242,7 @@ class EnvironmentRunner:
                 cmd_args = self.make_eplus_args()
                 logger.info(f"EnvironmentRunner: running EnergyPlus with args: {cmd_args}")
                 assert self.energyplus_state is not None, "EnvironmentRunner: EnergyPlus state is None."
-                self.sim_results = api.runtime.run_energyplus(self.energyplus_state, cmd_args)
+                self.sim_results = self.api.runtime.run_energyplus(self.energyplus_state, cmd_args)
             except Exception as e:
                 msg = f"EnvironmentRunner: Error running EnergyPlus: {e}"
                 logger.error(msg)
@@ -257,7 +292,6 @@ class EnvironmentRunner:
         for agent in self.agents:
             dict_agents_obs.update({
                 agent: self.filter_fn[agent].get_filtered_obs(
-                    self.env_config,
                     agent_states[agent]
                 )})
         
@@ -266,7 +300,6 @@ class EnvironmentRunner:
         # observations of the next shape will be request. This is implemented until reach the lowest level of the hierarchy
         # if any.
         top_level_agents_obs, top_level_agents_infos, is_lowest_level = self.connector_fn.set_top_level_obs(
-            self.env_config,
             agent_states,
             dict_agents_obs,
             self.infos,
@@ -283,7 +316,7 @@ class EnvironmentRunner:
         if not is_lowest_level:
             while not is_lowest_level:
                 # Wait for a goal selection
-                event_flag = self.act_event.wait(self.env_config["timeout"])
+                event_flag = self.act_event.wait(self.generals_config["timeout"])
                 if not event_flag:
                     # print(f"Timeout waiting for action from agent {agent}.")
                     return
@@ -294,7 +327,6 @@ class EnvironmentRunner:
                     goals.update({agent: self.action_mapper[agent].action_to_goal(actions[agent])})
                 
                 low_level_agents_obs, low_level_agents_infos, is_lowest_level = self.connector_fn.set_low_level_obs(
-                    self.env_config,
                     agent_states,
                     dict_agents_obs,
                     self.infos,
@@ -313,7 +345,7 @@ class EnvironmentRunner:
         This method is used to collect only the first observation of the environment when the episode beggins.
 
         Args:
-            state_argument (): EnergyPlus state pointer. This is created with `api.state_manager.new_state()`.
+            state_argument (): EnergyPlus state pointer. This is created with `self.api.state_manager.new_state()`.
         """
         if self.first_observation:
             # print("Collecting the first observation.")
@@ -332,11 +364,11 @@ class EnvironmentRunner:
         
         # If is the first timestep, obtain the first observation before to consult for an action
         if self.first_observation:
-            self.env_config['num_time_steps_in_hour'] = api.exchange.num_time_steps_in_hour(state_argument)
+            self.num_time_steps_in_hour = self.api.exchange.num_time_steps_in_hour(state_argument)
             self._collect_first_obs(state_argument)
             
         # Wait for an action.
-        event_flag = self.act_event.wait(self.env_config["timeout"])
+        event_flag = self.act_event.wait(self.generals_config["timeout"])
         if not event_flag:
             # print("Timeout waiting for action from agent.")
             return
@@ -360,14 +392,14 @@ class EnvironmentRunner:
             # Perform the actions in EnergyPlus simulation.
             for actuator in actuator_list:
                 action = self.action_mapper[agent].get_actuator_action(actuator_actions[actuator], actuator)
-                api.exchange.set_actuator_value(
+                self.api.exchange.set_actuator_value(
                     state=state_argument,
                     actuator_handle=self.agent_variables_and_handles[f"{agent}_actuators"][1][actuator],
                     actuator_value=action
                 )
                 
         for actuator in self.internal_variables_and_handles["internal_actuators"][0].keys():
-            api.exchange.set_actuator_value(
+            self.api.exchange.set_actuator_value(
                 state=state_argument,
                 actuator_handle=self.internal_variables_and_handles["internal_actuators"][1][actuator],
                 actuator_value=self.occupancy_next_timestep
@@ -386,11 +418,11 @@ class EnvironmentRunner:
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
-        if self.env_config["agents_config"][agent]['observation']["variables"] is not None:
+        if self.observation_config[agent]["variables"] is not None:
             variables.update({
                 get_variable_name(agent,variable[0],variable[1]): variable
                 for variable 
-                in self.env_config["agents_config"][agent]['observation']["variables"]
+                in self.observation_config[agent]["variables"]
             })
         return variables, var_handles
 
@@ -407,11 +439,11 @@ class EnvironmentRunner:
         # Define the emptly Dict to include variables names and handles. The handles Dict return as emptly Dict to be used latter.
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
-        if self.env_config["agents_config"][agent]['observation']["internal_variables"] is not None:
+        if self.observation_config[agent]["internal_variables"] is not None:
             variables.update({
                 get_internal_variable_name(agent,variable[0],variable[1]): variable
                 for variable 
-                in self.env_config["agents_config"][agent]['observation']["internal_variables"]
+                in self.observation_config[agent]["internal_variables"]
             })
         return variables, var_handles
 
@@ -426,11 +458,11 @@ class EnvironmentRunner:
         """
         var_handles: Dict[str, int] = {}
         variables: Dict[str, Tuple [str, str]] = {}
-        if self.env_config["agents_config"][agent]['observation']["meters"] is not None:
+        if self.observation_config[agent]["meters"] is not None:
             variables.update({
                 get_meter_name(agent,variable): variable 
                 for variable 
-                in self.env_config["agents_config"][agent]['observation']["meters"]
+                in self.observation_config[agent]["meters"]
             })
         return variables, var_handles
 
@@ -446,7 +478,7 @@ class EnvironmentRunner:
         actuators: Dict[str,Tuple[str,str,str]] = {}
         actuator_handles: Dict[str, int] = {}
         
-        for actuator_config in self.env_config["agents_config"][agent]["action"]["actuators"].values():
+        for actuator_config in self.actuator_config[agent]["actuators"].values():
             actuators.update({
                 get_actuator_name(agent,actuator_config[0],actuator_config[1],actuator_config[2]): actuator_config
             })
@@ -490,7 +522,7 @@ class EnvironmentRunner:
             logger.error(msg)
             raise ValueError(msg)
         variables: Dict[str,Any] = {
-            key: api.exchange.get_variable_value(state_argument, handle)
+            key: self.api.exchange.get_variable_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_variables"][1].items()
         }        
@@ -514,7 +546,7 @@ class EnvironmentRunner:
             logger.error(msg)
             raise ValueError(msg)
         variables: Dict[str,Any] = {
-            key: api.exchange.get_internal_variable_value(state_argument, handle)
+            key: self.api.exchange.get_internal_variable_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_internal_variables"][1].items()
         }
@@ -539,7 +571,7 @@ class EnvironmentRunner:
             raise ValueError(msg)
         
         variables: Dict[str,Any] = {
-            key: api.exchange.get_meter_value(state_argument, handle)
+            key: self.api.exchange.get_meter_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_meters"][1].items()
         }
@@ -564,7 +596,7 @@ class EnvironmentRunner:
             raise ValueError(msg)
         
         variables: Dict[str,Any] = {
-            key: api.exchange.get_actuator_value(state_argument, handle)
+            key: self.api.exchange.get_actuator_value(state_argument, handle)
             for key, handle
             in self.agent_variables_and_handles[f"{agent}_actuators"][1].items()
         }
@@ -573,7 +605,7 @@ class EnvironmentRunner:
     def get_simulation_parameters_values(
         self,
         state_argument: c_void_p,
-        agent: Optional[str] = None
+        agent: str
         ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
 
@@ -585,54 +617,54 @@ class EnvironmentRunner:
             Dict[str,int|float]: Dict of parameter names as keys and parameter values as values.
         """
         # Get timestep variables that are needed as input for some data_exchange methods.
-        hour = api.exchange.hour(state_argument)
-        zone_time_step_number = api.exchange.zone_time_step_number(state_argument)
+        hour = self.api.exchange.hour(state_argument)
+        zone_time_step_number = self.api.exchange.zone_time_step_number(state_argument)
         
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
-            'actual_date_time': api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
-            'actual_time': api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
-            'current_time': api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
-            'day_of_month': api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
-            'day_of_week': api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
-            'day_of_year': api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
-            'holiday_index': api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
-            'hour': api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
-            'minutes': api.exchange.hour(state_argument), # Get the current minutes into the hour (1-60)
-            'month': api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
-            'num_time_steps_in_hour': api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
-            'year': api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
-            'is_raining': api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
-            'sun_is_up': api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
+            'actual_date_time': self.api.exchange.actual_date_time(state_argument), # Gets a simple sum of the values of the date/time function. Could be used in random seeding.
+            'actual_time': self.api.exchange.actual_time(state_argument), # Gets a simple sum of the values of the time part of the date/time function. Could be used in random seeding.
+            'current_time': self.api.exchange.current_time(state_argument), # Get the current time of day in hours, where current time represents the end time of the current time step.
+            'day_of_month': self.api.exchange.day_of_month(state_argument), # Get the current day of month (1-31)
+            'day_of_week': self.api.exchange.day_of_week(state_argument), # Get the current day of the week (1-7)
+            'day_of_year': self.api.exchange.day_of_year(state_argument), # Get the current day of the year (1-366)
+            'holiday_index': self.api.exchange.holiday_index(state_argument), # Gets a flag for the current day holiday type: 0 is no holiday, 1 is holiday type #1, etc.
+            'hour': self.api.exchange.hour(state_argument), # Get the current hour of the simulation (0-23)
+            'minutes': self.api.exchange.hour(state_argument), # Get the current minutes into the hour (1-60)
+            'month': self.api.exchange.month(state_argument), # Get the current month of the simulation (1-12)
+            'num_time_steps_in_hour': self.api.exchange.num_time_steps_in_hour(state_argument), # Returns the number of zone time steps in an hour, which is currently a constant value throughout a simulation.
+            'year': self.api.exchange.year(state_argument), # Get the “current” year of the simulation, read from the EPW. All simulations operate at a real year, either user specified or automatically selected by EnergyPlus based on other data (start day of week + leap year option).
+            'is_raining': self.api.exchange.is_raining(state_argument), # Gets a flag for whether the it is currently raining. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
+            'sun_is_up': self.api.exchange.sun_is_up(state_argument), # Gets a flag for whether the sun is currently up. The C API returns an integer where 1 is yes and 0 is no, this simply wraps that with a bool conversion.
             # Gets the specified weather data at the specified hour and time step index within that hour
-            'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
-            'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
-            'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_albedo_at_time': self.api.exchange.today_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_beam_solar_at_time': self.api.exchange.today_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_diffuse_solar_at_time': self.api.exchange.today_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_horizontal_ir_at_time': self.api.exchange.today_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_is_raining_at_time': self.api.exchange.today_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_is_snowing_at_time': self.api.exchange.today_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_liquid_precipitation_at_time': self.api.exchange.today_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_outdoor_barometric_pressure_at_time': self.api.exchange.today_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_outdoor_dew_point_at_time': self.api.exchange.today_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_outdoor_dry_bulb_at_time': self.api.exchange.today_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_outdoor_relative_humidity_at_time': self.api.exchange.today_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_sky_temperature_at_time': self.api.exchange.today_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_wind_direction_at_time': self.api.exchange.today_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
+            'today_weather_wind_speed_at_time': self.api.exchange.today_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_albedo_at_time': self.api.exchange.tomorrow_weather_albedo_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_beam_solar_at_time': self.api.exchange.tomorrow_weather_beam_solar_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_diffuse_solar_at_time': self.api.exchange.tomorrow_weather_diffuse_solar_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_horizontal_ir_at_time': self.api.exchange.tomorrow_weather_horizontal_ir_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_is_raining_at_time': self.api.exchange.tomorrow_weather_is_raining_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_is_snowing_at_time': self.api.exchange.tomorrow_weather_is_snowing_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_liquid_precipitation_at_time': self.api.exchange.tomorrow_weather_liquid_precipitation_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_outdoor_barometric_pressure_at_time': self.api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_outdoor_dew_point_at_time': self.api.exchange.tomorrow_weather_outdoor_dew_point_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_outdoor_dry_bulb_at_time': self.api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_outdoor_relative_humidity_at_time': self.api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_sky_temperature_at_time': self.api.exchange.tomorrow_weather_sky_temperature_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_wind_direction_at_time': self.api.exchange.tomorrow_weather_wind_direction_at_time(state_argument, hour, zone_time_step_number),
+            'tomorrow_weather_wind_speed_at_time': self.api.exchange.tomorrow_weather_wind_speed_at_time(state_argument, hour, zone_time_step_number),
         }
         variables = {}
         
@@ -640,9 +672,8 @@ class EnvironmentRunner:
         include: List[str] = []
         parameters_keys = [key for key in parameter_methods.keys()]
         for paramater in parameters_keys:
-            if self.env_config["agents_config"][agent]['observation']["simulation_parameters"][paramater]:
+            if self.observation_config[agent]["simulation_parameters"][paramater]:
                 include.append(paramater)
-        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
         variables: Dict[str,Any] = {
             get_parameter_name(agent,paramater): parameter_methods[paramater] 
             for paramater 
@@ -653,7 +684,7 @@ class EnvironmentRunner:
     def get_zone_simulation_parameters_values(
         self,
         state_argument: c_void_p,
-        agent: Optional[str]=None,
+        agent: str,
         ) -> Dict[str,Any]:
         """Get the simulation parameters values defined in the simulation parameter list.
 
@@ -664,12 +695,12 @@ class EnvironmentRunner:
         Returns:
             Dict[str,int|float]: Dict of parameter names as keys and parameter values as values.
         """
-        num_time_steps_in_hour = api.exchange.num_time_steps_in_hour(state_argument)
+        num_time_steps_in_hour = self.api.exchange.num_time_steps_in_hour(state_argument)
         # Dict with the variables names and methods as values.
         parameter_methods: Dict[str,Any] = {
-            'system_time_step': api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
-            'zone_time_step': api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
-            'zone_time_step_number': np.sin(2 * np.pi * (api.exchange.zone_time_step_number(state_argument)) / num_time_steps_in_hour), # The current zone time step index, from 1 to the number of zone time steps per hour
+            'system_time_step': self.api.exchange.system_time_step(state_argument), # Gets the current system time step value in EnergyPlus. The system time step is variable and fluctuates during the simulation.
+            'zone_time_step': self.api.exchange.zone_time_step(state_argument), # Gets the current zone time step value in EnergyPlus. The zone time step is variable and fluctuates during the simulation.
+            'zone_time_step_number': np.sin(2 * np.pi * (self.api.exchange.zone_time_step_number(state_argument)) / num_time_steps_in_hour), # The current zone time step index, from 1 to the number of zone time steps per hour
         }
         variables: Dict[str,Any] = {}
         
@@ -677,9 +708,9 @@ class EnvironmentRunner:
         include: List[str] = []
         parameters_keys = [key for key in parameter_methods.keys()]
         for paramater in parameters_keys:
-            if self.env_config["agents_config"][agent]['observation']['zone_simulation_parameters'][paramater]:
+            if self.observation_config[agent]['zone_simulation_parameters'][paramater]:
                 include.append(paramater)
-        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
+        
         variables: Dict[str,Any] = {
             get_parameter_name(agent,paramater): parameter_methods[paramater] 
             for paramater 
@@ -690,48 +721,48 @@ class EnvironmentRunner:
     def get_weather_prediction(
         self,
         state_argument: c_void_p,
-        agent: Optional[str]=None
+        agent: str
     ) -> Dict[str,Any]:
         assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
-        if not self.env_config["agents_config"][agent]['observation']['use_one_day_weather_prediction']:
+        if not self.observation_config[agent]['use_one_day_weather_prediction']:
             return {}
         # Get timestep variables that are needed as input for some data_exchange methods.
-        hour: int = api.exchange.hour(state_argument)
+        hour: int = self.api.exchange.hour(state_argument)
         
         prediction_variables_methods: Dict[str,Any] = {
-            'today_weather_albedo_at_time': api.exchange.today_weather_albedo_at_time,
-            'today_weather_beam_solar_at_time': api.exchange.today_weather_beam_solar_at_time,
-            'today_weather_diffuse_solar_at_time': api.exchange.today_weather_diffuse_solar_at_time,
-            'today_weather_horizontal_ir_at_time': api.exchange.today_weather_horizontal_ir_at_time,
-            'today_weather_is_raining_at_time': api.exchange.today_weather_is_raining_at_time,
-            'today_weather_is_snowing_at_time': api.exchange.today_weather_is_snowing_at_time,
-            'today_weather_liquid_precipitation_at_time': api.exchange.today_weather_liquid_precipitation_at_time,
-            'today_weather_outdoor_barometric_pressure_at_time': api.exchange.today_weather_outdoor_barometric_pressure_at_time,
-            'today_weather_outdoor_dew_point_at_time': api.exchange.today_weather_outdoor_dew_point_at_time,
-            'today_weather_outdoor_dry_bulb_at_time': api.exchange.today_weather_outdoor_dry_bulb_at_time,
-            'today_weather_outdoor_relative_humidity_at_time': api.exchange.today_weather_outdoor_relative_humidity_at_time,
-            'today_weather_sky_temperature_at_time': api.exchange.today_weather_sky_temperature_at_time,
-            'today_weather_wind_direction_at_time': api.exchange.today_weather_wind_direction_at_time,
-            'today_weather_wind_speed_at_time': api.exchange.today_weather_wind_speed_at_time,
-            'tomorrow_weather_albedo_at_time': api.exchange.tomorrow_weather_albedo_at_time,
-            'tomorrow_weather_beam_solar_at_time': api.exchange.tomorrow_weather_beam_solar_at_time,
-            'tomorrow_weather_diffuse_solar_at_time': api.exchange.tomorrow_weather_diffuse_solar_at_time,
-            'tomorrow_weather_horizontal_ir_at_time': api.exchange.tomorrow_weather_horizontal_ir_at_time,
-            'tomorrow_weather_is_raining_at_time': api.exchange.tomorrow_weather_is_raining_at_time,
-            'tomorrow_weather_is_snowing_at_time': api.exchange.tomorrow_weather_is_snowing_at_time,
-            'tomorrow_weather_liquid_precipitation_at_time': api.exchange.tomorrow_weather_liquid_precipitation_at_time,
-            'tomorrow_weather_outdoor_barometric_pressure_at_time': api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time,
-            'tomorrow_weather_outdoor_dew_point_at_time': api.exchange.tomorrow_weather_outdoor_dew_point_at_time,
-            'tomorrow_weather_outdoor_dry_bulb_at_time': api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time,
-            'tomorrow_weather_outdoor_relative_humidity_at_time': api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time,
-            'tomorrow_weather_sky_temperature_at_time': api.exchange.tomorrow_weather_sky_temperature_at_time,
-            'tomorrow_weather_wind_direction_at_time': api.exchange.tomorrow_weather_wind_direction_at_time,
-            'tomorrow_weather_wind_speed_at_time': api.exchange.tomorrow_weather_wind_speed_at_time,
+            'today_weather_albedo_at_time': self.api.exchange.today_weather_albedo_at_time,
+            'today_weather_beam_solar_at_time': self.api.exchange.today_weather_beam_solar_at_time,
+            'today_weather_diffuse_solar_at_time': self.api.exchange.today_weather_diffuse_solar_at_time,
+            'today_weather_horizontal_ir_at_time': self.api.exchange.today_weather_horizontal_ir_at_time,
+            'today_weather_is_raining_at_time': self.api.exchange.today_weather_is_raining_at_time,
+            'today_weather_is_snowing_at_time': self.api.exchange.today_weather_is_snowing_at_time,
+            'today_weather_liquid_precipitation_at_time': self.api.exchange.today_weather_liquid_precipitation_at_time,
+            'today_weather_outdoor_barometric_pressure_at_time': self.api.exchange.today_weather_outdoor_barometric_pressure_at_time,
+            'today_weather_outdoor_dew_point_at_time': self.api.exchange.today_weather_outdoor_dew_point_at_time,
+            'today_weather_outdoor_dry_bulb_at_time': self.api.exchange.today_weather_outdoor_dry_bulb_at_time,
+            'today_weather_outdoor_relative_humidity_at_time': self.api.exchange.today_weather_outdoor_relative_humidity_at_time,
+            'today_weather_sky_temperature_at_time': self.api.exchange.today_weather_sky_temperature_at_time,
+            'today_weather_wind_direction_at_time': self.api.exchange.today_weather_wind_direction_at_time,
+            'today_weather_wind_speed_at_time': self.api.exchange.today_weather_wind_speed_at_time,
+            'tomorrow_weather_albedo_at_time': self.api.exchange.tomorrow_weather_albedo_at_time,
+            'tomorrow_weather_beam_solar_at_time': self.api.exchange.tomorrow_weather_beam_solar_at_time,
+            'tomorrow_weather_diffuse_solar_at_time': self.api.exchange.tomorrow_weather_diffuse_solar_at_time,
+            'tomorrow_weather_horizontal_ir_at_time': self.api.exchange.tomorrow_weather_horizontal_ir_at_time,
+            'tomorrow_weather_is_raining_at_time': self.api.exchange.tomorrow_weather_is_raining_at_time,
+            'tomorrow_weather_is_snowing_at_time': self.api.exchange.tomorrow_weather_is_snowing_at_time,
+            'tomorrow_weather_liquid_precipitation_at_time': self.api.exchange.tomorrow_weather_liquid_precipitation_at_time,
+            'tomorrow_weather_outdoor_barometric_pressure_at_time': self.api.exchange.tomorrow_weather_outdoor_barometric_pressure_at_time,
+            'tomorrow_weather_outdoor_dew_point_at_time': self.api.exchange.tomorrow_weather_outdoor_dew_point_at_time,
+            'tomorrow_weather_outdoor_dry_bulb_at_time': self.api.exchange.tomorrow_weather_outdoor_dry_bulb_at_time,
+            'tomorrow_weather_outdoor_relative_humidity_at_time': self.api.exchange.tomorrow_weather_outdoor_relative_humidity_at_time,
+            'tomorrow_weather_sky_temperature_at_time': self.api.exchange.tomorrow_weather_sky_temperature_at_time,
+            'tomorrow_weather_wind_direction_at_time': self.api.exchange.tomorrow_weather_wind_direction_at_time,
+            'tomorrow_weather_wind_speed_at_time': self.api.exchange.tomorrow_weather_wind_speed_at_time,
         }
         
         variables: Dict[str,Any] = {}
-        prediction_variables:Dict[str,bool] = self.env_config["agents_config"][agent]['observation']['prediction_variables']
-        for h in range(1, self.env_config["agents_config"][agent]['observation']['weather_prediction_hours']+1, 1):
+        prediction_variables:Dict[str,bool] = self.observation_config[agent]['prediction_variables']
+        for h in range(1, self.observation_config[agent]['weather_prediction_hours']+1, 1):
             # For each hour, the sigma value goes from a minimum error of zero to the value listed in sigma_max following a linear function:
             prediction_hour: int = hour + h
             if prediction_hour < 24:
@@ -751,7 +782,7 @@ class EnvironmentRunner:
         
     def get_other_obs(
         self,
-        agent: Optional[str] = None
+        agent: str
         ) -> Dict[str,Any]:
         """Get the static variable values defined in the static variable dict names and handles.
 
@@ -761,24 +792,19 @@ class EnvironmentRunner:
         Returns:
             Dict[str,Any]: Static value dict values for the actual timestep.
         """
-        if agent is None:
-            msg = "EnvironmentRunner: The agent must be defined."
-            logger.error(msg)
-            raise ValueError(msg)
-        
         variables: Dict[str,Any] = {}
         variables.update({
             get_other_obs_name(agent,key): value 
             for key, value
-            in self.env_config["agents_config"][agent]["observation"]["other_obs"].items()
+            in self.observation_config[agent]["other_obs"].items()
         })
-        self.env_config["agents_config"][agent]["observation"]["other_obs"]
+        self.observation_config[agent]["other_obs"]
         return variables
     
     def get_user_occupation_forecast(
         self,
         state_argument: c_void_p,
-        agent: Optional[str]=None
+        agent: str
     ) -> Dict[str,Any]:
         """
         Get the user occupation forecast for the actual timestep.
@@ -789,38 +815,36 @@ class EnvironmentRunner:
 
         Returns:
             Dict[str,Any]: User occupation forecast dict values for the actual timestep.
-        """
-        assert isinstance(agent, str), "EnvironmentRunner: Agent must be a string."
-                
+        """                
         # Get timestep variables that are needed as input for some data_exchange methods.
-        if self.env_config["agents_config"][agent]['observation']['user_occupation_function']:
+        if self.observation_config[agent]['user_occupation_function']:
             
             self.occupancy_next_timestep  = calculate_occupancy(
-                api.exchange.hour(state_argument),
-                api.exchange.day_of_month(state_argument),
-                api.exchange.month(state_argument),
-                api.exchange.year(state_argument),
-                api.exchange.holiday_index(state_argument) > 0,
-                self.env_config["agents_config"][agent]['observation']['user_type'],
-                self.env_config["agents_config"][agent]['observation']['zone_type'],
-                self.env_config["agents_config"][agent]['observation']['confidence_level']
+                self.api.exchange.hour(state_argument),
+                self.api.exchange.day_of_month(state_argument),
+                self.api.exchange.month(state_argument),
+                self.api.exchange.year(state_argument),
+                self.api.exchange.holiday_index(state_argument) > 0,
+                self.observation_config[agent]['user_type'],
+                self.observation_config[agent]['zone_type'],
+                self.observation_config[agent]['confidence_level']
             )
         
-        if self.env_config["agents_config"][agent]['observation']['user_occupation_forecast']:
+        if self.observation_config[agent]['user_occupation_forecast']:
             variables: Dict[str,Any] = {}
             forecast_vector = calculate_occupancy_forecast(
-                api.exchange.hour(state_argument),
-                api.exchange.day_of_month(state_argument),
-                api.exchange.month(state_argument),
-                api.exchange.year(state_argument),
-                self.env_config["agents_config"][agent]['observation']['user_type'],
-                self.env_config["agents_config"][agent]['observation']['zone_type'],
-                self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours'],
-                self.env_config["agents_config"][agent]['observation']['confidence_level'],
-                self.env_config["agents_config"][agent]['observation']['lambdaa']
+                self.api.exchange.hour(state_argument),
+                self.api.exchange.day_of_month(state_argument),
+                self.api.exchange.month(state_argument),
+                self.api.exchange.year(state_argument),
+                self.observation_config[agent]['user_type'],
+                self.observation_config[agent]['zone_type'],
+                self.observation_config[agent]['occupation_prediction_hours'],
+                self.observation_config[agent]['confidence_level'],
+                self.observation_config[agent]['lambdaa']
             )
             
-            for h in range(1, self.env_config["agents_config"][agent]['observation']['occupation_prediction_hours']+1, 1):
+            for h in range(1, self.observation_config[agent]['occupation_prediction_hours']+1, 1):
                 variables.update({get_user_occupation_forecast_name(agent,h): forecast_vector[h-1]})
                 
             return variables
@@ -844,7 +868,7 @@ class EnvironmentRunner:
             # print("Initializing handles...")
             self.init_handles = self._init_handles(state_argument)
         
-        if api.exchange.warmup_flag(state_argument):
+        if self.api.exchange.warmup_flag(state_argument):
             self.initialized = False
             # print("Warmup phase still alive...")
             return self.initialized
@@ -864,29 +888,29 @@ class EnvironmentRunner:
             bool: True if all handles were initialized successfully.
         """        
         if not self.init_handles:
-            if not api.exchange.api_data_fully_ready(state_argument):
+            if not self.api.exchange.api_data_fully_ready(state_argument):
                 return False
         
         self.internal_variables_and_handles["internal_actuators"][1].update({
-            key: api.exchange.get_actuator_handle(state_argument, *actuator)
+            key: self.api.exchange.get_actuator_handle(state_argument, *actuator)
             for key, actuator in self.internal_variables_and_handles["internal_actuators"][0].items()
         })
         
         for agent in self.agents:
             self.agent_variables_and_handles[f"{agent}_variables"][1].update({
-                key: api.exchange.get_variable_handle(state_argument, *actuator)
+                key: self.api.exchange.get_variable_handle(state_argument, *actuator)
                 for key, actuator in self.agent_variables_and_handles[f"{agent}_variables"][0].items()
             })
             self.agent_variables_and_handles[f"{agent}_internal_variables"][1].update({
-                key: api.exchange.get_internal_variable_handle(state_argument, *var)
+                key: self.api.exchange.get_internal_variable_handle(state_argument, *var)
                 for key, var in self.agent_variables_and_handles[f"{agent}_internal_variables"][0].items()
             })
             self.agent_variables_and_handles[f"{agent}_meters"][1].update({
-                key: api.exchange.get_meter_handle(state_argument, meter)
+                key: self.api.exchange.get_meter_handle(state_argument, meter)
                 for key, meter in self.agent_variables_and_handles[f"{agent}_meters"][0].items()
             })
             self.agent_variables_and_handles[f"{agent}_actuators"][1].update({
-                key: api.exchange.get_actuator_handle(state_argument, *actuator)
+                key: self.api.exchange.get_actuator_handle(state_argument, *actuator)
                 for key, actuator in self.agent_variables_and_handles[f"{agent}_actuators"][0].items()
             })
             
@@ -897,7 +921,7 @@ class EnvironmentRunner:
                 self.agent_variables_and_handles[f"{agent}_actuators"][1]
             ]:
                 if any([v == -1 for v in handles.values()]):
-                    available_data = api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
+                    available_data = self.api.exchange.list_available_api_data_csv(state_argument).decode('utf-8')
                     msg = (
                         f"EnvironmentRunner: \n" 
                         f"Some handles were not initialized correctly for agent {agent}.\n"
@@ -919,7 +943,7 @@ class EnvironmentRunner:
         
         try:
             if self.energyplus_state is not None:
-                api.runtime.stop_simulation(self.energyplus_state)
+                self.api.runtime.stop_simulation(self.energyplus_state)
         except Exception as e:
             logger.warning(f"EnvironmentRunner: Error stopping EnergyPlus simulation: {e}")
         
@@ -927,7 +951,7 @@ class EnvironmentRunner:
         
         if self.energyplus_exec_thread is not None:
             try:
-                self.energyplus_exec_thread.join(timeout=30)
+                self.energyplus_exec_thread.join(timeout=self.energyplus_exec_thread_timeout)
             except Exception as e:
                 logger.warning(f"EnvironmentRunner: Error joining EnergyPlus thread: {e}")
         
@@ -935,13 +959,13 @@ class EnvironmentRunner:
         self.first_observation = True
         
         try:
-            api.runtime.clear_callbacks()
+            self.api.runtime.clear_callbacks()
         except Exception as e:
             logger.warning(f"EnvironmentRunner: Error clearing callbacks: {e}")
         
         if self.energyplus_state is not None:
             try:
-                api.state_manager.delete_state(self.energyplus_state)
+                self.api.state_manager.delete_state(self.energyplus_state)
             except Exception as e:
                 logger.warning(f"EnvironmentRunner: Error deleting EnergyPlus state: {e}")
             finally:
@@ -963,13 +987,13 @@ class EnvironmentRunner:
         Return:
             List[str]: List of arguments to pass to EnergyPlusEnv.
         """
-        eplus_args: List[str|bytes] = ["-r"] if self.env_config.get("csv", False) else []
+        eplus_args: List[str|bytes] = ["-r"] if self.generals_config.get("csv", False) else []
         eplus_args += [
             "-w",
-            self.env_config["epw_path"],
+            self.generals_config["epw_path"],
             "-d",
-            f"{self.env_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}" if not self.env_config['evaluation'] else f"{self.env_config['output_path']}/evaluation-episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}",
-            self.env_config["epjson_path"]
+            f"{self.generals_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}" if not self.generals_config['evaluation'] else f"{self.generals_config['output_path']}/evaluation-episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}",
+            self.generals_config["epjson_path"]
         ]
         return eplus_args
     

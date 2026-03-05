@@ -9,7 +9,7 @@ provide a numerical signal that indicates how well an agent is performing in the
 provides a structured way to define and configure these reward functions. This document provides a detailed 
 explanation of the ``Rewards`` API in ``eprllib``.
 
-.. image:: Images/rewards.png
+.. image:: ../Images/rewards.png
     :width: 600
     :alt: Rewards diagram
     :align: center
@@ -44,35 +44,11 @@ Reward functions use information from the environment, the agent's observations,
 3.  **Agent's Actions:** The reward function can take into account the actions that the agent has taken.
 4.  **Reward Calculation:** The reward function combines this information to calculate a numerical reward value.
 
-Using Infos in the Reward Function
-----------------------------------
 
-The `info` dictionary, returned by the `step()` method of the `Environment`, can be used to access additional information within the reward function. This allows you to create more complex and informative reward signals.
-
-*   **Accessing the `info` Dictionary:**
-
-    The `info` dictionary is passed to the reward function as part of the `kwargs`. You can access it like this:
-
-    .. code-block:: python
-
-        def my_reward_function(agent_name, thermal_zone, beta, people_name, cooling_name, heating_name, cooling_energy_ref, heating_energy_ref, **kwargs):
-            info = kwargs.get("info", {})
-            # ... use info to calculate the reward ...
-
-*   **Example of Using `info`:**
-
-    You might use `info` to access:
-
-    *   Energy consumption data.
-    *   Thermal comfort metrics.
-    *   Weather data.
-    *   Any other information that is available in the `info` dictionary.
 
 Custom ``Reward`` functions
 ----------------------------
 
-Examples
---------
 
 Here's a complete example of how to define and use a reward function:
 

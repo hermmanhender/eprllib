@@ -1,4 +1,4 @@
-﻿eprllib.Agents.ObservationSpec
+eprllib.Agents.ObservationSpec
 ==============================
 
 .. automodule:: eprllib.Agents.ObservationSpec

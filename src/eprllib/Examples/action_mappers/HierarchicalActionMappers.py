@@ -6,26 +6,20 @@ This class uses a discrete action space. The size of the action space must be sp
 `action_mapper_config` dictionary with the key "action_space_dim".
 """
 from gymnasium import Space
-from gymnasium.spaces import Discrete, MultiDiscrete
-from typing import Any, List, Dict
+from gymnasium.spaces import Discrete
+from typing import Any, List, Dict, Tuple
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Utils.annotations import override
-from eprllib.Utils.agent_utils import config_validation
-from eprllib import logger
 
 class HierarchicalGoalActionMapperDiscrete(BaseActionMapper):
-    REQUIRED_KEYS: Dict[str, Any] = {
-        "action_space_dim": int,
-    }
     
-    def __init__(
-        self,
-        action_mapper_config: Dict[str, Any] = {}
-    ):
-        # Validate the config.
-        config_validation(action_mapper_config, self.REQUIRED_KEYS)
-        
-        super().__init__(action_mapper_config)
+    @override(BaseActionMapper)
+    def setup(self):
+        # Here you have access to the self.action_mapper_config and self.agent_name
+
+        # Here we use the config dict to provide the action space dimension.
+        self.action_space_dim: int = self.action_mapper_config.get("action_space_dim", 11)
+    
     
     @override(BaseActionMapper)
     def get_action_space_dim(self) -> Space[Any]:
@@ -34,25 +28,39 @@ class HierarchicalGoalActionMapperDiscrete(BaseActionMapper):
         Returns:
             gym.Space: Action space of the environment.
         """
-        return Discrete(self.action_mapper_config['action_space_dim'])
+        return Discrete(self.action_space_dim)
+
 
     @override(BaseActionMapper)
-    def agent_to_actuator_action(self, action: Any, actuators: List[str]):
+    def actuator_names(
+        self, 
+        actuators_config: Dict[str, Tuple[str,str,str]]
+        ) -> None:
         """
-        This method is not used in top_level_agent.
+        This method is used to transform the agent dict action to actuator dict action. Consider that
+        one agent could manage more than one actuator. For that reason, it is important to transform the
+        action dict to actuator dict actions.
+
+        Args:
+            action (Any): The action to be transformed.
+            actuators (List[str]): List of actuators controlled by the agent.
+
+        Returns:
+            Dict[str, Any]: Transformed actions for the actuators.
         """
-        msg = "This method should not be called."
-        logger.error(msg)
-        raise ValueError(msg)
-    
+        
+        # Here the name of the actuator is obtained from the actuators_config 
+        # in the environment configuration file.
+        pass
+        
+        
     @override(BaseActionMapper)
-    def get_actuator_action(self, action: float | int, actuator: str):
+    def _agent_to_actuator_action(self, action: Any, actuators: List[str]) -> Dict[str, Any]:
         """
         This method is not used in top_level_agent.
         """
-        msg = f"The actuator {actuator} is not used in the top_level_agent."
-        logger.error(msg)
-        raise ValueError(msg)
+        return {}
+    
 
     @override(BaseActionMapper)
     def action_to_goal(self, action: int | float) -> int | float:
@@ -65,63 +73,5 @@ class HierarchicalGoalActionMapperDiscrete(BaseActionMapper):
         Returns:
             Any: The transformed action.
         """
-        return action/(self.action_mapper_config['action_space_dim']-1)
-    
-    
-class HierarchicalObjectiveActionMapperMultiDiscrete(BaseActionMapper):
-    REQUIRED_KEYS = {
-        "action_space_dim": int,
-    }
-    
-    def __init__(
-        self,
-        action_mapper_config: Dict[str, Any] = {}
-    ):
-        # Validate the config.
-        config_validation(action_mapper_config, self.REQUIRED_KEYS)
-        
-        super().__init__(action_mapper_config)
-    
-    @override(BaseActionMapper)
-    def get_action_space_dim(self) -> Space[Any]:
-        """This method is used to get the action space of the environment.
-
-        Returns:
-            gym.Space: Action space of the environment.
-        """
-        # TODO: Verify that the action space is the espected.
-        # The action space is a MultiDiscrete space with the same dimension for each agent.
-        return MultiDiscrete([self.action_mapper_config['action_space_dim']] * 10)
-
-    @override(BaseActionMapper)
-    def agent_to_actuator_action(self, action: Any, actuators: List[str]):
-        """
-        This method is not used in top_level_agent.
-        """
-        msg = "This method should not be called."
-        logger.error(msg)
-        raise ValueError(msg)
-    
-    @override(BaseActionMapper)
-    def get_actuator_action(self, action: float | int, actuator: str):
-        """
-        This method is not used in top_level_agent.
-        """
-        msg = f"The actuator {actuator} is not used in the top_level_agent."
-        logger.error(msg)
-        raise ValueError(msg)
-
-    @override(BaseActionMapper)
-    def action_to_goal(self, action: int | float) -> int | float:
-        """
-        This method is used to transform the action to a goal. In this case, the agents are using a MultiDiscrete action 
-        space, that are transformed to a single vector.
-
-        Args:
-            action (Any): The action to be transformed.
-
-        Returns:
-            Any: The transformed action.
-        """
-        return action
+        return action/(self.action_space_dim-1)
     

@@ -1,4 +1,4 @@
-﻿eprllib.Connectors.BaseConnector
+eprllib.Connectors.BaseConnector
 ================================
 
 .. automodule:: eprllib.Connectors.BaseConnector

@@ -1,4 +1,4 @@
-﻿eprllib.Agents.ActionMappers.ActionMapperSpec
+eprllib.Agents.ActionMappers.ActionMapperSpec
 =============================================
 
 .. automodule:: eprllib.Agents.ActionMappers.ActionMapperSpec

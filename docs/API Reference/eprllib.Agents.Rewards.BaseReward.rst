@@ -1,4 +1,4 @@
-﻿eprllib.Agents.Rewards.BaseReward
+eprllib.Agents.Rewards.BaseReward
 =================================
 
 .. automodule:: eprllib.Agents.Rewards.BaseReward

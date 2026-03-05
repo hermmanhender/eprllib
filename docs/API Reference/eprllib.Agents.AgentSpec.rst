@@ -1,4 +1,4 @@
-﻿eprllib.Agents.AgentSpec
+eprllib.Agents.AgentSpec
 ========================
 
 .. automodule:: eprllib.Agents.AgentSpec

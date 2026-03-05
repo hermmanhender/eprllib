@@ -1,4 +1,4 @@
-﻿eprllib.Agents.Filters.FilterSpec
+eprllib.Agents.Filters.FilterSpec
 =================================
 
 .. automodule:: eprllib.Agents.Filters.FilterSpec

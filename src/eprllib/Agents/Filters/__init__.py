@@ -10,10 +10,8 @@ In this module, you will find:
 
 - ``BaseFilter``: The base class for defining filter functions. It provides the basic structure and methods that can be 
 extended to create custom filters.
-- ``DefaultFilter``: A default implementation of the ``BaseFilter`` class that can be used as-is or extended to create 
-custom filters.
-- ``FullySharedParametersFilter``: A filter class for the fully-shared-parameters policy, which builds the observation 
-vector for the agent by removing the actuator state from the agent state vector.
+- ``FilterSpec``: A class used to specify the configuration of filter functions in the agent definition. It ensures that 
+the filter function is properly defined and adheres to the expected interface.
 
 These filters can be used to preprocess observations in various ways, depending on the specific requirements of the 
 agent's policy.

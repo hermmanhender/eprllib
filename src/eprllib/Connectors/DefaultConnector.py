@@ -6,7 +6,7 @@ This module defines the default connector class that allows the combination of a
 to provide a flexible configuration of the communication between agents. Built-in hierarchical 
 (only two levels), fully-shared, centralized, and independent configurations are provided.
 """
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 from gymnasium.spaces import Box
 
 from eprllib.Connectors.BaseConnector import BaseConnector
@@ -31,34 +31,37 @@ class DefaultConnector(BaseConnector):
         """
         This method can be overridden in subclasses to perform setup tasks.
         """
-        pass
+        self.env_config: Dict[str, Any] = {}
     
     @override(BaseConnector)
     def get_agent_obs_dim(
         self,
-        env_config: Dict[str,Any],
         agent: str
         ) -> Box:
         """
         Get the agent observation dimension.
-
-        :param env_config: environment configuration
-        :type env_config: Dict[str,Any]
-        :return: agent observation spaces
-        :rtype: Dict[str, gym.Space]
+        
+        Args:
+            agent (str): Agent identifier.
+        
+        Returns:
+            gym.spaces.Space: Agent observation dimension.
+            
+        Raises:
+            NotImplementedError: If the method is not implemented in the child class.
         """
         obs_space_len: int = 0
         self.obs_indexed[agent] = {}
         
-        self.obs_indexed[agent], obs_space_len = set_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_meters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_actuators_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
-        self.obs_indexed[agent], obs_space_len = set_user_occupation_forecast_in_obs(env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_variables_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_internal_variables_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_meters_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_simulation_parameters_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_zone_simulation_parameters_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_prediction_variables_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_other_obs_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_actuators_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
+        self.obs_indexed[agent], obs_space_len = set_user_occupation_forecast_in_obs(self.env_config, agent, self.obs_indexed[agent], obs_space_len)
                 
         assert obs_space_len > 0, "The observation space length must be greater than 0."
         assert len(self.obs_indexed[agent]) == obs_space_len, f"The observation space length must be equal to the number of indexed observations. Obs indexed:{len(self.obs_indexed[agent])} != Obs space len:{obs_space_len}."
@@ -70,67 +73,21 @@ class DefaultConnector(BaseConnector):
     @override(BaseConnector)
     def get_agent_obs_indexed(
         self,
-        env_config: Dict[str, Any],
         agent: str
     ) -> Dict[str, int]:
         """
         Get a dictionary of the agent observation parameters and their respective index in the observation array.
-
-        :param env_config: Environment configuration.
-        :type env_config: Dict[str, Any]
-        :param agent: Agent identifier, optional.
-        :type agent: str, optional
-        :return: Agent observation spaces.
-        :rtype: gym.spaces.Space
+        
+        Args:
+            agent (str): Agent identifier.
+            
+        Returns:
+            Dict[str, int]: Dictionary of the agent observation parameters and their respective index in the observation array.
+        
+        Raises:
+            NotImplementedError: If the method is not implemented in the child class.
         """
         if self.obs_indexed == {}:
-            self.get_agent_obs_dim(env_config, agent)
+            self.get_agent_obs_dim(agent)
         return self.obs_indexed[agent]
     
-    @override(BaseConnector)    
-    def set_top_level_obs(
-        self,
-        env_config: Dict[str, Any],
-        agent_states: Dict[str,Dict[str,Any]],
-        dict_agents_obs: Dict[str,Any],
-        infos: Dict[str, Dict[str, Any]],
-        is_last_timestep: bool = False
-    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
-        """
-        Set the multiagent observation.
-
-        :param env_config: environment configuration
-        :type env_config: Dict[str,Any]
-        :param agent_states: agent states
-        :type agent_states: Dict[str,Any]
-        :param dict_agents_obs: dictionary of agents observations
-        :type dict_agents_obs: Dict[str,Any]
-        :return: multiagent observation
-        :rtype: Dict[str,Any]
-        """
-        is_lowest_level = True
-        return dict_agents_obs, infos, is_lowest_level
-    
-    @override(BaseConnector)
-    def set_low_level_obs(
-        self,
-        env_config: Dict[str, Any],
-        agent_states: Dict[str,Dict[str,Any]],
-        dict_agents_obs: Dict[str,Any],
-        infos: Dict[str, Dict[str, Any]],
-        goals: Dict[str, Any]
-    ) -> Tuple[Dict[str, Any], Dict[str, Dict[str, Any]], bool]:
-        """
-        Set the multiagent observation.
-
-        :param env_config: environment configuration
-        :type env_config: Dict[str,Any]
-        :param agent_states: agent states
-        :type agent_states: Dict[str,Any]
-        :param dict_agents_obs: dictionary of agents observations
-        :type dict_agents_obs: Dict[str,Any]
-        :return: multiagent observation
-        :rtype: Dict[str,Any]
-        """
-        is_lowest_level = True
-        return dict_agents_obs, infos, is_lowest_level

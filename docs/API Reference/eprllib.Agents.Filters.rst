@@ -1,4 +1,4 @@
-﻿eprllib.Agents.Filters
+eprllib.Agents.Filters
 ======================
 
 .. automodule:: eprllib.Agents.Filters
@@ -11,6 +11,4 @@
    :recursive:
 
    BaseFilter
-   DefaultFilter
    FilterSpec
-   FullySharedParametersFilter
