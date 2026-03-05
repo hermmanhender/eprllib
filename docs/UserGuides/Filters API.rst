@@ -9,7 +9,7 @@ decision-making. They provide a mechanism to modify or transform the raw observa
 more robust and efficient agent behavior. This document provides a detailed explanation of 
 the ``Filters`` API in ``eprllib``.
 
-.. image:: Images/filters.png
+.. image:: ../Images/filters.png
     :width: 600
     :alt: Filters diagram
     :align: center

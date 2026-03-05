@@ -8,7 +8,6 @@ It ensures that the filter function is properly defined and adheres to the expec
 from typing import Dict, Any, Optional, Type
 
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.Agents.Filters.DefaultFilter import DefaultFilter
 from eprllib import logger
 
 class FilterSpec:
@@ -51,10 +50,9 @@ class FilterSpec:
         This method is used to build the FilterSpec object.
         """
         if self.filter_fn is None:
-            msg = "FilterSpec: No filter function provided. Using DefaultFilter."
-            logger.warning(msg)
-            self.filter_fn = DefaultFilter
-            self.filter_fn_config = {}
+            msg = "FilterSpec: No filter function provided."
+            logger.error(msg)
+            raise ValueError(msg)
         
         return vars(self)
     

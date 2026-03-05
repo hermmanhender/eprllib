@@ -28,8 +28,9 @@ class BaseFilter:
     Base class for defining filter functions used in agent specifications.
     Filters are used to preprocess observations before they are fed to the agent.
     """
-    filter_fn_config: Dict[str, Any] = {}
-    agent_name: str = ""
+    filter_fn_config: Dict[str, Any]
+    agent_name: str
+    _is_setup: bool
     
     def __init__(
         self,
@@ -40,7 +41,9 @@ class BaseFilter:
         Initializes the BaseFilter class.
 
         Args:
+        
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
+            
         """
         self.filter_fn_config = filter_fn_config
         self.agent_name = agent_name
@@ -59,12 +62,14 @@ class BaseFilter:
             self.setup()
         except AttributeError as e:
             raise e
-
         self._is_setup:bool = True
+        
+        # Check if the agent_name is defined.
+        assert self.agent_name is not None, "BaseFilter: The agent name must be defined."
+    
     
     def get_filtered_obs(
         self,
-        env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
     ) -> NDArray[floating[Any]]:
         # Check if the agent_states dictionary is empty
@@ -82,7 +87,7 @@ class BaseFilter:
         # Generate a copy of the agent_states to avoid conflicts with global variables.
         agent_states_copy = agent_states.copy()
         
-        return self._get_filtered_obs(env_config, agent_states_copy)
+        return self._get_filtered_obs(agent_states_copy)
     
     
     # ===========================
@@ -102,7 +107,6 @@ class BaseFilter:
     @OverrideToImplementCustomLogic
     def _get_filtered_obs(
         self,
-        env_config: Dict[str, Any],
         agent_states: Dict[str, Any],
     ) -> NDArray[floating[Any]]:
         """
@@ -111,13 +115,19 @@ class BaseFilter:
         configuration specified in filter_fn_config.
 
         Args:
+        
             env_config (Dict[str, Any]): Configuration dictionary for the environment. Can include settings 
-            that affect how the observations are filtered.
-            
+                that affect how the observations are filtered.
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
+        
             NDarray: Filtered observations as a numpy array of float64 values.
+            
+        Raises:
+        
+            NotImplementedError: If this method is not implemented in a subclass.
+            
         """
         msg = "BaseFilter: This method should be implemented in a subclass."
         logger.error(msg)

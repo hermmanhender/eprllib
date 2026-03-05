@@ -10,11 +10,11 @@ from tempfile import TemporaryDirectory
 from eprllib.Episodes.BaseEpisode import BaseEpisode
 from eprllib.Episodes.DefaultEpisode import DefaultEpisode
 from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Connectors.DefaultConnector import DefaultConnector
-from eprllib.Connectors.IndependentConnector import IndependentConnector
 from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
-from eprllib import logger
+from eprllib.Utils.parallel_setup import parallel_energyplus_setup
+from eprllib.Utils.add_ep_to_path import EP_API_add_path
+from eprllib import logger, EP_VERSION
 
 class EnvironmentConfig:
     """
@@ -32,6 +32,7 @@ class EnvironmentConfig:
     episode_fn: Optional[Type[BaseEpisode]] = None
     episode_fn_config: Dict[str, Any] = {}
     cut_episode_len: int = CUT_EPISODE_LEN
+    ep_version: str = EP_VERSION
     
     def __init__(self):
         """
@@ -44,6 +45,7 @@ class EnvironmentConfig:
         self.ep_terminal_output: bool = True
         self.timeout: float | int = TIMEOUT
         self.evaluation: bool = False
+        self.ep_version: str = EP_VERSION
 
         # Agents configuration
         self.agents_config: Optional[Dict[str, AgentSpec|Dict[str, Any]]] = None
@@ -54,6 +56,8 @@ class EnvironmentConfig:
         self.episode_fn: Optional[Type[BaseEpisode]] = None
         self.episode_fn_config: Dict[str, Any] = {}
         self.cut_episode_len: int = CUT_EPISODE_LEN
+        
+        self.ep_workers_paths: Dict[int, str] = {}
     
     def to_dict(self) -> Dict[str, Any]:
         """Converts all settings into a legacy config dict for backward compatibility.
@@ -68,7 +72,7 @@ class EnvironmentConfig:
             logger.error(f"EnvironmentConfig: Error building EnvironmentConfig: {e}")
             raise ValueError("Failed to build EnvironmentConfig. Please check the configuration settings.") from e
     
-    def from_dict(cls, config_dict: Dict[str, Any]) -> "EnvironmentConfig":
+    def from_dict(cls, config_dict: Dict[str, Any]) -> "EnvironmentConfig": # type: ignore
         """Creates an EnvironmentConfig from a legacy python config dict.
 
         Args:
@@ -82,7 +86,7 @@ class EnvironmentConfig:
     def update_from_dict(
         self,
         config_dict: Dict[str, Any],#: PartialAlgorithmConfigDict,
-    ) -> "EnvironmentConfig":
+    ) -> "EnvironmentConfig": # type: ignore
         """Modifies this EnvironmentConfig via the provided python config dict.
 
         Args:
@@ -151,17 +155,9 @@ class EnvironmentConfig:
         
         # === CONNECTOR === #
         if self.connector_fn is None:
-            if ix > 1:
-                # TODO: If FullySharedConnector is better than IndependentConnector in the future, change this.
-                self.connector_fn = IndependentConnector
-                self.connector_fn_config = {}
-                logger.warning(f"EnvironmentConfig: The connector function is not defined. The connector {self.connector_fn.__name__} will be used with the following configuration: {self.connector_fn_config}.")
-            elif ix == 1:
-                self.connector_fn = DefaultConnector
-                self.connector_fn_config = {}
-                logger.warning(f"EnvironmentConfig: The connector function is not defined. The connector {self.connector_fn.__name__} will be used.")
-        
-        logger.debug("EnvironmentConfig: Connector config built successfully.")
+            msg = "EnvironmentConfig: The connector function is not defined."
+            logger.error(msg)
+            raise ValueError(msg)
         
         # === EPISODES === #
         if self.episode_fn is None:
@@ -169,7 +165,17 @@ class EnvironmentConfig:
             logger.info(msg)
             self.episode_fn = DefaultEpisode
             self.episode_fn_config = {}
+        
+        # === PARALLEL EXECUTION ===
+        # EnergyPlus Python API path adding
+        try:
+            original_ep_path = EP_API_add_path(self.ep_version)
+        except RuntimeError as e:
+            logger.error(f"EnvironmentConfig: Failed to add EnergyPlus API path: {e}")
+            exit(1)
             
+        self.ep_workers_paths = parallel_energyplus_setup(original_ep_path)
+        
         return vars(self)
     
     
@@ -181,6 +187,7 @@ class EnvironmentConfig:
         ep_terminal_output: bool = True,
         timeout: float|int = TIMEOUT,
         evaluation: bool = False,
+        ep_version: str = "24-2-0",
         ) -> None:
         """
         This method is used to modify the general configuration of the environment.
@@ -199,6 +206,7 @@ class EnvironmentConfig:
         self.ep_terminal_output = ep_terminal_output
         self.timeout = timeout
         self.evaluation = evaluation
+        self.ep_version = ep_version
         
     def agents(
         self,

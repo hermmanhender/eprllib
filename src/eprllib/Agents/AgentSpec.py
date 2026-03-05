@@ -37,7 +37,8 @@ class AgentSpec:
         action: Optional[ActionSpec|Dict[str, Any]] = None,
         action_mapper: Optional[ActionMapperSpec|Dict[str, Any]] = None,
         reward: Optional[RewardSpec|Dict[str, Any]] = None,
-    **kwargs: Any) -> None:
+        **kwargs: Any
+        ) -> None:
         """
         Contruction method for the AgentSpec class.
 
