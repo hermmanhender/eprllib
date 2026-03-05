@@ -11,3 +11,4 @@
    :recursive:
 
    BaseConnector
+   DefaultConnector
