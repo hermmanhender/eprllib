@@ -8,13 +8,13 @@ from typing import Dict, Any, List
 from ray.rllib.policy.policy import Policy
 from pathlib import Path
 from ray.rllib.core.rl_module.rl_module import RLModule
-from eprllib.Environment.Environment import Environment
+from eprllib.Environment.MultiAgentEnvironment import MultiAgentEnvironment
 import torch
 import numpy as np
 import tree
 
 def generate_experience(
-    env: Environment,
+    env: MultiAgentEnvironment,
     env_config: Dict[str, Any],
     policies: Dict[str, Policy],
     num_episodes: int = 1
@@ -52,7 +52,7 @@ def generate_experience(
                         }
     """
     # Instantiate the environment
-    env_instance: Environment = env(env_config)
+    env_instance: MultiAgentEnvironment = env(env_config)
     
     # Main dictionary to store all experiment data
     experiment_data: Dict[str, Any] = {'experiment': {}}
@@ -162,7 +162,7 @@ def generate_experience(
     return experiment_data
 
 def generate_experience_V2(
-    env: Environment,
+    env: MultiAgentEnvironment,
     env_config: Dict[str, Any],
     rl_module_checpoints: Dict[str, str],
     policy_names: Dict[str, str],
@@ -201,7 +201,7 @@ def generate_experience_V2(
                         }
     """
     # Instantiate the environment
-    env_instance: Environment = env(env_config)
+    env_instance: MultiAgentEnvironment = env(env_config)
     
     # Main dictionary to store all experiment data
     experiment_data: Dict[str, Any] = {'experiment': {}}
