@@ -9,8 +9,7 @@ on:
   pull_request:
     branches: [ "main", "dev" ]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+# Se ha eliminado FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 para evitar la advertencia de forzado.
 
 jobs:
   build:
@@ -23,16 +22,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
+    # Actualizado a la versión v5
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install pytest
         python -m pip install .
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
     - name: Test with pytest
       run: |
         pytest
