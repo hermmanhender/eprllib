@@ -23,7 +23,7 @@ from eprllib.Utils.annotations import override
 from eprllib import logger, EP_VERSION
 
 
-class Environment(MultiAgentEnv):
+class MultiAgentEnvironment(MultiAgentEnv):
     """
     The BaseEnvironment class represents a multi-agent environment for 
     reinforcement learning tasks related to building energy simulation using 
@@ -444,7 +444,7 @@ class Environment(MultiAgentEnv):
     def from_checkpoint(
         cls, # type: ignore
         path: str
-    ) -> "Environment":
+    ) -> "MultiAgentEnvironment":
         msg = "Environment: This method is not implemented yet. Please implement it in the child class."
         logger.error(msg)
         raise NotImplementedError(msg)

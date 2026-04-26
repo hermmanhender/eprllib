@@ -2,7 +2,7 @@ from typing import Dict, Any
 from ray.rllib.algorithms.ppo.ppo import PPOConfig
 from ray.rllib.policy.policy import PolicySpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
-from eprllib.Environment.Environment import Environment
+from eprllib.Environment.MultiAgentEnvironment import MultiAgentEnvironment
 
 def policy_map_fn(agent_id, episode, **kwargs): # type: ignore
     return "single_policy"
@@ -20,7 +20,7 @@ def ppo_config(
         num_learners = 0,
     )
     algo.environment( # type: ignore
-        env = Environment,
+        env = MultiAgentEnvironment,
         env_config = env_config,
         clip_actions = True,
     )
