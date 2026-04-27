@@ -1,0 +1,857 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Getting Started &#8212; eprllib: use EnergyPlus as an environment for DRL control</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=57297d31" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=0fdd3db4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '2-GettingStarted';</script>
+    <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/2-GettingStarted.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Key Concepts" href="3-KeyConcepts.html" />
+    <link rel="prev" title="Overview" href="1-Overview.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/eprllib_logo.png" class="logo__image only-light" alt="eprllib: use EnergyPlus as an environment for DRL control - Home"/>
+    <img src="_static/eprllib_logo.png" class="logo__image only-dark pst-js-only" alt="eprllib: use EnergyPlus as an environment for DRL control - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="1-Overview.html">Overview</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3-KeyConcepts.html">Key Concepts</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="UserGuides/UserGuide.html">User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="UserGuides/ActionMappers%20API.html">ActionMapper API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UserGuides/Filters%20API.html">Filters API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UserGuides/Connectors%20API.html">Connectors API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UserGuides/Rewards%20API.html">Rewards API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="UserGuides/Episodes%20API.html">Episodes API</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/IntroductionExamples.html">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="API%20Reference/eprllib.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Environment.html">eprllib.Environment</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Environment.EnvironmentConfig.html">eprllib.Environment.EnvironmentConfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Environment.EnvironmentRunner.html">eprllib.Environment.EnvironmentRunner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Environment.MultiAgentEnvironment.html">eprllib.Environment.MultiAgentEnvironment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Environment.SingleAgentEnvironment.html">eprllib.Environment.SingleAgentEnvironment</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Agents.html">eprllib.Agents</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="API%20Reference/eprllib.Agents.ActionMappers.html">eprllib.Agents.ActionMappers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="API%20Reference/eprllib.Agents.ActionMappers.ActionMapperSpec.html">eprllib.Agents.ActionMappers.ActionMapperSpec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="API%20Reference/eprllib.Agents.ActionMappers.BaseActionMapper.html">eprllib.Agents.ActionMappers.BaseActionMapper</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Agents.ActionSpec.html">eprllib.Agents.ActionSpec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Agents.AgentSpec.html">eprllib.Agents.AgentSpec</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="API%20Reference/eprllib.Agents.Filters.html">eprllib.Agents.Filters</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="API%20Reference/eprllib.Agents.Filters.BaseFilter.html">eprllib.Agents.Filters.BaseFilter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="API%20Reference/eprllib.Agents.Filters.FilterSpec.html">eprllib.Agents.Filters.FilterSpec</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Agents.ObservationSpec.html">eprllib.Agents.ObservationSpec</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="API%20Reference/eprllib.Agents.Rewards.html">eprllib.Agents.Rewards</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="API%20Reference/eprllib.Agents.Rewards.BaseReward.html">eprllib.Agents.Rewards.BaseReward</a></li>
+<li class="toctree-l4"><a class="reference internal" href="API%20Reference/eprllib.Agents.Rewards.RewardSpec.html">eprllib.Agents.Rewards.RewardSpec</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Connectors.html">eprllib.Connectors</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Connectors.BaseConnector.html">eprllib.Connectors.BaseConnector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Connectors.DefaultConnector.html">eprllib.Connectors.DefaultConnector</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="API%20Reference/eprllib.Episodes.html">eprllib.Episodes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Episodes.BaseEpisode.html">eprllib.Episodes.BaseEpisode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="API%20Reference/eprllib.Episodes.DefaultEpisode.html">eprllib.Episodes.DefaultEpisode</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/hermmanhender/eprllib" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/hermmanhender/eprllib/edit/docs//docs/2-GettingStarted.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/hermmanhender/eprllib/issues/new?title=Issue%20on%20page%20%2F2-GettingStarted.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/2-GettingStarted.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Getting Started</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deep-reinforcement-learning-drl">Deep Reinforcement Learning (DRL)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-bridge-between-energyplus-and-rllib">A bridge between EnergyPlus and RLlib</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-simple-experiment-with-eprllib-and-ray-rllib">Running a Simple Experiment with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and <code class="docutils literal notranslate"><span class="pre">ray.rllib</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explanation">Explanation</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
+<p>Understand how <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> is organized is the key to using it effectively! This guide will
+help you get started with using <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> for building control and energy optimization
+through Reinforcement Learning (RL).</p>
+<p><code class="docutils literal notranslate"><span class="pre">eprllib</span></code> leverages RL, a powerful machine learning technique, to develop intelligent
+agents that can interact with building simulations. In RL, agents learn to make decisions
+by interacting with an environment, taking actions, receiving observations, and obtaining
+rewards. This interaction is used to learn an optimal policy, which is a strategy that
+maps observations to actions.</p>
+<p>A scheme of multiple agents interacting with an environment (real or simulated) can be
+visualized in the following diagram, representing a Markov Decision Process (MDP), the
+mathematical framework underlying RL:</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/markov_decision_process.png"><img alt="Markov Decision Process" src="_images/markov_decision_process.png" width="600" />
+</a>
+<figcaption>
+<p><span class="caption-text"><em>Figure 1: Schematic representation of a Markov Decision Process (MDP) in Reinforcement Learning.</em></span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><code class="docutils literal notranslate"><span class="pre">eprllib</span></code> is designed to facilitate the application of RL in building control and energy
+optimization. It provides tools for defining the environment, configuring agents, and integrating
+with powerful RL libraries, like RLlib is.</p>
+<section id="deep-reinforcement-learning-drl">
+<h2>Deep Reinforcement Learning (DRL)<a class="headerlink" href="#deep-reinforcement-learning-drl" title="Link to this heading">#</a></h2>
+<p>During the learning process, the RL algorithm attempts to predict the cumulative reward that the
+agent will receive if it follows a certain policy. This prediction can be represented by a <strong>Value
+function</strong>, denoted as <code class="docutils literal notranslate"><span class="pre">V(obs)</span></code>, or an <strong>Action-Value function</strong>, denoted as <code class="docutils literal notranslate"><span class="pre">Q(obs,</span> <span class="pre">act)</span></code>.</p>
+<p>A modern approach to predicting these <code class="docutils literal notranslate"><span class="pre">V</span></code> or <code class="docutils literal notranslate"><span class="pre">Q</span></code> functions involves using <strong>deep neural networks (DNNs)</strong>
+to approximate these values. When DNNs are used, the methodology is referred to as
+<strong>Deep Reinforcement Learning (DRL)</strong>. In this context, the DNN model is often referred to as the <strong>policy</strong>.</p>
+<p>In essence, the policy is a complex function that, given an observation, outputs the best action to take. At
+the same time, depending on the algorithm, the policy can also output the predicted value of taking that action
+in that observation. A deeper understanding of the specific DRL algorithm you choose to use will help you
+configure the policy and the training process effectively. Coonsult the <a class="reference external" href="https://docs.ray.io/en/latest/rllib/rllib-algorithms.html">algorithm’s documentation of RLlib</a> for more details on how the policy is structured
+and how it learns from the interactions with the environment. Each algorithm has a reference paper that can be
+consulted for a deeper understanding of the learning process and the structure of the policy.</p>
+</section>
+<section id="a-bridge-between-energyplus-and-rllib">
+<h2>A bridge between EnergyPlus and RLlib<a class="headerlink" href="#a-bridge-between-energyplus-and-rllib" title="Link to this heading">#</a></h2>
+<p>The intention of <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> is to connect two powerful tools: <strong>EnergyPlus</strong> and <strong>RLlib</strong>. The aim is to create
+a seamless integration that allows users to leverage the strengths of both tools for building control and energy
+optimization. Also, we hope to use this library as a repository of resources, examples, and best practices for
+applying DRL in the context of building simulations. The modular design of <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> allows for flexibility and
+extensibility, enabling users to customize their environments, agents, and training processes according to their
+specific needs but also to share their configurations and results with the community.</p>
+<ul class="simple">
+<li><p><strong>EnergyPlus</strong> is used to model the building environment. It simulates the building’s
+energy performance and provides the environment with which the RL agent interacts.
+<a class="reference external" href="https://energyplus.net/">EnergyPlus</a></p></li>
+<li><p><strong>RLlib</strong> is a framework for Deep Reinforcement Learning (DRL). <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> uses RLlib to train,
+evaluate, save, and restore policies. <a class="reference external" href="https://docs.ray.io/en/latest/rllib/index.html">RLlib</a></p></li>
+</ul>
+<p>In essence, EnergyPlus provides the simulated world, and RLlib provides the tools to train the
+agent within that world.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="_images/overview.png"><img alt="Overview of eprllib and EnergyPlus interaction" src="_images/overview.png" width="800" />
+</a>
+<figcaption>
+<p><span class="caption-text"><em>Figure 2: Overview of eprllib and EnergyPlus interaction.</em></span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><code class="docutils literal notranslate"><span class="pre">eprllib</span></code> communicates with EnergyPlus through its Python API. This allows <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> to:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Read sensor data from the EnergyPlus simulation.</p></li>
+<li><p>Set actuator values in the EnergyPlus simulation.</p></li>
+<li><p>Control the simulation flow (e.g., advance time steps).</p></li>
+</ul>
+</div></blockquote>
+<p>DELETE ALL AFTER THIS LINE</p>
+</section>
+<section id="running-a-simple-experiment-with-eprllib-and-ray-rllib">
+<h2>Running a Simple Experiment with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and <code class="docutils literal notranslate"><span class="pre">ray.rllib</span></code><a class="headerlink" href="#running-a-simple-experiment-with-eprllib-and-ray-rllib" title="Link to this heading">#</a></h2>
+<p>Now that you have a basic understanding of the concepts, let’s walk through a simple experiment using
+<code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and RLlib. This example will demonstrate the core steps involved in setting up and training an agent.</p>
+<p><strong>Steps:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Define the Environment:</strong> Use EnergyPlus to create or load a building model that will serve as the environment for the RL agent.</p></li>
+<li><p><strong>Define the Agent:</strong> Specify the agent’s actions, observations, and reward structure. This is done using <code class="docutils literal notranslate"><span class="pre">eprllib</span></code>’s configuration tools.</p></li>
+<li><p><strong>Configure the RL Algorithm:</strong> Choose an appropriate RL algorithm from RLlib and configure its hyperparameters.</p></li>
+<li><p><strong>Train the Agent:</strong> Run the training process, allowing the agent to interact with the EnergyPlus environment and learn an optimal policy.</p></li>
+<li><p><strong>Evaluate the Agent:</strong> Assess the performance of the trained agent in the EnergyPlus environment.</p></li>
+<li><p><strong>Save and Restore the Agent:</strong> Save the trained agent to use it in the future.</p></li>
+</ol>
+<p><strong>Example:</strong></p>
+<p>The following code provides a basic outline of how to set up and train an agent using <code class="docutils literal notranslate"><span class="pre">eprllib</span></code>. This example
+uses a simplified environment and agent configuration for clarity.</p>
+<p>We start defining an <code class="docutils literal notranslate"><span class="pre">eprllib.Environment.EnvironmentConfig</span></code> object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Environment.EnvironmentConfig</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvironmentConfig</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">eprllib_config</span> <span class="o">=</span> <span class="n">EnvironmentConfig</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>After that, we need to configurate it. A first step could be configurate the general aspects
+of the environment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">eprllib_config</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
+<span class="linenos">2</span>    <span class="n">epjson_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/model.epJSON&quot;</span><span class="p">,</span>  <span class="c1"># Replace with your EPJSON file.</span>
+<span class="linenos">3</span>    <span class="n">epw_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/weather.epw&quot;</span><span class="p">,</span>  <span class="c1"># Replace with your EPW file.</span>
+<span class="linenos">4</span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/output/folder&quot;</span><span class="p">,</span> <span class="c1"># Replace with your folder path.</span>
+<span class="linenos">5</span>    <span class="n">ep_terminal_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">6</span>    <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="linenos">7</span>    <span class="n">evaluation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once we have defined the paths necessary to work with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and all the dependencies
+like EnergyPlus, we can define the agents configurations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Import Specs to facilitate the configuration of the agent.</span>
+<span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.AgentSpec</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentSpec</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.ObservationSpec</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObservationSpec</span>
+<span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.ActionSpec</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActionSpec</span>
+<span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.Rewards.RewardSpec</span><span class="w"> </span><span class="kn">import</span> <span class="n">RewardSpec</span>
+<span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.ActionMappers.ActionMapperSpec</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActionMapperSpec</span>
+<span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.Filters.FilterSpec</span><span class="w"> </span><span class="kn">import</span> <span class="n">FilterSpec</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1"># Here you must to provide with custom implementations, but for the sake of simplicity we will use the base classes.</span>
+<span class="linenos">10</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.ActionMappers.BaseActionMapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseActionMapper</span>
+<span class="linenos">11</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.Filters.BaseFilter</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseFilter</span>
+<span class="linenos">12</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Agents.Rewards.BaseReward</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseReward</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="n">eprllib_config</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
+<span class="linenos">15</span>    <span class="n">agents_config</span><span class="o">=</span><span class="p">{</span>
+<span class="linenos">16</span>        <span class="c1"># Here we will configurate only one agent, but you can include more.</span>
+<span class="linenos">17</span>        <span class="s2">&quot;agent_1&quot;</span><span class="p">:</span> <span class="n">AgentSpec</span><span class="p">(</span>
+<span class="linenos">18</span>            <span class="c1"># Observation variables definition.</span>
+<span class="linenos">19</span>            <span class="n">observation</span><span class="o">=</span><span class="n">ObservationSpec</span><span class="p">(</span>
+<span class="linenos">20</span>                <span class="n">variables</span><span class="o">=</span><span class="p">[</span>
+<span class="linenos">21</span>                    <span class="p">(</span><span class="s2">&quot;Site Outdoor Air Drybulb Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Environment&quot;</span><span class="p">),</span>
+<span class="linenos">22</span>                    <span class="p">(</span><span class="s2">&quot;Zone Mean Air Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone&quot;</span><span class="p">),</span>
+<span class="linenos">23</span>                <span class="p">],</span>
+<span class="linenos">24</span>                <span class="n">meters</span><span class="o">=</span><span class="p">[</span>
+<span class="linenos">25</span>                    <span class="s2">&quot;Electricity:Building&quot;</span><span class="p">,</span>
+<span class="linenos">26</span>                <span class="p">],</span>
+<span class="linenos">27</span>            <span class="p">),</span>
+<span class="linenos">28</span>            <span class="c1"># Actuators that the agent can control.</span>
+<span class="linenos">29</span>            <span class="n">action</span><span class="o">=</span><span class="n">ActionSpec</span><span class="p">(</span>
+<span class="linenos">30</span>                <span class="n">actuators</span><span class="o">=</span><span class="p">{</span>
+<span class="linenos">31</span>                    <span class="s2">&quot;Heating Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;heating_setpoint&quot;</span><span class="p">),</span>
+<span class="linenos">32</span>                    <span class="s2">&quot;Cooling Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;cooling_setpoint&quot;</span><span class="p">),</span>
+<span class="linenos">33</span>                    <span class="s2">&quot;Availability Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_OnOff&quot;</span><span class="p">),</span>
+<span class="linenos">34</span>                <span class="p">},</span>
+<span class="linenos">35</span>            <span class="p">),</span>
+<span class="linenos">36</span>            <span class="c1"># Filter configuration.</span>
+<span class="linenos">37</span>            <span class="nb">filter</span><span class="o">=</span><span class="n">FilterSpec</span><span class="p">(</span>
+<span class="linenos">38</span>                <span class="n">filter_fn</span><span class="o">=</span><span class="n">BaseFilter</span><span class="p">,</span>
+<span class="linenos">39</span>                <span class="n">filter_fn_config</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos">40</span>            <span class="p">),</span>
+<span class="linenos">41</span>            <span class="c1"># Trigger configuration.</span>
+<span class="linenos">42</span>            <span class="n">action_mapper</span><span class="o">=</span><span class="n">ActionMapperSpec</span><span class="p">(</span>
+<span class="linenos">43</span>                <span class="n">action_mapper</span><span class="o">=</span><span class="n">BaseActionMapper</span><span class="p">,</span>
+<span class="linenos">44</span>                <span class="n">action_mapper_config</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos">45</span>            <span class="p">),</span>
+<span class="linenos">46</span>            <span class="c1"># Reward configuration.</span>
+<span class="linenos">47</span>            <span class="n">reward</span><span class="o">=</span><span class="n">RewardSpec</span><span class="p">(</span>
+<span class="linenos">48</span>                <span class="n">reward_fn</span><span class="o">=</span><span class="n">BaseReward</span><span class="p">,</span>
+<span class="linenos">49</span>                <span class="n">reward_fn_config</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos">50</span>            <span class="p">),</span>
+<span class="linenos">51</span>        <span class="p">),</span>
+<span class="linenos">52</span>    <span class="p">}</span>
+<span class="linenos">53</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we have an agent configured. We need to define the <code class="docutils literal notranslate"><span class="pre">Connectors</span></code> class that we will use.</p>
+<p>&gt; .. note:: The <code class="docutils literal notranslate"><span class="pre">Connectors</span></code> class is a fundamental component of the agent’s behavior,
+&gt;           ands it defines how agents interact with each other. It is shared by all agents in the
+&gt;           environment, which is why it is explained in a separate section. In the current version
+&gt;           of <code class="docutils literal notranslate"><span class="pre">eprllib</span></code>, the <code class="docutils literal notranslate"><span class="pre">Connectors</span></code> class also provides a method to index the names of
+&gt;           the agents’ observation parameters. This means that it must be defined in concordance
+&gt;           with all the <code class="docutils literal notranslate"><span class="pre">Filter</span></code> functions of all agents.</p>
+<p>For the sake of simplicity, we will use the base class of the <code class="docutils literal notranslate"><span class="pre">Connectors</span></code>. You need to provide
+your own implementation of the <code class="docutils literal notranslate"><span class="pre">Connectors</span></code> class to define how the agents interact with each
+other in your specific use case and how is related with the <code class="docutils literal notranslate"><span class="pre">Filter</span></code> configured.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Connectors.BaseConnector</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseConnector</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">eprllib_config</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+<span class="linenos">4</span>    <span class="n">connector_fn</span><span class="o">=</span><span class="n">BaseConnector</span><span class="p">,</span>
+<span class="linenos">5</span>    <span class="n">connector_fn_config</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The model can be take as is configured from EnergyPlus or you can apply an <code class="docutils literal notranslate"><span class="pre">Episodes</span></code> class to
+change the behavior of the environment between episodes. If you want to use the model as is, you
+can use the <code class="docutils literal notranslate"><span class="pre">DefaultEpisode</span></code> class that comes with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Episodes.DefaultEpisode</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultEpisode</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">eprllib_config</span><span class="o">.</span><span class="n">episodes</span><span class="p">(</span>
+<span class="linenos">4</span>    <span class="n">episode_fn</span> <span class="o">=</span> <span class="n">DefaultEpisode</span><span class="p">,</span>
+<span class="linenos">5</span>    <span class="n">episode_fn_config</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="linenos">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we build the configuration of the environment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">env_config</span> <span class="o">=</span> <span class="n">eprllib_config</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Finally, you can register the environment and introduce it in the configuration of RLlib. To register
+the environment we use the <code class="docutils literal notranslate"><span class="pre">ray.tune.register_env</span></code> function. Consider that before register the
+environment the ray serve must to be inicialized.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Environment.Environment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Environment</span>
+<span class="linenos">2</span><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<span class="linenos">3</span><span class="kn">from</span><span class="w"> </span><span class="nn">ray.tune</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_env</span>
+<span class="linenos">4</span>
+<span class="linenos">5</span><span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<span class="linenos">6</span>
+<span class="linenos">7</span><span class="n">register_env</span><span class="p">(</span><span class="s2">&quot;eprllib_env&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>In the configuration of <code class="docutils literal notranslate"><span class="pre">rllib</span></code> you need to configurate the environment and all the others parameters
+that your algorithm need. Here we show how to configurate the environment in a PPO algorithm.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">ray.rllib.algorithms.ppo.ppo</span><span class="w"> </span><span class="kn">import</span> <span class="n">PPOConfig</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="n">config</span> <span class="o">=</span> <span class="n">ppo</span><span class="o">.</span><span class="n">PPOConfig</span><span class="p">()</span>
+<span class="linenos"> 4</span><span class="c1"># Configure the PPO algorithm</span>
+<span class="linenos"> 5</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">environment</span><span class="p">(</span>
+<span class="linenos"> 6</span>    <span class="n">env</span><span class="o">=</span><span class="s2">&quot;eprllib_env&quot;</span><span class="p">,</span> <span class="c1"># Use the registered environment name</span>
+<span class="linenos"> 7</span>    <span class="n">env_config</span><span class="o">=</span><span class="n">env_config</span> <span class="c1"># Here is the builded configuration of the environment with eprllib.</span>
+<span class="linenos"> 8</span>    <span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="c1"># eprllib is a multiagent environment, for that reason you need to configurate the multi_agent policy.</span>
+<span class="linenos">11</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">multi_agent</span><span class="p">(</span>
+<span class="linenos">12</span>    <span class="n">policies</span><span class="o">=</span><span class="p">{</span>
+<span class="linenos">13</span>        <span class="s1">&#39;single_policy&#39;</span><span class="p">:</span> <span class="kc">None</span>
+<span class="linenos">14</span>    <span class="p">},</span>
+<span class="linenos">15</span>    <span class="n">policy_mapping_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">worker</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="s1">&#39;single_policy&#39;</span><span class="p">,</span>
+<span class="linenos">16</span><span class="p">)</span>
+<span class="linenos">17</span><span class="c1"># Build the algorithm.</span>
+<span class="linenos">18</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>With the algorithm builded, you can now train it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">ray.tune.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">pretty_print</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="c1"># Train the agent for a few iterations</span>
+<span class="linenos"> 4</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="linenos"> 5</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="linenos"> 6</span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training iteration </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+<span class="linenos"> 7</span>    <span class="nb">print</span><span class="p">(</span><span class="n">pretty_print</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1"># Save the trained agent</span>
+<span class="linenos">10</span><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="linenos">11</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checkpoint saved to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="c1"># Restore the agent from the checkpoint</span>
+<span class="linenos">14</span><span class="n">algorithm</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
+<span class="linenos">15</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checkpoint restored from </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span><span class="c1"># --- End ---</span>
+<span class="linenos">18</span><span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="explanation">
+<h3>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Environment Configuration:</strong></p>
+<ul class="simple">
+<li><p>We start by creating an <code class="docutils literal notranslate"><span class="pre">EnvironmentConfig</span></code> object. This object holds all the information about the
+EnergyPlus environment, such as the EPJSON file, the EPW file, and the output path.</p></li>
+<li><p>We use the <code class="docutils literal notranslate"><span class="pre">eprllib_config.generals()</span></code> method to set these general parameters.</p></li>
+<li><p>You’ll need to replace the placeholder paths with your actual file paths.</p></li>
+</ul>
+</li>
+<li><p><strong>Agent Configuration:</strong></p>
+<ul class="simple">
+<li><p>We define the agent’s behavior using <code class="docutils literal notranslate"><span class="pre">eprllib_config.agents()</span></code>.</p></li>
+<li><p>We specify the agent’s <strong>observations</strong> (what it can see), <strong>actions</strong> (what it can do), <strong>rewards</strong>
+(what it’s trying to maximize), <strong>filters</strong> and <strong>action mappers</strong>.</p></li>
+<li><p>In this simplified example, the agent observes the outdoor air temperature and the zone mean air temperature.</p></li>
+<li><p>The agent can control the heating and cooling setpoints and the HVAC on/off.</p></li>
+<li><p>The reward function is a placeholder in this example.</p></li>
+<li><p>The filter and action mapper are defined.</p></li>
+</ul>
+</li>
+<li><p><strong>Episode Configuration:</strong></p>
+<ul class="simple">
+<li><p>We define the episode configuration using <code class="docutils literal notranslate"><span class="pre">eprllib_config.episodes()</span></code>.</p></li>
+<li><p>In this example, the episode function is a placeholder.</p></li>
+</ul>
+</li>
+<li><p><strong>RLlib Configuration:</strong></p>
+<ul class="simple">
+<li><p>We initialize Ray, which is the framework that RLlib uses for distributed computing.</p></li>
+<li><p>We register our environment with Ray using <code class="docutils literal notranslate"><span class="pre">register_env</span></code>.</p></li>
+<li><p>We build the environment configuration using <code class="docutils literal notranslate"><span class="pre">eprllib_config.build()</span></code>.</p></li>
+<li><p>We configure the PPO algorithm using <code class="docutils literal notranslate"><span class="pre">ppo.PPOConfig()</span></code>.</p></li>
+<li><p>We specify the environment, the framework (PyTorch), and the number of rollout workers (0 for simplicity).</p></li>
+<li><p>We define a simple neural network model with two hidden layers of 64 units each.</p></li>
+<li><p>We define a single policy.</p></li>
+<li><p>We build the algorithm using <code class="docutils literal notranslate"><span class="pre">config.build()</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Training:</strong></p>
+<ul class="simple">
+<li><p>We train the agent for a few iterations using a <code class="docutils literal notranslate"><span class="pre">for</span></code> loop and <code class="docutils literal notranslate"><span class="pre">algorithm.train()</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">pretty_print()</span></code> function is used to display the training results.</p></li>
+</ul>
+</li>
+<li><p><strong>Save and Restore:</strong></p>
+<ul class="simple">
+<li><p>We save the trained agent to a checkpoint using <code class="docutils literal notranslate"><span class="pre">algorithm.save()</span></code>.</p></li>
+<li><p>We restore the agent from the checkpoint using <code class="docutils literal notranslate"><span class="pre">algorithm.restore()</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>End:</strong></p>
+<ul class="simple">
+<li><p>We shutdown the ray.</p></li>
+</ul>
+</li>
+</ol>
+<p>This example provides a basic framework for training an agent with eprllib and RLlib. You can expand upon this example by adding more complex environment configurations, agent behaviors, and reward functions.</p>
+<p><strong>Next Steps:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Replace Placeholders:</strong> Replace the placeholder file paths and reward function with your actual values.</p></li>
+<li><p><strong>Run the Code:</strong> Run the code to see the agent training.</p></li>
+<li><p><strong>Experiment:</strong> Modify the code to explore different environment configurations, agent behaviors, and hyperparameters.</p></li>
+</ol>
+<p>This simplified example should give you a good starting point for using eprllib and RLlib.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="1-Overview.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Overview</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="3-KeyConcepts.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Key Concepts</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deep-reinforcement-learning-drl">Deep Reinforcement Learning (DRL)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-bridge-between-energyplus-and-rllib">A bridge between EnergyPlus and RLlib</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-simple-experiment-with-eprllib-and-ray-rllib">Running a Simple Experiment with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and <code class="docutils literal notranslate"><span class="pre">ray.rllib</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explanation">Explanation</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Germán Rodolfo Henderson
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2026, Germán Rodolfo Henderson.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
