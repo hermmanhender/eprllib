@@ -26,12 +26,13 @@ setup(
           "numpy==2.3.5",
           "pandas==3.0.1",
           "pytest==8.3.5",
-          "ray==2.55.1",
+          "ray[all]==2.55.1",
           "tensorflow==2.21.0",
           "torch==2.10.0",
           "seaborn==0.13.2",
           "shap==0.51.0",
-          "pyarrow >= 24.0.0"
+          "pyarrow >= 24.0.0",
+          "pydantic >= 2.13.3"
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # Escoje entre "3 - Alpha", "4 - Beta" or "5 - Production/Stable" como el estado actual de tu librería
