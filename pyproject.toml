@@ -1,11 +1,11 @@
 [build-system]
-requires = ["hatchling==1.22.0"]
+requires = ["hatchling==1.22.0", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
 
 [project]
 name = "eprllib"
 # La versión se obtiene dinámicamente del archivo version.py
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 metadata = "2.2"
 authors = [
   { name="Germán Rodolfo Henderson"},
@@ -27,6 +27,9 @@ license = {file = "LICENSE"}
 "Documentation" = "https://hermmanhender.github.io/eprllib/"
 "GitHub Repository" = "https://github.com/hermmanhender/eprllib"
 "Bug Tracker" = "https://github.com/hermmanhender/eprllib/issues"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
 
 [tool.hatch.version]
 path = "src/eprllib/version.py"
