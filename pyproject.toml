@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "eprllib"
 # La versión se obtiene dinámicamente del archivo version.py
 dynamic = ["version", "dependencies"]
-metadata = "2.2"
+
 authors = [
   { name="Germán Rodolfo Henderson"},
 ]
