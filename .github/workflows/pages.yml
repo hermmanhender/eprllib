@@ -54,6 +54,7 @@ jobs:
         run: |
           mkdir -p redirect_page
           echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=./latest/index.html" /></head><body></body></html>' > redirect_page/index.html
+          touch redirect_page/.nojekyll
           
       - name: Deploy Root Redirect
         uses: JamesIves/github-pages-deploy-action@v4
