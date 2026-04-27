@@ -25,7 +25,8 @@ setup(
           "gymnasium >=0.28.1",
           "torch >=2.5.1",
           "shap >=0.46.0",
-          "matplotlib >=3.8.0"
+          "matplotlib >=3.8.0",
+          "pyarrow >= 24.0.0"
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # Escoje entre "3 - Alpha", "4 - Beta" or "5 - Production/Stable" como el estado actual de tu librería

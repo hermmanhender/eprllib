@@ -12,7 +12,7 @@ authors = [
 ]
 description = "Building control trought DRL."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -23,7 +23,8 @@ dependencies = [
     "gymnasium >=0.28.1",
     "torch >=2.5.1",
     "shap >=0.46.0",
-    "matplotlib >=3.8.0"
+    "matplotlib >=3.8.0",
+    "pyarrow >= 24.0.0"
 ]
 license = {file = "LICENSE"}
 
