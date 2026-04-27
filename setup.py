@@ -5,6 +5,13 @@ import os
 # Add the src directory to the path so we can import the version
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 from eprllib.version import __version__
+
+# Read dependencies from requirements.txt
+def get_requirements():
+    req_file = os.path.join(os.path.dirname(__file__), 'requirements.txt')
+    with open(req_file, 'r') as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
 setup(
   name = 'eprllib',         # Nombre de la carpeta (MiLibreria)
   packages = ['eprllib'],   # El mismo que en "name"
@@ -20,20 +27,7 @@ setup(
   download_url = f'https://github.com/hermmanhender/eprllib/dist/eprllib-{__version__}.tar.gz',    # URL de descarga con versión dinámica
 
   keywords = ['RLlib', 'DRL', 'EnergyPlus'],   # Palabras que describan tu librería
-  install_requires=[            # Los paquetes que usas en tu librería.
-          "gymnasium==1.2.2",
-          "matplotlib==3.10.8",
-          "numpy==2.3.5",
-          "pandas==3.0.1",
-          "pytest==8.3.5",
-          "ray[all]==2.55.1",
-          "tensorflow==2.21.0",
-          "torch==2.10.0",
-          "seaborn==0.13.2",
-          "shap==0.51.0",
-          "pyarrow >= 24.0.0",
-          "pydantic >= 2.13.3"
-      ],
+  install_requires=get_requirements(),        # Leer desde requirements.txt
   classifiers=[
     'Development Status :: 3 - Alpha',      # Escoje entre "3 - Alpha", "4 - Beta" or "5 - Production/Stable" como el estado actual de tu librería
     'Intended Audience :: Developers',      # Define tu audiencia
