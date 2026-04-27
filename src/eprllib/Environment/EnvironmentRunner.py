@@ -115,20 +115,36 @@ class EnvironmentRunner:
         self.actuator_config = actuator_config
         self.ep_worker_path = ep_worker_path
 
-        if self.ep_worker_path is None:
-            msg = f"EnvironmentRunner: WARNING: self.ep_worker_path is None. Try to have the path..."
+        self.ep_worker_path = ep_worker_path
+
+        # 1. Validación robusta: Detecta tanto 'None' como strings vacíos '""'
+        if not self.ep_worker_path:
+            msg = f"EnvironmentRunner: WARNING: ep_worker_path is missing. Resolving dynamically..."
             logger.warning(msg)
-            # EnergyPlus Python API path adding
             try:
                 self.ep_worker_path = EP_API_add_path(self.ep_version)
-                logger.warning(f"EnvironmentRunner: The self.ep_worker_path was created as {self.ep_worker_path}.")
+                logger.warning(f"EnvironmentRunner: The ep_worker_path was created as {self.ep_worker_path}.")
             except RuntimeError as e:
                 logger.error(f"EnvironmentRunner: Failed to add EnergyPlus API path: {e}")
                 exit(1)
         
-        if self.ep_worker_path and self.ep_worker_path not in sys.path:
-            sys.path.insert(0, self.ep_worker_path)
-        
+        if self.ep_worker_path:
+            # 2. Inyectar en sys.path para que Python encuentre la carpeta 'pyenergyplus'
+            if self.ep_worker_path not in sys.path:
+                sys.path.insert(0, self.ep_worker_path)
+            
+            # 3. Inyectar en el entorno del Worker para resolver dependencias secundarias
+            os.environ["PYTHONPATH"] = f"{self.ep_worker_path}{os.pathsep}{os.environ.get('PYTHONPATH', '')}"
+            os.environ["PATH"] = f"{self.ep_worker_path}{os.pathsep}{os.environ.get('PATH', '')}"
+            
+            # 4. Solución estricta para Python >= 3.8 en Windows (Evita el "DLL load failed")
+            if hasattr(os, 'add_dll_directory'):
+                try:
+                    os.add_dll_directory(self.ep_worker_path)
+                except Exception as e:
+                    logger.debug(f"EnvironmentRunner: Could not explicitly add DLL directory: {e}")
+
+        # Importación final
         from pyenergyplus.api import EnergyPlusAPI
         self.api = EnergyPlusAPI()
         
