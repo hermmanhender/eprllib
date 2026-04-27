@@ -3,7 +3,7 @@ Version Management
 =====================
 """
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 EP_VERSION = "24-2-0"
 

@@ -423,15 +423,20 @@ class SingleAgentEnvironment(gym.Env): # type: ignore
         self.last_obs = obs
         self.last_infos = infos
         
-        reward: SupportsFloat = 0.0
+        # Extraer los datos del único agente para Gymnasium
+        final_obs = None
+        final_reward = 0.0
+        final_infos = {}
+
         for agent in self.agents:
-            reward = reward_dict[agent]
-            infos = self.last_infos[agent]
+            final_obs = obs[agent]          # <--- Extraemos el array numpy del dict
+            final_reward = reward_dict[agent]
+            final_infos = self.last_infos[agent]
         
-        # increment the timestep in 1.
         self.timestep += 1
         
-        return obs, reward, self.terminateds, self.truncateds, infos
+        # Devolvemos el array directamente
+        return final_obs, final_reward, self.terminateds, self.truncateds, final_infos
 
     def close(self):
         """
