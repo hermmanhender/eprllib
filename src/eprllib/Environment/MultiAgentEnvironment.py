@@ -322,6 +322,9 @@ class MultiAgentEnvironment(MultiAgentEnv):
             Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]: 
                 Observations, rewards, done flags, truncated flags, and additional info for each agent.
         """
+        # increment the timestep in 1.
+        self.timestep += 1
+        
         # ===CONTROLS=== #
         # terminated variable is used to determine the end of a episode. Is stablished as False until the
         # environment present a terminal state.
@@ -419,9 +422,6 @@ class MultiAgentEnvironment(MultiAgentEnv):
         # Upgrade last observation and infos dicts.
         self.last_obs = obs
         self.last_infos = infos
-        
-        # increment the timestep in 1.
-        self.timestep += 1
         
         return obs, reward_dict, terminated, truncated, infos
 

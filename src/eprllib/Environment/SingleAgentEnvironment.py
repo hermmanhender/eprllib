@@ -324,12 +324,15 @@ class SingleAgentEnvironment(gym.Env): # type: ignore
         The core method where agents take actions, and the environment updates its state accordingly.
 
         Args:
-            actions (Dict[str, Any]): Actions taken by each agent.
+            action (Any): Action taken by the agent.
 
         Returns:
             Tuple[Dict[str, Any], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Any]]: 
                 Observations, rewards, done flags, truncated flags, and additional info for each agent.
         """
+        # increment the timestep in 1.
+        self.timestep += 1
+        
         actions: Dict[str, SupportsFloat] = {agent: action for agent in self.agents}
         # ===CONTROLS=== #
         
@@ -432,8 +435,6 @@ class SingleAgentEnvironment(gym.Env): # type: ignore
             final_obs = obs[agent]          # <--- Extraemos el array numpy del dict
             final_reward = reward_dict[agent]
             final_infos = self.last_infos[agent]
-        
-        self.timestep += 1
         
         # Devolvemos el array directamente
         return final_obs, final_reward, self.terminateds, self.truncateds, final_infos
