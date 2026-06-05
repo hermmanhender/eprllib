@@ -136,8 +136,11 @@ class EnvironmentRunner:
                 sys.path.insert(0, self.ep_worker_path)
             
             # 3. Inyectar en el entorno del Worker para resolver dependencias secundarias
-            os.environ["PYTHONPATH"] = f"{self.ep_worker_path}{os.pathsep}{os.environ.get('PYTHONPATH', '')}"
-            os.environ["PATH"] = f"{self.ep_worker_path}{os.pathsep}{os.environ.get('PATH', '')}"
+            if self.ep_worker_path not in os.environ["PYTHONPATH"]:
+                os.environ["PYTHONPATH"] = f"{self.ep_worker_path}{os.pathsep}{os.environ.get('PYTHONPATH', '')}"
+            
+            if self.ep_worker_path not in os.environ["PATH"]:
+                os.environ["PATH"] = f"{self.ep_worker_path}{os.pathsep}{os.environ.get('PATH', '')}"
             
             # 4. Solución estricta para Python >= 3.8 en Windows (Evita el "DLL load failed")
             if hasattr(os, 'add_dll_directory'):
