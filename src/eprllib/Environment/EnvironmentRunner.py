@@ -9,6 +9,7 @@ import os
 import sys
 import threading
 import time
+import json
 import numpy as np
 from queue import Queue
 from ctypes import c_void_p
@@ -70,6 +71,7 @@ class EnvironmentRunner:
     energyplus_exec_thread_timeout: int = 1
     ep_worker_path: Optional[str]
     ep_version: str = EP_VERSION
+    episode_folder_path: str = ""
     
     def __init__(
         self,
@@ -170,6 +172,7 @@ class EnvironmentRunner:
         self.occupancy_next_timestep: float = 0.
         self.num_time_steps_in_hour: int = 0
         self.energyplus_exec_thread_timeout: int = 1
+        self.episode_folder_path: str = ""
         
         # create a variable to save the obs dict key to use in posprocess
         # self.obs_keys = []
@@ -216,11 +219,17 @@ class EnvironmentRunner:
         self.internal_variables_and_handles.update({
                 "internal_actuators": [int_actuators, int_actuators_handles]
             })
-    
+
+        # Read the RunPeriod from the epJSON file.
+        with open(self.generals_config['epjson_path']) as file:
+            epJSON_object: Dict[str,Any] = json.load(file)
+        self.end_month: int = epJSON_object['RunPeriod']['Run Period 1']['end_month']
+        self.end_day: int = epJSON_object['RunPeriod']['Run Period 1']['end_day_of_month']
+        
+        
     def progress_handler(self, progress: int) -> None:
-        # print(f"Simulation progress: {progress}%")
-        if progress >= 99:
-            self.is_last_timestep = True
+        if self.generals_config['ep_terminal_output']:
+            print(f"Simulation progress: {progress}%")
             
     def start(self) -> None:
         """
@@ -322,6 +331,33 @@ class EnvironmentRunner:
             self.is_last_timestep
         )
         
+        # Check if it is the last time step for the simulation.
+        # Fisrt: get the simulation time variables
+        current_month = self.api.exchange.month(state_argument)
+        current_day = self.api.exchange.day_of_month(state_argument)
+        current_hour = self.api.exchange.hour(state_argument) 
+        current_ts = self.api.exchange.zone_time_step_number(state_argument)
+        ts_per_hour = self.api.exchange.num_time_steps_in_hour(state_argument)
+        
+        # Check if the last time step of the day was reached.
+        is_last_hour = (current_hour == 23)
+        is_last_ts = (current_ts == ts_per_hour)
+        is_last_timestep_of_day = is_last_hour and is_last_ts
+        # Check if the last day of the simulation was reached.
+        is_last_day = (current_month == self.end_month) and (current_day == self.end_day)
+        # Check if both conditions were reached.
+        if is_last_day and is_last_timestep_of_day:
+             self.is_last_timestep = True
+        
+        # Add flag for las_timestep into infos dict
+        for agent in self.agents:
+            # Asegurarnos de que el agente exista en el diccionario
+            if agent not in top_level_agents_infos:
+                top_level_agents_infos[agent] = {}
+            top_level_agents_infos[agent].update({
+                "is_final_timestep": self.is_last_timestep
+                })
+            
         # Set the agents observation and infos to communicate with the EPEnv.
         self.obs_queue.put(top_level_agents_obs)
         self.obs_event.set()
@@ -348,7 +384,21 @@ class EnvironmentRunner:
                     self.infos,
                     goals
                 )
-            
+
+                # Check if the last time step of the day was reached.
+                is_last_hour = (current_hour == 23)
+                is_last_ts = (current_ts == ts_per_hour)
+                is_last_timestep_of_day = is_last_hour and is_last_ts
+                # Check if the last day of the simulation was reached.
+                is_last_day = (current_month == self.end_month) and (current_day == self.end_day)
+                # Check if both conditions were reached.
+                if is_last_day and is_last_timestep_of_day:
+                    self.is_last_timestep = True
+             
+                # Add flag for las_timestep into infos dict
+                for agent in actions.keys():
+                    top_level_agents_infos[agent].update({"is_final_timestep": self.is_last_timestep})
+                    
                 # Set the agents observation and infos to communicate with the EPEnv.
                 self.obs_queue.put(low_level_agents_obs)
                 self.obs_event.set()
@@ -1004,11 +1054,12 @@ class EnvironmentRunner:
             List[str]: List of arguments to pass to EnergyPlusEnv.
         """
         eplus_args: List[str|bytes] = ["-r"] if self.generals_config.get("csv", False) else []
+        self.episode_folder_path: str = f"{self.generals_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}" if not self.generals_config['evaluation'] else f"{self.generals_config['output_path']}/evaluation-episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}"
         eplus_args += [
             "-w",
             self.generals_config["epw_path"],
             "-d",
-            f"{self.generals_config['output_path']}/episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}" if not self.generals_config['evaluation'] else f"{self.generals_config['output_path']}/evaluation-episode-{self.episode:08}-{os.getpid():05}-{self.unique_id}",
+            self.episode_folder_path,
             self.generals_config["epjson_path"]
         ]
         return eplus_args
