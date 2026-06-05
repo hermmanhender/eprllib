@@ -185,9 +185,11 @@ class MultiAgentEnvironment(MultiAgentEnv):
         # variable for the registry of the episode number.
         self.episode = -1
         self.timestep = 0
-        self.terminateds = False
+        self.terminateds = True
         self.truncateds = False
         self.env_config['num_time_steps_in_hour'] = 0
+        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: 0
+        self.cut_episode_len: int = self.env_config.get('cut_episode_len', 0)
         # dict to save the last observation and infos in the environment.
         self.last_obs: Dict[str, Any] = {agent: None for agent in self.agents}
         self.last_infos: Dict[str, Any] = {agent: {} for agent in self.agents}
@@ -227,7 +229,7 @@ class MultiAgentEnvironment(MultiAgentEnv):
         # stablish the timestep counting in zero.
         self.timestep = 0
         # Condition of truncated episode
-        if not self.truncateds:
+        if self.terminateds:
             # Condition implemented to restart a new epsiode when simulation is completed and 
             # EnergyPlus Runner is already inicialized.
             if self.runner is not None:
@@ -330,17 +332,15 @@ class MultiAgentEnvironment(MultiAgentEnv):
         # environment present a terminal state.
         terminated: Dict[str, bool] = {}
         truncated: Dict[str, bool] = {}
-        # Truncate the simulation RunPeriod into shorter episodes defined in days. Default: 0
-        cut_episode_len: int = self.env_config['cut_episode_len']
+        
         if self.env_config["evaluation"]:
             self.truncateds = False
-        elif cut_episode_len == 0:
+        elif self.cut_episode_len == 0:
             self.truncateds = False
         else:
-            # cut_episode_len_timesteps = cut_episode_len * 24 * self.env_config['num_time_steps_in_hour']
-            if self.timestep % cut_episode_len == 0:
+            if self.timestep % self.cut_episode_len == 0:
                 self.truncateds = True
-                logger.debug(f"Environment: Episode truncated after {cut_episode_len} timesteps.")
+                logger.debug(f"Environment: Episode truncated after {self.cut_episode_len} timesteps.")
         # timeout is set to 10s to handle the time of calculation of EnergyPlus simulation.
         # timeout value can be increased if EnergyPlus timestep takes longer.
         timeout = self.env_config["timeout"]
@@ -379,6 +379,11 @@ class MultiAgentEnvironment(MultiAgentEnv):
                 self.runner.infos_event.wait(timeout=timeout)
                 infos = self.infos_queue.get(timeout=timeout)
                 
+                for agent in self.agents:
+                    if infos[agent].get("is_final_timestep", False):
+                        self.terminateds = True
+                        break
+                    
                 obs: Dict[str, Any] = {}
                 for agent in self.agents:
                     obs[agent] = current_obs[agent]
@@ -451,4 +456,11 @@ class MultiAgentEnvironment(MultiAgentEnv):
     
     def get_default_config(cls) -> EnvironmentConfig: # type: ignore
         return EnvironmentConfig()
+    
+    def get_episode_folder_path(self) -> str:
+        episode_folder_path = self.runner.__getattribute__("episode_folder_path")
+        
+        assert type(episode_folder_path) == str, f"SimpleAgentEnvironment: The attribute type for 'episode_folder_path' is not 'str' but '{type(episode_folder_path)}'."
+        
+        return episode_folder_path
     
