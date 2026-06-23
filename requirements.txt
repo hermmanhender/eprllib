@@ -4,7 +4,7 @@ numpy==2.3.5
 pandas==2.3.3
 pytest==9.0.3
 ray[all]==2.55.1
-tensorflow==2.15.1
+tensorflow==2.21.0
 torch==2.12.0
 seaborn==0.13.2
 pyarrow==23.0.1
