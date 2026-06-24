@@ -9,8 +9,8 @@ valid path is found, it adds it to `sys.path` for use by eprllib.
 
 from typing import Optional
 import sys
-from eprllib.Utils.logger import logger
-from eprllib.version import ep_version_list
+from .logger import logger
+from .. import ep_version_list
 
 
 def EP_API_add_path(path: Optional[str] = None) -> str:

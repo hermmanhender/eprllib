@@ -10,8 +10,8 @@ are provided.
 from typing import Dict, Any, Tuple, List
 from gymnasium import spaces
 
-from eprllib.Utils.logger import logger
-from eprllib.Utils.annotations import OverrideToImplementCustomLogic
+from ..Utils.logger import logger
+from ..Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseConnector:
     """

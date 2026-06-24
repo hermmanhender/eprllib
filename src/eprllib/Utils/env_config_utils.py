@@ -4,17 +4,16 @@ EnvironmentConfig Utilities
 
 Work in progress...
 """
-
-from typing import Set, Dict, Optional, List, Any
+from __future__ import annotations
 import inspect
-from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
-from gymnasium.spaces import Box, Discrete
-import sys
 import numpy as np
-from typing import get_origin, get_args, Union, Tuple
+from typing import Set, Dict, Optional, List, Any, get_origin, get_args, Union, Tuple
+from gymnasium.spaces import Box, Discrete
+from .logger import logger
 
-from eprllib.Utils.logger import logger
-
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..Environment.EnvironmentConfig import EnvironmentConfig
 
 def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:
     """

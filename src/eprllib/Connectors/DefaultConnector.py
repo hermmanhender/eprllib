@@ -9,9 +9,9 @@ to provide a flexible configuration of the communication between agents. Built-i
 from typing import Dict, Any
 from gymnasium.spaces import Box
 
-from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Utils.annotations import override
-from eprllib.Utils.connector_utils import (
+from .BaseConnector import BaseConnector
+from ..Utils.annotations import override
+from ..Utils.connector_utils import (
     set_variables_in_obs,
     set_internal_variables_in_obs,
     set_meters_in_obs,
@@ -22,7 +22,7 @@ from eprllib.Utils.connector_utils import (
     set_actuators_in_obs,
     set_user_occupation_forecast_in_obs
     )
-from eprllib.Utils.logger import logger
+from ..Utils.logger import logger
 
 class DefaultConnector(BaseConnector):
     

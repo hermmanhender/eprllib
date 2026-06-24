@@ -4,7 +4,7 @@ Agent utilities
 
 """
 from typing import Any, Dict, List, get_args, get_origin
-from eprllib.Utils.logger import logger
+from .logger import logger
 
 def get_agent_name(state: Dict[str, Any]|List[str]) -> str:
     """

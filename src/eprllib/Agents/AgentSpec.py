@@ -13,12 +13,12 @@ the environment to provide it to RLlib.
 """
 from typing import Dict, Any, Optional
 
-from eprllib.Agents.Rewards.RewardSpec import RewardSpec
-from eprllib.Agents.Filters.FilterSpec import FilterSpec
-from eprllib.Agents.ActionSpec import ActionSpec
-from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
-from eprllib.Agents.ObservationSpec import ObservationSpec
-from eprllib.Utils.logger import logger
+from .Rewards.RewardSpec import RewardSpec
+from .Filters.FilterSpec import FilterSpec
+from .ActionSpec import ActionSpec
+from .ActionMappers.ActionMapperSpec import ActionMapperSpec
+from .ObservationSpec import ObservationSpec
+from ..Utils.logger import logger
 
 class AgentSpec:
     """

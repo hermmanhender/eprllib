@@ -4,19 +4,22 @@ Environment Configuration
 
 This module contains the class and methods used to configure the environment.
 """
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from typing import Optional, Dict, Any, Type
 from tempfile import TemporaryDirectory
 
-from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib.Episodes.DefaultEpisode import DefaultEpisode
-from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Agents.AgentSpec import AgentSpec
-from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
-from eprllib.Utils.parallel_setup import parallel_energyplus_setup
-from eprllib.Utils.add_ep_to_path import EP_API_add_path
-from eprllib import EP_VERSION
-from eprllib.Utils.logger import logger
+from ..Episodes.BaseEpisode import BaseEpisode
+from ..Episodes.DefaultEpisode import DefaultEpisode
+from ..Connectors.BaseConnector import BaseConnector
+from . import TIMEOUT, CUT_EPISODE_LEN
+from ..Utils.parallel_setup import parallel_energyplus_setup
+from ..Utils.add_ep_to_path import EP_API_add_path
+from .. import EP_VERSION
+from ..Utils.logger import logger
 
+if TYPE_CHECKING:
+    from ..Agents.AgentSpec import AgentSpec
 class EnvironmentConfig:
     """
     This class is used to configure the environment.

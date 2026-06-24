@@ -4,7 +4,7 @@ Environment Utilities
 
 """
 from typing import List, Dict
-from eprllib.Agents import OCCUPATION_PROFILES
+from .constants import OCCUPATION_PROFILES
 from numpy import random, exp
 from datetime import datetime, timedelta
 

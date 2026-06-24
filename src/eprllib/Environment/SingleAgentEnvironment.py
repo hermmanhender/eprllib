@@ -10,15 +10,15 @@ import gymnasium as gym
 from queue import Empty, Full, Queue
 from typing import Any, Dict, Optional, Tuple, List, TypeVar, SupportsFloat
 
-from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
-from eprllib.Agents.Rewards.BaseReward import BaseReward
-from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
-from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Connectors.DefaultConnector import DefaultConnector
-from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib import EP_VERSION
-from eprllib.Utils.logger import logger
+from ..Environment.EnvironmentRunner import EnvironmentRunner
+from ..Agents.Rewards.BaseReward import BaseReward
+from ..Agents.Filters.BaseFilter import BaseFilter
+from ..Agents.ActionMappers.BaseActionMapper import BaseActionMapper
+from ..Connectors.BaseConnector import BaseConnector
+from ..Connectors.DefaultConnector import DefaultConnector
+from ..Episodes.BaseEpisode import BaseEpisode
+from .. import EP_VERSION
+from ..Utils.logger import logger
 
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")

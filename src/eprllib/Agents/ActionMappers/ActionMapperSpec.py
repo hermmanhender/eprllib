@@ -6,8 +6,8 @@ the configuration of ActionMapper functions for agents in reinforcement
 learning environments.
 """
 from typing import Dict, Any, Type, Optional
-from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
-from eprllib.Utils.logger import logger
+from .BaseActionMapper import BaseActionMapper
+from ...Utils.logger import logger
 
 class ActionMapperSpec:
     """

@@ -9,11 +9,11 @@ from typing import Dict, Tuple, Any, List, Optional
 import os
 import numpy as np
 from numpy.typing import NDArray
-from numpy import float64
+from numpy import float32
 import json
 import pandas as pd
 import datetime
-from eprllib.Utils.logger import logger
+from .logger import logger
 
 def load_ep_model(model_path: str) -> Dict[str, Any]:
     """
@@ -147,7 +147,7 @@ def building_dimension(
     h:float,
     w:float,
     l:float,
-    window_area_relation: NDArray[float64],
+    window_area_relation: NDArray[float32],
     ) -> Dict[str, Any]:
     """
     This function modify the building dimensions and the windows positions in the epJSON file.
