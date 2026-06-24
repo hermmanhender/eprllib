@@ -8,15 +8,15 @@ It ensures that the observation space is properly defined and adheres to the exp
 """
 from typing import Dict, List, Tuple, Optional, Any
 
-from eprllib.Agents import (
+from ..Utils.constants import (
     SIMULATION_PARAMETERS,
-    ZONE_SIMULATION_PARAMETERS, 
+    ZONE_SIMULATION_PARAMETERS,
     PREDICTION_VARIABLES,
     PREDICTION_HOURS,
     VALID_USER_TYPES,
     VALID_ZONE_TYPES
 )
-from eprllib import logger
+from ..Utils.logger import logger
 
 class ObservationSpec:
     """

@@ -5,7 +5,7 @@ Reward functions in eprllib
 The reward functions are called in the ``step()`` method in the environment iteratively for
 each agent present in the respective timestep.
 
-This module contains the reward functions used in reinforcement learning and 
+This module contains the reward functions used in reinforcement learning and
 implemented in ``eprllib``.
 
 You can implement your own reward function by creating a new class that inherits from

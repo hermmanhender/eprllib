@@ -14,15 +14,15 @@ You have to overwrite the following methods:
 
     - ``setup(self)``
     - ``_get_filtered_obs``
-    
+
 """
 from typing import Any, Dict
 import numpy as np
 from numpy import floating
 from numpy.typing import NDArray
 
-from eprllib import logger
-from eprllib.Utils.annotations import OverrideToImplementCustomLogic
+from ...Utils.logger import logger
+from ...Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseFilter:
     """

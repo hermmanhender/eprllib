@@ -7,7 +7,7 @@ learning environments.
 """
 from typing import Dict, Tuple, Any, Optional
 
-from eprllib import logger
+from ..Utils.logger import logger
 
 class ActionSpec:
     """

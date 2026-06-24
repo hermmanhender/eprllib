@@ -2,7 +2,7 @@
 
 import pytest
 
-from eprllib.Agents import SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, PREDICTION_VARIABLES #, PREDICTION_HOURS
+from eprllib.Utils.constants import SIMULATION_PARAMETERS, ZONE_SIMULATION_PARAMETERS, PREDICTION_VARIABLES #, PREDICTION_HOURS
 from eprllib.Agents.ObservationSpec import ObservationSpec
 
 class TestObservationspec:
