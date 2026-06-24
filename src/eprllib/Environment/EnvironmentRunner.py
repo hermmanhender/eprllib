@@ -16,10 +16,10 @@ from ctypes import c_void_p
 from typing import Any, Dict, List, Optional, Tuple, cast
 from types import FunctionType
 
-from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
-from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Utils.observation_utils import (
+from ..Agents.ActionMappers.BaseActionMapper import BaseActionMapper
+from ..Agents.Filters.BaseFilter import BaseFilter
+from ..Connectors.BaseConnector import BaseConnector
+from ..Utils.observation_utils import (
     get_actuator_name,
     get_internal_variable_name,
     get_meter_name,
@@ -29,9 +29,10 @@ from eprllib.Utils.observation_utils import (
     get_parameter_prediction_name,
     get_user_occupation_forecast_name
 )
-from eprllib.Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
-from eprllib.Utils.add_ep_to_path import EP_API_add_path
-from eprllib import logger, EP_VERSION
+from ..Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
+from ..Utils.add_ep_to_path import EP_API_add_path
+from .. import EP_VERSION
+from ..Utils.logger import logger
 
 
 class EnvironmentRunner:

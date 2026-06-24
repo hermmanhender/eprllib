@@ -18,7 +18,7 @@ The ``DefaultEpisode`` configuration will be used by default.
 
 from typing import Dict, Any, List
 
-from eprllib import logger
+from ..Utils.logger import logger
 
 class BaseEpisode:
     """
