@@ -19,11 +19,11 @@ def override(parent_cls: Type[Any]) -> Callable[[Callable[..., Any]], Callable[.
     Returns:
         A decorator that can be applied to methods in subclasses to indicate that
         they override a method from the parent class.
-        
+
     Raises:
         TypeError: If the method does not exist in the parent class or if the class
             is not a subclass of the expected parent class.
-        
+
     Example:
     .. testcode::
         :skipif: True
@@ -89,7 +89,7 @@ def OverrideToImplementCustomLogic(obj: Any) -> Any:
 
 def trial_str_creator_for_tune(trial: Trial, name:str='eprllib'):
     """
-    This method create a description for the folder where the outputs and checkpoints 
+    This method create a description for the folder where the outputs and checkpoints
     will be save.
 
     Args:
@@ -104,5 +104,5 @@ def trial_str_creator_for_tune(trial: Trial, name:str='eprllib'):
         msg = "TrialStrCreator: The 'trial' argument must have 'trainable_name' and 'trial_id' attributes."
         logger.error(msg)
         raise ValueError(msg)
-    
+
     return "{}_{}_{}".format(name, trial.trainable_name, trial.trial_id)

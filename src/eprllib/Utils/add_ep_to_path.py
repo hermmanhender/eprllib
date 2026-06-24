@@ -2,8 +2,8 @@
 Add EnergyPlus API path to sys.path for eprllib
 ================================================
 
-This function manages the EnergyPlus API path for eprllib. It attempts to auto-detect the 
-EnergyPlus installation based on the operating system and a provided version string. If a 
+This function manages the EnergyPlus API path for eprllib. It attempts to auto-detect the
+EnergyPlus installation based on the operating system and a provided version string. If a
 valid path is found, it adds it to `sys.path` for use by eprllib.
 """
 
@@ -44,14 +44,14 @@ def EP_API_add_path(path: Optional[str] = None) -> str:
     logger.debug("EnvConfigUtils: Attempting to auto-detect EnergyPlus installation...")
     os_platform = sys.platform
     original_ep_path: Optional[str] = None
-    
+
     # Check that the provided path is valid.
     if path not in ep_version_list:
         msg = f"EnvConfigUtils: Invalid EnergyPlus version provided: {path}. " \
               f"Valid versions are: {ep_version_list}"
         logger.error(msg)
         raise ValueError(msg)
-    
+
     if os_platform.startswith("linux"):  # Covers "linux" and "linux2"
         original_ep_path = f"/usr/local/EnergyPlus-{path}"
     elif os_platform == "win32":
@@ -65,12 +65,11 @@ def EP_API_add_path(path: Optional[str] = None) -> str:
             logger.debug(f"EnvConfigUtils: EnergyPlus API path added to sys.path: {original_ep_path}")
         else:
             logger.debug(f"EnvConfigUtils: EnergyPlus API path already in sys.path: {original_ep_path}")
-        
+
         return original_ep_path
-    
+
     else:
         logger.error(f"EnvConfigUtils: Warning: EnergyPlus auto-detection is not configured for this OS: {os_platform}. "
                 "Please provide the path manually if detection fails.")
         raise RuntimeError(f"EnergyPlus auto-detection failed for OS: {os_platform}. "
                            "Please provide the path manually or ensure EnergyPlus is installed correctly.")
-        

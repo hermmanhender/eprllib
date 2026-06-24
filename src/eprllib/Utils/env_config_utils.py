@@ -45,7 +45,7 @@ def to_json(
     """
     import json
     import time
-    
+
     env_config_json = json.dumps(MyEnvConfig.to_dict())
 
     # generate a unique number based on time
@@ -57,9 +57,9 @@ def to_json(
     # save the json string to a file
     with open(path, 'x') as f:
         f.write(env_config_json)
-    
+
     logger.info(f"EnvConfigUtils: EnvConfig saved to {path}")
-    
+
     return path
 
 def from_json(
@@ -83,7 +83,7 @@ def from_json(
 def continuous_action_space():
     """
     This method construct the action space of the environment.
-    
+
     Returns:
         gym.Box: Continuous action space with limits between [0,1].
     """
@@ -92,7 +92,7 @@ def continuous_action_space():
 def discrete_action_space(n:int=2):
     """
     This method construct the action space of the environment.
-    
+
     Returns:
         gym.Discrete: Discrete action space with limits between [0,10] and a step of 1.
     """
@@ -116,7 +116,7 @@ def variable_checking(
 def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> Tuple[bool, List[str]]:
     """
     Enhanced version that supports Union types and optional properties
-    
+
     Args:
         obj: The object to validate
         expected_types: A dictionary mapping property names to either:
@@ -126,33 +126,33 @@ def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> Tuple[bool,
     """
     errors: List[str] = []
     is_valid = True
-    
+
     for prop_name, type_spec in expected_types.items():
         # Handle optional properties
         is_optional = False
         expected_type = type_spec
-        
+
         if isinstance(type_spec, tuple):
             if len(type_spec) == 2:
                 if isinstance(type_spec[1], bool):
                     expected_type, is_optional = type_spec
-            
+
         # Check if property exists
         if not hasattr(obj, prop_name):
             if not is_optional:
                 errors.append(f"Missing required property: {prop_name}")
                 is_valid = False
             continue
-            
+
         actual_value = getattr(obj, prop_name)
-        
+
         # Handle None for optional properties
         if actual_value is None and is_optional:
             continue
-            
+
         # Handle union types
         valid_types = (expected_type,) if isinstance(expected_type, type) else expected_type
-        
+
         def is_instance_of_type(value, types):
             if isinstance(types, _SpecialGenericAlias):
                 types = (types,)
@@ -175,5 +175,5 @@ def validate_properties(obj: Any, expected_types: Dict[str, Any]) -> Tuple[bool,
                 f"got {type(actual_value).__name__}"
             )
             is_valid = False
-    
+
     return is_valid, errors

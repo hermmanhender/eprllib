@@ -9,10 +9,10 @@ from numpy import random, exp
 from datetime import datetime, timedelta
 
 def _calculate_occupancy_once(
-    current_hour: int, 
+    current_hour: int,
     current_day_type: int,
-    current_holiday: bool, 
-    user_type: str, 
+    current_holiday: bool,
+    user_type: str,
     zone_type: str
 ) -> float:
     """
@@ -28,7 +28,7 @@ def _calculate_occupancy_once(
         base_schedule = profile_zone["weekdays"]
     # Selecting the occupation based on the current time
     base_occupation = base_schedule[current_hour]
-    
+
     return base_occupation
 
 
@@ -64,10 +64,10 @@ def calculate_occupancy(
     current_day_type = current_time_obj.weekday()
 
     current_occupation = _calculate_occupancy_once(
-        current_hour = current_hour, 
+        current_hour = current_hour,
         current_day_type = current_day_type,
-        current_holiday = current_holiday, 
-        user_type = user_type, 
+        current_holiday = current_holiday,
+        user_type = user_type,
         zone_type = zone_type
     )
     if current_occupation > 0:
@@ -76,7 +76,7 @@ def calculate_occupancy(
     else:
         if random.random() > confidence_level:
             current_occupation = 1.
-    
+
     return current_occupation
 
 def calculate_occupancy_forecast(
@@ -110,26 +110,26 @@ def calculate_occupancy_forecast(
             - list[float]: Una lista con 24 valores de probabilidad (0-1) de ocupación.
     """
     current_time_obj = datetime(current_year, current_month, current_day, current_hour)
-    
+
     forecast_probabilities: List[float] = []
-    
+
     for h in range(1, occupation_prediction_hours+1):
         confidence_level_h = 0.5+(confidence_level-0.5)*exp(-lambdaa*h)
         future_time = current_time_obj + timedelta(hours=h)
         is_a_future_holiday = False  # Simplification for forecasting
-        
+
         simulated_occupants = _calculate_occupancy_once(
-            current_hour = future_time.hour, 
+            current_hour = future_time.hour,
             current_day_type = future_time.weekday(),
-            current_holiday = is_a_future_holiday, 
-            user_type = user_type, 
+            current_holiday = is_a_future_holiday,
+            user_type = user_type,
             zone_type = zone_type
         )
         if simulated_occupants > 0:
             simulated_occupants = confidence_level_h
         else:
             simulated_occupants = 1 - confidence_level_h
-            
+
         forecast_probabilities.append(simulated_occupants)
-    
+
     return forecast_probabilities
