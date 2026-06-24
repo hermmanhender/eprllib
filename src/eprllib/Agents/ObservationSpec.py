@@ -8,7 +8,7 @@ It ensures that the observation space is properly defined and adheres to the exp
 """
 from typing import Dict, List, Tuple, Optional, Any
 
-from eprllib import (
+from eprllib.Utils.constants import (
     SIMULATION_PARAMETERS,
     ZONE_SIMULATION_PARAMETERS,
     PREDICTION_VARIABLES,
