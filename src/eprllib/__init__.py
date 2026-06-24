@@ -20,6 +20,5 @@ __all__ = [
     "__version__",
     "ep_version_list",
     "EP_VERSION",
-    "logger",
     "Agents", "Connectors", "Environment", "Episodes", "Utils"
     ]
