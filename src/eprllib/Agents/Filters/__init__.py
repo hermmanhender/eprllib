@@ -16,3 +16,8 @@ the filter function is properly defined and adheres to the expected interface.
 These filters can be used to preprocess observations in various ways, depending on the specific requirements of the 
 agent's policy.
 """
+
+from eprllib.Agents.Filters.BaseFilter import BaseFilter
+from eprllib.Agents.Filters.FilterSpec import FilterSpec
+
+__all__ = ["BaseFilter", "FilterSpec"]

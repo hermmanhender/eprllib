@@ -18,5 +18,15 @@ The module includes the following classes and functions:
 - ``EnvironmentConfig``: The class used to configure the environment.
 """
 
+from eprllib.Environment.EnvironmentConfig import EnvironmentConfig
+from eprllib.Environment.EnvironmentRunner import EnvironmentRunner
+from eprllib.Environment.MultiAgentEnvironment import MultiAgentEnvironment
+from eprllib.Environment.SingleAgentEnvironment import SingleAgentEnvironment
+
 TIMEOUT = 10.0
 CUT_EPISODE_LEN = 0
+
+__all__ = [
+    "TIMEOUT", "CUT_EPISODE_LEN",
+    "EnvironmentConfig", "EnvironmentRunner", "MultiAgentEnvironment", "SingleAgentEnvironment"
+    ]

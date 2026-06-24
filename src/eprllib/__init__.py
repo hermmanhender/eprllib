@@ -2,15 +2,22 @@
 eprllib
 ========
 
-``eprllib`` was born out of the need to bridge the gap between building modeling with 
-**EnergyPlus** and Deep Reinforcement Learning (**DRL**). Traditionally, integrating these two 
-disciplines has been complex and laborious. ``eprllib`` aims to simplify this process, 
-offering an intuitive and flexible interface for developing intelligent agents that 
+``eprllib`` was born out of the need to bridge the gap between building modeling with
+**EnergyPlus** and Deep Reinforcement Learning (**DRL**). Traditionally, integrating these two
+disciplines has been complex and laborious. ``eprllib`` aims to simplify this process,
+offering an intuitive and flexible interface for developing intelligent agents that
 interact with building simulations.
 """
 # Version management.
-from .version import __version__, EP_VERSION # type: ignore
+from .version import __version__, EP_VERSION, ep_version_list
 
 # Log configuration.
 import logging
 logger = logging.getLogger("ray.rllib") # See: https://docs.ray.io/en/latest/rllib/rllib-env.html#:~:text=(config))-,Tip,-When%20using%20logging
+
+__all__ = [
+    "__version__",
+    "ep_version_list",
+    "EP_VERSION",
+    "logger"
+    ]
