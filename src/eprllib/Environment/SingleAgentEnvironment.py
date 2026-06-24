@@ -17,7 +17,8 @@ from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
 from eprllib.Connectors.BaseConnector import BaseConnector
 from eprllib.Connectors.DefaultConnector import DefaultConnector
 from eprllib.Episodes.BaseEpisode import BaseEpisode
-from eprllib import logger, EP_VERSION
+from eprllib import EP_VERSION
+from eprllib.Utils.logger import logger
 
 ObsType = TypeVar("ObsType")
 ActType = TypeVar("ActType")

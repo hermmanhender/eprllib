@@ -22,7 +22,7 @@ from typing import Dict, Any, List, Tuple
 import gymnasium as gym
 
 from eprllib.Utils.annotations import OverrideToImplementCustomLogic
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 class BaseActionMapper:
     """

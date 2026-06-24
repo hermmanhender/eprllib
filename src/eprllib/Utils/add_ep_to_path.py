@@ -9,7 +9,7 @@ valid path is found, it adds it to `sys.path` for use by eprllib.
 
 from typing import Optional
 import sys
-from eprllib import logger
+from eprllib.Utils.logger import logger
 from eprllib.version import ep_version_list
 
 

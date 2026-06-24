@@ -14,7 +14,8 @@ from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Environment import TIMEOUT, CUT_EPISODE_LEN
 from eprllib.Utils.parallel_setup import parallel_energyplus_setup
 from eprllib.Utils.add_ep_to_path import EP_API_add_path
-from eprllib import logger, EP_VERSION
+from eprllib import EP_VERSION
+from eprllib.Utils.logger import logger
 
 class EnvironmentConfig:
     """

@@ -6,7 +6,7 @@ This utility method create a name for the RLlib trial experiment.
 """
 
 from ray.tune.experiment.trial import Trial
-from eprllib import logger
+from eprllib.Utils.logger import logger
 from eprllib.Utils.annotations import trial_str_creator_for_tune
 
 def trial_str_creator(trial: Trial, name:str='eprllib'):

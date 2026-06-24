@@ -7,7 +7,7 @@ learning environments.
 """
 from typing import Dict, Any, Type, Optional
 from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 class ActionMapperSpec:
     """

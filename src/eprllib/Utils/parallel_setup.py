@@ -4,7 +4,7 @@ import platform
 import multiprocessing
 from pathlib import Path
 from typing import Dict, Optional, Any
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 def parallel_energyplus_setup(ep_base_path: str, num_workers: Optional[int] = None) -> Dict[int, str]:
     """

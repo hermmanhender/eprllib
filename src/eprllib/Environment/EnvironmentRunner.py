@@ -31,7 +31,8 @@ from eprllib.Utils.observation_utils import (
 )
 from eprllib.Utils.env_utils import calculate_occupancy, calculate_occupancy_forecast
 from eprllib.Utils.add_ep_to_path import EP_API_add_path
-from eprllib import logger, EP_VERSION
+from eprllib import EP_VERSION
+from eprllib.Utils.logger import logger
 
 
 class EnvironmentRunner:

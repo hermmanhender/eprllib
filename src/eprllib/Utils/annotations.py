@@ -4,7 +4,7 @@ Annotations
 
 
 """
-from eprllib import logger
+from eprllib.Utils.logger import logger
 from typing import Type, Callable, Any
 from ray.tune.experiment.trial import Trial
 

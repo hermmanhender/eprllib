@@ -12,10 +12,6 @@ interact with building simulations.
 from .version import __version__, EP_VERSION, ep_version_list
 from eprllib import Agents, Connectors, Environment, Episodes, Utils
 
-# Log configuration.
-import logging
-logger = logging.getLogger("ray.rllib") # See: https://docs.ray.io/en/latest/rllib/rllib-env.html#:~:text=(config))-,Tip,-When%20using%20logging
-
 __all__ = [
     "__version__",
     "ep_version_list",

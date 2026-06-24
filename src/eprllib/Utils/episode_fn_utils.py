@@ -13,7 +13,7 @@ from numpy import float64
 import json
 import pandas as pd
 import datetime
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 def load_ep_model(model_path: str) -> Dict[str, Any]:
     """

@@ -16,7 +16,7 @@ from eprllib.Agents import (
     VALID_USER_TYPES,
     VALID_ZONE_TYPES
 )
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 class ObservationSpec:
     """

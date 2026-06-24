@@ -15,7 +15,7 @@ from typing import Dict, Any, List
 from numpy.typing import NDArray
 from numpy import floating
 
-from eprllib import logger
+from eprllib.Utils.logger import logger
 from eprllib.Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseReward:

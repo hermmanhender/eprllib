@@ -18,7 +18,7 @@ from eprllib.Agents.Filters.FilterSpec import FilterSpec
 from eprllib.Agents.ActionSpec import ActionSpec
 from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
 from eprllib.Agents.ObservationSpec import ObservationSpec
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 class AgentSpec:
     """

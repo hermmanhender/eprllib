@@ -21,7 +21,7 @@ import numpy as np
 from numpy import floating
 from numpy.typing import NDArray
 
-from eprllib import logger
+from eprllib.Utils.logger import logger
 from eprllib.Utils.annotations import OverrideToImplementCustomLogic
 
 class BaseFilter:

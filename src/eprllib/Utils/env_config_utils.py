@@ -13,7 +13,7 @@ import sys
 import numpy as np
 from typing import get_origin, get_args, Union, Tuple
 
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 
 def env_config_validation(MyEnvConfig: EnvironmentConfig) -> bool:

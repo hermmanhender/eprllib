@@ -22,7 +22,7 @@ from eprllib.Utils.connector_utils import (
     set_actuators_in_obs,
     set_user_occupation_forecast_in_obs
     )
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 class DefaultConnector(BaseConnector):
     

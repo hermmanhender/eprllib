@@ -8,7 +8,7 @@ It ensures that the filter function is properly defined and adheres to the expec
 from typing import Dict, Any, Optional, Type
 
 from eprllib.Agents.Filters.BaseFilter import BaseFilter
-from eprllib import logger
+from eprllib.Utils.logger import logger
 
 class FilterSpec:
     """
