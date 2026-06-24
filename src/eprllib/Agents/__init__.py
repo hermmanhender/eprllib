@@ -28,7 +28,7 @@ from typing import Dict, Any
 from eprllib.Agents.ActionSpec import ActionSpec
 from eprllib.Agents.AgentSpec import AgentSpec
 from eprllib.Agents.ObservationSpec import ObservationSpec
-
+from eprllib.Agents import ActionMappers, Filters, Rewards
 
 SIMULATION_PARAMETERS: Dict[str, bool] = {
     'actual_date_time': False,
@@ -158,4 +158,5 @@ VALID_ZONE_TYPES = ["daytime", "nightly"]
 
 __all__ = [
     "ActionSpec", "AgentSpec", "ObservationSpec",
+    "ActionMappers", "Filters", "Rewards"
 ]

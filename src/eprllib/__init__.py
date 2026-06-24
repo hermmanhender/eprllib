@@ -10,6 +10,7 @@ interact with building simulations.
 """
 # Version management.
 from .version import __version__, EP_VERSION, ep_version_list
+from eprllib import Agents, Connectors, Environment, Episodes, Utils
 
 # Log configuration.
 import logging
@@ -19,5 +20,6 @@ __all__ = [
     "__version__",
     "ep_version_list",
     "EP_VERSION",
-    "logger"
+    "logger",
+    "Agents", "Connectors", "Environment", "Episodes", "Utils"
     ]
