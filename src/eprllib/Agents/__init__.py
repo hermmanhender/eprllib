@@ -25,9 +25,6 @@ which are essential parts of an agent in ``eprllib``.
 """
 
 from typing import Dict, Any
-from eprllib.Agents.ActionSpec import ActionSpec
-from eprllib.Agents.AgentSpec import AgentSpec
-from eprllib.Agents.ObservationSpec import ObservationSpec
 from eprllib.Agents import ActionMappers, Filters, Rewards
 
 SIMULATION_PARAMETERS: Dict[str, bool] = {
@@ -157,6 +154,5 @@ VALID_USER_TYPES = list(OCCUPATION_PROFILES.keys())
 VALID_ZONE_TYPES = ["daytime", "nightly"]
 
 __all__ = [
-    "ActionSpec", "AgentSpec", "ObservationSpec",
     "ActionMappers", "Filters", "Rewards"
 ]
