@@ -19,8 +19,3 @@ The module includes the following classes:
 These classes are used in the ``EnvironmentConfig`` class to specify the rewards that can be
 performed on the environment.
 """
-
-from eprllib.Agents.Rewards.BaseReward import BaseReward
-from eprllib.Agents.Rewards.RewardSpec import RewardSpec
-
-__all__ = ["BaseReward", "RewardSpec"]

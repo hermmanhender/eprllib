@@ -12,8 +12,3 @@ The module includes the following classes:
 These connectors are used to provide different configurations for multi-agent environments, enabling various
 communication and observation strategies.
 """
-
-from eprllib.Connectors.BaseConnector import BaseConnector
-from eprllib.Connectors.DefaultConnector import DefaultConnector
-
-__all__ = ["BaseConnector", "DefaultConnector"]

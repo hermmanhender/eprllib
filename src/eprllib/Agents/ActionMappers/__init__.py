@@ -22,8 +22,3 @@ The module includes the following classes:
 These classes are used in the ``EnvironmentConfig`` class to specify the actions that can 
 be performed on the environment.
 """
-
-from eprllib.Agents.ActionMappers.ActionMapperSpec import ActionMapperSpec
-from eprllib.Agents.ActionMappers.BaseActionMapper import BaseActionMapper
-
-__all__ = ["ActionMapperSpec", "BaseActionMapper"]

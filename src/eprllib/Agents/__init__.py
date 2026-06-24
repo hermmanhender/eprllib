@@ -24,15 +24,16 @@ which are essential parts of an agent in ``eprllib``.
 
 """
 
-from eprllib.Agents.ActionMappers import ActionMapperSpec, BaseActionMapper
-from eprllib.Agents.Filters import FilterSpec, BaseFilter
-from eprllib.Agents.Rewards import RewardSpec, BaseReward
-from eprllib.Agents import AgentSpec, ObservationSpec, ActionSpec
+from .ActionMappers.BaseActionMapper import BaseActionMapper
+from .ActionMappers.ActionMapperSpec import ActionMapperSpec
+from .Filters.BaseFilter import BaseFilter
+from .Filters.FilterSpec import FilterSpec
+from .Rewards.BaseReward import BaseReward
+from .Rewards.RewardSpec import RewardSpec
 
 
 __all__ = [
     "ActionMapperSpec", "BaseActionMapper",
     "FilterSpec","BaseFilter",
     "RewardSpec", "BaseReward",
-    "AgentSpec", "ObservationSpec", "ActionSpec"
 ]
