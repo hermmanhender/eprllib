@@ -10,6 +10,7 @@
    :toctree:
    :recursive:
 
-   Environment
    EnvironmentConfig
    EnvironmentRunner
+   MultiAgentEnvironment
+   SingleAgentEnvironment
