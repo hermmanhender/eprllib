@@ -17,6 +17,7 @@ You have to overwrite the following methods:
     
 """
 from typing import Any, Dict
+import numpy as np
 from numpy import floating
 from numpy.typing import NDArray
 
@@ -87,7 +88,7 @@ class BaseFilter:
         # Generate a copy of the agent_states to avoid conflicts with global variables.
         agent_states_copy = agent_states.copy()
         
-        return self._get_filtered_obs(agent_states_copy)
+        return self._get_filtered_obs(agent_states_copy).astype(np.float32)
     
     
     # ===========================

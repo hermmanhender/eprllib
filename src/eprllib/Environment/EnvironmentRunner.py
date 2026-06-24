@@ -68,7 +68,7 @@ class EnvironmentRunner:
     agent_variables_and_handles: Dict[str, Any] = {}
     internal_actuators: List[Tuple[str,str,str]] = []
     internal_variables_and_handles: Dict[str, Any] = {}
-    energyplus_exec_thread_timeout: int = 1
+    energyplus_exec_thread_timeout: int = 10
     ep_worker_path: Optional[str]
     ep_version: str = EP_VERSION
     episode_folder_path: str = ""
@@ -115,8 +115,6 @@ class EnvironmentRunner:
         self.observation_config = observation_config
         self.generals_config = generals_config
         self.actuator_config = actuator_config
-        self.ep_worker_path = ep_worker_path
-
         self.ep_worker_path = ep_worker_path
 
         # 1. Validación robusta: Detecta tanto 'None' como strings vacíos '""'
@@ -174,7 +172,7 @@ class EnvironmentRunner:
         self.is_last_timestep: bool = False
         self.occupancy_next_timestep: float = 0.
         self.num_time_steps_in_hour: int = 0
-        self.energyplus_exec_thread_timeout: int = 1
+        self.energyplus_exec_thread_timeout: int = 10
         self.episode_folder_path: str = ""
         
         # create a variable to save the obs dict key to use in posprocess
@@ -244,7 +242,7 @@ class EnvironmentRunner:
             assert self.energyplus_state is not None, "EnvironmentRunner: Failed to create EnergyPlus state"
         except Exception as e:
             msg = f"EnvironmentRunner: Error creating EnergyPlus state: {e}"
-            logger.error(f"msg")
+            logger.error(msg)
             raise RuntimeError(msg)
         
         # Request variables.
@@ -262,12 +260,16 @@ class EnvironmentRunner:
         self.api.runtime.callback_progress(self.energyplus_state, cast(FunctionType, self.progress_handler))
         self.api.runtime.set_console_output_status(self.energyplus_state, self.generals_config['ep_terminal_output']) # type: ignore
         
+        # Pre-generamos los argumentos para asegurar que la ruta del episodio esté definida
+        cmd_args = self.make_eplus_args()
+        # Aseguramos que el directorio de salida exista antes de lanzar el hilo
+        os.makedirs(self.episode_folder_path, exist_ok=True)
+
         def _run_energyplus():
             """
             Run EnergyPlus in a non-blocking way with Threads.
             """
             try:
-                cmd_args = self.make_eplus_args()
                 logger.info(f"EnvironmentRunner: running EnergyPlus with args: {cmd_args}")
                 assert self.energyplus_state is not None, "EnvironmentRunner: EnergyPlus state is None."
                 self.sim_results = self.api.runtime.run_energyplus(self.energyplus_state, cmd_args)
