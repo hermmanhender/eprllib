@@ -158,11 +158,4 @@ VALID_ZONE_TYPES = ["daytime", "nightly"]
 
 __all__ = [
     "ActionSpec", "AgentSpec", "ObservationSpec",
-    "SIMULATION_PARAMETERS",
-    "ZONE_SIMULATION_PARAMETERS",
-    "PREDICTION_VARIABLES",
-    "PREDICTION_HOURS",
-    "OCCUPATION_PROFILES",
-    "VALID_USER_TYPES",
-    "VALID_ZONE_TYPES"
 ]

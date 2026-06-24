@@ -27,6 +27,5 @@ TIMEOUT = 10.0
 CUT_EPISODE_LEN = 0
 
 __all__ = [
-    "TIMEOUT", "CUT_EPISODE_LEN",
     "EnvironmentConfig", "EnvironmentRunner", "MultiAgentEnvironment", "SingleAgentEnvironment"
     ]
