@@ -1,4 +1,4 @@
-eprllib.Environment.MultiAgentEnvironment
+﻿eprllib.Environment.MultiAgentEnvironment
 =========================================
 
 .. automodule:: eprllib.Environment.MultiAgentEnvironment
