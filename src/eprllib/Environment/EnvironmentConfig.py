@@ -5,7 +5,6 @@ Environment Configuration
 This module contains the class and methods used to configure the environment.
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING
 from typing import Optional, Dict, Any, Type
 from tempfile import TemporaryDirectory
 
@@ -18,8 +17,7 @@ from ..Utils.add_ep_to_path import EP_API_add_path
 from .. import EP_VERSION
 from ..Utils.logger import logger
 
-if TYPE_CHECKING:
-    from ..Agents.AgentSpec import AgentSpec
+from ..Agents.AgentSpec import AgentSpec
 class EnvironmentConfig:
     """
     This class is used to configure the environment.
