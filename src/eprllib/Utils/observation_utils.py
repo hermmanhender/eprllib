@@ -116,6 +116,10 @@ def get_user_occupation_forecast_name(agent: str, hour:int, timestep:int) -> str
     Returns:
         str: The parameter prediction name in the observation space.
     """
-    if hour < 0 or hour > 23:
-        raise ValueError("ObservationUtils: Hour must be between 0 and 23.")
+    if hour < 0:
+        raise ValueError("ObservationUtils: Hour must be greater than 0.")
+    elif hour > 23:
+        hour -= 24
+        if hour > 23:
+            raise ValueError("ObservationUtils: Hour must be smaller than 48.")
     return f"{agent}: User Occupation Forecast: +{hour}h{timestep}"
