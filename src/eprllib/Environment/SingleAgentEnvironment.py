@@ -206,6 +206,9 @@ class SingleAgentEnvironment(gym.Env): # type: ignore
         if env_config['epjson_path'].endswith(".idf"):
             print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
+        # Boolean to decide when the horizon is finete or infinite. With infinit horizon, "terminateds" is allways false and "truncateds" is used.
+        self.finite_horizon: bool = self.env_config.get("finite_horizon", False)
+
         logger.info("SingleAgentEnvironment: Environment initialization complete")
 
 
@@ -444,9 +447,15 @@ class SingleAgentEnvironment(gym.Env): # type: ignore
             final_obs = obs[agent]
             final_reward = reward_dict[agent]
             final_infos = self.last_infos[agent]
-        
-        # Devolvemos el array directamente
-        return final_obs, final_reward, self.terminateds, self.truncateds, final_infos
+
+        if self.finite_horizon:
+            return final_obs, final_reward, self.terminateds, self.truncateds, final_infos
+        else:
+            # With infinit horizon, `terminateds=False` and `truncated` is used to end the episode.
+            end: bool = False
+            if self.terminateds or self.truncateds:
+                end = True
+            return final_obs, final_reward, False, end, final_infos
 
     def close(self):
         """

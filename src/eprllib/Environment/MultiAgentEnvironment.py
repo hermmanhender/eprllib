@@ -206,6 +206,9 @@ class MultiAgentEnvironment(MultiAgentEnv):
         if env_config['epjson_path'].endswith(".idf"):
             print("WARNING: Consider using epJSON files for full compatibility with the Episodes API.")
 
+        # Boolean to decide when the horizon is finete or infinite. With infinit horizon, "terminateds" is allways false and "truncateds" is used.
+        self.finite_horizon: bool = self.env_config.get("finite_horizon", False)
+
         logger.info("Environment: Environment initialization complete")
 
     @override(MultiAgentEnv)
@@ -422,10 +425,6 @@ class MultiAgentEnvironment(MultiAgentEnv):
             else:
                 # Assign a default reward of 0.0 if no reward function is found.
                 reward_dict[agent] = 0.0
-        
-        terminated["__all__"] = self.terminateds
-        truncated["__all__"] = self.truncateds
-        
                 reward_info[agent] = {}
 
             # Add reward_info to infos
@@ -434,8 +433,24 @@ class MultiAgentEnvironment(MultiAgentEnv):
         # Upgrade last observation and infos dicts.
         self.last_obs = obs
         self.last_infos = infos
-        
-        return obs, reward_dict, terminated, truncated, infos
+
+        if self.finite_horizon:
+
+            terminated["__all__"] = self.terminateds
+            truncated["__all__"] = self.truncateds
+
+            return obs, reward_dict, terminated, truncated, infos
+
+        else:
+            # With infinit horizon, `terminateds=False` and `truncated` is used to end the episode.
+            end: bool = False
+            if self.terminateds or self.truncateds:
+                end = True
+
+            terminated["__all__"] = False
+            truncated["__all__"] = end
+
+            return obs, reward_dict, terminated, truncated, infos
 
     @override(MultiAgentEnv)
     def close(self):
