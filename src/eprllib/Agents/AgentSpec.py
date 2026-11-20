@@ -29,7 +29,7 @@ class AgentSpec:
     action: Optional[ActionSpec|Dict[str, Any]] = None
     action_mapper: Optional[ActionMapperSpec|Dict[str, Any]] = None
     reward: Optional[RewardSpec|Dict[str, Any]] = None
-    
+
     def __init__(
         self,
         observation: Optional[ObservationSpec|Dict[str, Any]] = None,
@@ -60,41 +60,41 @@ class AgentSpec:
         else:
             logger.info("AgentSpec: No observation defined. Using default observation.")
             self.observation = ObservationSpec()
-        
+
         if filter is not None:
             self.filter = filter
         else:
             logger.info("AgentSpec: No filter defined. Using default filter.")
             self.filter = FilterSpec()
-            
+
         if action is not None:
             self.action = action
         else:
             logger.info("AgentSpec: No action defined. Using default action.")
             self.action = ActionSpec()
-            
+
         if action_mapper is not None:
             self.action_mapper = action_mapper
         else:
             logger.info("AgentSpec: No action_mapper defined. Using default action_mapper.")
             self.action_mapper = ActionMapperSpec()
-            
+
         if reward is not None:
             self.reward = reward
         else:
             logger.info("AgentSpec: No reward defined. Using default reward.")
             self.reward = RewardSpec()
-        
+
         for key, value in kwargs.items():
             setattr(self, key, value)
-    
+
     def __getitem__(self, key:str):
         return getattr(self, key)
 
     def __setitem__(self, key:str, value:Any):
         setattr(self, key, value)
-        
-        
+
+
     def build(self) -> Dict[str, Any]:
         """
         This method is used to build the AgentSpec object.

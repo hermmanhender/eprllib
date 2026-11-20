@@ -4,8 +4,8 @@ Reward Function
 
 This module contains the base class for defining reward functions.
 
-It is preferred to use the ``infos`` dictionary and not the observation, since the latter is 
-a numpy array and cannot be called by key values, which is prone to errors when developing the program 
+It is preferred to use the ``infos`` dictionary and not the observation, since the latter is
+a numpy array and cannot be called by key values, which is prone to errors when developing the program
 and indexing an array may change.
 
 The terminated and truncated flags are arguments in the reward function ``get_reward`` method to allow
@@ -26,7 +26,7 @@ class BaseReward:
     agent_name: str = ""
     cumulated_reward: List[float] = []
     reward_timestep: int = 0
-    
+
     def __init__(
         self,
         agent_name: str,
@@ -40,12 +40,12 @@ class BaseReward:
         """
         self.reward_fn_config = reward_fn_config
         self.agent_name = agent_name
-        
+
         self.cumulated_reward = []
         self.reward_timestep = 0
-        
+
         logger.info(f"BaseReward: The BaseReward was correctly inicializated with {self.reward_fn_config} config.")
-        
+
         # Make sure, `setup()` is only called once, no matter what.
         if hasattr(self, "_is_setup") and self._is_setup:
             raise RuntimeError(
@@ -61,16 +61,16 @@ class BaseReward:
 
         self._is_setup:bool = True
         self._set_initial_parameters_once: bool = False
-    
-    
+
+
     def reset(self) -> None:
         """
         Resets the reward function to its initial state.
         """
         self.cumulated_reward = []
         self.reward_timestep = 0
-    
-    
+
+
     def set_initial_parameters(
         self,
         obs_indexed: Dict[str, int]
@@ -81,19 +81,19 @@ class BaseReward:
             logger.info(f"BaseReward: The initial parameters were correctly set.")
         else:
             logger.info(f"BaseReward: The initial parameters were already set.")
-    
-    
+
+
     # ===========================
     # === OVERRIDABLE METHODS ===
     # ===========================
-    
+
     @OverrideToImplementCustomLogic
     def setup(self) -> None:
         """
         This method can be overridden in subclasses to perform setup tasks.
         """
         pass
-    
+
     @OverrideToImplementCustomLogic
     def _set_initial_parameters(
         self,
@@ -101,12 +101,12 @@ class BaseReward:
     ) -> None:
         """
         This method can be overridden in subclasses to set initial parameters based on the provided infos.
-        
+
         Example:
             ```
             self.zone_people_occupant_count_index = obs_indexed[get_variable_name(
-                self.agent_name, 
-                "Zone People Occupant Count", 
+                self.agent_name,
+                "Zone People Occupant Count",
                 self.reward_fn_config['thermal_zone']
             )]
             ```
@@ -115,7 +115,7 @@ class BaseReward:
             infos (Dict[str, Any]): The infos dictionary containing necessary information for initialization.
         """
         pass
-    
+
     @OverrideToImplementCustomLogic
     def get_reward(
         self,
@@ -124,7 +124,7 @@ class BaseReward:
         obs: NDArray[floating[Any]],
         terminated: bool,
         truncated: bool
-        ) -> float:
+        ) -> tuple[float, dict[str,Any]]:
         """
         This method must be implemented in the subclass to calculate the reward.
 

@@ -32,7 +32,7 @@ class BaseFilter:
     filter_fn_config: Dict[str, Any]
     agent_name: str
     _is_setup: bool
-    
+
     def __init__(
         self,
         agent_name: str,
@@ -42,15 +42,15 @@ class BaseFilter:
         Initializes the BaseFilter class.
 
         Args:
-        
+
             filter_fn_config (Dict[str, Any]): Configuration dictionary for the filter function.
-            
+
         """
         self.filter_fn_config = filter_fn_config
         self.agent_name = agent_name
-        
+
         logger.info(f"BaseFilter: The BaseFilter was correctly inicializated with {self.filter_fn_config} config.")
-        
+
         # Make sure, `setup()` is only called once, no matter what.
         if hasattr(self, "_is_setup") and self._is_setup:
             raise RuntimeError(
@@ -64,11 +64,11 @@ class BaseFilter:
         except AttributeError as e:
             raise e
         self._is_setup:bool = True
-        
+
         # Check if the agent_name is defined.
         assert self.agent_name is not None, "BaseFilter: The agent name must be defined."
-    
-    
+
+
     def get_filtered_obs(
         self,
         agent_states: Dict[str, Any],
@@ -78,23 +78,23 @@ class BaseFilter:
             msg = "agent_states dictionary is empty"
             logger.error(msg)
             raise ValueError(msg)
-        
+
         # Check if all values in the agent_states dictionary are numeric
         if not all(isinstance(value, (int, float)) for value in agent_states.values()):
             msg = "All values in agent_states must be numeric"
             logger.error(msg)
             raise ValueError(msg)
-        
+
         # Generate a copy of the agent_states to avoid conflicts with global variables.
         agent_states_copy = agent_states.copy()
-        
+
         return self._get_filtered_obs(agent_states_copy).astype(np.float32)
-    
-    
+
+
     # ===========================
     # === OVERRIDABLE METHODS ===
     # ===========================
-    
+
     @OverrideToImplementCustomLogic
     def setup(self):
         """
@@ -103,8 +103,8 @@ class BaseFilter:
         This is called automatically during the __init__ method of this class.
         """
         pass
-    
-    
+
+
     @OverrideToImplementCustomLogic
     def _get_filtered_obs(
         self,
@@ -116,19 +116,19 @@ class BaseFilter:
         configuration specified in filter_fn_config.
 
         Args:
-        
-            env_config (Dict[str, Any]): Configuration dictionary for the environment. Can include settings 
+
+            env_config (Dict[str, Any]): Configuration dictionary for the environment. Can include settings
                 that affect how the observations are filtered.
             agent_states (Dict[str, Any], optional): Dictionary containing the states of the agent.
 
         Returns:
-        
+
             NDarray: Filtered observations as a numpy array of float64 values.
-            
+
         Raises:
-        
+
             NotImplementedError: If this method is not implemented in a subclass.
-            
+
         """
         msg = "BaseFilter: This method should be implemented in a subclass."
         logger.error(msg)
