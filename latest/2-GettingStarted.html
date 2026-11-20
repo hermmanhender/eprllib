@@ -27,24 +27,25 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=57297d31" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=8dbc3f03"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '2-GettingStarted';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/2-GettingStarted.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -53,20 +54,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -92,7 +99,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -376,11 +427,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -408,7 +466,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deep-reinforcement-learning-drl">Deep Reinforcement Learning (DRL)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-bridge-between-energyplus-and-rllib">A bridge between EnergyPlus and RLlib</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-simple-experiment-with-eprllib-and-ray-rllib">Running a Simple Experiment with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and <code class="docutils literal notranslate"><span class="pre">ray.rllib</span></code></a><ul class="nav section-nav flex-column">
@@ -523,9 +581,9 @@ uses a simplified environment and agent configuration for clarity.</p>
 <p>After that, we need to configurate it. A first step could be configurate the general aspects
 of the environment.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">eprllib_config</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
-<span class="linenos">2</span>    <span class="n">epjson_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/model.epJSON&quot;</span><span class="p">,</span>  <span class="c1"># Replace with your EPJSON file.</span>
-<span class="linenos">3</span>    <span class="n">epw_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/weather.epw&quot;</span><span class="p">,</span>  <span class="c1"># Replace with your EPW file.</span>
-<span class="linenos">4</span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/output/folder&quot;</span><span class="p">,</span> <span class="c1"># Replace with your folder path.</span>
+<span class="linenos">2</span>    <span class="n">epjson_path</span><span class="o">=</span><span class="s2">"path/to/your/model.epJSON"</span><span class="p">,</span>  <span class="c1"># Replace with your EPJSON file.</span>
+<span class="linenos">3</span>    <span class="n">epw_path</span><span class="o">=</span><span class="s2">"path/to/your/weather.epw"</span><span class="p">,</span>  <span class="c1"># Replace with your EPW file.</span>
+<span class="linenos">4</span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">"path/to/your/output/folder"</span><span class="p">,</span> <span class="c1"># Replace with your folder path.</span>
 <span class="linenos">5</span>    <span class="n">ep_terminal_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="linenos">6</span>    <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="linenos">7</span>    <span class="n">evaluation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -550,23 +608,23 @@ like EnergyPlus, we can define the agents configurations.</p>
 <span class="linenos">14</span><span class="n">eprllib_config</span><span class="o">.</span><span class="n">agents</span><span class="p">(</span>
 <span class="linenos">15</span>    <span class="n">agents_config</span><span class="o">=</span><span class="p">{</span>
 <span class="linenos">16</span>        <span class="c1"># Here we will configurate only one agent, but you can include more.</span>
-<span class="linenos">17</span>        <span class="s2">&quot;agent_1&quot;</span><span class="p">:</span> <span class="n">AgentSpec</span><span class="p">(</span>
+<span class="linenos">17</span>        <span class="s2">"agent_1"</span><span class="p">:</span> <span class="n">AgentSpec</span><span class="p">(</span>
 <span class="linenos">18</span>            <span class="c1"># Observation variables definition.</span>
 <span class="linenos">19</span>            <span class="n">observation</span><span class="o">=</span><span class="n">ObservationSpec</span><span class="p">(</span>
 <span class="linenos">20</span>                <span class="n">variables</span><span class="o">=</span><span class="p">[</span>
-<span class="linenos">21</span>                    <span class="p">(</span><span class="s2">&quot;Site Outdoor Air Drybulb Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Environment&quot;</span><span class="p">),</span>
-<span class="linenos">22</span>                    <span class="p">(</span><span class="s2">&quot;Zone Mean Air Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone&quot;</span><span class="p">),</span>
+<span class="linenos">21</span>                    <span class="p">(</span><span class="s2">"Site Outdoor Air Drybulb Temperature"</span><span class="p">,</span> <span class="s2">"Environment"</span><span class="p">),</span>
+<span class="linenos">22</span>                    <span class="p">(</span><span class="s2">"Zone Mean Air Temperature"</span><span class="p">,</span> <span class="s2">"Thermal Zone"</span><span class="p">),</span>
 <span class="linenos">23</span>                <span class="p">],</span>
 <span class="linenos">24</span>                <span class="n">meters</span><span class="o">=</span><span class="p">[</span>
-<span class="linenos">25</span>                    <span class="s2">&quot;Electricity:Building&quot;</span><span class="p">,</span>
+<span class="linenos">25</span>                    <span class="s2">"Electricity:Building"</span><span class="p">,</span>
 <span class="linenos">26</span>                <span class="p">],</span>
 <span class="linenos">27</span>            <span class="p">),</span>
 <span class="linenos">28</span>            <span class="c1"># Actuators that the agent can control.</span>
 <span class="linenos">29</span>            <span class="n">action</span><span class="o">=</span><span class="n">ActionSpec</span><span class="p">(</span>
 <span class="linenos">30</span>                <span class="n">actuators</span><span class="o">=</span><span class="p">{</span>
-<span class="linenos">31</span>                    <span class="s2">&quot;Heating Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;heating_setpoint&quot;</span><span class="p">),</span>
-<span class="linenos">32</span>                    <span class="s2">&quot;Cooling Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;cooling_setpoint&quot;</span><span class="p">),</span>
-<span class="linenos">33</span>                    <span class="s2">&quot;Availability Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_OnOff&quot;</span><span class="p">),</span>
+<span class="linenos">31</span>                    <span class="s2">"Heating Actuator"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Schedule:Compact"</span><span class="p">,</span> <span class="s2">"Schedule Value"</span><span class="p">,</span> <span class="s2">"heating_setpoint"</span><span class="p">),</span>
+<span class="linenos">32</span>                    <span class="s2">"Cooling Actuator"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Schedule:Compact"</span><span class="p">,</span> <span class="s2">"Schedule Value"</span><span class="p">,</span> <span class="s2">"cooling_setpoint"</span><span class="p">),</span>
+<span class="linenos">33</span>                    <span class="s2">"Availability Actuator"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Schedule:Constant"</span><span class="p">,</span> <span class="s2">"Schedule Value"</span><span class="p">,</span> <span class="s2">"HVAC_OnOff"</span><span class="p">),</span>
 <span class="linenos">34</span>                <span class="p">},</span>
 <span class="linenos">35</span>            <span class="p">),</span>
 <span class="linenos">36</span>            <span class="c1"># Filter configuration.</span>
@@ -631,7 +689,7 @@ environment the ray serve must to be inicialized.</p>
 <span class="linenos">4</span>
 <span class="linenos">5</span><span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
 <span class="linenos">6</span>
-<span class="linenos">7</span><span class="n">register_env</span><span class="p">(</span><span class="s2">&quot;eprllib_env&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+<span class="linenos">7</span><span class="n">register_env</span><span class="p">(</span><span class="s2">"eprllib_env"</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>In the configuration of <code class="docutils literal notranslate"><span class="pre">rllib</span></code> you need to configurate the environment and all the others parameters
@@ -641,16 +699,16 @@ that your algorithm need. Here we show how to configurate the environment in a P
 <span class="linenos"> 3</span><span class="n">config</span> <span class="o">=</span> <span class="n">ppo</span><span class="o">.</span><span class="n">PPOConfig</span><span class="p">()</span>
 <span class="linenos"> 4</span><span class="c1"># Configure the PPO algorithm</span>
 <span class="linenos"> 5</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">environment</span><span class="p">(</span>
-<span class="linenos"> 6</span>    <span class="n">env</span><span class="o">=</span><span class="s2">&quot;eprllib_env&quot;</span><span class="p">,</span> <span class="c1"># Use the registered environment name</span>
+<span class="linenos"> 6</span>    <span class="n">env</span><span class="o">=</span><span class="s2">"eprllib_env"</span><span class="p">,</span> <span class="c1"># Use the registered environment name</span>
 <span class="linenos"> 7</span>    <span class="n">env_config</span><span class="o">=</span><span class="n">env_config</span> <span class="c1"># Here is the builded configuration of the environment with eprllib.</span>
 <span class="linenos"> 8</span>    <span class="p">)</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span><span class="c1"># eprllib is a multiagent environment, for that reason you need to configurate the multi_agent policy.</span>
 <span class="linenos">11</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">multi_agent</span><span class="p">(</span>
 <span class="linenos">12</span>    <span class="n">policies</span><span class="o">=</span><span class="p">{</span>
-<span class="linenos">13</span>        <span class="s1">&#39;single_policy&#39;</span><span class="p">:</span> <span class="kc">None</span>
+<span class="linenos">13</span>        <span class="s1">'single_policy'</span><span class="p">:</span> <span class="kc">None</span>
 <span class="linenos">14</span>    <span class="p">},</span>
-<span class="linenos">15</span>    <span class="n">policy_mapping_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">worker</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="s1">&#39;single_policy&#39;</span><span class="p">,</span>
+<span class="linenos">15</span>    <span class="n">policy_mapping_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">agent_id</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">worker</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="s1">'single_policy'</span><span class="p">,</span>
 <span class="linenos">16</span><span class="p">)</span>
 <span class="linenos">17</span><span class="c1"># Build the algorithm.</span>
 <span class="linenos">18</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
@@ -662,16 +720,16 @@ that your algorithm need. Here we show how to configurate the environment in a P
 <span class="linenos"> 3</span><span class="c1"># Train the agent for a few iterations</span>
 <span class="linenos"> 4</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
 <span class="linenos"> 5</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-<span class="linenos"> 6</span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training iteration </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+<span class="linenos"> 6</span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Training iteration </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">:"</span><span class="p">)</span>
 <span class="linenos"> 7</span>    <span class="nb">print</span><span class="p">(</span><span class="n">pretty_print</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
 <span class="linenos"> 8</span>
 <span class="linenos"> 9</span><span class="c1"># Save the trained agent</span>
 <span class="linenos">10</span><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-<span class="linenos">11</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checkpoint saved to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">11</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Checkpoint saved to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="linenos">12</span>
 <span class="linenos">13</span><span class="c1"># Restore the agent from the checkpoint</span>
 <span class="linenos">14</span><span class="n">algorithm</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
-<span class="linenos">15</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checkpoint restored from </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">15</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Checkpoint restored from </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="linenos">16</span>
 <span class="linenos">17</span><span class="c1"># --- End ---</span>
 <span class="linenos">18</span><span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
@@ -793,7 +851,7 @@ EnergyPlus environment, such as the EPJSON file, the EPW file, and the output pa
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deep-reinforcement-learning-drl">Deep Reinforcement Learning (DRL)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-bridge-between-energyplus-and-rllib">A bridge between EnergyPlus and RLlib</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-a-simple-experiment-with-eprllib-and-ray-rllib">Running a Simple Experiment with <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> and <code class="docutils literal notranslate"><span class="pre">ray.rllib</span></code></a><ul class="nav section-nav flex-column">
@@ -848,8 +906,8 @@ By Germán Rodolfo Henderson
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

@@ -27,24 +27,25 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=57297d31" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=8dbc3f03"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '3-KeyConcepts';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="canonical" href="https://hermmanhender.github.io/eprllib/docs/3-KeyConcepts.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -53,20 +54,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -92,7 +99,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -376,11 +427,18 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -408,7 +466,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-environment">The Environment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-agents">The Agents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observation-parameter-config">Observation parameter config</a></li>
@@ -464,7 +522,7 @@ for registering custom environments as shown in the example below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">eprllib.Environment.Environment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Environment</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ray.tune.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_env</span>
 
-<span class="n">register_env</span><span class="p">(</span><span class="s2">&quot;my_energyplus_env&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">config</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+<span class="n">register_env</span><span class="p">(</span><span class="s2">"my_energyplus_env"</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">config</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>To facilitate the configuration of the environment, <code class="docutils literal notranslate"><span class="pre">eprllib</span></code> provides several tools
@@ -506,9 +564,9 @@ section below).</p></li>
 
 <span class="n">env_config</span> <span class="o">=</span> <span class="n">EnvironmentConfig</span><span class="p">()</span>
 <span class="n">env_config</span><span class="o">.</span><span class="n">generals</span><span class="p">(</span>
-    <span class="n">epjson_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/model.epJSON&quot;</span><span class="p">,</span>
-    <span class="n">epw_path</span><span class="o">=</span><span class="s2">&quot;path/to/your/weather.epw&quot;</span><span class="p">,</span>
-    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;path/to/output&quot;</span><span class="p">,</span>
+    <span class="n">epjson_path</span><span class="o">=</span><span class="s2">"path/to/your/model.epJSON"</span><span class="p">,</span>
+    <span class="n">epw_path</span><span class="o">=</span><span class="s2">"path/to/your/weather.epw"</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="s2">"path/to/output"</span><span class="p">,</span>
     <span class="n">ep_terminal_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">evaluation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -596,11 +654,11 @@ like weather prediction for the next day.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">agent_spec</span> <span class="o">=</span> <span class="n">AgentSpec</span><span class="p">(</span>
     <span class="n">observation</span> <span class="o">=</span> <span class="n">ObservationSpec</span><span class="p">(</span>
         <span class="n">variables</span><span class="o">=</span><span class="p">[</span>
-            <span class="p">(</span><span class="s2">&quot;Site Outdoor Air Drybulb Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Environment&quot;</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;Zone Mean Air Temperature&quot;</span><span class="p">,</span> <span class="s2">&quot;Thermal Zone&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Site Outdoor Air Drybulb Temperature"</span><span class="p">,</span> <span class="s2">"Environment"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Zone Mean Air Temperature"</span><span class="p">,</span> <span class="s2">"Thermal Zone"</span><span class="p">),</span>
         <span class="p">],</span>
         <span class="n">meters</span><span class="o">=</span><span class="p">[</span>
-            <span class="s2">&quot;Electricity:Building&quot;</span><span class="p">,</span>
+            <span class="s2">"Electricity:Building"</span><span class="p">,</span>
         <span class="p">],</span>
     <span class="p">),</span>
     <span class="n">action</span><span class="o">=...</span><span class="p">,</span>
@@ -626,9 +684,9 @@ allows you to specify which actuators of the EnergyPlus model could be handled b
     <span class="n">observation</span> <span class="o">=</span> <span class="n">ObservationSpec</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
     <span class="n">action</span><span class="o">=</span><span class="n">ActionSpec</span><span class="p">(</span>
         <span class="n">actuators</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;Heating Setpoint Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;heating_setpoint&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Cooling Setpoint Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Compact&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;cooling_setpoint&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;Availability Actuator&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Schedule:Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;Schedule Value&quot;</span><span class="p">,</span> <span class="s2">&quot;HVAC_OnOff&quot;</span><span class="p">),</span>
+            <span class="s2">"Heating Setpoint Actuator"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Schedule:Compact"</span><span class="p">,</span> <span class="s2">"Schedule Value"</span><span class="p">,</span> <span class="s2">"heating_setpoint"</span><span class="p">),</span>
+            <span class="s2">"Cooling Setpoint Actuator"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Schedule:Compact"</span><span class="p">,</span> <span class="s2">"Schedule Value"</span><span class="p">,</span> <span class="s2">"cooling_setpoint"</span><span class="p">),</span>
+            <span class="s2">"Availability Actuator"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Schedule:Constant"</span><span class="p">,</span> <span class="s2">"Schedule Value"</span><span class="p">,</span> <span class="s2">"HVAC_OnOff"</span><span class="p">),</span>
         <span class="p">},</span>
     <span class="p">),</span>
     <span class="nb">filter</span><span class="o">=...</span><span class="p">,</span>
@@ -679,7 +737,7 @@ some examples of filters in the Examples section that you can use as a reference
     <span class="nb">filter</span><span class="o">=</span><span class="n">FilterSpec</span><span class="p">(</span>
         <span class="n">filter_fn</span> <span class="o">=</span> <span class="n">BaseFilter</span><span class="p">,</span>  <span class="c1"># Here you can use your custom filter function class that must be based on the BaseFilter class.</span>
         <span class="n">filter_fn_config</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;some_parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;some_value&quot;</span><span class="p">,</span>
+            <span class="s2">"some_parameter"</span><span class="p">:</span> <span class="s2">"some_value"</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">),</span>
     <span class="n">action_mapper</span><span class="o">=...</span><span class="p">,</span>
@@ -726,7 +784,7 @@ of the action mapper function and its role in the agent’s decision-making proc
     <span class="n">action_mapper</span><span class="o">=</span><span class="n">ActionMapperSpec</span><span class="p">(</span>
         <span class="n">action_mapper</span><span class="o">=</span><span class="n">BaseActionMapper</span><span class="p">,</span>  <span class="c1"># Here you can use your custom action mapper function class that must be based on the BaseActionMapper class.</span>
         <span class="n">action_mapper_config</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;some_parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;some_value&quot;</span><span class="p">,</span>
+            <span class="s2">"some_parameter"</span><span class="p">:</span> <span class="s2">"some_value"</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">),</span>
     <span class="n">reward</span><span class="o">=...</span>
@@ -781,7 +839,7 @@ schematic representation of the reward function and its role in the agent’s de
     <span class="n">reward</span><span class="o">=</span><span class="n">RewardSpec</span><span class="p">(</span>
         <span class="n">reward_fn</span> <span class="o">=</span> <span class="n">BaseReward</span><span class="p">,</span>  <span class="c1"># Here you can use your custom reward function class that must be based on the BaseReward class.</span>
         <span class="n">reward_fn_config</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;some_parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;some_value&quot;</span><span class="p">,</span>
+            <span class="s2">"some_parameter"</span><span class="p">:</span> <span class="s2">"some_value"</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">)</span>
 <span class="p">)</span>
@@ -808,7 +866,7 @@ complex interactions between agents.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">env_config</span> <span class="o">=</span> <span class="n">EnvironmentConfig</span><span class="p">()</span><span class="o">.</span><span class="n">connector</span><span class="p">(</span>
     <span class="n">connector_fn</span><span class="o">=</span><span class="n">BaseConnector</span><span class="p">,</span>  <span class="c1"># Here you can use your custom connector function class that must be based on the BaseConnector class.</span>
     <span class="n">connector_fn_config</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;some_parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;some_value&quot;</span><span class="p">,</span>
+        <span class="s2">"some_parameter"</span><span class="p">:</span> <span class="s2">"some_value"</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
@@ -826,7 +884,7 @@ its configuration as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">env_config</span> <span class="o">=</span> <span class="n">EnvironmentConfig</span><span class="p">()</span><span class="o">.</span><span class="n">episodes</span><span class="p">(</span>
     <span class="n">episode_fn</span> <span class="o">=</span> <span class="n">DefaultEpisode</span><span class="p">,</span>  <span class="c1"># Here you can use your custom episode function class that must be based on the BaseEpisode class.</span>
     <span class="n">episode_fn_config</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;some_parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;some_value&quot;</span><span class="p">,</span>
+        <span class="s2">"some_parameter"</span><span class="p">:</span> <span class="s2">"some_value"</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
@@ -853,7 +911,7 @@ integrate it with RLlib to train your DRL agents. There are three steps to achie
 <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
 
 <span class="c1"># Register the environment</span>
-<span class="n">register_env</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+<span class="n">register_env</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"EPEnv"</span><span class="p">,</span> <span class="n">env_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="n">Environment</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 
 <span class="c1"># Configure the environment and build it.</span>
 <span class="n">env_config</span> <span class="o">=</span> <span class="n">EnvironmentConfig</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
@@ -861,7 +919,7 @@ integrate it with RLlib to train your DRL agents. There are three steps to achie
 <span class="c1"># Use the environment in your RLlib configuration</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">ppo</span><span class="o">.</span><span class="n">PPOConfig</span><span class="p">()</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">environment</span><span class="p">(</span>
-    <span class="n">env</span> <span class="o">=</span> <span class="s2">&quot;EPEnv&quot;</span><span class="p">,</span> <span class="c1"># &lt;- The name of the registered environment.</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="s2">"EPEnv"</span><span class="p">,</span> <span class="c1"># &lt;- The name of the registered environment.</span>
     <span class="n">env_config</span> <span class="o">=</span> <span class="n">env_config</span> <span class="c1"># &lt;- The built configuration of the environment.</span>
     <span class="p">)</span>
 </pre></div>
@@ -921,7 +979,7 @@ function defined in the agent configuration.</p>
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-environment">The Environment</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-agents">The Agents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observation-parameter-config">Observation parameter config</a></li>
@@ -982,8 +1040,8 @@ By Germán Rodolfo Henderson
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>
