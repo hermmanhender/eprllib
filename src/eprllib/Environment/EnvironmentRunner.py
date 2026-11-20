@@ -119,11 +119,8 @@ class EnvironmentRunner:
 
         # 1. Validación robusta: Detecta tanto 'None' como strings vacíos '""'
         if not self.ep_worker_path:
-            msg = f"EnvironmentRunner: WARNING: ep_worker_path is missing. Resolving dynamically..."
-            logger.warning(msg)
             try:
                 self.ep_worker_path = EP_API_add_path(self.ep_version)
-                logger.warning(f"EnvironmentRunner: The ep_worker_path was created as {self.ep_worker_path}.")
             except RuntimeError as e:
                 logger.error(f"EnvironmentRunner: Failed to add EnergyPlus API path: {e}")
                 exit(1)
