@@ -124,7 +124,7 @@ class BaseReward:
         obs: NDArray[floating[Any]],
         terminated: bool,
         truncated: bool
-        ) -> float:
+        ) -> tuple[float, dict[str,Any]]:
         """
         This method must be implemented in the subclass to calculate the reward.
 

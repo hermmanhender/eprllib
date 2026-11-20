@@ -400,6 +400,7 @@ class MultiAgentEnvironment(MultiAgentEnv):
 
         # Calculate the reward in the timestep
         reward_dict: Dict[str, float] = {}
+        reward_info: Dict[str, Dict[str, Any]] = {}
         for agent in obs.keys():
             # The reward function instance can be None if not defined for an agent.
             # We use .get() for safer access and check for None.
@@ -410,8 +411,8 @@ class MultiAgentEnvironment(MultiAgentEnv):
             if reward_fn_instance:
                 obs_to_reward = self.last_obs[agent]
                 next_obs_to_reward = obs[agent]
-                reward_dict[agent] = reward_fn_instance.get_reward(
 
+                reward_dict[agent], reward_info[agent] = reward_fn_instance.get_reward(
                     obs_to_reward,
                     actions.get(agent),
                     next_obs_to_reward,
@@ -425,6 +426,11 @@ class MultiAgentEnvironment(MultiAgentEnv):
         terminated["__all__"] = self.terminateds
         truncated["__all__"] = self.truncateds
         
+                reward_info[agent] = {}
+
+            # Add reward_info to infos
+            infos[agent].update(reward_info[agent])
+
         # Upgrade last observation and infos dicts.
         self.last_obs = obs
         self.last_infos = infos
