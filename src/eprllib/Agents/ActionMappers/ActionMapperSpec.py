@@ -2,7 +2,7 @@
 Specification for the ActionMapper functions
 ===========================================================
 This module defines the ``ActionMapperSpec`` class, which is used to specify
-the configuration of ActionMapper functions for agents in reinforcement 
+the configuration of ActionMapper functions for agents in reinforcement
 learning environments.
 """
 from typing import Dict, Any, Type, Optional
@@ -15,7 +15,7 @@ class ActionMapperSpec:
     """
     action_mapper_fn: Optional[Type[BaseActionMapper]] = None
     action_mapper_config: Dict[str, Any] = {}
-    
+
     def __init__(
         self,
         action_mapper_fn: Optional[Type[BaseActionMapper]] = None,
@@ -23,16 +23,16 @@ class ActionMapperSpec:
     ) -> None:
         """
         Construction method.
-        
+
         Args:
             action_mapper_fn (BaseActionMapper): The ActionMapper function takes the arguments agent_id, observation and returns the
             observation filtered. See ``eprllib.Agents.ActionMappers`` for examples.
-            
+
             action_mapper_config (Dict[str, Any]): The configuration of the ActionMapper function.
-        
+
         Returns:
             None
-            
+
         Raises:
             ValueError: If the action_mapper is not defined.
             ValueError: If the action_mapper_config is not a dictionary.
@@ -40,9 +40,9 @@ class ActionMapperSpec:
         """
         self.action_mapper_fn = action_mapper_fn
         self.action_mapper_config = action_mapper_config
-        
+
         logger.info(f"ActionMapperSpec: The ActionMapperSpec was correctly inicializated with {self.action_mapper_fn} class and {self.action_mapper_config} config.")
-    
+
     def __getitem__(self, key:str) -> Any:
         return getattr(self, key)
 
@@ -53,7 +53,7 @@ class ActionMapperSpec:
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
-    
+
     def build(self) -> Dict[str, Any]:
         """
         This method is used to build the ActionMapperSpec object.
@@ -62,7 +62,7 @@ class ActionMapperSpec:
             msg = "ActionMapperSpec: The ActionMapper class must be defined."
             logger.error(msg)
             raise ValueError(msg)
-        
+
         logger.info(f"ActionMapperSpec: The ActionMapper class is {self.action_mapper_fn}.")
-        
+
         return vars(self)

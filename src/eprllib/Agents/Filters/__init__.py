@@ -8,11 +8,11 @@ policy.
 
 In this module, you will find:
 
-- ``BaseFilter``: The base class for defining filter functions. It provides the basic structure and methods that can be 
+- ``BaseFilter``: The base class for defining filter functions. It provides the basic structure and methods that can be
 extended to create custom filters.
-- ``FilterSpec``: A class used to specify the configuration of filter functions in the agent definition. It ensures that 
+- ``FilterSpec``: A class used to specify the configuration of filter functions in the agent definition. It ensures that
 the filter function is properly defined and adheres to the expected interface.
 
-These filters can be used to preprocess observations in various ways, depending on the specific requirements of the 
+These filters can be used to preprocess observations in various ways, depending on the specific requirements of the
 agent's policy.
 """

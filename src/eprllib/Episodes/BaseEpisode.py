@@ -25,7 +25,7 @@ class BaseEpisode:
     This class contains the methods to configure the episode in EnergyPlus with RLlib.
     """
     episode_fn_config: Dict[str, Any] = {}
-    
+
     def __init__(
         self,
         episode_fn_config: Dict[str, Any] = {}
@@ -38,9 +38,9 @@ class BaseEpisode:
         """
         # Set the episode_fn_config attribute
         self.episode_fn_config = episode_fn_config
-        
+
         logger.info(f"BaseEpisode: The BaseEpisode was correctly inicializated with {self.episode_fn_config} config.")
-        
+
         # Make sure, `setup()` is only called once, no matter what.
         if hasattr(self, "_is_setup") and self._is_setup:
             raise RuntimeError(
@@ -55,20 +55,20 @@ class BaseEpisode:
             raise e
 
         self._is_setup:bool = True
-    
+
     # ===========================
     # === OVERRIDABLE METHODS ===
     # ===========================
-    
+
     def setup(self) -> None:
         """
         Sets up the episode function.
-        
+
         This is called automatically during the __init__ method of this class.
         """
         pass
-    
-    
+
+
     def get_episode_config(self, env_config: Dict[str, Any]) -> Dict[str, Any]:
         """
         Returns the episode configuration for the EnergyPlus environment.
@@ -80,8 +80,8 @@ class BaseEpisode:
             Dict[str, Any]: The episode configuration.
         """
         return env_config
-    
-    
+
+
     def get_episode_agents(self, possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the episode configuration in the EnergyPlus environment.
@@ -94,8 +94,8 @@ class BaseEpisode:
             Dict[str, Any]: The agents that are acting for the episode configuration. Default: possible_agents list.
         """
         return possible_agents
-    
-    
+
+
     def get_timestep_agents(self, possible_agents: List[str]) -> List[str]:
         """
         Returns the agents for the timestep configuration in the EnergyPlus environment.

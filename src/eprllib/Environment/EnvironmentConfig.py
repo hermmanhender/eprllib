@@ -37,7 +37,7 @@ class EnvironmentConfig:
     episode_fn_config: Dict[str, Any] = {}
     cut_episode_len: int = CUT_EPISODE_LEN
     ep_version: str = EP_VERSION
-    
+
     def __init__(self):
         """
         This is the main object that is used to relate the EnergyPlus model and the RLlib policy training execution.
@@ -60,9 +60,9 @@ class EnvironmentConfig:
         self.episode_fn: Optional[Type[BaseEpisode]] = None
         self.episode_fn_config: Dict[str, Any] = {}
         self.cut_episode_len: int = CUT_EPISODE_LEN
-        
+
         self.ep_workers_paths: Dict[int, str] = {}
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Converts all settings into a legacy config dict for backward compatibility.
 
@@ -75,7 +75,7 @@ class EnvironmentConfig:
         except Exception as e:
             logger.error(f"EnvironmentConfig: Error building EnvironmentConfig: {e}")
             raise ValueError("Failed to build EnvironmentConfig. Please check the configuration settings.") from e
-    
+
     def from_dict(cls, config_dict: Dict[str, Any]) -> "EnvironmentConfig": # type: ignore
         """Creates an EnvironmentConfig from a legacy python config dict.
 
@@ -86,7 +86,7 @@ class EnvironmentConfig:
             A new EnvironmentConfig object that matches the given python config dict.
         """
         pass
-    
+
     def update_from_dict(
         self,
         config_dict: Dict[str, Any],#: PartialAlgorithmConfigDict,
@@ -101,11 +101,11 @@ class EnvironmentConfig:
         """
         # TODO: Implement this method to update the EnvironmentConfig from a dict.
         pass
-    
+
     def _build(self) -> Dict[str, Any]:
         """
         Convert an EnvConfig object into a dict before to be used in the env_config parameter of RLlib environment config.
-        Also this method chek that all the variables are well defined and add some constant parameters to use after in 
+        Also this method chek that all the variables are well defined and add some constant parameters to use after in
         the program (like agents unique ID).
         """
         logger.info("EnvironmentConfig: Building the environment configuration...")
@@ -123,7 +123,7 @@ class EnvironmentConfig:
             msg = "EnvironmentConfig: The epjson_path is not a string. Consider converting to epJSON."
             logger.warning(msg)
             raise ValueError(msg)
-        
+
         # epw_path
         if self.epw_path is None:
             logger.warning("EnvironmentConfig: The epw_path is not defined. Is spected to be defined in the Episode class used. If don't, an error will be raised in the future.")
@@ -134,18 +134,18 @@ class EnvironmentConfig:
             msg = "EnvironmentConfig: The epw_path is not a string. Consider converting to epw."
             logger.warning(msg)
             raise ValueError(msg)
-        
+
         # output_path
         if self.output_path is None:
             self.output_path = TemporaryDirectory("eprllib_output").name
             logger.warning(f"EnvironmentConfig: The output_path is not defined. {self.output_path} will be used.")
-        
+
         # === AGENTS === #
         if self.agents_config is None:
             msg = "EnvironmentConfig: The agents_config is not defined. At least one agent must be defined."
             logger.error(msg)
             raise ValueError(msg)
-            
+
         ix = 0
         for agent in self.agents_config:
             config = self.agents_config[agent]
@@ -156,20 +156,20 @@ class EnvironmentConfig:
             config.update({'agent_id': ix})
             ix += 1
         logger.debug("EnvironmentConfig: Agents config built successfully.")
-        
+
         # === CONNECTOR === #
         if self.connector_fn is None:
             msg = "EnvironmentConfig: The connector function is not defined."
             logger.error(msg)
             raise ValueError(msg)
-        
+
         # === EPISODES === #
         if self.episode_fn is None:
             msg = "EnvironmentConfig: The episode function is not defined. The default episode function will be used."
             logger.info(msg)
             self.episode_fn = DefaultEpisode
             self.episode_fn_config = {}
-        
+
         # === PARALLEL EXECUTION ===
         # EnergyPlus Python API path adding
         try:
@@ -177,14 +177,14 @@ class EnvironmentConfig:
         except RuntimeError as e:
             logger.error(f"EnvironmentConfig: Failed to add EnergyPlus API path: {e}")
             exit(1)
-            
+
         self.ep_workers_paths = parallel_energyplus_setup(original_ep_path)
-        
+
         return vars(self)
-    
-    
+
+
     def generals(
-        self, 
+        self,
         epjson_path: Optional[str] = None,
         epw_path: Optional[str] = None,
         output_path: Optional[str] = None,
@@ -211,7 +211,7 @@ class EnvironmentConfig:
         self.timeout = timeout
         self.evaluation = evaluation
         self.ep_version = ep_version
-        
+
     def agents(
         self,
         agents_config: Optional[Dict[str,AgentSpec|Dict[str,Any]]] = None,
@@ -220,10 +220,10 @@ class EnvironmentConfig:
         This method is used to modify the agents configuration of the environment.
 
         Args:
-            agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents 
-            involved in the environment. The mandatory components of the agent are: ep_actuator_config, 
+            agents_config (Dict[str,Dict[str,Any]]): This dictionary contain the names of the agents
+            involved in the environment. The mandatory components of the agent are: ep_actuator_config,
             thermal_zone, thermal_zone_indicator, actuator_type, agent_indicator.
-            
+
         """
         self.agents_config = agents_config
 
@@ -236,15 +236,15 @@ class EnvironmentConfig:
         This method is used to modify the agents connector configuration of the environment.
 
         Args:
-            connector_fn (BaseConnector): This method is used to define the interaction between the agents and the 
+            connector_fn (BaseConnector): This method is used to define the interaction between the agents and the
             environment. By default, the independent learning is used.
-            
+
             connector_fn_config (Dict): NotDescribed
-            
+
         """
         self.connector_fn = connector_fn
         self.connector_fn_config = connector_fn_config
-    
+
     def episodes(
         self,
         episode_fn: Optional[Type[BaseEpisode]] = None,
@@ -255,13 +255,13 @@ class EnvironmentConfig:
         This method configure episode functions to improve the use of eprllib.
 
         Args:
-            episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it 
+            episode_fn (): This method define the properties of the episode, taking the env_config dict and returning it
             with modifications.
-            
+
             episode_fn_config (Dict): NotDescribed
-            
-            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default, 
-            an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will 
+
+            cut_episode_len (int): Sometimes is useful to cut the simulation RunPeriod into diferent episodes. By default,
+            an episode is a entire RunPeriod EnergyPlus simulation. If you set the 'cut_episode_len' in 1 (day) you will
             truncate the, for example, annual simulation into 365 episodes. If ypu set to 0, no cut will be apply.
         """
         self.episode_fn = episode_fn
@@ -273,4 +273,3 @@ class EnvironmentConfig:
 
     def __setitem__(self, key: str, value: Any):
         setattr(self, key, value)
-        

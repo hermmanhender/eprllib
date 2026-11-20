@@ -1,7 +1,7 @@
 """
 Specification for the filter functions
 ===========================================
-This module defines the ``FilterSpec`` class, which is used to specify the 
+This module defines the ``FilterSpec`` class, which is used to specify the
 configuration of filter functions for agents in reinforcement learning environments.
 It ensures that the filter function is properly defined and adheres to the expected interface.
 """
@@ -16,7 +16,7 @@ class FilterSpec:
     """
     filter_fn: Optional[Type[BaseFilter]] = None
     filter_fn_config: Dict[str, Any] = {}
-    
+
     def __init__(
         self,
         filter_fn: Optional[Type[BaseFilter]] = None,
@@ -24,16 +24,16 @@ class FilterSpec:
     ):
         """
         Construction method.
-        
+
         Args:
             filter_fn (BaseFilter): The filter function takes the arguments agent_id, observation and returns the
             observation filtered. See ``eprllib.Agents.Filters`` for examples.
-            
+
             filter_fn_config (Dict[str, Any]): The configuration of the filter function.
         """
         self.filter_fn = filter_fn
         self.filter_fn_config = filter_fn_config
-    
+
     def __getitem__(self, key: str) -> Any:
         return getattr(self, key)
 
@@ -44,7 +44,7 @@ class FilterSpec:
             logger.error(msg)
             raise KeyError(msg)
         setattr(self, key, value)
-        
+
     def build(self) -> Dict[str, Any]:
         """
         This method is used to build the FilterSpec object.
@@ -53,6 +53,5 @@ class FilterSpec:
             msg = "FilterSpec: No filter function provided."
             logger.error(msg)
             raise ValueError(msg)
-        
+
         return vars(self)
-    
